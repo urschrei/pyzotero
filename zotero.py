@@ -59,31 +59,38 @@ class Zotero(object):
         # TODO: throw an error if we're missing either of the above
         # Some API methods, not exhaustive
         self.api_methods = {
-        'all_items':'/users/{u}/items',                  # user_id
-        'top_level':'/users/{u}/items/top',              # user_id
-        'specific_item':'/users/{u}/items/%s',           # user_id, item_id
-        'child_items':'/users/{u}/items/%s/children',    # user_id, item_id
-        'item_tags':'/users/{u}/items/%s/tags',          # user_id, item_id
-        'user_tags':'/users/{u}/tags',                   # user_id
-        'items_for_tag':'/users/{u}/tags/%s/items',      # user_id, tag_id
-        'collections':'/users/{u}/collections',          # user_id
-        'collection_items':'/users/{u}/collections/%s',  # user_id, collect_id
-        'group_items':'/groups/%s/items'                 # group_id
+        'all_items':'/users/{u}/items',
+        'top_level':'/users/{u}/items/top',
+        'specific_item':'/users/{u}/items/%s',          #item_id
+        'child_items':'/users/{u}/items/%s/children',   #item_id
+        'item_tags':'/users/{u}/items/%s/tags',         #item_id
+        'user_tags':'/users/{u}/tags',
+        'items_for_tag':'/users/{u}/tags/%s/items',     # tag_id
+        'collections':'/users/{u}/collections',
+        'collection_items':'/users/{u}/collections/%s', # collection_id
+        'group_items':'/groups/%s/items'                # group_id
         }
 
-    def retrieve_titles(self, request, url_params = None, request_params = None):
-        """ General method for retrieving Zotero API resources
+    def retrieve_data(self,
+        request, url_params = None, request_param = None):
+        """ Method for retrieving Zotero items via the API
+            returns a dict containing feed items and lists of entries
         """
-        # This should still work even if there's no {u} field in the dict value
+        # add the user ID to the API call if it's required
         request = self.api_methods[request].format(u = self.user_id)
         if url_params:
             data = urllib.urlencode(url_params)
             request = '%s%s%s' % (request, '?', data)
+        # If an additional parameter is required, add it here
+        if request_param:
+            request = request % request_param
         full_url = '%s%s' % (self.endpoint, request)
+        print full_url
+        # sys.exit()
         data = urllib2.urlopen(full_url).read()
-        # print data
+        # parse the result into Python data structures
         feed_data = feedparser.parse(data)
-        return [t['title'] for t in feed_data.entries]
+        return feed_data
 
 def main():
     """ main function
@@ -96,8 +103,14 @@ def main():
     zot = Zotero(zot_id, zot_key)
     # pass optional request parameters in a dict
     par = {'limit': '10', 'start': 50}
-    titles = zot.retrieve_titles('all_items', par)
-    print '\n'.join([t for t in titles])
+    item = titles = zot.retrieve_data('all_items', par,)
+    print item, '\n\n\n'
+    # We can now do whatever we like with the returned data, e.g.:
+    titles_and_IDs = [j for j in zip([t['title'] for t in item.entries],
+    [z['zapi_key'] for z in item.entries])]
+    for entry in titles_and_IDs:
+        print entry
+
 
 if __name__ == "__main__":
     try:
