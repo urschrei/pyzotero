@@ -19,7 +19,7 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
     * `item.entries[0]['zapi_id']`  
     These values can then be fed back into subsequent calls to `retrieve_data` 
 4. If you wish to pass request parameters, but no URL parameters, simply pass an empty dict, like so: `retrieve_data(api_request, {}, 'request parameter')`  
-5. The main() function contains an example of pasing the 'All Items' method with URL parameters which restrict the result set.
+5. The main() function contains an example, passing the 'All Items' method with URL parameters which restrict the result set
 
 # Notes #
 
