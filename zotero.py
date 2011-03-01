@@ -71,7 +71,7 @@ class Zotero(object):
         'group_items':'/groups/%s/items'                 # group_id
         }
 
-    def retrieve_data(self, request, url_params = None, request_params = None):
+    def retrieve_titles(self, request, url_params = None, request_params = None):
         """ General method for retrieving Zotero API resources
         """
         # This should still work even if there's no {u} field in the dict value
@@ -81,7 +81,9 @@ class Zotero(object):
             request = '%s%s%s' % (request, '?', data)
         full_url = '%s%s' % (self.endpoint, request)
         data = urllib2.urlopen(full_url).read()
-        print data
+        # print data
+        feed_data = feedparser.parse(data)
+        return [t['title'] for t in feed_data.entries]
 
 def main():
     """ main function
@@ -93,8 +95,9 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # pass optional request parameters in a dict
-    par = {'limit': '5'}
-    zot.retrieve_data('top_level', par)
+    par = {'limit': '10', 'start': 50}
+    titles = zot.retrieve_titles('all_items', par)
+    print '\n'.join([t for t in titles])
 
 if __name__ == "__main__":
     try:
