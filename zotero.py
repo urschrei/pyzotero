@@ -14,7 +14,7 @@ import os
 import urllib
 import urllib2
 import feedparser
-
+import xml.etree.ElementTree as xml
 
 def open_file(to_read):
     """ Open a text file for reading, and strip the newlines
@@ -27,6 +27,21 @@ def open_file(to_read):
         print "Couldn't read values from %s\nCan't continue." % to_read
         raise
 
+
+
+def useful_data(fp_object):
+    """ Takes the result of a parse operation, and returns a list containing
+        one or more dicts of item data
+        useful data
+    """
+    item_data = [a['content'][0]['value'] for a in fp_object.entries]
+    items = []
+    for i_d in item_data:
+        elem = xml.fromstring(i_d)
+        keys = [e.text for e in elem.iter('th')]
+        values = [v.text for v in elem.iter('td')]
+        items.append(dict(zip(keys, values)))
+    return items
 
 
 class Zotero(object):
@@ -103,13 +118,16 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
-    par = {'limit': '10', 'start': 50}
-    item = zot.retrieve_data('all_items', par)
+    par = {'limit': '2', 'start': 0}
+    item = zot.retrieve_data('top_level_items', par)
     # We can now do whatever we like with the returned data, e.g.:
-    title_id = [j for j in zip([t['title'] for t in item.entries],
+    """ title_id = [j for j in zip([t['title'] for t in item.entries],
     [z['zapi_key'] for z in item.entries])]
     for entry in title_id:
-        print entry
+        print entry """
+    # we can pass our feedparser object to this helper function
+    useful = useful_data(item)
+    print useful
 
 
 if __name__ == "__main__":
