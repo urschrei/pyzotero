@@ -13,7 +13,6 @@ import sys
 import os
 import urllib
 import urllib2
-import httplib
 import feedparser
 
 
@@ -60,7 +59,6 @@ class Zotero(object):
         if user_id and user_key:
             self.user_id = user_id
             self.user_key = user_key
-        # TODO: throw an error if we're missing either of the above
         # Some API methods, not exhaustive
         self.api_methods = {
         'all_items':'/users/{u}/items',
