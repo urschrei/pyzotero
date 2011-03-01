@@ -39,63 +39,28 @@ class Zotero(object):
     def __init__(self, user_id = None, user_key = None):
         """ Store Zotero credentials
         """
-        self.endpoint = 'api.zotero.org'
+        self.endpoint = 'https://api.zotero.org'
         if user_id and user_key:
             self.user_id = user_id
             self.user_key = user_key
         # TODO: throw an error if we're missing either of the above
-
-    def get_all_items(self):
-        """ Send GET request to Zotero API endpoint, retrieve all library
-            items
-        """
-        conn = httplib.HTTPSConnection(
-        self.endpoint)
-        conn.request('GET', '/users/%s/items' % self.user_id)
-        response = conn.getresponse()
-        print 'Status:', response.status, response.reason
-        # We'll want to parse out the useful data using feedparser
-        data = response.read()
-
-        print data
-
-    def get_toplevel_items(self):
-        """ Send GET request to Zotero API endpoint, retrieve all top-leve
-            items in the user's library
-        """
-        conn = httplib.HTTPSConnection(
-        self.endpoint)
-        conn.request('GET', '/users/%s/items/top' % self.user_id)
-        response = conn.getresponse()
-        print 'Status:', response.status, response.reason
-        # We'll want to parse out the useful data using feedparser
-        data = response.read()
-
-        print data
 
     def get_topfive_items(self):
         """ Send GET request to Zotero API endpoint, retrieve first five items
             and format contents of <content> nodes as Chicago
         """
         # specify optional params here, start and limit can be used for slicing
+        request = '/users/%s/items/top' % self.user_id
         params = {
         'format': 'atom',
         'limit': '5',
         'start': '0',
         'content': 'bib',
         'style': 'chicago-note-bibliography'}
-        # cobble together a query string
-        querystring = '%s%s' % (
-        '?',
-        '&'.join(['%s=%s' % (k, v) for k, v in params.items()]))
-        conn = httplib.HTTPSConnection(
-        self.endpoint)
-        conn.request('GET', '/users/%s/items/top?%s' % (
-        self.user_id,
-        querystring))
-        response = conn.getresponse()
-        data = response.read()
-
+        data = urllib.urlencode(params)
+        full_url = '%s%s%s%s' % (self.endpoint, request, '?', data)
+        print full_url
+        data = urllib2.urlopen(full_url).read()
         print data
 
 def main():
