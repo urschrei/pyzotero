@@ -4,6 +4,9 @@
 zotero.py
 
 Created by Stephan Hügel on 2011-02-28
+Copyright Stephan Hügel, 2011
+
+License: http://www.gnu.org/licenses/gpl-3.0.txt
 """
 
 import sys
