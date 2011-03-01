@@ -86,7 +86,7 @@ class Zotero(object):
             request = '%s%s%s' % (request, '?', data)
         # Add a request parameter if it's required
         if request_param:
-            request = request % request_param
+            request = request % urllib.quote(request_param)
         full_url = '%s%s' % (self.endpoint, request)
         data = urllib2.urlopen(full_url).read()
         # parse the result into Python data structures
@@ -104,7 +104,7 @@ def main():
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
     par = {'limit': '10', 'start': 50}
-    item = zot.retrieve_data('all_items', par,)
+    item = zot.retrieve_data('all_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     title_id = [j for j in zip([t['title'] for t in item.entries],
     [z['zapi_key'] for z in item.entries])]
