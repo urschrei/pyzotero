@@ -7,7 +7,7 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 1. Create a new Zotero object:  
 `zot = Zotero(user_id, user_key)`  
 2. Call the object's `retrieve_data()` method:  
-`item = zot.retrieve_data(api_request, [URL parameters], [request parameters])`  
+`item = zot.retrieve_data(api_request, [URL parameters], [additional request parameter])`  
     * `URL parameters` is an optional dict containing valid Zotero API parameters. Example: `{'limit': 2, 'start': 37}`  
     * `request parameters` is an optional string or integer containing values such as:  
         * `Item ID`  
