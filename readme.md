@@ -11,7 +11,7 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
     * `URL parameters` is an optional dict containing valid Zotero API parameters. Example: `{'limit': 2, 'start': 37}`  
     * `request parameters` is an optional dict containing values such as:  
         * `Item ID`  
-        * `Tag ID`  
+        * `Tag` (literal)  
         * `Collection ID`  
         * `Group ID`. Example: `{'item': 'T4AH4RZA'}`  
         * Several key/value pairs can be included in the dict. If an API call requires a particular request parameter and you fail to include it, an error will be raised.
@@ -31,6 +31,23 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 Not all API methods have been implemented yet (I've implemented the ten I thought would be most useful). Those which are currently available can be found in the `self.api_methods` dict, which is created along with each new Zotero instance, and are descriptively titled, which should make it obvious if any additional request parameters (item ID, group ID &c) are required. Calling an API method which requires an optional parameter without specifying one will cause the call to fail with a `400: Bad Request` error. **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.
 
 There's no error handling yet.
+
+
+# Currently Available API Calls #
+
+### Additional parameters are (specified inline) ###
+
+
+* `'all_items'`: Returns the set of all items belonging to a specific user
+* `'top_level_items'`: Returns the set of all top-level items belonging to a specific user
+* `'specific_item'` (`item ID`): Returns a specific item belonging to a user.
+* `'child_items'` (`item ID`): Returns the set of all child items under a specific item 
+* `'item_tags'` (`item ID`): Returns the set of all tags associated with a specific item
+* `'user_tags'`: Returns the set of all tags belonging to a specific user
+* `'items_for_tag'`(`tag`): Returns the set of a user's items tagged with a specific tag
+* `'collections'`: Returns the set of collections belonging to a specific user
+* `'collection_items'` (`collection ID`): Returns a specific collection belonging to a user
+* `'group_items'` (`group ID`): Returns the set of all items belonging to a specific group
 
 
 [1]: http://www.zotero.org/support/dev/server_api "Zotero Server API"
