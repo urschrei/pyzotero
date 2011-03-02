@@ -17,6 +17,7 @@ import urllib
 import urllib2
 import feedparser
 import xml.etree.ElementTree as xml
+import traceback
 
 def open_file(to_read):
     """ Open a text file for reading, and strip the newlines
@@ -42,7 +43,7 @@ def useful_item_data(fp_object):
     item_id = [i['zapi_key'] for i in fp_object.entries]
     items = []
     for i_d_index, i_d_contents in enumerate(item_data):
-        elem = xml.fromstring(i_d_contents)
+        elem = xml.fromstring(i_d_contents.encode('utf-8'))
         keys = [e.text for e in elem.iter('th')]
         values = [v.text for v in elem.iter('td')]
         item_data = dict(zip(keys, values))
@@ -126,8 +127,8 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
-    par = {'limit': 1, 'start': 0}
-    item = zot.retrieve_data('top_level_items', par)
+    par = {'limit': 10, 'start': 0}
+    item = zot.retrieve_data('all_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     """ title_id = [j for j in zip([t['title'] for t in item.entries],
     [z['zapi_key'] for z in item.entries])]
@@ -146,7 +147,8 @@ if __name__ == "__main__":
         raise
     except Exception, error:
         # all other exceptions: display the error
-        print error
+        # print error
+        print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
     else:
         pass
     finally:
