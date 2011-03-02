@@ -9,6 +9,8 @@ Copyright Stephan Hügel, 2011
 License: http://www.gnu.org/licenses/gpl-3.0.txt
 """
 
+__version__ = '0.1'
+
 import sys
 import os
 import urllib
@@ -31,8 +33,7 @@ def open_file(to_read):
 
 def useful_data(fp_object):
     """ Takes the result of a parse operation, and returns a list containing
-        one or more dicts of item data
-        useful data
+        one or more dicts containing item data
     """
     # Shunt each 'content' block into a list
     item_data = [a['content'][0]['value'] for a in fp_object.entries]
