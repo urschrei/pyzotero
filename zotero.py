@@ -105,8 +105,7 @@ class Zotero(object):
         full_url = '%s%s' % (self.endpoint, request)
         data = urllib2.urlopen(full_url).read()
         # parse the result into Python data structures
-        feed_data = feedparser.parse(data)
-        return feed_data
+        return feedparser.parse(data)
 
 def main():
     """ main function
