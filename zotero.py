@@ -88,14 +88,14 @@ class Zotero(object):
         self.api_methods = {
         'all_items':'/users/{u}/items',
         'top_level_items':'/users/{u}/items/top',
-        'specific_item':'/users/{u}/items/%s',          #item_id
-        'child_items':'/users/{u}/items/%s/children',   #item_id
-        'item_tags':'/users/{u}/items/%s/tags',         #item_id
+        'specific_item':'/users/{u}/items/{item}',
+        'child_items':'/users/{u}/items/{item}/children',
+        'item_tags':'/users/{u}/items/{item}/tags',
         'user_tags':'/users/{u}/tags',
-        'items_for_tag':'/users/{u}/tags/%s/items',     # tag_id
+        'items_for_tag':'/users/{u}/tags/{tag}/items',
         'collections':'/users/{u}/collections',
-        'collection_items':'/users/{u}/collections/%s', # collection_id
-        'group_items':'/groups/%s/items'                # group_id
+        'collection_items':'/users/{u}/collections/{collection}',
+        'group_items':'/groups/{group}/items'
         }
 
     def retrieve_data(self,
@@ -103,16 +103,28 @@ class Zotero(object):
         """ Method for retrieving Zotero items via the API
             returns a dict containing feed items and lists of entries
         """
-        # Add the user ID to the API call if it's required
-        request = self.api_methods[request].format(u = self.user_id)
+        # Add a request parameter if it's required
+        if request_param:
+            try:
+                request_param['u'] = self.user_id
+                request = self.api_methods[request].format(**request_param)
+            except KeyError:
+                print 'There\'s a request parameter missing:'
+                raise
+        # Otherwise, just add the user ID
+        else:
+            try:
+                request = self.api_methods[request].format(u = self.user_id)
+            except KeyError:
+                print 'There\'s a request parameter missing:'
+                raise
         # Add URL parameters if they're passed
         if url_params:
             data = urllib.urlencode(url_params)
             request = '%s%s%s' % (request, '?', data)
-        # Add a request parameter if it's required
-        if request_param:
-            request = request % urllib.quote(request_param)
         full_url = '%s%s' % (self.endpoint, request)
+        print full_url
+        # sys.exit()
         data = urllib2.urlopen(full_url).read()
         # parse the result into Python data structures
         return feedparser.parse(data)
@@ -127,7 +139,8 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
-    par = {'limit': 10, 'start': 0}
+    par = {'limit': 1}
+    # req = {'item': ''}
     item = zot.retrieve_data('all_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     """ title_id = [j for j in zip([t['title'] for t in item.entries],
@@ -147,8 +160,8 @@ if __name__ == "__main__":
         raise
     except Exception, error:
         # all other exceptions: display the error
-        # print error
-        print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
+        print error
+        # print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
     else:
         pass
     finally:

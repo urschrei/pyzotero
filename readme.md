@@ -9,11 +9,13 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 2. Call the object's `retrieve_data()` method:  
 `item = zot.retrieve_data(api_request, [URL parameters], [additional request parameter])`  
     * `URL parameters` is an optional dict containing valid Zotero API parameters. Example: `{'limit': 2, 'start': 37}`  
-    * `request parameters` is an optional string or integer containing values such as:  
+    * `request parameters` is an optional dict containing values such as:  
         * `Item ID`  
         * `Tag ID`  
         * `Collection ID`  
-        * `Group ID`. Examples: `432`, `'tag name'`
+        * `Group ID`. Example: `{'item': 'T4AH4RZA'}`  
+        * Several key/value pairs can be passed. If an API call requires a particular request parameter, and you fail to include it, an error will be raised.
+        * Valid keys: `'item'`, `'tag'`, `'collection'`, `'group'`
 3. You can now iterate through `item`'s entries and retrieve values in any way you wish, e.g.:  
     * `item.entries[0]['title']`  
     * `item.entries[0]['zapi_id']`  
