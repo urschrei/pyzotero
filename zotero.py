@@ -99,15 +99,15 @@ class Zotero(object):
         }
 
     def retrieve_data(self,
-        request, url_params = None, request_param = None):
+        request, url_params = None, request_params = None):
         """ Method for retrieving Zotero items via the API
             returns a dict containing feed items and lists of entries
         """
-        # Add a request parameter if it's required
-        if request_param:
+        # Add request parameter(s) if required
+        if request_params:
             try:
-                request_param['u'] = self.user_id
-                request = self.api_methods[request].format(**request_param)
+                request_params['u'] = self.user_id
+                request = self.api_methods[request].format(**request_params)
             except KeyError:
                 print 'There\'s a request parameter missing:'
                 raise
@@ -123,8 +123,6 @@ class Zotero(object):
             data = urllib.urlencode(url_params)
             request = '%s%s%s' % (request, '?', data)
         full_url = '%s%s' % (self.endpoint, request)
-        print full_url
-        # sys.exit()
         data = urllib2.urlopen(full_url).read()
         # parse the result into Python data structures
         return feedparser.parse(data)
@@ -140,7 +138,7 @@ def main():
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
     par = {'limit': 1}
-    # req = {'item': ''}
+    req = {'item': 'T4AH4RZA'}
     item = zot.retrieve_data('all_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     """ title_id = [j for j in zip([t['title'] for t in item.entries],

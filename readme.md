@@ -7,14 +7,14 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 1. Create a new Zotero object:  
 `zot = Zotero(user_id, user_key)`  
 2. Call the object's `retrieve_data()` method:  
-`item = zot.retrieve_data(api_request, [URL parameters], [additional request parameter])`  
+`item = zot.retrieve_data(api_request, [{URL parameters}], [{additional request parameters}])`  
     * `URL parameters` is an optional dict containing valid Zotero API parameters. Example: `{'limit': 2, 'start': 37}`  
     * `request parameters` is an optional dict containing values such as:  
         * `Item ID`  
         * `Tag ID`  
         * `Collection ID`  
         * `Group ID`. Example: `{'item': 'T4AH4RZA'}`  
-        * Several key/value pairs can be passed. If an API call requires a particular request parameter, and you fail to include it, an error will be raised.
+        * Several key/value pairs can be included in the dict. If an API call requires a particular request parameter and you fail to include it, an error will be raised.
         * Valid keys: `'item'`, `'tag'`, `'collection'`, `'group'`
 3. You can now iterate through `item`'s entries and retrieve values in any way you wish, e.g.:  
     * `item.entries[0]['title']`  
@@ -28,7 +28,7 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 
 # Notes #
 
-Not all API methods have been implemented yet (I've implemented the ten I thought would be most useful). Those which are currently available can be found in the `self.api_methods` dict, which is created along with each new Zotero instance, and are descriptively titled and commented with the additional request parameters which may be required. Calling an API method which requires an optional parameter without specifying one will cause the call to fail with a `400: Bad Request` error. **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.
+Not all API methods have been implemented yet (I've implemented the ten I thought would be most useful). Those which are currently available can be found in the `self.api_methods` dict, which is created along with each new Zotero instance, and are descriptively titled which should make it obvious if any additional request parameters (item ID, group ID &c) are required. Calling an API method which requires an optional parameter without specifying one will cause the call to fail with a `400: Bad Request` error. **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.
 
 There's no error handling yet.
 
