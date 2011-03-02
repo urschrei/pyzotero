@@ -8,12 +8,12 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 `zot = Zotero(user_id, user_key)`  
 2. Call the object's `retrieve_data()` method:  
 `item = zot.retrieve_data(api_request, [URL parameters], [request parameters])`  
-    * `URL parameters` is an optional dict containing valid Zotero API parameters  
-    * `request parameters` is an optional string containing values such as:  
+    * `URL parameters` is an optional dict containing valid Zotero API parameters. Example: `{'limit': 2, 'start': 37}`  
+    * `request parameters` is an optional string or integer containing values such as:  
         * `Item ID`  
         * `Tag ID`  
         * `Collection ID`  
-        * `Group ID`  
+        * `Group ID`. Examples: `432`, `'tag name'`
 3. You can now iterate through `item`'s entries and retrieve values in any way you wish, e.g.:  
     * `item.entries[0]['title']`  
     * `item.entries[0]['zapi_id']`  
@@ -21,6 +21,7 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 4. If you wish to pass request parameters, but no URL parameters, simply pass an empty dict, like so: `retrieve_data(api_request, {}, 'request parameter')`  
 5. The main() function contains an example, passing the 'All Items' method with URL parameters which restrict the result set
 6. In addition, there exists the `useful_data()` function: it takes the result of `retrieve_data` (a `feedparser` dict), and returns a list containing one or more dicts which contain the item data (type, creator, url, ISSN &c.), which represents the bulk of the usefulness of Zotero (and thus, of this endeavour)
+7. The dicts returned by `useful_data` do not consistently contain the same values; depending on the Zotero item data, various fields may be present or missing. You should not depend upon the existence of a returned key/value pair for a given item, but check for its existence before any further processing.
 
 
 # Notes #

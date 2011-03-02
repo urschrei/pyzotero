@@ -123,14 +123,14 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
-    par = {'limit': '2', 'start': 0}
+    par = {'limit': 2, 'start': 0}
     item = zot.retrieve_data('top_level_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     """ title_id = [j for j in zip([t['title'] for t in item.entries],
     [z['zapi_key'] for z in item.entries])]
     for entry in title_id:
         print entry """
-    # we can pass our feedparser object to this helper function
+    # We can pass our feedparser object to this helper function
     useful = useful_data(item)
     print useful
 
