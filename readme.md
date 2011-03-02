@@ -20,7 +20,7 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
     These values can then be fed back into subsequent calls to `retrieve_data` 
 4. If you wish to pass request parameters, but no URL parameters, simply pass an empty dict, like so: `retrieve_data(api_request, {}, 'request parameter')`  
 5. The main() function contains an example, passing the 'All Items' method with URL parameters which restrict the result set
-6. In addition, there exists the `useful_data()` function: it takes the result of `retrieve_data` (a `feedparser` dict), and returns a list containing one or more dicts which contain the item data (type, creator, url, ISSN &c.), which represents the bulk of the usefulness of Zotero (and thus, of this endeavour)
+6. In addition, there exists the `useful_item_data()` function: it takes the result of `retrieve_data` (a `feedparser` dict), and returns a list containing one or more dicts which contain the item data (type, creator, url, ISSN &c.), which represents the bulk of the usefulness of Zotero (and thus, of this endeavour). It can be used to parse the result of any API call which returns **items**. Methods for tags and collections are forthcoming.
 7. The dicts returned by `useful_data()` do not consistently contain the same values; depending on the Zotero item data, various fields may be present or missing. You should not depend upon the existence of a returned key/value pair for a given item, but check for its existence before any further processing.
 
 

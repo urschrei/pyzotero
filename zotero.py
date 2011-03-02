@@ -31,22 +31,24 @@ def open_file(to_read):
 
 
 
-def useful_data(fp_object):
+def useful_item_data(fp_object):
     """ Takes the result of a parse operation, and returns a list containing
         one or more dicts containing item data
     """
     # Shunt each 'content' block into a list
     item_data = [a['content'][0]['value'] for a in fp_object.entries]
-    # Shunt each 'title' value into a list
+    # Shunt each 'title' and item ID value into a list
     item_title = [t['title'] for t in fp_object.entries]
+    item_id = [i['zapi_key'] for i in fp_object.entries]
     items = []
     for i_d_index, i_d_contents in enumerate(item_data):
         elem = xml.fromstring(i_d_contents)
         keys = [e.text for e in elem.iter('th')]
         values = [v.text for v in elem.iter('td')]
         item_data = dict(zip(keys, values))
-        # add the utf-8 encoded 'title' data to the dict:
+        # add the utf-8 encoded 'title' and ID data to the dict:
         item_data['Title'] = item_title[i_d_index].encode('utf-8')
+        item_data['ID'] = item_id[i_d_index].encode('utf-8')
         items.append(item_data)
     return items
 
@@ -124,7 +126,7 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
-    par = {'limit': 2, 'start': 0}
+    par = {'limit': 1, 'start': 0}
     item = zot.retrieve_data('top_level_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     """ title_id = [j for j in zip([t['title'] for t in item.entries],
@@ -132,7 +134,7 @@ def main():
     for entry in title_id:
         print entry """
     # We can pass our feedparser object to this helper function
-    useful = useful_data(item)
+    useful = useful_item_data(item)
     print useful
 
 
