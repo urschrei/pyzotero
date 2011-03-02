@@ -21,7 +21,6 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 4. If you wish to pass request parameters, but no URL parameters, simply pass an empty dict, like so: `retrieve_data(api_request, {}, 'request parameter')`  
 5. The main() function contains an example, passing the 'All Items' method with URL parameters which restrict the result set
 6. In addition, there exists the `useful_data()` function: it takes the result of `retrieve_data` (a `feedparser` dict), and returns a list containing one or more dicts which contain the item data (type, creator, url, ISSN &c.), which represents the bulk of the usefulness of Zotero (and thus, of this endeavour)
-7. I haven't bothered hacking together the functionality which would add the `title` value to the dicts returned by `useful_data` yet: for some reason, it's not part of the `content` data returned by the API call, but is a top-level value of the dict returned by `retrieved_data`. This is clearly insane, because it's *not metadata*, but here we are.
 
 
 # Notes #

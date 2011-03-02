@@ -34,13 +34,19 @@ def useful_data(fp_object):
         one or more dicts of item data
         useful data
     """
+    # Shunt each 'content' block into a list
     item_data = [a['content'][0]['value'] for a in fp_object.entries]
+    # Shunt each 'title' value into a list
+    item_title = [t['title'] for t in fp_object.entries]
     items = []
-    for i_d in item_data:
-        elem = xml.fromstring(i_d)
+    for i_d_index, i_d_contents in enumerate(item_data):
+        elem = xml.fromstring(i_d_contents)
         keys = [e.text for e in elem.iter('th')]
         values = [v.text for v in elem.iter('td')]
-        items.append(dict(zip(keys, values)))
+        item_data = dict(zip(keys, values))
+        # add the utf-8 encoded 'title' data to the dict:
+        item_data['Title'] = item_title[i_d_index].encode('utf-8')
+        items.append(item_data)
     return items
 
 
