@@ -94,6 +94,8 @@ def collections_data(fp_object):
         collections.append(collection_data)
     return collections
 
+
+
 class Zotero(object):
     """ Zotero API methods
         A full list of methods can be found here:
@@ -123,7 +125,7 @@ class Zotero(object):
         if user_id and user_key:
             self.user_id = user_id
             self.user_key = user_key
-        # Some API methods, not exhaustive
+        # API methods
         self.api_methods = {
         'all_items':'/users/{u}/items',
         'top_level_items':'/users/{u}/items/top',
@@ -150,13 +152,11 @@ class Zotero(object):
         'group_collection_item': '/groups/{group}/collections/{collection}/items/{item}'
         }
 
-
     def total_items(self):
         """ Return the total number of items in the library
         """
         get_count = self.retrieve_data('top_level_items', {'limit': 1})
         return get_count.feed['zapi_totalresults'].decode('utf-8')
-
 
     def retrieve_data(self,
         request, url_params = None, request_params = None):
