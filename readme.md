@@ -38,18 +38,29 @@ There's no error handling yet.
 ### Additional required parameters are (specified inline) ###
 
 
-* `'all_items'`: Returns the set of all items belonging to a specific user
-* `'top_level_items'`: Returns the set of all top-level items belonging to a specific user
-* `'specific_item'` (`item ID`): Returns a specific item belonging to a user.
-* `'child_items'` (`item ID`): Returns the set of all child items under a specific item 
-* `'item_tags'` (`item ID`): Returns the set of all tags associated with a specific item
-* `'user_tags'`: Returns the set of all tags belonging to a specific user
-* `'items_for_tag'`(`tag`): Returns the set of a user's items tagged with a specific tag
-* `'collections'`: Returns the set of collections belonging to a specific user
-* `'collection_items'` (`collection ID`): Returns a specific collection belonging to a user
-* `'sub_collections'` (`collection ID`): Returns a set of subcollections belonging to a collection for a specific user
-* `'user_groups'`: Returns the set of all groups belonging to a specific user
-* `'group_items'` (`group ID`): Returns the set of all items belonging to a specific group
+* `'all_items'`: returns the set of all items belonging to a specific user
+* `'top_level_items'`: returns the set of all top-level items belonging to a specific user
+* `'specific_item'` (`item ID`): returns a specific item belonging to a user.
+* `'child_items'` (`item ID`): returns the set of all child items under a specific item 
+* `'item_tags'` (`item ID`): returns the set of all tags associated with a specific item
+* `'user_tags'`: returns the set of all tags belonging to a specific user
+* `'items_for_tag'`(`tag`): returns the set of a user's items tagged with a specific tag
+* `'collections'`: returns the set of collections belonging to a specific user
+* `'collection_items'` (`collection ID`): returns a specific collection belonging to a user
+* `'sub_collections'` (`collection ID`): returns a set of subcollections belonging to a collection for a specific user
+* `'user_groups'`: returns the set of all groups belonging to a specific user
+* `'group_items'` (`group ID`): returns the set of all items belonging to a specific group
+* `'top_group_items'` (`group ID`): returns the set of all top-level items belonging to a specific group
+* `'group_item'` (`group ID`, `item ID`): returns a specific item belonging to a specific group
+* `'group_item_children'` (`group ID`, `item ID`): returns a set of all child items belonging to a specific item belonging to a group
+* `'group_item_tags'` (`group ID`, `item ID`): returns a set of all tags associated with a specific item belonging to a group
+* `'group_tags'`: (`'group ID'`): returns a set of all tags belonging to a specific group
+* `'group_user_items_tag'` (`group ID`, `item ID`): returns a set of items belonging to a group, tagged with a specific tag
+* `'group_collections'` (`group ID`): returns a set of collections belonging to a specific group
+* `'group_collection` (`group ID`, `collection ID`): returns a specific collection belonging to a specific group
+* `'group_collection_sub'` (`group ID`, `collection ID`): returns a set of subcollections within a specific collection belonging to a specific group
+* `'group_collection_items'` (`group ID`, `collection ID`): returns a set of items belonging to a specific collection belonging to a specific group
+* `'group_collection_item'` (`group ID`, `item ID`): returns a specific item belonging to a specific collection belonging to a specific group
 
 
 [1]: http://www.zotero.org/support/dev/server_api "Zotero Server API"
