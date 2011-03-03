@@ -75,9 +75,8 @@ class Zotero(object):
         Most of the methods return Atom feed documents, which can be parsed
         using feedparser (http://www.feedparser.org/docs/)
 
-        Valid optional URL parameters in all modes:
+        Valid optional URL parameters for all calls: ('key' added by default)
         format: "atom" or "bib", default: "atom"
-        key: string, default:  null
         version: integer, default: null
 
         Valid optional URL parameters for format=atom:
