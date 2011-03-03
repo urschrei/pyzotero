@@ -136,7 +136,18 @@ class Zotero(object):
         'collection_items':'/users/{u}/collections/{collection}',
         'sub_collections': '/users/{u}/collections/{collection}/collections',
         'user_groups': '/users/{u}/groups',
-        'group_items':'/groups/{group}/items'
+        'group_items':'/groups/{group}/items',
+        'top_group_items': '/groups/{groupID}/items/top',
+        'group_item': '/groups/{group}/items/{item}',
+        'group_item_children': '/groups/{groupID}/items/{item}/children',
+        'group_item_tags': '/groups/{group}/items/{item}/tags',
+        'group_tags': '/groups/{group}/tags',
+        'group_user_items_tag': '/groups/{group}/tags/{tag}/items',
+        'group_collections': '/groups/{groupID}/collections',
+        'group_collection': '/groups/{group}/collections/{collection}',
+        'group_collection_sub': '/groups/{group}/collections/{collection}/collections',
+        'group_collection_items': '/groups/{group}/collections/{collection}/items',
+        'group_collection_item': '/groups/{group}/collections/{collection}/items/{item}'
         }
 
 
