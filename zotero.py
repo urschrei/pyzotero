@@ -162,10 +162,6 @@ def main():
     par = {'limit': 2}
     item = zot.retrieve_data('top_level_items', par)
     # We can now do whatever we like with the returned data, e.g.:
-    """ title_id = [j for j in zip([t['title'] for t in item.entries],
-    [z['zapi_key'] for z in item.entries])]
-    for entry in title_id:
-        print entry """
     # We can pass our feedparser object to a helper function
     print item_data(item)
 
