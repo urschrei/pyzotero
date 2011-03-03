@@ -19,6 +19,7 @@ import feedparser
 import xml.etree.ElementTree as xml
 import traceback
 
+
 def open_file(to_read):
     """ Open a text file for reading, and strip the newlines
         returns a list, one list item per line

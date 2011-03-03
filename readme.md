@@ -22,9 +22,9 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
     These values can then be fed back into subsequent calls to `retrieve_data` 
 4. If you wish to pass request parameters, but no URL parameters, pass an empty dict: `retrieve_data(api_request, {}, {request parameters})`  
 5. The main() function contains an example, passing the 'All Items' method with URL parameters which restrict the result set
-6. In addition, there exist the `item_data()` and `collections_data()` functions: they take the result of `retrieve_data` (a `feedparser` dict), and return a list containing one or more dicts which contain the item data (type, creator, url, ISSN, ID, title &c.), which represents the bulk of the usefulness of Zotero (and thus, of this endeavour). `item_data` can be used to parse the result of any API call which returns **items**. `collections_data()` can be used to parse the result of any API call which returns **collections**.
+6. In addition, there exist the `item_data()`, `gen_item_data()` and `collections_data()` functions: they take the result of `retrieve_data` (a `feedparser` dict), and return a list containing one or more dicts which contain the item data (type, creator, url, ISSN, ID, title &c.), which represents the bulk of the usefulness of Zotero (and thus, of this endeavour). `item_data` can be used to parse the result of any API call which returns **items**. `collections_data()` can be used to parse the result of any API call which returns **collections**. `gen_item_data()` returns identical data to `item_data()`, but in the form of a generator object
 7. The dicts returned by the above functions do not consistently contain the same values; depending on the Zotero item data, various fields may be present or missing. You should not depend upon the existence of a returned key/value pair for a given item, but check for its existence before any further processing.
-
+8. the `Zotero` object also has a `total_items()` method, which returns a count of all items in the library of the specified user ID
 
 # Notes #
 
