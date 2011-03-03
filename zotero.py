@@ -166,9 +166,8 @@ def main():
     [z['zapi_key'] for z in item.entries])]
     for entry in title_id:
         print entry """
-    # We can pass our feedparser object to this helper function
-    useful = item_data(item)
-    print useful
+    # We can pass our feedparser object to a helper function
+    print item_data(item)
 
 
 if __name__ == "__main__":
