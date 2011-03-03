@@ -31,7 +31,6 @@ def open_file(to_read):
         raise
 
 
-
 def item_data(fp_object):
     """ Takes the result of a parse operation, and returns a list containing
         one or more dicts containing item data
@@ -52,6 +51,28 @@ def item_data(fp_object):
         zipped['ID'] = item_id[index].encode('utf-8')
         items.append(zipped)
     return items
+
+
+def gen_item_data(fp_object):
+    """ Returns a generator object containing one or more dicts of item data
+    """
+    # Shunt each 'content' block into a list
+    item_parsed = [a['content'][0]['value'] for a in fp_object.entries]
+    # Shunt each 'title' and item ID value into a list
+    item_title = [t['title'] for t in fp_object.entries]
+    item_id = [i['zapi_key'] for i in fp_object.entries]
+    items = []
+    for index, content in enumerate(item_parsed):
+        elem = xml.fromstring(content.encode('utf-8'))
+        keys = [e.text for e in elem.iter('th')]
+        values = [v.text for v in elem.iter('td')]
+        zipped = dict(zip(keys, values))
+        # add the utf-8 encoded 'title' and ID data to the dict:
+        zipped['Title'] = item_title[index].encode('utf-8')
+        zipped['ID'] = item_id[index].encode('utf-8')
+        items.append(zipped)
+    gen_items = (i for i in items)
+    return gen_items
 
 
 def collections_data(fp_object):
