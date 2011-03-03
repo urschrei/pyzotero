@@ -47,6 +47,7 @@ There's no error handling yet.
 * `'items_for_tag'`(`tag`): Returns the set of a user's items tagged with a specific tag
 * `'collections'`: Returns the set of collections belonging to a specific user
 * `'collection_items'` (`collection ID`): Returns a specific collection belonging to a user
+* `'sub_collections'` (`collection ID`): Returns a set of subcollections belonging to a collection for a specific user
 * `'user_groups'`: Returns the set of all groups belonging to a specific user
 * `'group_items'` (`group ID`): Returns the set of all items belonging to a specific group
 

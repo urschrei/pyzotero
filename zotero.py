@@ -61,6 +61,8 @@ def collections_data(fp_object):
     collections = []
     collection_key = [k['zapi_key'] for k in fp_object.entries]
     collection_title = [t['title'] for t in fp_object.entries]
+    # TODO recurse through subcollections if they're present
+    collection_sub = [s['zapi_numcollections'] for s in fp_object.entries]
     for index, content in enumerate(collection_key):
         collection_data = {}
         collection_data['ID'] = collection_key[index].encode('utf-8')
@@ -108,6 +110,7 @@ class Zotero(object):
         'items_for_tag':'/users/{u}/tags/{tag}/items',
         'collections':'/users/{u}/collections',
         'collection_items':'/users/{u}/collections/{collection}',
+        'sub_collections': '/users/{u}/collections/{collection}/collections',
         'user_groups': '/users/{u}/groups',
         'group_items':'/groups/{group}/items'
         }
@@ -158,11 +161,11 @@ def main():
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
     # req = {'item': 'T4AH4RZA'}
-    par = {'limit': 2}
-    item = zot.retrieve_data('top_level_items', par)
+    par = {'limit': 5}
+    item = zot.retrieve_data('collections', par)
     # We can now do whatever we like with the returned data, e.g.:
     # We can pass our feedparser object to a helper function
-    print item_data(item)
+    print collections_data(item)
 
 
 if __name__ == "__main__":
