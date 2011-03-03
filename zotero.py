@@ -95,6 +95,7 @@ class Zotero(object):
         'items_for_tag':'/users/{u}/tags/{tag}/items',
         'collections':'/users/{u}/collections',
         'collection_items':'/users/{u}/collections/{collection}',
+        'user_groups': '/users/{u}/groups',
         'group_items':'/groups/{group}/items'
         }
 
