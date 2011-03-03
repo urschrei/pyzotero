@@ -17,7 +17,29 @@ import urllib
 import urllib2
 import feedparser
 import xml.etree.ElementTree as xml
-import traceback
+
+
+
+# Define some exceptions
+class PyZoteroError(Exception):
+    """ Generic parent exception
+    """
+    pass
+
+
+
+class ParamNotPassed(PyZoteroError):
+    """ Raised if a parameter which is required isn't passed
+    """
+    pass
+
+
+
+class CallDoesNotExist(PyZoteroError):
+    """ Raised if the specified API call doesn't exist
+    """
+    pass
+
 
 
 def open_file(to_read):
@@ -83,7 +105,6 @@ def collections_data(fp_object):
     collections = []
     collection_key = [k['zapi_key'] for k in fp_object.entries]
     collection_title = [t['title'] for t in fp_object.entries]
-    # TODO recurse through subcollections if they're present
     collection_sub = [s['zapi_numcollections'] for s in fp_object.entries]
     for index, content in enumerate(collection_key):
         collection_data = {}
@@ -165,8 +186,7 @@ class Zotero(object):
         """
         # Add request parameter(s) if required
         if request not in self.api_methods:
-            # TODO raise an error
-            pass
+            raise CallDoesNotExist
         if request_params:
             try:
                 request_params['u'] = self.user_id
@@ -174,14 +194,14 @@ class Zotero(object):
                 self.api_methods[request].format(**request_params))
             except KeyError:
                 print 'There\'s a request parameter missing:'
-                raise
+                raise ParamNotPassed
         # Otherwise, just add the user ID
         else:
             try:
                 request = self.api_methods[request].format(u = self.user_id)
             except KeyError:
                 print 'There\'s a request parameter missing:'
-                raise
+                raise ParamNotPassed
         # Add URL parameters if they're passed
         if url_params:
             url_params['key'] = self.user_key
