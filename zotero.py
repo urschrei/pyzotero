@@ -32,27 +32,41 @@ def open_file(to_read):
 
 
 
-def useful_item_data(fp_object):
+def item_data(fp_object):
     """ Takes the result of a parse operation, and returns a list containing
         one or more dicts containing item data
     """
     # Shunt each 'content' block into a list
-    item_data = [a['content'][0]['value'] for a in fp_object.entries]
+    item_parsed = [a['content'][0]['value'] for a in fp_object.entries]
     # Shunt each 'title' and item ID value into a list
     item_title = [t['title'] for t in fp_object.entries]
     item_id = [i['zapi_key'] for i in fp_object.entries]
     items = []
-    for i_d_index, i_d_contents in enumerate(item_data):
+    for i_d_index, i_d_contents in enumerate(item_parsed):
         elem = xml.fromstring(i_d_contents.encode('utf-8'))
         keys = [e.text for e in elem.iter('th')]
         values = [v.text for v in elem.iter('td')]
-        item_data = dict(zip(keys, values))
+        zipped = dict(zip(keys, values))
         # add the utf-8 encoded 'title' and ID data to the dict:
-        item_data['Title'] = item_title[i_d_index].encode('utf-8')
-        item_data['ID'] = item_id[i_d_index].encode('utf-8')
-        items.append(item_data)
+        zipped['Title'] = item_title[i_d_index].encode('utf-8')
+        zipped['ID'] = item_id[i_d_index].encode('utf-8')
+        items.append(zipped)
     return items
 
+
+def collections_data(fp_object):
+    """ Takes the result of a parse operation, and returns a list containing
+        one or more dicts containing collection titles and IDs
+    """
+    collections = []
+    collection_key = [k['zapi_key'] for k in fp_object.entries]
+    collection_title = [t['title'] for t in fp_object.entries]
+    for index, content in enumerate(collection_key):
+        collection_data = {}
+        collection_data['ID'] = collection_key[index].encode('utf-8')
+        collection_data['title'] = collection_title[index].encode('utf-8')
+        collections.append(collection_data)
+    return collections
 
 class Zotero(object):
     """ Zotero API methods
@@ -125,8 +139,8 @@ class Zotero(object):
             data = urllib.urlencode(url_params)
             request = '%s%s%s' % (request, '?', data)
         full_url = '%s%s' % (self.endpoint, request)
+        print full_url
         data = urllib2.urlopen(full_url).read()
-        print data
         # parse the result into Python data structures
         return feedparser.parse(data)
 
@@ -142,14 +156,14 @@ def main():
     # Pass optional request parameters in a dict
     par = {'limit': 1}
     # req = {'item': 'T4AH4RZA'}
-    item = zot.retrieve_data('all_items', par)
+    item = zot.retrieve_data('top_level_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     """ title_id = [j for j in zip([t['title'] for t in item.entries],
     [z['zapi_key'] for z in item.entries])]
     for entry in title_id:
         print entry """
     # We can pass our feedparser object to this helper function
-    useful = useful_item_data(item)
+    useful = item_data(item)
     print useful
 
 
