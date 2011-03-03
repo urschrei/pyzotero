@@ -136,10 +136,14 @@ class Zotero(object):
                 raise
         # Add URL parameters if they're passed
         if url_params:
+            url_params['key'] = self.user_key
             data = urllib.urlencode(url_params)
-            request = '%s%s%s' % (request, '?', data)
+        # Otherwise, just add the user key
+        else:
+            url_params = {'key': self.user_key}
+            data = urllib.urlencode(url_params)
+        request = '%s%s%s' % (request, '?', data)
         full_url = '%s%s' % (self.endpoint, request)
-        print full_url
         data = urllib2.urlopen(full_url).read()
         # parse the result into Python data structures
         return feedparser.parse(data)
@@ -154,8 +158,8 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
-    par = {'limit': 1}
     # req = {'item': 'T4AH4RZA'}
+    par = {'limit': 2}
     item = zot.retrieve_data('top_level_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     """ title_id = [j for j in zip([t['title'] for t in item.entries],
