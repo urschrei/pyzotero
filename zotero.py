@@ -138,12 +138,23 @@ class Zotero(object):
         'group_items':'/groups/{group}/items'
         }
 
+
+    def total_items(self):
+        """ Return the total number of items in the library
+        """
+        get_count = self.retrieve_data('top_level_items', {'limit': 1})
+        return get_count.feed['zapi_totalresults'].decode('utf-8')
+
+
     def retrieve_data(self,
         request, url_params = None, request_params = None):
         """ Method for retrieving Zotero items via the API
             returns a dict containing feed items and lists of entries
         """
         # Add request parameter(s) if required
+        if request not in self.api_methods:
+            # TODO raise an error
+            pass
         if request_params:
             try:
                 request_params['u'] = self.user_id
@@ -173,6 +184,8 @@ class Zotero(object):
         # parse the result into Python data structures
         return feedparser.parse(data)
 
+
+
 def main():
     """ main function
     """
@@ -185,10 +198,10 @@ def main():
     # Pass optional request parameters in a dict
     # req = {'item': 'T4AH4RZA'}
     par = {'limit': 5}
-    item = zot.retrieve_data('collections', par)
+    item = zot.retrieve_data('top_level_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     # We can pass our feedparser object to a helper function
-    print collections_data(item)
+    print item_data(item)
 
 
 if __name__ == "__main__":
