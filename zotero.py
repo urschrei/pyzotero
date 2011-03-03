@@ -108,7 +108,8 @@ class Zotero(object):
         if request_params:
             try:
                 request_params['u'] = self.user_id
-                request = self.api_methods[request].format(**request_params)
+                request = urllib.quote(
+                self.api_methods[request].format(**request_params))
             except KeyError:
                 print 'There\'s a request parameter missing:'
                 raise
@@ -125,6 +126,7 @@ class Zotero(object):
             request = '%s%s%s' % (request, '?', data)
         full_url = '%s%s' % (self.endpoint, request)
         data = urllib2.urlopen(full_url).read()
+        print data
         # parse the result into Python data structures
         return feedparser.parse(data)
 
@@ -139,7 +141,7 @@ def main():
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
     par = {'limit': 1}
-    req = {'item': 'T4AH4RZA'}
+    # req = {'item': 'T4AH4RZA'}
     item = zot.retrieve_data('all_items', par)
     # We can now do whatever we like with the returned data, e.g.:
     """ title_id = [j for j in zip([t['title'] for t in item.entries],
