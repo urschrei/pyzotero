@@ -57,7 +57,7 @@ There's no error handling yet.
 * `'group_tags'`: (`'group ID'`): returns a set of all tags belonging to a specific group
 * `'group_user_items_tag'` (`group ID`, `item ID`): returns a set of items belonging to a group, tagged with a specific tag
 * `'group_collections'` (`group ID`): returns a set of collections belonging to a specific group
-* `'group_collection` (`group ID`, `collection ID`): returns a specific collection belonging to a specific group
+* `'group_collection'` (`group ID`, `collection ID`): returns a specific collection belonging to a specific group
 * `'group_collection_sub'` (`group ID`, `collection ID`): returns a set of subcollections within a specific collection belonging to a specific group
 * `'group_collection_items'` (`group ID`, `collection ID`): returns a set of items belonging to a specific collection belonging to a specific group
 * `'group_collection_item'` (`group ID`, `item ID`): returns a specific item belonging to a specific collection belonging to a specific group
