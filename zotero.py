@@ -42,14 +42,14 @@ def item_data(fp_object):
     item_title = [t['title'] for t in fp_object.entries]
     item_id = [i['zapi_key'] for i in fp_object.entries]
     items = []
-    for i_d_index, i_d_contents in enumerate(item_parsed):
-        elem = xml.fromstring(i_d_contents.encode('utf-8'))
+    for index, content in enumerate(item_parsed):
+        elem = xml.fromstring(content.encode('utf-8'))
         keys = [e.text for e in elem.iter('th')]
         values = [v.text for v in elem.iter('td')]
         zipped = dict(zip(keys, values))
         # add the utf-8 encoded 'title' and ID data to the dict:
-        zipped['Title'] = item_title[i_d_index].encode('utf-8')
-        zipped['ID'] = item_id[i_d_index].encode('utf-8')
+        zipped['Title'] = item_title[index].encode('utf-8')
+        zipped['ID'] = item_id[index].encode('utf-8')
         items.append(zipped)
     return items
 

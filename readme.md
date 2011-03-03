@@ -35,7 +35,7 @@ There's no error handling yet.
 
 # Currently Available API Calls #
 
-### Additional parameters are (specified inline) ###
+### Additional required parameters are (specified inline) ###
 
 
 * `'all_items'`: Returns the set of all items belonging to a specific user
