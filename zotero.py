@@ -67,6 +67,8 @@ def collections_data(fp_object):
         collection_data = {}
         collection_data['ID'] = collection_key[index].encode('utf-8')
         collection_data['title'] = collection_title[index].encode('utf-8')
+        if int(collection_sub[index]) > 0:
+            collection_data['subcollections'] = int(collection_sub[index])
         collections.append(collection_data)
     return collections
 
