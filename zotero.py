@@ -207,6 +207,19 @@ class Zotero(object):
             items.append(zipped)
         return items
 
+    def bib_items(self, request, params = None, request_params = None):
+        """ returns a list of strings formatted as HTML bibliography entries
+        """
+        if params and 'content' not in params:
+            params['content'] = 'bib'
+        else:
+            params = {'content': 'bib'}
+        fp_object = self.retrieve_data(request, params, request_params)
+        items = []
+        for b in fp_object.entries:
+            items.append(b['content'][0]['value'].encode('utf-8'))
+        return items
+
     def gen_items_data(self, request, params = None, request_params = None):
         """ Returns a generator object containing one or more dicts
             of item data
@@ -279,11 +292,12 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional URL and request parameters in a dict
-    par = {'limit': 3}
+    par = {'limit': 2}
     req = {'collection': 'PRMD6BGB'}
-    print zot.items_data('collection_items', params = par, request_params = req)
-    print zot.groups_data('user_groups')
-    print zot.collections_data('collections', par)
+    # print zot.items_data('collection_items', params = par, request_params = req)
+    # print zot.groups_data('user_groups')
+    # print zot.collections_data('collections', par)
+    print zot.bib_items('top_level_items', par)
 
 
 if __name__ == "__main__":
