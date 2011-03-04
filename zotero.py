@@ -115,17 +115,17 @@ class Zotero(object):
         'user_tags':'/users/{u}/tags',
         'items_for_tag':'/users/{u}/tags/{tag}/items',
         'collections':'/users/{u}/collections',
-        'collection_items':'/users/{u}/collections/{collection}',
+        'collection_items':'/users/{u}/collections/{collection}/items',
         'sub_collections': '/users/{u}/collections/{collection}/collections',
         'user_groups': '/users/{u}/groups',
         'group_items':'/groups/{group}/items',
-        'top_group_items': '/groups/{groupID}/items/top',
+        'top_group_items': '/groups/{group}/items/top',
         'group_item': '/groups/{group}/items/{item}',
-        'group_item_children': '/groups/{groupID}/items/{item}/children',
+        'group_item_children': '/groups/{group}/items/{item}/children',
         'group_item_tags': '/groups/{group}/items/{item}/tags',
         'group_tags': '/groups/{group}/tags',
         'group_user_items_tag': '/groups/{group}/tags/{tag}/items',
-        'group_collections': '/groups/{groupID}/collections',
+        'group_collections': '/groups/{group}/collections',
         'group_collection': '/groups/{group}/collections/{collection}',
         'group_collection_sub': '/groups/{group}/collections/{collection}/collections',
         'group_collection_items': '/groups/{group}/collections/{collection}/items',
@@ -165,6 +165,7 @@ class Zotero(object):
             data = urllib.urlencode(url_params)
         request = '%s%s%s' % (request, '?', data)
         full_url = '%s%s' % (self.endpoint, request)
+        print full_url
         try:
             data = urllib2.urlopen(full_url).read()
         except urllib2.HTTPError, error:
@@ -280,7 +281,7 @@ def main():
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
     par = {'limit': 5}
-    print zot.items_data('top_level_items', par)
+    print zot.items_data('collection_items', request_params = {'collection': 'PRMD6BGB'})
     print zot.groups_data('user_groups')
     print zot.collections_data('collections', par)
     # We can now do whatever we like with the returned data, e.g.:
