@@ -9,7 +9,7 @@ Copyright Stephan Hügel, 2011
 License: http://www.gnu.org/licenses/gpl-3.0.txt
 """
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 import sys
 import os
@@ -17,6 +17,7 @@ import urllib
 import urllib2
 import feedparser
 import xml.etree.ElementTree as xml
+import traceback
 
 
 
@@ -72,85 +73,6 @@ def open_file(to_read):
     except IOError:
         print "Couldn't read values from %s\nCan't continue." % to_read
         raise
-
-
-def items_data(fp_object):
-    """ Takes the result of a parse operation, and returns a list containing
-        one or more dicts containing item data
-    """
-    # Shunt each 'content' block into a list
-    item_parsed = [a['content'][0]['value'] for a in fp_object.entries]
-    # Shunt each 'title' and item ID value into a list
-    item_title = [t['title'] for t in fp_object.entries]
-    item_id = [i['zapi_key'] for i in fp_object.entries]
-    items = []
-    for index, content in enumerate(item_parsed):
-        elem = xml.fromstring(content.encode('utf-8'))
-        keys = [e.text for e in elem.iter('th')]
-        values = [v.text for v in elem.iter('td')]
-        zipped = dict(zip(keys, values))
-        # add the utf-8 encoded 'title' and ID data to the dict:
-        zipped['Title'] = item_title[index].encode('utf-8')
-        zipped['ID'] = item_id[index].encode('utf-8')
-        items.append(zipped)
-    return items
-
-
-def gen_items_data(fp_object):
-    """ Returns a generator object containing one or more dicts of item data
-    """
-    # Shunt each 'content' block into a list
-    item_parsed = [a['content'][0]['value'] for a in fp_object.entries]
-    # Shunt each 'title' and item ID value into a list
-    item_title = [t['title'] for t in fp_object.entries]
-    item_id = [i['zapi_key'] for i in fp_object.entries]
-    items = []
-    for index, content in enumerate(item_parsed):
-        elem = xml.fromstring(content.encode('utf-8'))
-        keys = [e.text for e in elem.iter('th')]
-        values = [v.text for v in elem.iter('td')]
-        zipped = dict(zip(keys, values))
-        # add the utf-8 encoded 'title' and ID data to the dict:
-        zipped['Title'] = item_title[index].encode('utf-8')
-        zipped['ID'] = item_id[index].encode('utf-8')
-        items.append(zipped)
-    gen_items = (i for i in items)
-    return gen_items
-
-
-def collections_data(fp_object):
-    """ Takes the result of a parse operation, and returns a list containing
-        one or more dicts containing collection titles and IDs
-    """
-    collections = []
-    collection_key = [k['zapi_key'] for k in fp_object.entries]
-    collection_title = [t['title'] for t in fp_object.entries]
-    collection_sub = [s['zapi_numcollections'] for s in fp_object.entries]
-    for index, content in enumerate(collection_key):
-        collection_data = {}
-        collection_data['ID'] = collection_key[index].encode('utf-8')
-        collection_data['title'] = collection_title[index].encode('utf-8')
-        if int(collection_sub[index]) > 0:
-            collection_data['subcollections'] = int(collection_sub[index])
-        collections.append(collection_data)
-    return collections
-
-
-def groups_data(fp_object):
-    """ Takes the result of a parse operation, and returns a list containing
-        one or more dicts containing groups titles and IDs
-    """
-    groups = []
-    group_id = [t['title'] for t in fp_object.entries]
-    group_items = [i['zapi_numitems'] for i in fp_object.entries]
-    group_author = [a['author'] for a in fp_object.entries]
-    for index, content in enumerate(group_id):
-        group_data = {}
-        group_data['ID'] = group_id[index].encode('utf-8')
-        group_data['total_items'] = group_items[index].encode('utf-8')
-        group_data['owner'] = group_author[index].encode('utf-8')
-        groups.append(group_data)
-    return groups
 
 
 
@@ -210,20 +132,14 @@ class Zotero(object):
         'group_collection_item': '/groups/{group}/collections/{collection}/items/{item}'
         }
 
-    def total_items(self):
-        """ Return the total number of items in the library
-        """
-        get_count = self.retrieve_data('top_level_items', {'limit': 1})
-        return get_count.feed['zapi_totalresults'].decode('utf-8')
-
-    def retrieve_data(self,
-        request, url_params = None, request_params = None):
+    def retrieve_data(self, request, url_params = None, request_params = None):
         """ Method for retrieving Zotero items via the API
             returns a dict containing feed items and lists of entries
         """
         # Add request parameter(s) if required
         if request not in self.api_methods:
-            raise CallDoesNotExist, 'The call %s could not be found' % request
+            raise CallDoesNotExist, \
+            'The API call \'%s\' could not be found' % request
         if request_params:
             try:
                 request_params['u'] = self.user_id
@@ -263,7 +179,90 @@ class Zotero(object):
         # parse the result into Python data structures
         return feedparser.parse(data)
 
+    def total_items(self):
+        """ Return the total number of items in the library
+        """
+        get_count = self.retrieve_data('top_level_items', {'limit': 1})
+        return get_count.feed['zapi_totalresults'].decode('utf-8')
 
+    def items_data(self, request, params = None, request_params = None):
+        """ Takes the result of a parse operation, and returns a list containing
+            one or more dicts containing item data
+        """
+        fp_object = self.retrieve_data(request, params, request_params)
+        # Shunt each 'content' block into a list
+        item_parsed = [a['content'][0]['value'] for a in fp_object.entries]
+        # Shunt each 'title' and item ID value into a list
+        item_title = [t['title'] for t in fp_object.entries]
+        item_id = [i['zapi_key'] for i in fp_object.entries]
+        items = []
+        for index, content in enumerate(item_parsed):
+            elem = xml.fromstring(content.encode('utf-8'))
+            keys = [e.text for e in elem.iter('th')]
+            values = [v.text for v in elem.iter('td')]
+            zipped = dict(zip(keys, values))
+            # add the utf-8 encoded 'title' and ID data to the dict:
+            zipped['Title'] = item_title[index].encode('utf-8')
+            zipped['ID'] = item_id[index].encode('utf-8')
+            items.append(zipped)
+        return items
+
+    def gen_items_data(self, request, params = None, request_params = None):
+        """ Returns a generator object containing one or more dicts of item data
+        """
+        fp_object = self.retrieve_data(request, params, request_params)
+        # Shunt each 'content' block into a list
+        item_parsed = [a['content'][0]['value'] for a in fp_object.entries]
+        # Shunt each 'title' and item ID value into a list
+        item_title = [t['title'] for t in fp_object.entries]
+        item_id = [i['zapi_key'] for i in fp_object.entries]
+        items = []
+        for index, content in enumerate(item_parsed):
+            elem = xml.fromstring(content.encode('utf-8'))
+            keys = [e.text for e in elem.iter('th')]
+            values = [v.text for v in elem.iter('td')]
+            zipped = dict(zip(keys, values))
+            # add the utf-8 encoded 'title' and ID data to the dict:
+            zipped['Title'] = item_title[index].encode('utf-8')
+            zipped['ID'] = item_id[index].encode('utf-8')
+            items.append(zipped)
+        gen_items = (i for i in items)
+        return gen_items
+
+    def collections_data(self, request, params = None, request_params = None):
+        """ Takes the result of a parse operation, and returns a list
+            containing one or more dicts containing collection titles and IDs
+        """
+        fp_object = self.retrieve_data(request, params, request_params)
+        collections = []
+        collection_key = [k['zapi_key'] for k in fp_object.entries]
+        collection_title = [t['title'] for t in fp_object.entries]
+        collection_sub = [s['zapi_numcollections'] for s in fp_object.entries]
+        for index, content in enumerate(collection_key):
+            collection_data = {}
+            collection_data['ID'] = collection_key[index].encode('utf-8')
+            collection_data['title'] = collection_title[index].encode('utf-8')
+            if int(collection_sub[index]) > 0:
+                collection_data['subcollections'] = int(collection_sub[index])
+            collections.append(collection_data)
+        return collections
+
+    def groups_data(self, request, params = None, request_params = None):
+        """ Takes the result of a parse operation, and returns a list
+            containing one or more dicts containing groups titles and IDs
+        """
+        fp_object = self.retrieve_data(request, params, request_params)
+        groups = []
+        group_id = [t['title'] for t in fp_object.entries]
+        group_items = [i['zapi_numitems'] for i in fp_object.entries]
+        group_author = [a['author'] for a in fp_object.entries]
+        for index, content in enumerate(group_id):
+            group_data = {}
+            group_data['ID'] = group_id[index].encode('utf-8')
+            group_data['total_items'] = group_items[index].encode('utf-8')
+            group_data['owner'] = group_author[index].encode('utf-8')
+            groups.append(group_data)
+        return groups
 
 def main():
     """ main function
@@ -276,10 +275,11 @@ def main():
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
     par = {'limit': 5}
-    item = zot.retrieve_data('user_groups')
+    print zot.items_data('top_level_items', par)
+    print zot.groups_data('user_groups')
+    print zot.collections_data('collections', par)
     # We can now do whatever we like with the returned data, e.g.:
     # We can pass our feedparser object to a helper function
-    print groups_data(item)
     # or print items_data(item)
     # or print gen_items_data(item)
 
@@ -292,8 +292,8 @@ if __name__ == "__main__":
         raise
     except Exception, errm:
         # all other exceptions: display the error
-        print errm
-        # print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
+        # print errm
+        print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
     else:
         pass
     finally:
