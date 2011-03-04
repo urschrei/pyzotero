@@ -17,7 +17,6 @@ import urllib
 import urllib2
 import feedparser
 import xml.etree.ElementTree as xml
-import traceback
 
 
 
@@ -295,8 +294,8 @@ if __name__ == "__main__":
         raise
     except Exception, errm:
         # all other exceptions: display the error
-        # print errm
-        print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
+        print errm
+        # print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
     else:
         pass
     finally:
