@@ -209,6 +209,8 @@ class Zotero(object):
 
     def bib_items(self, request, params = None, request_params = None):
         """ returns a list of strings formatted as HTML bibliography entries
+            you may specify a 'style' key (e.g. 'mla' in your {params}; any
+            default style in the Zotero Style Repository is valid
         """
         if params and 'content' not in params:
             params['content'] = 'bib'
