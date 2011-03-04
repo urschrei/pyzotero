@@ -279,15 +279,12 @@ def main():
     zot_id = auth_values[0]
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
-    # Pass optional request parameters in a dict
-    par = {'limit': 5}
-    print zot.items_data('collection_items', request_params = {'collection': 'PRMD6BGB'})
+    # Pass optional URL and request parameters in a dict
+    par = {'limit': 3}
+    req = {'collection': 'PRMD6BGB'}
+    print zot.items_data('collection_items', params = par, request_params = req)
     print zot.groups_data('user_groups')
     print zot.collections_data('collections', par)
-    # We can now do whatever we like with the returned data, e.g.:
-    # We can pass our feedparser object to a helper function
-    # or print items_data(item)
-    # or print gen_items_data(item)
 
 
 if __name__ == "__main__":
