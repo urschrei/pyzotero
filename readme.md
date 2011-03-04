@@ -13,12 +13,14 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
     * `groups_data()`: returns a list of dicts containing each **group's** data (owner, title, total number of items)
 3. These methods should be called with the following arguments:
 `zot.items_data(api_request, {URL parameters}, {additional request parameters})`
-    * `URL parameters` is an optional dict containing valid Zotero API parameters. Example: `{'limit': 2, 'start': 37}`  
+    * `URL parameters` is an optional dict containing valid Zotero API parameters.
+        * Example: `{'limit': 2, 'start': 37}`
+        * Valid keys: `'limit'` (integer), `'start'` (integer), `'order'` (string), `'sort'` (string: `'asc'` or `'desc'`)
     * `request parameters` is an optional dict containing values such as:  
-        * `Item ID`  
-        * `Tag` (literal)
-        * `Collection ID`
-        * `Group ID`. Example: `{'item': 'T4AH4RZA'}`
+        * `Item ID`. Example: `{'item': 'T4AH4RZA'}`
+        * `Tag`. Example: `{'tag': 'James Joyce'}`
+        * `Collection ID`. Example `{'collection': 'PRMD6BGB'}`
+        * `Group ID`. Example: `{'group': 'DFW'}`
         * Several key/value pairs can be included in the dict 
         * If an API call requires a particular request parameter and you fail to include it, an error will be raised
         * Valid keys: `'item'`, `'tag'`, `'collection'`, `'group'`
