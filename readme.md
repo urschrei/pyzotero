@@ -16,19 +16,22 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
         * `Group ID`. Example: `{'item': 'T4AH4RZA'}`  
         * Several key/value pairs can be included in the dict. If an API call requires a particular request parameter and you fail to include it, an error will be raised
         * Valid keys: `'item'`, `'tag'`, `'collection'`, `'group'`
-3. You can now iterate through `item`'s entries and retrieve values in any way you wish, e.g.:  
+3. If you wish to pass request parameters, but no URL parameters, pass an empty dict: `retrieve_data(api_request, {}, {request parameters})` 
+4. You can now iterate through `item`'s entries and retrieve values in any way you wish, e.g.:  
     * `item.entries[0]['title']`  
     * `item.entries[0]['zapi_id']`  
-    These values can then be fed back into subsequent calls to `retrieve_data` 
-4. If you wish to pass request parameters, but no URL parameters, pass an empty dict: `retrieve_data(api_request, {}, {request parameters})`  
-5. The main() function contains an example, passing the 'All Items' method with URL parameters which restrict the result set
-6. In addition, there exist the `item_data()`, `gen_item_data()` and `collections_data()` functions: they take the result of `retrieve_data` (a `feedparser` dict), and return a list containing one or more dicts which contain the item data (type, creator, url, ISSN, ID, title &c.), which represents the bulk of the usefulness of Zotero (and thus, of this endeavour). `item_data` can be used to parse the result of any API call which returns **items**. `collections_data()` can be used to parse the result of any API call which returns **collections**. `gen_item_data()` returns identical data to `item_data()`, but in the form of a generator object
-7. The dicts returned by the above functions do not consistently contain the same values; depending on the Zotero item data, various fields may be present or missing. You should not depend upon the existence of a returned key/value pair for a given item, but check for its existence before any further processing
-8. The `Zotero` object also has a `total_items()` method, which returns a count of all items in the library of the specified user ID
+    These values can then be fed back into subsequent calls to `retrieve_data`
+5. The following convenience functions are also available, and can be called with the result of a `retrieve_data()` call as the only argument:
+    * `items_data()`: returns a list of dicts containing each **item's** data (author, title, publisher &c)
+    * `gen_items_data()`: returns a generator object of dicts containing each **item's** data (author, title, publisher &c)
+    * `collections_data()`: returns a list of dicts containing each **collection's** data (ID, title, number of subcollections)
+    * `groups_data()`: returns a list of dicts containing each **group's** data (owner, title, total number of items)
+6. In addition, the Zotero object has a `total_items()` method, which returns the total number of items in a user's library
+
 
 # Notes #
 
-All currently available API calls have been implemented and documented (see below). Calling an API method which requires an optional parameter without specifying one will cause the call to fail with a `400: Bad Request` error. **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.
+All currently available API calls have been implemented and documented (see below). Calling an API method which requires an optional parameter without specifying one will raise a `ParamNotPassed` error. **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.
 
 
 # Currently Available API Calls #
