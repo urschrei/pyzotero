@@ -126,9 +126,12 @@ class Zotero(object):
         'group_user_items_tag': '/groups/{group}/tags/{tag}/items',
         'group_collections': '/groups/{group}/collections',
         'group_collection': '/groups/{group}/collections/{collection}',
-        'group_collection_sub': '/groups/{group}/collections/{collection}/collections',
-        'group_collection_items': '/groups/{group}/collections/{collection}/items',
-        'group_collection_item': '/groups/{group}/collections/{collection}/items/{item}'
+        'group_collection_sub':\
+         '/groups/{group}/collections/{collection}/collections',
+        'group_collection_items':\
+         '/groups/{group}/collections/{collection}/items',
+        'group_collection_item':\
+        '/groups/{group}/collections/{collection}/items/{item}'
         }
 
     def retrieve_data(self, request, url_params = None, request_params = None):
@@ -164,7 +167,6 @@ class Zotero(object):
             data = urllib.urlencode(url_params)
         request = '%s%s%s' % (request, '?', data)
         full_url = '%s%s' % (self.endpoint, request)
-        print full_url
         try:
             data = urllib2.urlopen(full_url).read()
         except urllib2.HTTPError, error:
@@ -173,7 +175,7 @@ class Zotero(object):
 "You are not authorised to retrieve this resource (%s)" % error.code
             if error.code == 400:
                 raise RateLimitExceeded, \
-"Invalid request, probably due to unsupported parameters: %s" %\
+"Invalid request, probably due to unsupported parameters: %s" % \
                 data
             else:
                 raise HTTPError, "HTTP Error %s (%s)" % (error.msg, error.code)
@@ -219,8 +221,8 @@ class Zotero(object):
             params = {'content': 'bib'}
         fp_object = self.retrieve_data(request, params, request_params)
         items = []
-        for b in fp_object.entries:
-            items.append(b['content'][0]['value'].encode('utf-8'))
+        for bib in fp_object.entries:
+            items.append(bib['content'][0]['value'].encode('utf-8'))
         return items
 
     def gen_items_data(self, request, params = None, request_params = None):
@@ -243,8 +245,7 @@ class Zotero(object):
             zipped['Title'] = item_title[index].encode('utf-8')
             zipped['ID'] = item_id[index].encode('utf-8')
             items.append(zipped)
-        gen_items = (i for i in items)
-        return gen_items
+        return (i for i in items)
 
     def collections_data(self, request, params = None, request_params = None):
         """ Takes the result of a parse operation, and returns a list
@@ -296,11 +297,12 @@ def main():
     zot = Zotero(zot_id, zot_key)
     # Pass optional URL and request parameters in a dict
     par = {'limit': 2}
-    req = {'collection': 'PRMD6BGB'}
-    # print zot.items_data('collection_items', params = par, request_params = req)
+    par2 = {'limit': 2, 'style': 'mla'}
+    # req = {'collection': 'PRMD6BGB'}
     # print zot.groups_data('user_groups')
     # print zot.collections_data('collections', par)
-    print zot.bib_items('top_level_items', par)
+    print zot.items_data('top_level_items', par)
+    print zot.bib_items('top_level_items', par2)
 
 
 if __name__ == "__main__":
