@@ -74,7 +74,7 @@ def open_file(to_read):
         raise
 
 
-def item_data(fp_object):
+def items_data(fp_object):
     """ Takes the result of a parse operation, and returns a list containing
         one or more dicts containing item data
     """
@@ -96,7 +96,7 @@ def item_data(fp_object):
     return items
 
 
-def gen_item_data(fp_object):
+def gen_items_data(fp_object):
     """ Returns a generator object containing one or more dicts of item data
     """
     # Shunt each 'content' block into a list
@@ -134,6 +134,23 @@ def collections_data(fp_object):
             collection_data['subcollections'] = int(collection_sub[index])
         collections.append(collection_data)
     return collections
+
+
+def groups_data(fp_object):
+    """ Takes the result of a parse operation, and returns a list containing
+        one or more dicts containing groups titles and IDs
+    """
+    groups = []
+    group_id = [t['title'] for t in fp_object.entries]
+    group_items = [i['zapi_numitems'] for i in fp_object.entries]
+    group_author = [a['author'] for a in fp_object.entries]
+    for index, content in enumerate(group_id):
+        group_data = {}
+        group_data['ID'] = group_id[index].encode('utf-8')
+        group_data['total_items'] = group_items[index].encode('utf-8')
+        group_data['owner'] = group_author[index].encode('utf-8')
+        groups.append(group_data)
+    return groups
 
 
 
@@ -258,12 +275,13 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional request parameters in a dict
-    # req = {'item': 'T4AH4RZA'}
     par = {'limit': 5}
-    item = zot.retrieve_data('top_level_items', par)
+    item = zot.retrieve_data('user_groups')
     # We can now do whatever we like with the returned data, e.g.:
     # We can pass our feedparser object to a helper function
-    print item_data(item)
+    print groups_data(item)
+    # or print items_data(item)
+    # or print gen_items_data(item)
 
 
 if __name__ == "__main__":
