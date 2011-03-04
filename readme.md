@@ -24,7 +24,7 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
         * Several key/value pairs can be included in the dict 
         * If an API call requires a particular request parameter and you fail to include it, an error will be raised
         * Valid keys: `'item'`, `'tag'`, `'collection'`, `'group'`
-4. If you wish to pass request parameters, but no URL parameters, pass an empty dict: `zot.items_data(api_request, {}, {request parameters})`
+4. If you wish to pass request parameters, but no URL parameters, pass them as a named argument: `zot.items_data(api_request, request_params = {request parameters})`
 5. Alternatively, you can call `retrieve_data()` with the same arguments as above. This will return a 'raw' `feedparser` object, which you can iterate over and retrieve values from in any way you wish, e.g.:
     * item = `zot.retrieve_data('top_level_items', url params, request params)`
     * `print item.entries[0]['title']`
