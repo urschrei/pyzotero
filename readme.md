@@ -5,28 +5,29 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 # Usage #
 
 1. Create a new Zotero object:  
-`zot = Zotero(user_id, user_key)`  
-2. Call the object's `retrieve_data()` method:  
-`item = zot.retrieve_data(api_request, [{URL parameters}], [{additional request parameters}])`  
-    * `URL parameters` is an optional dict containing valid Zotero API parameters. Example: `{'limit': 2, 'start': 37}`  
-    * `request parameters` is an optional dict containing values such as:  
-        * `Item ID`  
-        * `Tag` (literal)  
-        * `Collection ID`  
-        * `Group ID`. Example: `{'item': 'T4AH4RZA'}`  
-        * Several key/value pairs can be included in the dict. If an API call requires a particular request parameter and you fail to include it, an error will be raised
-        * Valid keys: `'item'`, `'tag'`, `'collection'`, `'group'`
-3. If you wish to pass request parameters, but no URL parameters, pass an empty dict: `retrieve_data(api_request, {}, {request parameters})` 
-4. You can now iterate through `item`'s entries and retrieve values in any way you wish, e.g.:  
-    * `item.entries[0]['title']`  
-    * `item.entries[0]['zapi_id']`  
-    These values can then be fed back into subsequent calls to `retrieve_data`
-5. The following convenience functions are also available, and can be called with the result of a `retrieve_data()` call as the only argument:
+`zot = Zotero(user_id, user_key)`
+2. The following object methods are available:
     * `items_data()`: returns a list of dicts containing each **item's** data (author, title, publisher &c)
     * `gen_items_data()`: returns a generator object of dicts containing each **item's** data (author, title, publisher &c)
     * `collections_data()`: returns a list of dicts containing each **collection's** data (ID, title, number of subcollections)
     * `groups_data()`: returns a list of dicts containing each **group's** data (owner, title, total number of items)
-6. In addition, the Zotero object has a `total_items()` method, which returns the total number of items in a user's library
+3. These methods should be called with the following arguments:
+`zot.items_data(api_request, {URL parameters}, {additional request parameters})`
+    * `URL parameters` is an optional dict containing valid Zotero API parameters. Example: `{'limit': 2, 'start': 37}`  
+    * `request parameters` is an optional dict containing values such as:  
+        * `Item ID`  
+        * `Tag` (literal)
+        * `Collection ID`
+        * `Group ID`. Example: `{'item': 'T4AH4RZA'}`
+        * Several key/value pairs can be included in the dict 
+        * If an API call requires a particular request parameter and you fail to include it, an error will be raised
+        * Valid keys: `'item'`, `'tag'`, `'collection'`, `'group'`
+4. If you wish to pass request parameters, but no URL parameters, pass an empty dict: `zot.items_data(api_request, {}, {request parameters})`
+5. Alternatively, you can call `retrieve_data()` with the same arguments as above. This will return a 'raw' `feedparser` object, which you can iterate over and retrieve values from in any way you wish, e.g.:
+    * item = `zot.retrieve_data('top_level_items', url params, request params)`
+    * `print item.entries[0]['title']`
+    * `print item.entries[0]['zapi_id']`
+    * These values can then be fed back into subsequent calls to `retrieve_data()`
 
 
 # Notes #
