@@ -186,8 +186,8 @@ class Zotero(object):
         return get_count.feed['zapi_totalresults'].decode('utf-8')
 
     def items_data(self, request, params = None, request_params = None):
-        """ Takes the result of a parse operation, and returns a list containing
-            one or more dicts containing item data
+        """ Takes the result of a parse operation, and returns a list
+            containing one or more dicts containing item data
         """
         fp_object = self.retrieve_data(request, params, request_params)
         # Shunt each 'content' block into a list
@@ -208,7 +208,8 @@ class Zotero(object):
         return items
 
     def gen_items_data(self, request, params = None, request_params = None):
-        """ Returns a generator object containing one or more dicts of item data
+        """ Returns a generator object containing one or more dicts
+            of item data
         """
         fp_object = self.retrieve_data(request, params, request_params)
         # Shunt each 'content' block into a list
@@ -231,7 +232,8 @@ class Zotero(object):
 
     def collections_data(self, request, params = None, request_params = None):
         """ Takes the result of a parse operation, and returns a list
-            containing one or more dicts containing collection titles and IDs
+            containing one or more dicts containing collection titles, IDs,
+            and the number of subcollections it contains (if any)
         """
         fp_object = self.retrieve_data(request, params, request_params)
         collections = []
@@ -249,7 +251,8 @@ class Zotero(object):
 
     def groups_data(self, request, params = None, request_params = None):
         """ Takes the result of a parse operation, and returns a list
-            containing one or more dicts containing groups titles and IDs
+            containing one or more dicts containing group titles, IDs,
+            and the total number of items it contains
         """
         fp_object = self.retrieve_data(request, params, request_params)
         groups = []
