@@ -15,7 +15,7 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 `zot.items_data(api_request, {URL parameters}, {additional request parameters})`
     * `URL parameters` is an optional dict containing valid Zotero API parameters.
         * Example: `{'limit': 2, 'start': 37}`
-        * Valid keys: `'limit'` (integer), `'start'` (integer), `'order'` (string), `'sort'` (string: `'asc'` or `'desc'`)
+        * Valid keys: `'limit'` (integer, 1 – 99, default: 50), `'start'` (integer), `'order'` (string), `'sort'` (string: `'asc'` or `'desc'`)
     * `request parameters` is an optional dict containing values such as:  
         * `Item ID`. Example: `{'item': 'T4AH4RZA'}`
         * `Tag`. Example: `{'tag': 'James Joyce'}`
