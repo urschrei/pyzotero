@@ -230,7 +230,6 @@ def main():
     # Pass optional URL and request parameters in a dict
     par = {'limit': 2}
     par2 = {'limit': 2, 'style': 'mla'}
-    # req = {'collection': 'PRMD6BGB'}
     # print zot.groups_data('user_groups')
     # print zot.collections_data('collections', par)
     print zot.items_data('top_level_items', par)
