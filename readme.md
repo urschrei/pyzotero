@@ -30,8 +30,6 @@ Because it's 2011, and I have no intention of using PHP for anything, let alone 
 
 All currently available API calls have been implemented and documented (see below). Calling an API method which requires an optional parameter without specifying one will cause the call to fail with a `400: Bad Request` error. **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.
 
-There's no error handling yet.
-
 
 # Currently Available API Calls #
 

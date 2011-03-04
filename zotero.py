@@ -42,6 +42,26 @@ class CallDoesNotExist(PyZoteroError):
 
 
 
+class RateLimitExceeded(PyZoteroError):
+    """ Raised when the API rate limit is exceeded
+    """
+    pass
+
+
+
+class UserNotAuthorised(PyZoteroError):
+    """ Raised when the user is not allowed to retrieve the resource
+    """
+    pass
+
+
+
+class HTTPError(PyZoteroError):
+    """ Raised raised for miscellaneous URLLib errors
+    """
+    pass
+
+
 def open_file(to_read):
     """ Open a text file for reading, and strip the newlines
         returns a list, one list item per line
@@ -186,22 +206,22 @@ class Zotero(object):
         """
         # Add request parameter(s) if required
         if request not in self.api_methods:
-            raise CallDoesNotExist
+            raise CallDoesNotExist, 'The call %s could not be found' % request
         if request_params:
             try:
                 request_params['u'] = self.user_id
                 request = urllib.quote(
                 self.api_methods[request].format(**request_params))
-            except KeyError:
-                print 'There\'s a request parameter missing:'
-                raise ParamNotPassed
+            except KeyError, err:
+                raise ParamNotPassed, 'There\'s a request parameter missing: \
+%s' % err
         # Otherwise, just add the user ID
         else:
             try:
                 request = self.api_methods[request].format(u = self.user_id)
-            except KeyError:
-                print 'There\'s a request parameter missing:'
-                raise ParamNotPassed
+            except KeyError, err:
+                raise ParamNotPassed, 'There\'s a request parameter missing: \
+%s' % err
         # Add URL parameters if they're passed
         if url_params:
             url_params['key'] = self.user_key
@@ -212,7 +232,17 @@ class Zotero(object):
             data = urllib.urlencode(url_params)
         request = '%s%s%s' % (request, '?', data)
         full_url = '%s%s' % (self.endpoint, request)
-        data = urllib2.urlopen(full_url).read()
+        try:
+            data = urllib2.urlopen(full_url).read()
+        except urllib2.HTTPError, error:
+            if error.code == 401 or error.code == 403:
+                raise UserNotAuthorised, \
+"You are not authorised to retrieve this resource (%s)" % error.code
+            if error.code == 400:
+                raise RateLimitExceeded, \
+"The rate limit has been exceeded. Settle down."
+            else:
+                raise HTTPError, "HTTP Error %s (%s)" % (error.msg, error.code)
         # parse the result into Python data structures
         return feedparser.parse(data)
 
@@ -242,9 +272,9 @@ if __name__ == "__main__":
     except (KeyboardInterrupt, SystemExit):
         # actually raise these, for a clean exit
         raise
-    except Exception, error:
+    except Exception, errm:
         # all other exceptions: display the error
-        print error
+        print errm
         # print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
     else:
         pass
