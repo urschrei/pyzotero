@@ -17,49 +17,8 @@ import urllib
 import urllib2
 import feedparser
 import xml.etree.ElementTree as xml
-
-
-
-# Define some exceptions
-class PyZoteroError(Exception):
-    """ Generic parent exception
-    """
-    pass
-
-
-
-class ParamNotPassed(PyZoteroError):
-    """ Raised if a parameter which is required isn't passed
-    """
-    pass
-
-
-
-class CallDoesNotExist(PyZoteroError):
-    """ Raised if the specified API call doesn't exist
-    """
-    pass
-
-
-
-class RateLimitExceeded(PyZoteroError):
-    """ Raised when the API rate limit is exceeded
-    """
-    pass
-
-
-
-class UserNotAuthorised(PyZoteroError):
-    """ Raised when the user is not allowed to retrieve the resource
-    """
-    pass
-
-
-
-class HTTPError(PyZoteroError):
-    """ Raised raised for miscellaneous URLLib errors
-    """
-    pass
+import zotero_api
+import zotero_errors as ze
 
 
 def open_file(to_read):
@@ -105,42 +64,14 @@ class Zotero(object):
             self.user_id = user_id
             self.user_key = user_key
         # API methods
-        self.api_methods = {
-        'all_items':'/users/{u}/items',
-        'top_level_items':'/users/{u}/items/top',
-        'specific_item':'/users/{u}/items/{item}',
-        'child_items':'/users/{u}/items/{item}/children',
-        'item_tags':'/users/{u}/items/{item}/tags',
-        'user_tags':'/users/{u}/tags',
-        'items_for_tag':'/users/{u}/tags/{tag}/items',
-        'collections':'/users/{u}/collections',
-        'collection_items':'/users/{u}/collections/{collection}/items',
-        'sub_collections': '/users/{u}/collections/{collection}/collections',
-        'user_groups': '/users/{u}/groups',
-        'group_items':'/groups/{group}/items',
-        'top_group_items': '/groups/{group}/items/top',
-        'group_item': '/groups/{group}/items/{item}',
-        'group_item_children': '/groups/{group}/items/{item}/children',
-        'group_item_tags': '/groups/{group}/items/{item}/tags',
-        'group_tags': '/groups/{group}/tags',
-        'group_user_items_tag': '/groups/{group}/tags/{tag}/items',
-        'group_collections': '/groups/{group}/collections',
-        'group_collection': '/groups/{group}/collections/{collection}',
-        'group_collection_sub':\
-         '/groups/{group}/collections/{collection}/collections',
-        'group_collection_items':\
-         '/groups/{group}/collections/{collection}/items',
-        'group_collection_item':\
-        '/groups/{group}/collections/{collection}/items/{item}'
-        }
-
+        self.api_methods = zotero_api.api_calls()
     def retrieve_data(self, request, url_params = None, request_params = None):
         """ Method for retrieving Zotero items via the API
             returns a dict containing feed items and lists of entries
         """
         # Add request parameter(s) if required
         if request not in self.api_methods:
-            raise CallDoesNotExist, \
+            raise ze.CallDoesNotExist, \
             'The API call \'%s\' could not be found' % request
         if request_params:
             try:
@@ -148,15 +79,15 @@ class Zotero(object):
                 request = urllib.quote(
                 self.api_methods[request].format(**request_params))
             except KeyError, err:
-                raise ParamNotPassed, 'There\'s a request parameter missing: \
-%s' % err
+                raise ze.ParamNotPassed, \
+                'There\'s a request parameter missing: %s' % err
         # Otherwise, just add the user ID
         else:
             try:
                 request = self.api_methods[request].format(u = self.user_id)
             except KeyError, err:
-                raise ParamNotPassed, 'There\'s a request parameter missing: \
-%s' % err
+                raise ze.ParamNotPassed, \
+                'There\'s a request parameter missing: %s' % err
         # Add URL parameters if they're passed
         if url_params:
             url_params['key'] = self.user_key
@@ -171,14 +102,15 @@ class Zotero(object):
             data = urllib2.urlopen(full_url).read()
         except urllib2.HTTPError, error:
             if error.code == 401 or error.code == 403:
-                raise UserNotAuthorised, \
+                raise ze.UserNotAuthorised, \
 "You are not authorised to retrieve this resource (%s)" % error.code
             if error.code == 400:
-                raise RateLimitExceeded, \
+                raise ze.RateLimitExceeded, \
 "Invalid request, probably due to unsupported parameters: %s" % \
                 data
             else:
-                raise HTTPError, "HTTP Error %s (%s)" % (error.msg, error.code)
+                raise ze.HTTPError, \
+                "HTTP Error %s (%s)" % (error.msg, error.code)
         # parse the result into Python data structures
         return feedparser.parse(data)
 
