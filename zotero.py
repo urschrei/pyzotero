@@ -173,7 +173,8 @@ class Zotero(object):
 "You are not authorised to retrieve this resource (%s)" % error.code
             if error.code == 400:
                 raise RateLimitExceeded, \
-"The rate limit has been exceeded. Settle down."
+"Invalid request, probably due to unsupported parameters: %s" %\
+                data
             else:
                 raise HTTPError, "HTTP Error %s (%s)" % (error.msg, error.code)
         # parse the result into Python data structures

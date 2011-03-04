@@ -13,7 +13,7 @@ You'll require the [feedparser][3] module, which can be installed using pip, or 
     * `gen_items_data()`: returns a generator object of dicts containing each **item's** data (author, title, publisher &c)
     * `collections_data()`: returns a list of dicts containing each **collection's** data (ID, title, number of subcollections)
     * `groups_data()`: returns a list of dicts containing each **group's** data (owner, title, total number of items)
-    * `bib_items()`: returns a list containing HTML-formatted bibliography entries for each item. When calling this method, you may specify a `'style'` key in `params`, the value of which can be any valid Zotero Style Repository entry. Example: `'style': 'mla'`
+    * `bib_items()`: returns a list containing HTML-formatted bibliography entries for each **item**. When calling this method, you may specify a `'style'` key in `params`, the value of which can be any valid Zotero Style Repository entry. Example: `'style': 'mla'`
 3. These methods should be called with the following arguments:
 `zot.items_data(api_request, {URL parameters}, {additional request parameters})`
     * `URL parameters` is an optional dict containing valid Zotero API parameters.
