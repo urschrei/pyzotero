@@ -201,7 +201,7 @@ class Zotero(object):
     def groups_data(self, request, params = None, request_params = None):
         """ Takes the result of a parse operation, and returns a list
             containing one or more dicts containing group titles, IDs,
-            and the total number of items it contains
+            and the total number of items they contain
         """
         fp_object = self.retrieve_data(request, params, request_params)
         groups = []
