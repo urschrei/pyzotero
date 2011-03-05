@@ -24,6 +24,7 @@ The [feedparser][3] module is required. It should automatically be installed whe
     * `collections_data()`: returns a list of dicts containing each **collection's** data (ID, title, number of subcollections)
     * `groups_data()`: returns a list of dicts containing each **group's** data (owner, title, total number of items)
     * `bib_items()`: returns a list containing HTML-formatted bibliography entries for each **item**. When calling this method, you may specify a `'style'` key in `params`, the value of which can be any valid Zotero Style Repository entry. Example: `'style': 'mla'`
+    * `tags_data()`: returns a list containing tags
 3. These methods should be called with the following arguments:  
 `zot.items_data(api_request, {URL parameters}, {additional request parameters})`
     * `URL parameters` is an optional dict containing valid Zotero API parameters.

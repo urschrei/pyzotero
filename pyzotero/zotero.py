@@ -216,6 +216,13 @@ class Zotero(object):
             groups.append(group_data)
         return groups
 
+    def tags_data(self, request, params = None, request_params = None):
+        """ Takes the result of a parse operation, and returns a list
+            containing one or more tags
+        """
+        fp_object = self.retrieve_data(request, params, request_params)
+        tags = [t['title'].encode('utf-8') for t in fp_object.entries]
+        return tags
 
 
 def main():
@@ -228,12 +235,14 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional URL and request parameters in a dict
-    par = {'limit': 2}
-    par2 = {'limit': 2, 'style': 'mla'}
+    par = {'limit': 10}
+    req = {'tag': 'Criticism, Textual'}
+    print zot.items_data('items_for_tag', par, req)
+    # par2 = {'limit': 2, 'style': 'mla'}
     # print zot.groups_data('user_groups')
     # print zot.collections_data('collections', par)
-    print zot.items_data('top_level_items', par)
-    print zot.bib_items('top_level_items', par2)
+    # print zot.items_data('top_level_items', par)
+    # print zot.bib_items('top_level_items', par2)
 
 
 if __name__ == "__main__":
