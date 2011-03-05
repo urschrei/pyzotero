@@ -21,7 +21,7 @@ def api_calls():
     'item_tags':'/users/{u}/items/{item}/tags',
     'user_tags':'/users/{u}/tags',
     'items_for_tag':'/users/{u}/tags/{tag}/items',
-    'collections':'/users/{u}/collections',
+    'user_collections':'/users/{u}/collections',
     'collection_items':'/users/{u}/collections/{collection}/items',
     'sub_collections': '/users/{u}/collections/{collection}/collections',
     'user_groups': '/users/{u}/groups',
