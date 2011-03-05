@@ -9,7 +9,7 @@ Copyright Stephan Hügel, 2011
 License: http://www.gnu.org/licenses/gpl-3.0.txt
 """
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 import sys
 import os

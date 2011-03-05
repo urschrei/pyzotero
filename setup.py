@@ -8,14 +8,15 @@ Created by Stephan Hügel on 2011-03-04
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
-import zotero
+import pyzotero.zotero as z
 
 setup(
     name = 'Pyzotero',
-    version = zotero.__version__,
+    version = z.__version__,
     description = 'Python wrapper for the Zotero API',
     author = 'Stephan Hügel',
     author_email = 'hugels@tcd.ie',
-    url = "https://github.com/urschrei/pyzotero",
+    license = 'GNU GPL Version 3',
+    url = 'https://github.com/urschrei/pyzotero',
     packages = find_packages(),
 )
