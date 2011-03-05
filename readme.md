@@ -3,10 +3,10 @@
 Because it's 2011, and I have no intention of using PHP for anything, let alone writing it, this is a first pass at implementing a Python wrapper for the [Zotero API][1]. There's no use case as yet, since I'm not sure what's going to be the ultimate consumer of the returned data. Expect a lot of initial fragility, if not outright breakage. You'll require a user ID and access key, which can be set up [here][2].
 
 # Installation #
-
-`pip install /path/to/pyzotero/dir`  
-Example: `pip install ~/Downloads/pyzotero`  
-Alternatively, download the latest version from <https://github.com/urschrei/pyzotero/downloads>, and point pip at the zip file:  
+* From git: `pip install git+git://github.com/urschrei/pyzotero.git`  
+* From a local clone: `pip install /path/to/pyzotero/dir`  
+Example: `pip install ~/repos/pyzotero`  
+* Alternatively, download the latest version from <https://github.com/urschrei/pyzotero/downloads>, and point pip at the zip file:  
 `pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip`
 
 I assume that running setup.py will also work using `easy_install`, but I haven't tested it.
@@ -24,7 +24,7 @@ The [feedparser][3] module is required. It should automatically be installed whe
     * `collections_data()`: returns a list of dicts containing each **collection's** data (ID, title, number of subcollections)
     * `groups_data()`: returns a list of dicts containing each **group's** data (owner, title, total number of items)
     * `bib_items()`: returns a list containing HTML-formatted bibliography entries for each **item**. When calling this method, you may specify a `'style'` key in `params`, the value of which can be any valid Zotero Style Repository entry. Example: `'style': 'mla'`
-    * `tags_data()`: returns a list containing tags
+    * `tags_data()`: returns a list containing **tags**
 3. These methods should be called with the following arguments:  
 `zot.items_data(api_request, {URL parameters}, {additional request parameters})`
     * `URL parameters` is an optional dict containing valid Zotero API parameters.
