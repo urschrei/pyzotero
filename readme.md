@@ -3,6 +3,7 @@
 Because it's 2011, and I have no intention of using PHP for anything, let alone writing it, this is a first pass at implementing a Python wrapper for the [Zotero API][1]. There's no use case as yet, since I'm not sure what's going to be the ultimate consumer of the returned data. Expect a lot of initial fragility, if not outright breakage. You'll require a user ID and access key, which can be set up [here][2].
 
 # Installation #
+
 * From git: `pip install git+git://github.com/urschrei/pyzotero.git`  
 * From a local clone: `pip install /path/to/pyzotero/dir`  
 Example: `pip install ~/repos/pyzotero`  
@@ -57,30 +58,44 @@ Running zotero.py from the command line will attempt to import your ID and key f
 
 ### Additional required parameters are (specified inline) ###
 
+#### For `items_data()`:
 
 * `'all_items'`: returns the set of all items belonging to a specific user
 * `'top_level_items'`: returns the set of all top-level items belonging to a specific user
 * `'specific_item'` (`item ID`): returns a specific item belonging to a user.
-* `'child_items'` (`item ID`): returns the set of all child items under a specific item 
-* `'item_tags'` (`item ID`): returns the set of all tags associated with a specific item
-* `'user_tags'`: returns the set of all tags belonging to a specific user
+* `'child_items'` (`item ID`): returns the set of all child items under a specific item
 * `'items_for_tag'`(`tag`): returns the set of a user's items tagged with a specific tag
-* `'collections'`: returns the set of collections belonging to a specific user
-* `'collection_items'` (`collection ID`): returns a specific collection belonging to a user
-* `'sub_collections'` (`collection ID`): returns a set of subcollections belonging to a collection for a specific user
-* `'user_groups'`: returns the set of all groups belonging to a specific user
 * `'group_items'` (`group ID`): returns the set of all items belonging to a specific group
+* `'collection_items'` (`collection ID`): returns a set of items belonging to a specific collection belonging to a user
 * `'top_group_items'` (`group ID`): returns the set of all top-level items belonging to a specific group
 * `'group_item'` (`group ID`, `item ID`): returns a specific item belonging to a specific group
+* `'group_user_items_tag'` (`group ID`, `item ID`): returns a set of items belonging to a specific group, tagged with a specific tag
+* `'group_collection_items'` (`group ID`, `collection ID`): returns a set of items belonging to a specific collection belonging to a specific group
+* `'group_collection_item'` (`group ID`, `item ID`): returns a specific item belonging to a specific collection belonging to a specific group
 * `'group_item_children'` (`group ID`, `item ID`): returns a set of all child items belonging to a specific item belonging to a group
-* `'group_item_tags'` (`group ID`, `item ID`): returns a set of all tags associated with a specific item belonging to a group
-* `'group_tags'`: (`'group ID'`): returns a set of all tags belonging to a specific group
-* `'group_user_items_tag'` (`group ID`, `item ID`): returns a set of items belonging to a group, tagged with a specific tag
+
+
+#### For `collections_data()`: ####
+
+* `'user_collections'`: returns the set of collections belonging to a specific user
+* `'sub_collections'` (`collection ID`): returns a set of subcollections belonging to a collection for a specific user
 * `'group_collections'` (`group ID`): returns a set of collections belonging to a specific group
 * `'group_collection'` (`group ID`, `collection ID`): returns a specific collection belonging to a specific group
 * `'group_collection_sub'` (`group ID`, `collection ID`): returns a set of subcollections within a specific collection belonging to a specific group
-* `'group_collection_items'` (`group ID`, `collection ID`): returns a set of items belonging to a specific collection belonging to a specific group
-* `'group_collection_item'` (`group ID`, `item ID`): returns a specific item belonging to a specific collection belonging to a specific group
+
+
+#### For `groups_data()`: ####
+
+* `'user_groups'`: returns the set of all groups belonging to a specific user
+
+
+#### For `tags_data()`: ####
+
+* `'user_tags'`: returns the set of all tags belonging to a specific user
+* `'item_tags'` (`item ID`): returns the set of all tags associated with a specific item 
+* `'group_item_tags'` (`group ID`, `item ID`): returns a set of all tags for a specific item belonging to a specific group
+* `'group_tags'`: (`'group ID'`): returns a set of all tags belonging to a specific group
+
 
 
 [1]: http://www.zotero.org/support/dev/server_api "Zotero Server API"
