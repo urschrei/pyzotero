@@ -2,7 +2,7 @@
 
 Because it's 2011, and I have no intention of using PHP for anything, let alone writing it, this is a first pass at implementing a Python wrapper for the [Zotero API][1]. There's no use case as yet, since I'm not sure what's going to be the ultimate consumer of the returned data. Expect a lot of initial fragility, if not outright breakage. You'll require a user ID and access key, which can be set up [here][2].
 
-You'll require the [feedparser][3] module, which can be installed using pip, or downloaded directly from the site. Pip installation of some sort for the pyzotero module itself is forthcoming.
+You'll require the [feedparser][3] module, which can be installed using pip, or downloaded directly from the site.
 
 # Installation #
 
