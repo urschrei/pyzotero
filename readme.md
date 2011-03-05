@@ -71,7 +71,7 @@ Running zotero.py from the command line will attempt to import your ID and key f
 * `'group_item'` (`group ID`, `item ID`): returns a specific item belonging to a specific group
 * `'group_user_items_tag'` (`group ID`, `item ID`): returns a set of items belonging to a specific group, tagged with a specific tag
 * `'group_collection_items'` (`group ID`, `collection ID`): returns a set of items belonging to a specific collection belonging to a specific group
-* `'group_collection_item'` (`group ID`, `item ID`): returns a specific item belonging to a specific collection belonging to a specific group
+* `'group_collection_item'` (`group ID`, `item ID`, `item ID`): returns a specific item belonging to a specific collection belonging to a specific group
 * `'group_item_children'` (`group ID`, `item ID`): returns a set of all child items belonging to a specific item belonging to a group
 
 
