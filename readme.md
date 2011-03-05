@@ -2,19 +2,27 @@
 
 Because it's 2011, and I have no intention of using PHP for anything, let alone writing it, this is a first pass at implementing a Python wrapper for the [Zotero API][1]. There's no use case as yet, since I'm not sure what's going to be the ultimate consumer of the returned data. Expect a lot of initial fragility, if not outright breakage. You'll require a user ID and access key, which can be set up [here][2].
 
-You'll require the [feedparser][3] module, which can be installed using pip, or downloaded directly from the site. Pip installation of some sort is forthcoming.
+You'll require the [feedparser][3] module, which can be installed using pip, or downloaded directly from the site. Pip installation of some sort for the pyzotero module itself is forthcoming.
+
+# Installation #
+
+`pip install /path/to/pyzotero/dir`  
+Example: `pip install ~/Downloads/pyzotero`  
+
+I assume this will also work using `easy_install`, but I haven't tested it.
 
 # Usage #
 
 1. Create a new Zotero object:  
-`zot = Zotero(user_id, user_key)`
+`from pyzotero import zotero`  or `import pyzotero.zotero as z` &c  
+`zot = zotero.Zotero(user_id, user_key)`  
 2. The following object methods are available:
     * `items_data()`: returns a list of dicts containing each **item's** data (author, title, publisher &c)
     * `gen_items_data()`: returns a generator object of dicts containing each **item's** data (author, title, publisher &c)
     * `collections_data()`: returns a list of dicts containing each **collection's** data (ID, title, number of subcollections)
     * `groups_data()`: returns a list of dicts containing each **group's** data (owner, title, total number of items)
     * `bib_items()`: returns a list containing HTML-formatted bibliography entries for each **item**. When calling this method, you may specify a `'style'` key in `params`, the value of which can be any valid Zotero Style Repository entry. Example: `'style': 'mla'`
-3. These methods should be called with the following arguments:
+3. These methods should be called with the following arguments:  
 `zot.items_data(api_request, {URL parameters}, {additional request parameters})`
     * `URL parameters` is an optional dict containing valid Zotero API parameters.
         * Example: `{'limit': 2, 'start': 37}`
@@ -27,7 +35,8 @@ You'll require the [feedparser][3] module, which can be installed using pip, or 
         * Several key/value pairs can be included in the dict 
         * If an API call requires a particular request parameter and you fail to include it, an error will be raised
         * Valid keys: `'item'`, `'tag'`, `'collection'`, `'group'`
-4. If you wish to pass request parameters, but no URL parameters, pass them as a named argument: `zot.items_data(api_request, request_params = {request parameters})`
+4. If you wish to pass request parameters, but no URL parameters, pass them as a named argument:  
+`zot.items_data(api_request, request_params = {request parameters})`
 5. Alternatively, you can call `retrieve_data()` with the same arguments as above. This will return a 'raw' `feedparser` object, which you can iterate over and retrieve values from in any way you wish, e.g.:
     * item = `zot.retrieve_data('top_level_items', url params, request params)`
     * `print item.entries[0]['title']`
@@ -37,7 +46,8 @@ You'll require the [feedparser][3] module, which can be installed using pip, or 
 
 # Notes #
 
-All currently available API calls have been implemented and documented (see below). Calling an API method which requires an optional parameter without specifying one will raise a `ParamNotPassed` error. **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.
+All currently available API calls have been implemented and documented (see below). Calling an API method which requires an optional parameter without specifying one will raise a `ParamNotPassed` error. **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.  
+Running zotero.py from the command line will attempt to import your ID and key from a file named `zotero_keys.txt` in your home directory (see comment in `main()` for details), create a new Zotero object and call some of the methods.
 
 
 # Currently Available API Calls #
