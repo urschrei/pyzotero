@@ -91,10 +91,10 @@ Running zotero.py from the command line will attempt to import your ID and key f
 
 #### For `tags_data()`: ####
 
-* `'user_tags'`: returns the set of all tags belonging to a specific user
+* `'user_tags'` returns the set of all tags belonging to a specific user
 * `'item_tags'` (`item ID`): returns the set of all tags associated with a specific item 
 * `'group_item_tags'` (`group ID`, `item ID`): returns a set of all tags for a specific item belonging to a specific group
-* `'group_tags'`: (`'group ID'`): returns a set of all tags belonging to a specific group
+* `'group_tags'` (`'group ID'`): returns a set of all tags belonging to a specific group
 
 
 
