@@ -47,6 +47,14 @@ class UserNotAuthorised(PyZoteroError):
 
 
 
+class MissingCredentials(PyZoteroError):
+    """ Raised when an attempt is made to create a Zotero instance
+        without providing both the user ID and the user key
+    """
+    pass
+
+
+
 class HTTPError(PyZoteroError):
     """ Raised raised for miscellaneous URLLib errors
     """

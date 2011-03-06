@@ -53,9 +53,7 @@ class Zotero(object):
         start: integer, default: 0
         pprint: boolean, default: false
     """
-    user_id = None
-    user_key = None
-    
+
     def __init__(self, user_id = None, user_key = None):
         """ Store Zotero credentials
         """
@@ -63,6 +61,9 @@ class Zotero(object):
         if user_id and user_key:
             self.user_id = user_id
             self.user_key = user_key
+        else:
+            raise ze.MissingCredentials, \
+            'Please provide both the user ID and the user key'
         # API methods
         self.api_methods = zotero_api.api_calls()
     def retrieve_data(self, request, url_params = None, request_params = None):
