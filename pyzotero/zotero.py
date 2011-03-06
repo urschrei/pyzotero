@@ -19,7 +19,7 @@ import feedparser
 import xml.etree.ElementTree as xml
 import zotero_api
 import zotero_errors as ze
-
+import traceback
 
 def open_file(to_read):
     """ Open a text file for reading, and strip the newlines
@@ -31,6 +31,19 @@ def open_file(to_read):
     except IOError:
         print "Couldn't read values from %s\nCan't continue." % to_read
         raise
+
+
+def retrieve(func):
+    """ Decorator for Zotero methods; calls retrieve_data() and passes
+        the result to the decorated function
+    """
+    # this self = None thing is necessary, but I don't like it
+    def wrap(self = None, *args):
+        """ Returns result of retrieve_data to the decorated function
+        """
+        retr = self.retrieve_data(*args)
+        return func(self, retr)
+    return wrap
 
 
 
@@ -120,16 +133,16 @@ class Zotero(object):
         get_count = self.retrieve_data('top_level_items', {'limit': 1})
         return get_count.feed['zapi_totalresults'].decode('utf-8')
 
-    def items_data(self, request, params = None, request_params = None):
+    @retrieve
+    def items_data(self, retrieved):
         """ Takes the result of a parse operation, and returns a list
             containing one or more dicts containing item data
         """
-        fp_object = self.retrieve_data(request, params, request_params)
         # Shunt each 'content' block into a list
-        item_parsed = [a['content'][0]['value'] for a in fp_object.entries]
+        item_parsed = [a['content'][0]['value'] for a in retrieved.entries]
         # Shunt each 'title' and item ID value into a list
-        item_title = [t['title'] for t in fp_object.entries]
-        item_id = [i['zapi_key'] for i in fp_object.entries]
+        item_title = [t['title'] for t in retrieved.entries]
+        item_id = [i['zapi_key'] for i in retrieved.entries]
         items = []
         for index, content in enumerate(item_parsed):
             elem = xml.fromstring(content.encode('utf-8'))
@@ -142,6 +155,7 @@ class Zotero(object):
             items.append(zipped)
         return items
 
+    @retrieve
     def bib_items(self, request, params = None, request_params = None):
         """ returns a list of strings formatted as HTML bibliography entries
             you may specify a 'style' key (e.g. 'mla' in your {params}; any
@@ -157,16 +171,16 @@ class Zotero(object):
             items.append(bib['content'][0]['value'].encode('utf-8'))
         return items
 
-    def gen_items_data(self, request, params = None, request_params = None):
+    @retrieve
+    def gen_items_data(self, retrieved):
         """ Returns a generator object containing one or more dicts
             of item data
         """
-        fp_object = self.retrieve_data(request, params, request_params)
         # Shunt each 'content' block into a list
-        item_parsed = [a['content'][0]['value'] for a in fp_object.entries]
+        item_parsed = [a['content'][0]['value'] for a in retrieved.entries]
         # Shunt each 'title' and item ID value into a list
-        item_title = [t['title'] for t in fp_object.entries]
-        item_id = [i['zapi_key'] for i in fp_object.entries]
+        item_title = [t['title'] for t in retrieved.entries]
+        item_id = [i['zapi_key'] for i in retrieved.entries]
         items = []
         for index, content in enumerate(item_parsed):
             elem = xml.fromstring(content.encode('utf-8'))
@@ -179,16 +193,16 @@ class Zotero(object):
             items.append(zipped)
         return (i for i in items)
 
-    def collections_data(self, request, params = None, request_params = None):
+    @retrieve
+    def collections_data(self, retrieved):
         """ Takes the result of a parse operation, and returns a list
             containing one or more dicts containing collection titles, IDs,
             and the number of subcollections it contains (if any)
         """
-        fp_object = self.retrieve_data(request, params, request_params)
         collections = []
-        collection_key = [k['zapi_key'] for k in fp_object.entries]
-        collection_title = [t['title'] for t in fp_object.entries]
-        collection_sub = [s['zapi_numcollections'] for s in fp_object.entries]
+        collection_key = [k['zapi_key'] for k in retrieved.entries]
+        collection_title = [t['title'] for t in retrieved.entries]
+        collection_sub = [s['zapi_numcollections'] for s in retrieved.entries]
         for index, content in enumerate(collection_key):
             collection_data = {}
             collection_data['ID'] = collection_key[index].encode('utf-8')
@@ -198,16 +212,16 @@ class Zotero(object):
             collections.append(collection_data)
         return collections
 
-    def groups_data(self, request, params = None, request_params = None):
+    @retrieve
+    def groups_data(self, retrieved):
         """ Takes the result of a parse operation, and returns a list
             containing one or more dicts containing group titles, IDs,
             and the total number of items they contain
         """
-        fp_object = self.retrieve_data(request, params, request_params)
         groups = []
-        group_id = [t['title'] for t in fp_object.entries]
-        group_items = [i['zapi_numitems'] for i in fp_object.entries]
-        group_author = [a['author'] for a in fp_object.entries]
+        group_id = [t['title'] for t in retrieved.entries]
+        group_items = [i['zapi_numitems'] for i in retrieved.entries]
+        group_author = [a['author'] for a in retrieved.entries]
         for index, content in enumerate(group_id):
             group_data = {}
             group_data['ID'] = group_id[index].encode('utf-8')
@@ -216,12 +230,12 @@ class Zotero(object):
             groups.append(group_data)
         return groups
 
-    def tags_data(self, request, params = None, request_params = None):
+    @retrieve
+    def tags_data(self, retrieved):
         """ Takes the result of a parse operation, and returns a list
             containing one or more tags
         """
-        fp_object = self.retrieve_data(request, params, request_params)
-        tags = [t['title'].encode('utf-8') for t in fp_object.entries]
+        tags = [t['title'].encode('utf-8') for t in retrieved.entries]
         return tags
 
 
@@ -235,12 +249,13 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional URL and request parameters in a dict
-    par = {'limit': 10}
-    req = {'tag': 'Criticism, Textual'}
-    print zot.items_data('items_for_tag', par, req)
+    par = {'limit': 2}
+    # req = {'tag': 'Criticism, Textual'}
+    print zot.items_data('top_level_items', par)
+    # print zot.items_data('items_for_tag', par, req)
     # par2 = {'limit': 2, 'style': 'mla'}
     # print zot.groups_data('user_groups')
-    # print zot.collections_data('collections', par)
+    # print zot.collections_data('user_collections', par)
     # print zot.items_data('top_level_items', par)
     # print zot.bib_items('top_level_items', par2)
 
@@ -254,7 +269,7 @@ if __name__ == "__main__":
     except Exception, errm:
         # all other exceptions: display the error
         print errm
-        # print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
+        print "Stack trace:\n", traceback.print_exc(file = sys.stdout)
     else:
         pass
     finally:
