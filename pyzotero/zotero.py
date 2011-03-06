@@ -33,19 +33,6 @@ def open_file(to_read):
         raise
 
 
-def retrieve(func):
-    """ Decorator for Zotero methods; calls retrieve_data() and passes
-        the result to the decorated function
-    """
-    # this self = None thing is necessary, but I don't like it
-    def wrap(self = None, *args, **kwargs):
-        """ Returns result of retrieve_data to the decorated function
-        """
-        retr = self.retrieve_data(*args, **kwargs)
-        return func(self, retr)
-    return wrap
-
-
 
 class Zotero(object):
     """ Zotero API methods
@@ -127,6 +114,17 @@ class Zotero(object):
         # parse the result into Python data structures
         return feedparser.parse(data)
 
+    def retrieve(func):
+        """ Decorator for Zotero methods; calls retrieve_data() and passes
+            the result to the decorated method
+        """
+        def wrap(self, *args, **kwargs):
+            """ Returns result of retrieve_data() to the decorated method
+            """
+            retr = self.retrieve_data(*args, **kwargs)
+            return func(self, retr)
+        return wrap
+
     def total_items(self):
         """ Return the total number of items in the library
         """
@@ -135,7 +133,7 @@ class Zotero(object):
 
     @retrieve
     def items_data(self, retrieved):
-        """ Takes the result of a parse operation, and returns a list
+        """ Takes the feed-parsed result of an API call, and returns a list
             containing one or more dicts containing item data
         """
         # Shunt each 'content' block into a list
@@ -157,7 +155,7 @@ class Zotero(object):
 
     @retrieve
     def bib_items(self, request, params = None, request_params = None):
-        """ returns a list of strings formatted as HTML bibliography entries
+        """ Returns a list of strings formatted as HTML bibliography entries
             you may specify a 'style' key (e.g. 'mla' in your {params}; any
             default style in the Zotero Style Repository is valid
         """
@@ -195,7 +193,7 @@ class Zotero(object):
 
     @retrieve
     def collections_data(self, retrieved):
-        """ Takes the result of a parse operation, and returns a list
+        """ Takes the feed-parsed result of an API call, and returns a list
             containing one or more dicts containing collection titles, IDs,
             and the number of subcollections it contains (if any)
         """
@@ -214,7 +212,7 @@ class Zotero(object):
 
     @retrieve
     def groups_data(self, retrieved):
-        """ Takes the result of a parse operation, and returns a list
+        """ Takes the feed-parsed result of an API call, and returns a list
             containing one or more dicts containing group titles, IDs,
             and the total number of items they contain
         """
@@ -232,7 +230,7 @@ class Zotero(object):
 
     @retrieve
     def tags_data(self, retrieved):
-        """ Takes the result of a parse operation, and returns a list
+        """ Takes the feed-parsed result of an API call, and returns a list
             containing one or more tags
         """
         tags = [t['title'].encode('utf-8') for t in retrieved.entries]
@@ -250,9 +248,9 @@ def main():
     zot = Zotero(zot_id, zot_key)
     # Pass optional URL and request parameters in a dict
     par = {'limit': 2}
-    # req = {'tag': 'Criticism, Textual'}
-    print zot.items_data('top_level_items', par)
-    # print zot.items_data('items_for_tag', par, req)
+    req = {'tag': 'Criticism, Textual'}
+    # print zot.items_data('top_level_items', par)
+    print zot.items_data('items_for_tag', par, req)
     # par2 = {'limit': 2, 'style': 'mla'}
     # print zot.groups_data('user_groups')
     # print zot.collections_data('user_collections', par)
