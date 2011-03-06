@@ -41,17 +41,7 @@ class Zotero(object):
         Most of the methods return Atom feed documents, which can be parsed
         using feedparser (http://www.feedparser.org/docs/)
 
-        Valid optional URL parameters for all calls: ('key' added by default)
-        format: "atom" or "bib", default: "atom"
-        version: integer, default: null
-
-        Valid optional URL parameters for format=atom:
-        content: "none", "html", "bib", default: "html"
-        order: string, name of field to be used, default: "dateAdded"
-        sort: "asc", "desc", default varies by "order"
-        limit: integer 1 - 99, default 50
-        start: integer, default: 0
-        pprint: boolean, default: false
+        See the readme for details of valid URL and request parameter
     """
 
     def __init__(self, user_id = None, user_key = None):
@@ -66,6 +56,7 @@ class Zotero(object):
             'Please provide both the user ID and the user key'
         # API methods
         self.api_methods = zotero_api.api_calls()
+
     def retrieve_data(self, request, url_params = None, request_params = None):
         """ Method for retrieving Zotero items via the API
             returns a dict containing feed items and lists of entries
@@ -119,6 +110,7 @@ class Zotero(object):
         """ Decorator for Zotero methods; calls retrieve_data() and passes
             the result to the decorated method
         """
+
         def wrap(self, *args, **kwargs):
             """ Returns result of retrieve_data() to the decorated method
             """
