@@ -38,10 +38,10 @@ def retrieve(func):
         the result to the decorated function
     """
     # this self = None thing is necessary, but I don't like it
-    def wrap(self = None, *args):
+    def wrap(self = None, *args, **kwargs):
         """ Returns result of retrieve_data to the decorated function
         """
-        retr = self.retrieve_data(*args)
+        retr = self.retrieve_data(*args, **kwargs)
         return func(self, retr)
     return wrap
 
