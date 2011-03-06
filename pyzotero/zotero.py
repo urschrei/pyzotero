@@ -41,7 +41,7 @@ class Zotero(object):
         Most of the methods return Atom feed documents, which can be parsed
         using feedparser (http://www.feedparser.org/docs/)
 
-        See the readme for details of valid URL and request parameter
+        See the readme for details of valid URL and request parameters
     """
 
     def __init__(self, user_id = None, user_key = None):
@@ -59,7 +59,7 @@ class Zotero(object):
 
     def retrieve_data(self, request, url_params = None, request_params = None):
         """ Method for retrieving Zotero items via the API
-            returns a dict containing feed items and lists of entries
+            Returns a dict containing feed items and lists of entries
         """
         # Add request parameter(s) if required
         if request not in self.api_methods:
