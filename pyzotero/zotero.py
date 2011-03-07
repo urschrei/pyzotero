@@ -255,10 +255,12 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional URL and request parameters in a dict
-    par = {'limit': 2}
-    req = {'tag': 'Criticism, Textual'}
+    # par = {'limit': 2}
+    # req = {'tag': 'Criticism, Textual'}
     # print zot.items_data('top_level_items', par)
-    print zot.items_data('items_for_tag', par, req)
+    # print zot.items_data('items_for_tag', par, req)
+    # print zot.collections_data('user_collections')
+    print zot.items_data('item',request_params = {'item':'DSDJ43SB'})
     # par2 = {'limit': 2, 'style': 'mla'}
     # print zot.groups_data('user_groups')
     # print zot.collections_data('user_collections', par)
