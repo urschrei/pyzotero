@@ -158,7 +158,8 @@ class Zotero(object):
             # add the utf-8 encoded 'title' and ID data to the dict:
             zipped['title'] = item_title[index].encode('utf-8')
             zipped['id'] = item_id[index].encode('utf-8')
-            items.append(zipped)
+            items.append(Item(zipped))
+            # items.append(zipped)
         return items
 
     @retrieve
@@ -245,6 +246,25 @@ class Zotero(object):
         return tags
 
 
+
+class Item(object):
+    """ Adds all retrieved values as instance properties by key, value.
+        Currently, this class is little more than a container for what would
+        otherwise be dicts (and I'm not convinced they aren't the way to go)
+    """
+    def __init__(self, values):
+        super(Item, self).__init__()
+        # Hackish and bad; creates instance attributes on the fly
+        self.__dict__ = dict(values)
+
+    def __getattr__(self, name):
+        """ Only called if __getattribute__ fails, so we can return
+            None without too much hand-wringing
+        """
+        return None
+
+
+
 def main():
     """ main function
     """
@@ -255,12 +275,12 @@ def main():
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
     # Pass optional URL and request parameters in a dict
-    # par = {'limit': 2}
-    # req = {'tag': 'Criticism, Textual'}
+    par = {'limit': 2}
+    req = {'tag': 'Criticism, Textual'}
     # print zot.items_data('top_level_items', par)
-    # print zot.items_data('items_for_tag', par, req)
-    # print zot.collections_data('user_collections')
-    print zot.items_data('item',request_params = {'item':'DSDJ43SB'})
+    things = zot.items_data('items_for_tag', par, req)
+    for t in things:
+        print 'Title: %s\nSeries: %s\nID: %s' % (t.title, t.series_num, t.id)
     # par2 = {'limit': 2, 'style': 'mla'}
     # print zot.groups_data('user_groups')
     # print zot.collections_data('user_collections', par)
