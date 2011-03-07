@@ -194,7 +194,7 @@ class Zotero(object):
         collection_key = [k['zapi_key'] for k in retrieved.entries]
         collection_title = [t['title'] for t in retrieved.entries]
         collection_sub = [s['zapi_numcollections'] for s in retrieved.entries]
-        for index, content in enumerate(collection_key):
+        for index in range(len(collection_key)):
             collection_data = {}
             collection_data['id'] = collection_key[index].encode('utf-8')
             collection_data['title'] = collection_title[index].encode('utf-8')
@@ -213,7 +213,7 @@ class Zotero(object):
         group_id = [t['title'] for t in retrieved.entries]
         group_items = [i['zapi_numitems'] for i in retrieved.entries]
         group_author = [a['author'] for a in retrieved.entries]
-        for index, content in enumerate(group_id):
+        for index in range(len(group_id)):
             group_data = {}
             group_data['id'] = group_id[index].encode('utf-8')
             group_data['total_items'] = group_items[index].encode('utf-8')
