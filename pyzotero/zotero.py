@@ -33,6 +33,20 @@ def open_file(to_read):
         raise
 
 
+def dedup(suspects):
+    """ Check for duplicate key entries (e.g. contributor) and append a number
+    to these """
+    seen = []
+    counter = 2
+    for candidate in suspects:
+      if candidate in seen:
+        candidate = '%s_%s' % (candidate, counter)
+        counter += 1
+        seen.append(candidate)
+      else:
+        seen.append(candidate)
+    return seen
+
 
 class Zotero(object):
     """ Zotero API methods
@@ -138,6 +152,7 @@ class Zotero(object):
         for index, content in enumerate(item_parsed):
             elem = xml.fromstring(content.encode('utf-8'))
             keys = [e.text.lower() for e in elem.iter('th')]
+            keys = dedup(keys)
             values = [v.text for v in elem.iter('td')]
             zipped = dict(zip(keys, values))
             # add the utf-8 encoded 'title' and ID data to the dict:
