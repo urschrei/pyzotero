@@ -16,7 +16,7 @@ def api_calls():
     api_calls = {
     'all_items':'/users/{u}/items',
     'top_level_items':'/users/{u}/items/top',
-    'specific_item':'/users/{u}/items/{item}',
+    'item':'/users/{u}/items/{item}',
     'child_items':'/users/{u}/items/{item}/children',
     'item_tags':'/users/{u}/items/{item}/tags',
     'user_tags':'/users/{u}/tags',

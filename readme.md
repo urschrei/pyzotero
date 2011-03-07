@@ -62,7 +62,7 @@ Running zotero.py from the command line will attempt to import your ID and key f
 
 * `'all_items'`: returns the set of all items belonging to a specific user
 * `'top_level_items'`: returns the set of all top-level items belonging to a specific user
-* `'specific_item'` (`item ID`): returns a specific item belonging to a user.
+* `'item'` (`item ID`): returns a specific item belonging to a user.
 * `'child_items'` (`item ID`): returns the set of all child items under a specific item
 * `'items_for_tag'`(`tag`): returns the set of a user's items tagged with a specific tag
 * `'group_items'` (`group ID`): returns the set of all items belonging to a specific group
