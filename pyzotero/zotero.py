@@ -137,12 +137,12 @@ class Zotero(object):
         items = []
         for index, content in enumerate(item_parsed):
             elem = xml.fromstring(content.encode('utf-8'))
-            keys = [e.text for e in elem.iter('th')]
+            keys = [e.text.lower() for e in elem.iter('th')]
             values = [v.text for v in elem.iter('td')]
             zipped = dict(zip(keys, values))
             # add the utf-8 encoded 'title' and ID data to the dict:
-            zipped['Title'] = item_title[index].encode('utf-8')
-            zipped['ID'] = item_id[index].encode('utf-8')
+            zipped['title'] = item_title[index].encode('utf-8')
+            zipped['id'] = item_id[index].encode('utf-8')
             items.append(zipped)
         return items
 
@@ -175,12 +175,12 @@ class Zotero(object):
         items = []
         for index, content in enumerate(item_parsed):
             elem = xml.fromstring(content.encode('utf-8'))
-            keys = [e.text for e in elem.iter('th')]
+            keys = [e.text.lower() for e in elem.iter('th')]
             values = [v.text for v in elem.iter('td')]
             zipped = dict(zip(keys, values))
             # add the utf-8 encoded 'title' and ID data to the dict:
-            zipped['Title'] = item_title[index].encode('utf-8')
-            zipped['ID'] = item_id[index].encode('utf-8')
+            zipped['title'] = item_title[index].encode('utf-8')
+            zipped['id'] = item_id[index].encode('utf-8')
             items.append(zipped)
         return (i for i in items)
 
@@ -196,7 +196,7 @@ class Zotero(object):
         collection_sub = [s['zapi_numcollections'] for s in retrieved.entries]
         for index, content in enumerate(collection_key):
             collection_data = {}
-            collection_data['ID'] = collection_key[index].encode('utf-8')
+            collection_data['id'] = collection_key[index].encode('utf-8')
             collection_data['title'] = collection_title[index].encode('utf-8')
             if int(collection_sub[index]) > 0:
                 collection_data['subcollections'] = int(collection_sub[index])
@@ -215,7 +215,7 @@ class Zotero(object):
         group_author = [a['author'] for a in retrieved.entries]
         for index, content in enumerate(group_id):
             group_data = {}
-            group_data['ID'] = group_id[index].encode('utf-8')
+            group_data['id'] = group_id[index].encode('utf-8')
             group_data['total_items'] = group_items[index].encode('utf-8')
             group_data['owner'] = group_author[index].encode('utf-8')
             groups.append(group_data)
