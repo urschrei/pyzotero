@@ -19,7 +19,7 @@ The [feedparser][3] module is required. It should automatically be installed whe
 
     from pyzotero import zotero
     zot = zotero.Zotero(user_id, user_key)
-    Items = zot.items()
+    items = zot.items()
     for item in items:
     print 'Author: %s | Title: %s' % (item.author, item.title)
     
