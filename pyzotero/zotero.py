@@ -9,7 +9,7 @@ Copyright Stephan Hügel, 2011
 License: http://www.gnu.org/licenses/gpl-3.0.txt
 """
 
-__version__ = '0.4'
+__version__ = '0.5'
 
 import sys
 import os
@@ -68,8 +68,6 @@ class Zotero(object):
         else:
             raise ze.MissingCredentials, \
             'Please provide both the user ID and the user key'
-        # API methods
-        self.api_methods = zotero_api.api_calls()
         self.url_params = None
 
     def retrieve_data(self, request = None):
@@ -117,15 +115,14 @@ class Zotero(object):
         params = urllib.urlencode(params)
         self.url_params = params
 
-    def build_query(self, query_string, params):
-        """ Set request parameters. Will always add the user ID
+    def build_query(self, query_string, params = None):
+        """ Set request parameters. Will always add the user ID if it hasn't
+            been specifically set by an API call
         """
-        if params:
-            params['u'] = self.user_id
-        else:
+        if not params:
             params = {'u': self.user_id}
         try:
-            query = query_string.format(params)
+            query = query_string.format(**params)
         except KeyError, err:
             raise ze.ParamNotPassed, \
             'There\'s a request parameter missing: %s' % err
@@ -156,11 +153,12 @@ class Zotero(object):
         query = self.build_query(query_string, params)
         return self.groups_data(self.retrieve_data(query))
         
-    def collection_items(self, params = None):
+    def collection_items(self, collection = None):
         """ Get a collection's items 
         """
-        query_string = '/users/{u}/collections/{collection}/items'
-        query = self.build_query(query_string, params)
+        query_string = '/users/{u}/collections/{c}/items'
+        query_string = query_string.format(u = self.user_id, c = collection)
+        query = self.build_query(query_string)
         return self.items_data(self.retrieve_data(query))
 
     def items_data(self, retrieved):
@@ -244,7 +242,7 @@ def main():
     zot_id = auth_values[0]
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
-    zot.add_parameters(limit=5)
+    zot.add_parameters(limit=5, start=10)
     # returns list of Items
     items = zot.items()
     for item in items:
@@ -261,7 +259,7 @@ def main():
         print group['id']
     # returns a collection's items:
     collection_items = zot.collection_items('PRMD6BGB')
-    for item in collection_item:
+    for item in collection_items:
         print 'Author: %s | Title: %s' % (item.author, item.title)
 
 
