@@ -39,12 +39,12 @@ def dedup(suspects):
     seen = []
     counter = 2
     for candidate in suspects:
-      if candidate in seen:
-        candidate = '%s_%s' % (candidate, counter)
-        counter += 1
-        seen.append(candidate)
-      else:
-        seen.append(candidate)
+        if candidate in seen:
+            candidate = '%s_%s' % (candidate, counter)
+            counter += 1
+            seen.append(candidate)
+        else:
+            seen.append(candidate)
     return seen
 
 
@@ -70,39 +70,12 @@ class Zotero(object):
             'Please provide both the user ID and the user key'
         # API methods
         self.api_methods = zotero_api.api_calls()
+        self.url_params = None
 
-    def retrieve_data(self, request, url_params = None, request_params = None):
+    def retrieve_data(self, request = None):
         """ Method for retrieving Zotero items via the API
             Returns a dict containing feed items and lists of entries
         """
-        # Add request parameter(s) if required
-        if request not in self.api_methods:
-            raise ze.CallDoesNotExist, \
-            'The API call \'%s\' could not be found' % request
-        if request_params:
-            try:
-                request_params['u'] = self.user_id
-                request = urllib.quote(
-                self.api_methods[request].format(**request_params))
-            except KeyError, err:
-                raise ze.ParamNotPassed, \
-                'There\'s a request parameter missing: %s' % err
-        # Otherwise, just add the user ID
-        else:
-            try:
-                request = self.api_methods[request].format(u = self.user_id)
-            except KeyError, err:
-                raise ze.ParamNotPassed, \
-                'There\'s a request parameter missing: %s' % err
-        # Add URL parameters if they're passed
-        if url_params:
-            url_params['key'] = self.user_key
-            data = urllib.urlencode(url_params)
-        # Otherwise, just add the user key
-        else:
-            url_params = {'key': self.user_key}
-            data = urllib.urlencode(url_params)
-        request = '%s%s%s' % (request, '?', data)
         full_url = '%s%s' % (self.endpoint, request)
         try:
             data = urllib2.urlopen(full_url).read()
@@ -118,30 +91,80 @@ class Zotero(object):
                 raise ze.HTTPError, \
                 "HTTP Error %s (%s)" % (error.msg, error.code)
         # parse the result into Python data structures
+        self.url_params = None
         return feedparser.parse(data)
 
     def retrieve(func):
         """ Decorator for Zotero methods; calls retrieve_data() and passes
             the result to the decorated method
         """
-
         def wrap(self, *args, **kwargs):
             """ Returns result of retrieve_data() to the decorated method
             """
+            # build the query string from the request parameters
+            # add request params to
             retr = self.retrieve_data(*args, **kwargs)
             return func(self, retr)
         return wrap
 
-    def total_items(self):
-        """ Return the total number of items in the library
+    def add_parameters(self, **params):
+        """ Set URL parameters. Will always add the user key
         """
-        get_count = self.retrieve_data('top_level_items', {'limit': 1})
-        return get_count.feed['zapi_totalresults'].decode('utf-8')
+        if params:
+            params['key'] = self.user_key
+        else: 
+            params = {'key': self.user_key}
+        params = urllib.urlencode(params)
+        self.url_params = params
 
-    @retrieve
+    def build_query(self, query_string, params):
+        """ Set request parameters. Will always add the user ID
+        """
+        if params:
+            params['u'] = self.user_id
+        else:
+            params = {'u': self.user_id}
+        try:
+            query = query_string.format(params)
+        except KeyError, err:
+            raise ze.ParamNotPassed, \
+            'There\'s a request parameter missing: %s' % err
+        # Add the URL parameters and the user key, if necessary
+        if not self.url_params:
+            self.add_parameters()
+        query = '%s?%s' % (query, self.url_params)
+        return query
+
+    def items(self, params = None):
+        """ Get user items 
+        """
+        query_string = '/users/{u}/items'
+        query = self.build_query(query_string, params)
+        return self.items_data(self.retrieve_data(query))
+
+    def collections(self, params = None):
+        """ Get user collections
+        """
+        query_string = '/users/{u}/collections'
+        query = self.build_query(query_string, params)
+        return self.collections_data(self.retrieve_data(query))
+
+    def groups(self, params = None):
+        """ Get user groups
+        """
+        query_string = '/users/{u}/groups'
+        query = self.build_query(query_string, params)
+        return self.groups_data(self.retrieve_data(query))
+        
+    def collection_items(self, params = None):
+        """ Get a collection's items 
+        """
+        query_string = '/users/{u}/collections/{collection}/items'
+        query = self.build_query(query_string, params)
+        return self.items_data(self.retrieve_data(query))
+
     def items_data(self, retrieved):
-        """ Takes the feed-parsed result of an API call, and returns a list
-            containing one or more dicts containing item data
+        """ Format and return data from API calls which return Items
         """
         # Shunt each 'content' block into a list
         item_parsed = [a['content'][0]['value'] for a in retrieved.entries]
@@ -153,58 +176,16 @@ class Zotero(object):
             elem = xml.fromstring(content.encode('utf-8'))
             keys = [e.text.lower() for e in elem.iter('th')]
             keys = dedup(keys)
-            values = [v.text for v in elem.iter('td')]
+            values = [v.text.encode('utf-8') for v in elem.iter('td')]
             zipped = dict(zip(keys, values))
             # add the utf-8 encoded 'title' and ID data to the dict:
             zipped['title'] = item_title[index].encode('utf-8')
             zipped['id'] = item_id[index].encode('utf-8')
             items.append(Item(zipped))
-            # items.append(zipped)
         return items
 
-    @retrieve
-    def bib_items(self, request, params = None, request_params = None):
-        """ Returns a list of strings formatted as HTML bibliography entries
-            you may specify a 'style' key (e.g. 'mla' in your {params}; any
-            default style in the Zotero Style Repository is valid
-        """
-        if params and 'content' not in params:
-            params['content'] = 'bib'
-        else:
-            params = {'content': 'bib'}
-        fp_object = self.retrieve_data(request, params, request_params)
-        items = []
-        for bib in fp_object.entries:
-            items.append(bib['content'][0]['value'].encode('utf-8'))
-        return items
-
-    @retrieve
-    def gen_items_data(self, retrieved):
-        """ Returns a generator object containing one or more dicts
-            of item data
-        """
-        # Shunt each 'content' block into a list
-        item_parsed = [a['content'][0]['value'] for a in retrieved.entries]
-        # Shunt each 'title' and item ID value into a list
-        item_title = [t['title'] for t in retrieved.entries]
-        item_id = [i['zapi_key'] for i in retrieved.entries]
-        items = []
-        for index, content in enumerate(item_parsed):
-            elem = xml.fromstring(content.encode('utf-8'))
-            keys = [e.text.lower() for e in elem.iter('th')]
-            values = [v.text for v in elem.iter('td')]
-            zipped = dict(zip(keys, values))
-            # add the utf-8 encoded 'title' and ID data to the dict:
-            zipped['title'] = item_title[index].encode('utf-8')
-            zipped['id'] = item_id[index].encode('utf-8')
-            items.append(zipped)
-        return (i for i in items)
-
-    @retrieve
     def collections_data(self, retrieved):
-        """ Takes the feed-parsed result of an API call, and returns a list
-            containing one or more dicts containing collection titles, IDs,
-            and the number of subcollections it contains (if any)
+        """ Format and return data from API calls which return collections
         """
         collections = []
         collection_key = [k['zapi_key'] for k in retrieved.entries]
@@ -219,11 +200,8 @@ class Zotero(object):
             collections.append(collection_data)
         return collections
 
-    @retrieve
     def groups_data(self, retrieved):
-        """ Takes the feed-parsed result of an API call, and returns a list
-            containing one or more dicts containing group titles, IDs,
-            and the total number of items they contain
+        """ Format and return data from API calls which return Groups
         """
         groups = []
         group_id = [t['title'] for t in retrieved.entries]
@@ -236,14 +214,6 @@ class Zotero(object):
             group_data['owner'] = group_author[index].encode('utf-8')
             groups.append(group_data)
         return groups
-
-    @retrieve
-    def tags_data(self, retrieved):
-        """ Takes the feed-parsed result of an API call, and returns a list
-            containing one or more tags
-        """
-        tags = [t['title'].encode('utf-8') for t in retrieved.entries]
-        return tags
 
 
 
@@ -274,18 +244,25 @@ def main():
     zot_id = auth_values[0]
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
-    # Pass optional URL and request parameters in a dict
-    par = {'limit': 2}
-    req = {'tag': 'Criticism, Textual'}
-    # print zot.items_data('top_level_items', par)
-    things = zot.items_data('items_for_tag', par, req)
-    for t in things:
-        print 'Title: %s\nSeries: %s\nID: %s' % (t.title, t.series_num, t.id)
-    # par2 = {'limit': 2, 'style': 'mla'}
-    # print zot.groups_data('user_groups')
-    # print zot.collections_data('user_collections', par)
-    # print zot.items_data('top_level_items', par)
-    # print zot.bib_items('top_level_items', par2)
+    zot.add_parameters(limit=5)
+    # returns list of Items
+    items = zot.items()
+    for item in items:
+        # this will explode unless your system encoding is set to UTF-8
+        print 'Author: %s | Title: %s' % (item.author, item.title)
+    # returns list of collection dicts
+    zot.add_parameters(limit=5)
+    collections = zot.collections()
+    for item in collections:
+        print 'Collection Title: %s | ID: %s' % (item['title'], item['id'])
+    # returns list of of group dicts
+    groups = zot.groups()
+    for group in groups:
+        print group['id']
+    # returns a collection's items:
+    collection_items = zot.collection_items('PRMD6BGB')
+    for item in collection_item:
+        print 'Author: %s | Title: %s' % (item.author, item.title)
 
 
 if __name__ == "__main__":
