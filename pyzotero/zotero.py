@@ -92,16 +92,20 @@ class Zotero(object):
         self.url_params = None
         return feedparser.parse(data)
 
-    def retrieve(func):
+    def retrieve(output_func):
         """ Decorator for Zotero methods; calls retrieve_data() and passes
-            the result to the decorated method
+            the result to the function specified by output_func
         """
-        def wrap(self, *args, **kwargs):
-            """ Returns result of retrieve_data() to the decorated method
+        def wrap(func):
+            """ Wrapper for original function
             """
-            orig_func = func(self, *args, **kwargs)
-            retr = self.retrieve_data(orig_func)
-            return self.items_data(retr)
+            def wrapped_f(self, *args, **kwargs):
+                """ Returns result of retrieve_data(), then output_func
+                """
+                orig_func = func(self, *args, **kwargs)
+                retr = self.retrieve_data(orig_func)
+                return eval(output_func)(retr)
+            return wrapped_f
         return wrap
 
     def add_parameters(self, **params):
@@ -131,30 +135,30 @@ class Zotero(object):
         query = '%s?%s' % (query, self.url_params)
         return query
 
-    @retrieve
+    @retrieve('self.items_data')
     def items(self, params = None):
         """ Get user items 
         """
         query_string = '/users/{u}/items'
         return self.build_query(query_string, params)
 
+    @retrieve('self.collections_data')
     def collections(self, params = None):
         """ Get user collections
         """
         query_string = '/users/{u}/collections'
-        query = self.build_query(query_string, params)
-        return self.collections_data(self.retrieve_data(query))
+        return self.build_query(query_string, params)
 
+    @retrieve('self.groups_data')
     def groups(self, params = None):
         """ Get user groups
         """
         query_string = '/users/{u}/groups'
-        query = self.build_query(query_string, params)
-        return self.groups_data(self.retrieve_data(query))
+        return self.build_query(query_string, params)
 
-    @retrieve
+    @retrieve('self.items_data')
     def collection_items(self, collection = None):
-        """ Get a collection's items 
+        """ Get a specific collection's items
         """
         query_string = '/users/{u}/collections/{c}/items'
         query_string = query_string.format(u = self.user_id, c = collection)
