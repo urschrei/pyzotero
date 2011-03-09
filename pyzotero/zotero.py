@@ -174,12 +174,13 @@ class Zotero(object):
         item_id = [i['zapi_key'] for i in retrieved.entries]
         items = []
         for index, content in enumerate(item_parsed):
-            elem = xml.fromstring(content.encode('utf-8'))
-            keys = [e.text.lower() for e in elem.iter('th')]
+            # define a utf-8 parser with which to parse the content HTML
+            utf = xml.XMLParser(encoding = 'utf-8')
+            elem = xml.XML(content, utf)
+            keys = [e.text.lower().encode('utf-8') for e in elem.iter('th')]
             keys = dedup(keys)
             values = [v.text.encode('utf-8') for v in elem.iter('td')]
             zipped = dict(zip(keys, values))
-            # add the utf-8 encoded 'title' and ID data to the dict:
             zipped['title'] = item_title[index].encode('utf-8')
             zipped['id'] = item_id[index].encode('utf-8')
             items.append(Item(zipped))
