@@ -35,7 +35,9 @@ def open_file(to_read):
 
 def dedup(suspects):
     """ Check for duplicate key entries (e.g. contributor) and append a number
-    to these """
+        to these. This is a horrible hack, but the Zotero API returns items
+        with non-unique key values (arbitrary no. of contributors/authors/eds)
+    """
     seen = []
     counter = 2
     for candidate in suspects:
@@ -46,6 +48,7 @@ def dedup(suspects):
         else:
             seen.append(candidate)
     return seen
+
 
 
 class Zotero(object):
