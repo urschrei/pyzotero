@@ -157,7 +157,7 @@ class Zotero(object):
         return self.build_query(query_string, params)
 
     @retrieve('self.items_data')
-    def collection_items(self, collection = None):
+    def collection_items(self, collection):
         """ Get a specific collection's items
         """
         query_string = '/users/{u}/collections/{c}/items'
