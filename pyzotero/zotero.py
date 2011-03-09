@@ -99,10 +99,9 @@ class Zotero(object):
         def wrap(self, *args, **kwargs):
             """ Returns result of retrieve_data() to the decorated method
             """
-            # build the query string from the request parameters
-            # add request params to
-            retr = self.retrieve_data(*args, **kwargs)
-            return func(self, retr)
+            orig_func = func(self, *args, **kwargs)
+            retr = self.retrieve_data(orig_func)
+            return self.items_data(retr)
         return wrap
 
     def add_parameters(self, **params):
@@ -132,12 +131,12 @@ class Zotero(object):
         query = '%s?%s' % (query, self.url_params)
         return query
 
+    @retrieve
     def items(self, params = None):
         """ Get user items 
         """
         query_string = '/users/{u}/items'
-        query = self.build_query(query_string, params)
-        return self.items_data(self.retrieve_data(query))
+        return self.build_query(query_string, params)
 
     def collections(self, params = None):
         """ Get user collections
@@ -152,14 +151,14 @@ class Zotero(object):
         query_string = '/users/{u}/groups'
         query = self.build_query(query_string, params)
         return self.groups_data(self.retrieve_data(query))
-        
+
+    @retrieve
     def collection_items(self, collection = None):
         """ Get a collection's items 
         """
         query_string = '/users/{u}/collections/{c}/items'
         query_string = query_string.format(u = self.user_id, c = collection)
-        query = self.build_query(query_string)
-        return self.items_data(self.retrieve_data(query))
+        return self.build_query(query_string)
 
     def items_data(self, retrieved):
         """ Format and return data from API calls which return Items
