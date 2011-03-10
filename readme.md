@@ -43,7 +43,7 @@ Valid parameters:
 Special parameters: `content` and `style`
 
 * `content` (string, 'html', 'bib', default: 'html') if 'bib' is passed, you may also pass:
-* `style`, (string, containing any valid CSL style in the Zotero Style Repository). Example:  
+* `style` (string, containing any valid CSL style in the Zotero Style Repository). Example:  
 `zot.add_parameters(content = 'bib', format = 'mla')`  
 The return value is a **list** containing UTF-8 formatted HTML `div`s:  
 `['<div class="csl-entry">(content)</div>, … ]`
