@@ -47,7 +47,7 @@ The following methods are currently available:
  * `items()`, returns Zotero library items
  * `top()`, returns top-level Zotero library items
  * `item(item ID)`, returns a specific item
- * `children()`, returns the child items of a specific item
+ * `children(item ID)`, returns the child items of a specific item
  * `tag_items(item ID)`, returns items for a specific tag
  * `group_items(group ID)`, returns items from a specific group
  * `group_top(group ID)`, returns top-level items from a specific group
