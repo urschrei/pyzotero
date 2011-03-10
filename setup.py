@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'Pyzotero',
-    version = '0.5.1',
+    version = '0.6',
     description = 'Python wrapper for the Zotero API',
     author = 'Stephan Hügel',
     author_email = 'hugels@tcd.ie',

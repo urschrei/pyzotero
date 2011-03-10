@@ -21,7 +21,7 @@ The [feedparser][3] module is required. It should automatically be installed whe
     zot = zotero.Zotero(user_id, user_key)
     items = zot.items()
     for item in items:
-        print 'Author: %s | Title: %s' % (item.author, item.title)
+        print 'Author: %s | Title: %s' % (item['author'], item['title'])
 
 ## General Usage ##
 
@@ -67,8 +67,8 @@ The following methods are currently available:
  * `group_collection_top(group ID, collection ID)`, returns a specific collection's top-level items from a specific group
  * `collection_items(collection ID)`, returns items from the specified collection
 
-Example of returned data: `[<Item object at 0x11338f0>, … ]`  
-Example Item properties: `id`, `title`, `author`, `publisher`  
+Example of returned data: `[{'publication': 'Genetic Joyce Studies', 'author': 'Susan Brown', 'url': 'http://www.geneticjoycestudies.org/GJS7/GJS7brown.html', 'type': 'Journal Article', 'title': 'The Mystery of the Fuga per Canonem Solved', 'date': 'Spring 2007', 'accessed': '2010-03-25 20:30:18', 'issue': '7', 'id': '9T3K4EES'}, … ]`  
+ 
 See ‘Hello World’ example, above  
 
 ### To retrieve collections:###
@@ -98,14 +98,14 @@ Example of returned data: `['Authority in literature', 'Errata', … ]`
 # Notes #
 
 
-All methods which return items currently return **lists** of **`Item` instances**. An instance's properties can be accessed like so: `Item.property`. If the property doesn't exist, `None` will be returned. **THIS IS NOT A STABLE FEATURE**; all other methods currently return **lists** of **dicts**, and I'll probably revert to that for items, too. Example:  
+All methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. Example:  
 
     zot = zotero.Zotero(user_id, user_key)  
     collections = zot.collections()  
     for collection in collections:  
         print 'Name: %s | ID: %s' % (collection['title'], collection['id'])  
 
-If you attempt to call a key which does not exist, a `KeyError` will be raised. Alternatively, you can use `dictname.get('key', None)` which will simply return `None` if a key does not exist.  
+If you attempt to call/print/access a key which does not exist, a `KeyError` will be raised. Alternatively, you can use e.g. `item.get('author', None)` which will simply return `None` if a key does not exist. Frequently missing keys are a definite possibility, since Zotero library items have very few mandatory fields.
 
 **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.  
 

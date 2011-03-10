@@ -9,7 +9,7 @@ Copyright Stephan Hügel, 2011
 License: http://www.gnu.org/licenses/gpl-3.0.txt
 """
 
-__version__ = '0.5.1'
+__version__ = '0.6'
 
 import sys
 import os
@@ -366,7 +366,7 @@ class Zotero(object):
             zipped = dict(zip(keys, values))
             zipped['title'] = item_title[index].encode('utf-8')
             zipped['id'] = item_id[index].encode('utf-8')
-            items.append(Item(zipped))
+            items.append(zipped)
         return items
 
     def bib_items(self, retrieved):
@@ -414,22 +414,6 @@ class Zotero(object):
         tags = [t['title'].encode('utf-8') for t in retrieved.entries]
         return tags
 
-class Item(object):
-    """ Adds all retrieved values as instance properties by key, value.
-        Currently, this class is little more than a container for what would
-        otherwise be dicts (and I'm not convinced they aren't the way to go)
-    """
-    def __init__(self, values):
-        super(Item, self).__init__()
-        # Hackish and bad; creates instance attributes on the fly
-        self.__dict__ = dict(values)
-
-    def __getattr__(self, name):
-        """ Only called if __getattribute__ fails, so we can return
-            None without too much hand-wringing
-        """
-        return None
-
 
 
 def main():
@@ -441,11 +425,11 @@ def main():
     zot_id = auth_values[0]
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
-    zot.add_parameters(limit=3, start=50, content='bib')
+    zot.add_parameters(limit=3, start=50)
     items = zot.top()
-    print items
+    print items[0]
     for item in items:
-        print item.title, item.id
+        print 'Title: %s\nItem ID: %s\n' % (item['title'], item['id'])
     # print zot.collections()
     # print zot.groups()
     # print zot.tags()
