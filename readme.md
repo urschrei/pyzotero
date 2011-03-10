@@ -47,7 +47,7 @@ The following methods are currently available:
  * `items()`, returns Zotero library items
  * `top()`, returns top-level Zotero library items
  * `item(item ID)`, returns a specific item
- * `children()`, returns child items under a specific item
+ * `children()`, returns the child items of a specific item
  * `tag_items(item ID)`, returns items for a specific tag
  * `group_items(group ID)`, returns items from a specific group
  * `group_top(group ID)`, returns top-level items from a specific group
@@ -59,6 +59,10 @@ The following methods are currently available:
  * `group_collection_top(group ID, collection ID)`, returns a specific collection's top-level items from a specific group
  * `collection_items(collection ID)`, returns items from the specified collection
 
+Example of returned data: `[<Item object at 0x11338f0>, … ]`  
+Example Item properties: `id`, `title`, `author`, `publisher`  
+See ‘Hello World’ example, above  
+
 ### To retrieve collections:###
 
  * `collections()`, returns a user's collections
@@ -66,9 +70,13 @@ The following methods are currently available:
  * `group_collections(group ID)`, returns collections for a specific group
  * `group_collection(group ID, collection ID)`, returns a specific collection from a specific group
 
+Example of returned data: `[{'id': 'PRMD6BGB', 'title': "A Midsummer Night's Dream"}, … ]`
+
 ### To retrieve groups:###
 
  * `groups()`, returns Zotero library groups
+
+Example of returned data: `[{'total_items': '468', 'owner': 'urschrei', 'id': 'DFW'}, … ]`
 
 ### To retrieve tags: ###
 
@@ -76,6 +84,8 @@ The following methods are currently available:
 * `item_tags(item ID)`, returns tags from a specific item
 * `group_tags(group ID)`, returns tags from a specific group
 * `group_item_tags(group ID, item ID)`, returns tags from a specific item from a specific group
+
+Example of returned data: `['Authority in literature', 'Errata', … ]`
 
 # Notes #
 

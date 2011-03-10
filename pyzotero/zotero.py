@@ -429,10 +429,14 @@ def main():
     zot_id = auth_values[0]
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
-    zot.add_parameters(limit=10, start=50)
+    zot.add_parameters(limit=3, start=50)
     items = zot.top()
+    print items
     for item in items:
         print item.title, item.id
+    print zot.collections()
+    print zot.groups()
+    print zot.tags()
 
 if __name__ == "__main__":
     try:
