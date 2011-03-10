@@ -360,8 +360,8 @@ class Zotero(object):
             # define a utf-8 parser with which to parse the content HTML
             utf = xml.XMLParser(encoding = 'utf-8')
             elem = xml.XML(content, utf)
-            keys = [e.text.lower().encode('utf-8') for e in elem.iter('th')]
-            keys = dedup(keys)
+            keys = dedup(
+            [e.text.lower().encode('utf-8') for e in elem.iter('th')])
             values = [v.text.encode('utf-8') for v in elem.iter('td')]
             zipped = dict(zip(keys, values))
             zipped['title'] = item_title[index].encode('utf-8')
