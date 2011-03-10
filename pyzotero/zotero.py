@@ -90,14 +90,14 @@ class Zotero(object):
         return feedparser.parse(data)
 
     def retrieve(output_func):
-        """ Decorator for Zotero methods; calls retrieve_data() and passes
+        """ Decorator for Zotero methods; calls _retrieve_data() and passes
             the result to the function specified by output_func
         """
         def wrap(func):
             """ Wrapper for original function
             """
             def wrapped_f(self, *args, **kwargs):
-                """ Returns result of retrieve_data(), then output_func
+                """ Returns result of _retrieve_data(), then output_func
                 """
                 orig_func = func(self, *args, **kwargs)
                 retr = self.retrieve_data(orig_func)
@@ -115,7 +115,7 @@ class Zotero(object):
         params = urllib.urlencode(params)
         self.url_params = params
 
-    def build_query(self, query_string, params = None):
+    def _build_query(self, query_string, params = None):
         """ Set request parameters. Will always add the user ID if it hasn't
             been specifically set by an API call
         """
@@ -136,14 +136,14 @@ class Zotero(object):
         """ Get user items 
         """
         query_string = '/users/{u}/items'
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def top(self):
         """ Get user top-level items
         """
         query_string = '/users/{u}/items/top'
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def item(self, item):
@@ -151,7 +151,7 @@ class Zotero(object):
         """
         query_string = '/users/{u}/items/{i}'.format(
         u = self.user_id, i = item)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def children(self, item):
@@ -160,7 +160,7 @@ class Zotero(object):
         query_string = '/users/{u}/items/{i}/children'.format(
         u = self.user_id,
         i = item)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def tag_items(self, tag):
@@ -169,7 +169,7 @@ class Zotero(object):
         query_string = '/users/{u}/tags/{t}/items'.format(
         u = self.user_id,
         t = tag)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def collection_items(self, collection):
@@ -178,7 +178,7 @@ class Zotero(object):
         query_string = '/users/{u}/collections/{c}/items'.format(
         u = self.user_id,
         c = collection)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def group_items(self, group):
@@ -186,7 +186,7 @@ class Zotero(object):
         """
         query_string = '/groups/{g}/items'.format(
         g = group)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def group_top(self, group):
@@ -194,7 +194,7 @@ class Zotero(object):
         """
         query_string = '/groups/{g}/items/top'.format(
         g = group)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def group_item(self, group, item):
@@ -203,7 +203,7 @@ class Zotero(object):
         query_string = '/groups/{g}/items/{i}'.format(
         g = group,
         i = item)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def group_item_children(self, group, item):
@@ -212,7 +212,7 @@ class Zotero(object):
         query_string = '/groups/{g}/items/{i}/children'.format(
         g = group,
         i = item)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def group_items_tag(self, group, tag):
@@ -221,7 +221,7 @@ class Zotero(object):
         query_string = '/groups/{g}/tags/{t}/items'.format(
         g = group,
         t = tag)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def group_collection_items(self, group, collection):
@@ -230,7 +230,7 @@ class Zotero(object):
         query_string = '/groups/{g}/collections/{c}/items'.format(
         g = group,
         c = collection)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def group_collection_top(self, group, collection):
@@ -239,7 +239,7 @@ class Zotero(object):
         query_string = '/groups/{g}/collections/{c}/items/top'.format(
         g = group,
         c = collection)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.items_data')
     def group_collection_item(self, group, collection, item):
@@ -249,14 +249,14 @@ class Zotero(object):
         g = group,
         c = collection,
         i = item)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.collections_data')
     def collections(self):
         """ Get user collections
         """
         query_string = '/users/{u}/collections'
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.collections_data')
     def collections_sub(self, collection):
@@ -265,7 +265,7 @@ class Zotero(object):
         query_string = '/users/{u}/collections/{c}/collections'.format(
         u = self.user_id,
         c = collection)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.collections_data')
     def group_collections(self, group):
@@ -274,7 +274,7 @@ class Zotero(object):
         query_string = '/groups/{group}/collections'.format(
         u = self.user_id,
         g = group)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.collections_data')
     def group_collection(self, group, collection):
@@ -284,7 +284,7 @@ class Zotero(object):
         u = self.user_id,
         g = group,
         c = collection)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.collections_data')
     def group_collection_sub(self, group, collection):
@@ -294,21 +294,21 @@ class Zotero(object):
         u = self.user_id,
         g = group,
         c = collection)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.groups_data')
     def groups(self):
         """ Get user groups
         """
         query_string = '/users/{u}/groups'
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.tags_data')
     def tags(self):
         """ Get tags for a specific item
         """
         query_string = '/users/{u}/tags'
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.tags_data')
     def item_tags(self, item):
@@ -317,7 +317,7 @@ class Zotero(object):
         query_string = '/users/{u}/items/{i}/tags'.format(
         u = self.user_id,
         i = item)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.tags_data')
     def group_tags(self, group):
@@ -326,7 +326,7 @@ class Zotero(object):
         query_string = '/groups/{g}/tags'.format(
         u = self.user_id,
         g = group)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     @retrieve('self.tags_data')
     def group_item_tags(self, group, item):
@@ -336,7 +336,7 @@ class Zotero(object):
         u = self.user_id,
         g = group,
         i = item)
-        return self.build_query(query_string)
+        return self._build_query(query_string)
 
     def items_data(self, retrieved):
         """ Call either standard_items or bib_items, depending on the URL param
