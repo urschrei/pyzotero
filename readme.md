@@ -21,8 +21,8 @@ The [feedparser][3] module is required. It should automatically be installed whe
     zot = zotero.Zotero(user_id, user_key)
     items = zot.items()
     for item in items:
-    print 'Author: %s | Title: %s' % (item.author, item.title)
-    
+        print 'Author: %s | Title: %s' % (item.author, item.title)
+
 ## General Usage ##
 
 Additional parameters may be set using the following method:  
@@ -98,21 +98,20 @@ Example of returned data: `['Authority in literature', 'Errata', … ]`
 # Notes #
 
 
-* All methods which return items currently return **lists** of **`Item` instances**. An instance's properties can be accessed like so: `Item.property`. If the property doesn't exist, `None` will be returned. **THIS IS NOT A STABLE FEATURE**; all other methods currently return **lists** of **dicts**, and I'll probably revert to that for items, too. Example:
+All methods which return items currently return **lists** of **`Item` instances**. An instance's properties can be accessed like so: `Item.property`. If the property doesn't exist, `None` will be returned. **THIS IS NOT A STABLE FEATURE**; all other methods currently return **lists** of **dicts**, and I'll probably revert to that for items, too. Example:  
 
-    zot = zotero.Zotero(user_id, user_key)
-    collections = zot.collections()
+    zot = zotero.Zotero(user_id, user_key)  
+    collections = zot.collections()  
     for collection in collections:  
-        print 'Name: %s | ID: %s' % (collection['title'], collection['id'])
+        print 'Name: %s | ID: %s' % (collection['title'], collection['id'])  
 
-* If you attempt to call a key which does not exist, a `KeyError` will be raised. Alternatively, you can use `dictname.get('key', None)` which will simply return `None` if a key does not exist.
+If you attempt to call a key which does not exist, a `KeyError` will be raised. Alternatively, you can use `dictname.get('key', None)` which will simply return `None` if a key does not exist.  
 
+**URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.  
 
-* **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.
+Running zotero.py from the command line will attempt to import your ID and key from a file named `zotero_keys.txt` in your home directory (see comment in `main()` for details), create a new Zotero object and call some of the methods.  
 
-* Running zotero.py from the command line will attempt to import your ID and key from a file named `zotero_keys.txt` in your home directory (see comment in `main()` for details), create a new Zotero object and call some of the methods.
-
-* **ZOTERO LIBRARY ITEMS ARE NOT ASCII-ENCODED**. In Python 2.x, the `print` function will attempt to encode its output as ASCII unless you specifically tell it otherwise. Customising your encoding is usually accomplished using `sitecustomize.py`, but you're going to have to load and fire your own foot-gun.
+**ZOTERO LIBRARY ITEMS ARE NOT ASCII-ENCODED**. In Python 2.x, the `print` function will attempt to encode its output as ASCII unless you specifically tell it otherwise. Customising your encoding is usually accomplished using `sitecustomize.py`, but you're going to have to load and fire your own foot-gun.  
 
 [1]: http://www.zotero.org/support/dev/server_api "Zotero Server API"
 [2]: http://www.zotero.org/settings/keys/new "New Zotero Access Credentials"
