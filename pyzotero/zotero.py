@@ -154,96 +154,106 @@ class Zotero(object):
     def item(self, item):
         """ Get a specific item
         """
-        query_string = '/users/{u}/items/{i}'
-        query_string = query_string.format(u = self.user_id, i = item)
+        query_string = '/users/{u}/items/{i}'.format(
+        u = self.user_id, i = item)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def children(self, item):
         """ Get a specific item
         """
-        query_string = '/users/{u}/items/{i}/children'
-        query_string = query_string.format(u = self.user_id, i = item)
+        query_string = '/users/{u}/items/{i}/children'.format(
+        u = self.user_id,
+        i = item)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def tag_items(self, tag):
         """ Get items for a specific tag
         """
-        query_string = '/users/{u}/tags/{t}/items'
-        query_string = query_string.format(u = self.user_id, t = tag)
+        query_string = '/users/{u}/tags/{t}/items'.format(
+        u = self.user_id,
+        t = tag)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def collection_items(self, collection):
         """ Get a specific collection's items
         """
-        query_string = '/users/{u}/collections/{c}/items'
-        query_string = query_string.format(u = self.user_id, c = collection)
+        query_string = '/users/{u}/collections/{c}/items'.format(
+        u = self.user_id,
+        c = collection)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def group_items(self, group):
         """ Get a specific group's items
         """
-        query_string = '/groups/{g}/items'
-        query_string = query_string.format(g = group)
+        query_string = '/groups/{g}/items'.format(
+        g = group)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def group_top(self, group):
         """ Get a specific group's top-level items
         """
-        query_string = '/groups/{g}/items/top'
-        query_string = query_string.format(g = group)
+        query_string = '/groups/{g}/items/top'.format(
+        g = group)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def group_item(self, group, item):
         """ Get a specific group item
         """
-        query_string = '/groups/{g}/items/{i}'
-        query_string = query_string.format(g = group, i = item)
+        query_string = '/groups/{g}/items/{i}'.format(
+        g = group,
+        i = item)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def group_item_children(self, group, item):
         """ Get a specific group item's child items
         """
-        query_string = '/groups/{g}/items/{i}/children'
-        query_string = query_string.format(g = group, i = item)
+        query_string = '/groups/{g}/items/{i}/children'.format(
+        g = group,
+        i = item)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def group_items_tag(self, group, tag):
         """ Get a specific group's items for a specific tag
         """
-        query_string = '/groups/{g}/tags/{t}/items'
-        query_string = query_string.format(g = group, t = tag)
+        query_string = '/groups/{g}/tags/{t}/items'.format(
+        g = group,
+        t = tag)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def group_collection_items(self, group, collection):
         """ Get a specific group's items for a specific collection
         """
-        query_string = '/groups/{g}/collections/{c}/items'
-        query_string = query_string.format(g = group, c = collection)
+        query_string = '/groups/{g}/collections/{c}/items'.format(
+        g = group,
+        c = collection)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def group_collection_top(self, group, collection):
         """ Get a specific group's top-level items for a specific collection
         """
-        query_string = '/groups/{g}/collections/{c}/items/top'
-        query_string = query_string.format(g = group, c = collection)
+        query_string = '/groups/{g}/collections/{c}/items/top'.format(
+        g = group,
+        c = collection)
         return self.build_query(query_string)
 
     @retrieve('self.items_data')
     def group_collection_item(self, group, collection, item):
         """ Get a specific collection's item from a specific group
         """
-        query_string = '/groups/{g}/collections/{c}/items/{i}'
-        query_string = query_string.format(g = group, c = collection, i = item)
+        query_string = '/groups/{g}/collections/{c}/items/{i}'.format(
+        g = group,
+        c = collection,
+        i = item)
         return self.build_query(query_string)
 
     @retrieve('self.collections_data')
@@ -257,16 +267,18 @@ class Zotero(object):
     def collections_sub(self, collection):
         """ Get subcollections for a specific collection
         """
-        query_string = '/users/{u}/collections/{c}/collections'
-        query_string = query_string.format(u = self.user_id, c = collection)
+        query_string = '/users/{u}/collections/{c}/collections'.format(
+        u = self.user_id,
+        c = collection)
         return self.build_query(query_string)
 
     @retrieve('self.collections_data')
     def group_collections(self, group):
         """ Get collections for a specific group
         """
-        query_string = '/groups/{group}/collections'
-        query_string = query_string.format(u = self.user_id, g = group)
+        query_string = '/groups/{group}/collections'.format(
+        u = self.user_id,
+        g = group)
         return self.build_query(query_string)
 
     @retrieve('self.collections_data')
