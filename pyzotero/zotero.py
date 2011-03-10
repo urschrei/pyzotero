@@ -253,6 +253,39 @@ class Zotero(object):
         query_string = '/users/{u}/collections'
         return self.build_query(query_string)
 
+    @retrieve('self.collections_data')
+    def collections_sub(self, collection):
+        """ Get subcollections for a specific collection
+        """
+        query_string = '/users/{u}/collections/{c}/collections'
+        query_string = query_string.format(u = self.user_id, c = collection)
+        return self.build_query(query_string)
+
+    @retrieve('self.collections_data')
+    def group_collections(self, group):
+        """ Get collections for a specific group
+        """
+        query_string = '/groups/{group}/collections'
+        query_string = query_string.format(u = self.user_id, g = group)
+        return self.build_query(query_string)
+
+
+    @retrieve('self.collections_data')
+    def group_collection(self, group, collection):
+        """ Get collections for a specific group
+        """
+        query_string = '/groups/{g}/collections/{c}'
+        query_string = query_string.format(u = self.user_id, g = group, c = collection)
+        return self.build_query(query_string)
+
+    @retrieve('self.collections_data')
+    def group_collection_sub(self, group, collection):
+        """ Get collections for a specific group
+        """
+        query_string = '/groups/{g}/collections/{c}/collections'
+        query_string = query_string.format(u = self.user_id, g = group, c = collection)
+        return self.build_query(query_string)
+
     @retrieve('self.groups_data')
     def groups(self):
         """ Get user groups
