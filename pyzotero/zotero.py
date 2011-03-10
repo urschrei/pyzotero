@@ -54,10 +54,6 @@ class Zotero(object):
     """ Zotero API methods
         A full list of methods can be found here:
         http://www.zotero.org/support/dev/server_api
-        Most of the methods return Atom feed documents, which can be parsed
-        using feedparser (http://www.feedparser.org/docs/)
-
-        See the readme for details of valid URL and request parameters
     """
 
     def __init__(self, user_id = None, user_key = None):
