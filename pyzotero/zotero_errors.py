@@ -56,6 +56,6 @@ class MissingCredentials(PyZoteroError):
 
 
 class HTTPError(PyZoteroError):
-    """ Raised raised for miscellaneous URLLib errors
+    """ Raised for miscellaneous URLLib errors
     """
     pass
