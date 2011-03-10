@@ -92,10 +92,10 @@ Example of returned data: `['Authority in literature', 'Errata', … ]`
 
 * All methods which return items currently return **lists** of **`Item` instances**. An instance's properties can be accessed like so: `Item.property`. If the property doesn't exist, `None` will be returned. **THIS IS NOT A STABLE FEATURE**; all other methods currently return **lists** of **dicts**, and I'll probably revert to that for items, too. Example:
 
-    `zot = zotero.Zotero(user_id, user_key)`  
-    `collections = zot.collections()`  
-    `for collection in collections:`  
-    `       print 'Name: %s | ID: %s' % (collection['title'], collection['id'])`
+    zot = zotero.Zotero(user_id, user_key)
+    collections = zot.collections()
+    for collection in collections:  
+        print 'Name: %s | ID: %s' % (collection['title'], collection['id'])
 
 * If you attempt to call a key which does not exist, a `KeyError` will be raised. Alternatively, you can use `dictname.get('key', None)` which will simply return `None` if a key does not exist.
 
