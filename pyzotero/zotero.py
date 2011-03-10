@@ -109,6 +109,7 @@ class Zotero(object):
     def add_parameters(self, **params):
         """ Set URL parameters. Will always add the user key
         """
+        self.url_params = None
         if params:
             params['key'] = self.user_key
         else: 
