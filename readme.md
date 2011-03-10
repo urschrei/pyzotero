@@ -43,9 +43,21 @@ Valid parameters:
 The following methods are currently available:
 
  * `items()`, returns Zotero library items
+ * `top()`, returns top-level Zotero library items
+ * `item(item ID)`, returns a specific item
+ * `children()`, returns child items under a specific item
+ * `tag_items(item ID)`, returns items for a specific tag
+ * `group_items(group ID)`, returns items for a specific group
+ * `group_top(group ID)`, returns top-level items for a specific group
+ * `group_item(group ID, item ID)`, returns a specific item for a specific group
+ * `group_item_children(group ID, item ID)`, returns the child items for a specific item for a specific group
+ * `group_items_tag(group ID, tag)`, returns a specific group's items for a specific tag
+ * `group_collection_items(group ID, collection ID)`, returns a specific collection's items from a specific group
+ * `group_collection_item(group ID, collection ID, item ID)`, returns a specific collection's item from a specific group
+ * `group_collection_top(group ID, collection ID)`, returns a specific collection's top-level items from a specific group
+ * `collection_items(collection ID)`, returns Zotero library items from the specified collection
  * `collections()`, returns Zotero library collections
  * `groups()`, returns Zotero library groups
- * `collection_items(collection ID)`, returns Zotero library items from the specified collection
 
 Note: the `items()` and `collection_items()` methods currently return **lists** of **`Item` instances**. An instance's properties can be accessed like so: `Item.property`. If the property doesn't exist, `None` will be returned. **THIS IS NOT A STABLE FEATURE**; all other methods currently return **lists** of **dicts**, and I'll probably revert to that for items, too. Example:
 
