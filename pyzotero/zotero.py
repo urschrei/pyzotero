@@ -269,21 +269,24 @@ class Zotero(object):
         query_string = query_string.format(u = self.user_id, g = group)
         return self.build_query(query_string)
 
-
     @retrieve('self.collections_data')
     def group_collection(self, group, collection):
         """ Get collections for a specific group
         """
-        query_string = '/groups/{g}/collections/{c}'
-        query_string = query_string.format(u = self.user_id, g = group, c = collection)
+        query_string = '/groups/{g}/collections/{c}'.format(
+        u = self.user_id,
+        g = group,
+        c = collection)
         return self.build_query(query_string)
 
     @retrieve('self.collections_data')
     def group_collection_sub(self, group, collection):
         """ Get collections for a specific group
         """
-        query_string = '/groups/{g}/collections/{c}/collections'
-        query_string = query_string.format(u = self.user_id, g = group, c = collection)
+        query_string = '/groups/{g}/collections/{c}/collections'.format(
+        u = self.user_id,
+        g = group,
+        c = collection)
         return self.build_query(query_string)
 
     @retrieve('self.groups_data')
@@ -291,6 +294,41 @@ class Zotero(object):
         """ Get user groups
         """
         query_string = '/users/{u}/groups'
+        return self.build_query(query_string)
+
+    @retrieve('self.tags_data')
+    def tags(self):
+        """ Get tags for a specific item
+        """
+        query_string = '/users/{u}/tags'
+        return self.build_query(query_string)
+
+    @retrieve('self.tags_data')
+    def item_tags(self, item):
+        """ Get tags for a specific item
+        """
+        query_string = '/users/{u}/items/{i}/tags'.format(
+        u = self.user_id,
+        i = item)
+        return self.build_query(query_string)
+
+    @retrieve('self.tags_data')
+    def group_tags(self, group):
+        """ Get tags for a specific group
+        """
+        query_string = '/groups/{g}/tags'.format(
+        u = self.user_id,
+        g = group)
+        return self.build_query(query_string)
+
+    @retrieve('self.tags_data')
+    def group_item_tags(self, group, item):
+        """ Get tags for a specific group
+        """
+        query_string = '/groups/{g}/items/{i}/tags'.format(
+        u = self.user_id,
+        g = group,
+        i = item)
         return self.build_query(query_string)
 
     def items_data(self, retrieved):
@@ -346,7 +384,11 @@ class Zotero(object):
             groups.append(group_data)
         return groups
 
-
+    def tags_data(self, retrieved):
+        """ Format and return data from API call which return Tags
+        """
+        tags = [t['title'].encode('utf-8') for t in retrieved.entries]
+        return tags
 
 class Item(object):
     """ Adds all retrieved values as instance properties by key, value.
@@ -375,26 +417,10 @@ def main():
     zot_id = auth_values[0]
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
-    zot.add_parameters(limit=5, start=10)
-    # returns list of Items
-    items = zot.items()
+    zot.add_parameters(limit=10, start=50)
+    items = zot.top()
     for item in items:
-        # this will explode unless your system encoding is set to UTF-8
-        print 'Author: %s | Title: %s' % (item.author, item.title)
-    # returns list of collection dicts
-    zot.add_parameters(limit=5)
-    collections = zot.collections()
-    for item in collections:
-        print 'Collection Title: %s | ID: %s' % (item['title'], item['id'])
-    # returns list of of group dicts
-    groups = zot.groups()
-    for group in groups:
-        print group['id']
-    # returns a collection's items:
-    collection_items = zot.collection_items('PRMD6BGB')
-    for item in collection_items:
-        print 'Author: %s | Title: %s' % (item.author, item.title)
-
+        print item.title, item.id
 
 if __name__ == "__main__":
     try:

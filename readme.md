@@ -70,6 +70,12 @@ The following methods are currently available:
 
  * `groups()`, returns Zotero library groups
 
+### To retrieve tags: ###
+
+* `tags()`, returns a user's tags
+* `item_tags(item ID)`, returns tags from a specific item
+* `group_tags(group ID)`, returns tags from a specific group
+* `group_item_tags(group ID, item ID)`, returns tags from a specific item from a specific group
 
 # Notes #
 
@@ -79,7 +85,7 @@ The following methods are currently available:
     `zot = zotero.Zotero(user_id, user_key)`  
     `collections = zot.collections()`  
     `for collection in collections:`  
-    `    print 'Name: %s | ID: %s' % (collection['title'], collection['id'])`
+    `       print 'Name: %s | ID: %s' % (collection['title'], collection['id'])`
 
 * If you attempt to call a key which does not exist, a `KeyError` will be raised. Alternatively, you can use `dictname.get('key', None)` which will simply return `None` if a key does not exist.
 
