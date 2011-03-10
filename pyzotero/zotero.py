@@ -87,7 +87,6 @@ class Zotero(object):
                 raise ze.HTTPError, \
                 "HTTP Error %s (%s)" % (error.msg, error.code)
         # parse the result into Python data structures
-        self.url_params = None
         return feedparser.parse(data)
 
     def retrieve(output_func):
@@ -340,6 +339,15 @@ class Zotero(object):
         return self.build_query(query_string)
 
     def items_data(self, retrieved):
+        """ Call either standard_items or bib_items, depending on the URL param
+        """
+        # Content request in 'bib' format, so call bib_items
+        if self.url_params.find('=bib') != -1:
+            return self.bib_items(retrieved)
+        else:
+            return self.standard_items(retrieved)
+
+    def standard_items(self, retrieved):
         """ Format and return data from API calls which return Items
         """
         # Shunt each 'content' block into a list
@@ -359,6 +367,14 @@ class Zotero(object):
             zipped['title'] = item_title[index].encode('utf-8')
             zipped['id'] = item_id[index].encode('utf-8')
             items.append(Item(zipped))
+        return items
+
+    def bib_items(self, retrieved):
+        """ Returns a list of strings formatted as HTML bibliography entries
+        """
+        items = []
+        for bib in retrieved.entries:
+            items.append(bib['content'][0]['value'].encode('utf-8'))
         return items
 
     def collections_data(self, retrieved):
@@ -425,14 +441,14 @@ def main():
     zot_id = auth_values[0]
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
-    zot.add_parameters(limit=3, start=50)
+    zot.add_parameters(limit=3, start=50, content='bib')
     items = zot.top()
     print items
     for item in items:
         print item.title, item.id
-    print zot.collections()
-    print zot.groups()
-    print zot.tags()
+    # print zot.collections()
+    # print zot.groups()
+    # print zot.tags()
 
 if __name__ == "__main__":
     try:

@@ -35,10 +35,18 @@ Example:
 These parameters will be valid *for the next call only*  
 Valid parameters:  
 
-* `limit` (integer, 1 – 99, default 50), limits the number of returned results
-* `start` (integer, default 0) sets the start point for returned results
+* `limit` (integer, 1 – 99, default: 50), limits the number of returned results
+* `start` (integer, default: 0) sets the start point for returned results
 * `order` (string, valid Zotero field name)
 * `sort` (string: 'asc' or 'desc')
+
+Special parameters: `content` and `style`
+
+* `content` (string, 'html', 'bib', default: 'html') if 'bib' is passed, you may also pass:
+* `style`, (string, containing any valid CSL style in the Zotero Style Repository). Example:  
+`zot.add_parameters(content = 'bib', format = 'mla')`  
+The return value is a **list** containing UTF-8 formatted HTML `div`s:  
+`['<div class="csl-entry">(content)</div>, … ]`
 
 The following methods are currently available:
 
