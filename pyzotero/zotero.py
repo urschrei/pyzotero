@@ -83,6 +83,9 @@ class Zotero(object):
                 raise ze.RateLimitExceeded, \
 "Invalid request, probably due to unsupported parameters: %s" % \
                 data
+            if error.code == 404:
+                raise ze.ResourceNotFound, \
+"No results for the following query:\n%s" % full_url
             else:
                 raise ze.HTTPError, \
                 "HTTP Error %s (%s)\nURL: %s" % (

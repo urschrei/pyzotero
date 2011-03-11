@@ -55,6 +55,13 @@ class MissingCredentials(PyZoteroError):
 
 
 
+class ResourceNotFound(PyZoteroError):
+    """ Raised when a resource (item, collection etc.) could not be found
+    """
+    pass
+
+
+
 class HTTPError(PyZoteroError):
     """ Raised for miscellaneous URLLib errors
     """
