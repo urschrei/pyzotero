@@ -85,7 +85,8 @@ class ZoteroTests(unittest.TestCase):
         self.feed = feedparser.parse(self.item_doc)
 
     def testFailWithoutCredentials(self):
-        """ This should fail, because we're failing to pass a credential
+        """ Instance creattion should fail, because we're leaving out a
+            credential
         """
         with self.assertRaises(ze.MissingCredentials):
             zf = z.Zotero('myuserID')
