@@ -18,7 +18,7 @@ class ZoteroTests(unittest.TestCase):
         """
         self.zot = z.Zotero('myuserID', 'myuserkey')
         self.zot.add_parameters(start = 10)
-        self.item_doc = """<?xml version="1.0"?>
+        self.item_doc = u"""<?xml version="1.0"?>
     <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
       <title>Zotero / urschrei / Top-Level Items</title>
       <id>http://zotero.org/users/436/items/top?limit=1</id>
@@ -82,7 +82,7 @@ class ZoteroTests(unittest.TestCase):
         </content>
       </entry>
     </feed>"""
-        self.collections_doc = """<?xml version="1.0"?>
+        self.collections_doc = u"""<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Collections</title>
           <id>http://zotero.org/users/436/collections?limit=1</id>
@@ -113,7 +113,7 @@ class ZoteroTests(unittest.TestCase):
             </content>
           </entry>
         </feed>"""
-        self.tags_doc = """<?xml version="1.0"?>
+        self.tags_doc = u"""<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Tags</title>
           <id>http://zotero.org/users/436/tags?limit=1</id>
@@ -142,7 +142,7 @@ class ZoteroTests(unittest.TestCase):
             </content>
           </entry>
         </feed>"""
-        self.groups_doc = """<?xml version="1.0"?>
+        self.groups_doc = u"""<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>urschrei&#x2019;s Groups</title>
           <id>http://zotero.org/users/436/groups</id>
