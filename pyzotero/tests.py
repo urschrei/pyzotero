@@ -5,14 +5,14 @@ Tests for the Pyzotero module
 """
 
 import unittest
-import sys
 
 import zotero as z
 import zotero_errors as ze
 import feedparser
 
 class ZoteroTests(unittest.TestCase):
-
+    """ Tests for pyzotero
+    """
     def setUp(self):
         """ Set stuff up
         """
@@ -215,12 +215,12 @@ class ZoteroTests(unittest.TestCase):
         self.zot.url_params = 'content=bib'
         items_data = self.zot.items_data(self.doc_parsed)
         with self.assertRaises(TypeError):
-                self.assertEqual('T4AH4RZA', items_data[0]['id'], 'message')
+            self.assertEqual('T4AH4RZA', items_data[0]['id'], 'message')
 
     def testParseCollectionsAtomDoc(self):
-        """ Should successfully return a list of collection dicts, ID should match
-            input doc's zapi:key value, and 'title' value should match input
-            doc's title value
+        """ Should successfully return a list of collection dicts, ID should
+            match input doc's zapi:key value, and 'title' value should match
+            input doc's title value
         """
         collections_data = self.zot.collections_data(self.collections_parsed)
         self.assertEqual('PRMD6BGB', collections_data[0]['id'])
