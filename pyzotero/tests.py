@@ -242,6 +242,14 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual('DFW', groups_data[0]['id'])
         self.assertEqual('346', groups_data[0]['total_items'])
 
+    def testParamsReset(self):
+        """ Should successfully reset URL parameters after a query string
+            is built
+        """
+        self.zot.add_parameters(start = 5, limit = 10)
+        self.zot._build_query('/whatever')
+        self.assertEqual(None, self.zot.url_params)
+
     def tearDown(self):
         """ Tear stuff down
         """

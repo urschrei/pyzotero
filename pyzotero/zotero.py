@@ -85,7 +85,8 @@ class Zotero(object):
                 data
             else:
                 raise ze.HTTPError, \
-                "HTTP Error %s (%s)" % (error.msg, error.code)
+                "HTTP Error %s (%s)\nURL: %s" % (
+                error.msg, error.code, full_url)
         # parse the result into Python data structures
         return feedparser.parse(data)
 
@@ -119,7 +120,8 @@ class Zotero(object):
         """ Set request parameters. Will always add the user ID if it hasn't
             been specifically set by an API call
         """
-        params = {'u': self.user_id}
+        if not params:
+            params = {'u': self.user_id}
         try:
             query = urllib.quote(query_string.format(**params))
         except KeyError, err:
@@ -129,6 +131,7 @@ class Zotero(object):
         if not self.url_params:
             self.add_parameters()
         query = '%s?%s' % (query, self.url_params)
+        self.url_params = None
         return query
 
     @retrieve('self.items_data')
