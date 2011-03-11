@@ -116,14 +116,12 @@ class Zotero(object):
         params = urllib.urlencode(params)
         self.url_params = params
 
-    def _build_query(self, query_string, params = None):
+    def _build_query(self, query_string):
         """ Set request parameters. Will always add the user ID if it hasn't
             been specifically set by an API call
         """
-        if not params:
-            params = {'u': self.user_id}
         try:
-            query = urllib.quote(query_string.format(**params))
+            query = urllib.quote(query_string.format(u = self.user_id))
         except KeyError, err:
             raise ze.ParamNotPassed, \
             'There\'s a request parameter missing: %s' % err
