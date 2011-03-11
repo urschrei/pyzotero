@@ -194,7 +194,6 @@ class ZoteroTests(unittest.TestCase):
         """
         query_string = '/users/000/tags/hi there/items'
         query = self.zot._build_query(query_string)
-        # /users/000/tags/hi%20there/items?start=10&key=myuserkey
         self.assertEqual(
         '/users/000/tags/hi%20there/items?start=10&key=myuserkey',
         query)
@@ -207,6 +206,16 @@ class ZoteroTests(unittest.TestCase):
         items_data = self.zot.items_data(self.doc_parsed)
         self.assertEqual('T4AH4RZA', items_data[0]['id'], 'message')
         self.assertEqual('T. J. McIntyre', items_data[0]['author'], 'message')
+
+    def testParseItemAtomBibDoc(self):
+        """ Should fail, as setting the content = 'bib' param causes the
+            return result to be passed to the bib_items
+            parsing method
+        """
+        self.zot.url_params = 'content=bib'
+        items_data = self.zot.items_data(self.doc_parsed)
+        with self.assertRaises(TypeError):
+                self.assertEqual('T4AH4RZA', items_data[0]['id'], 'message')
 
     def testParseCollectionsAtomDoc(self):
         """ Should successfully return a list of collection dicts, ID should match
@@ -226,8 +235,8 @@ class ZoteroTests(unittest.TestCase):
 
     def testParseGroupsAtomDoc(self):
         """ Should successfully return a list of group dicts, ID should match
-            input doc's zapi:key value, and 'title' value should match input
-            doc's title value
+            input doc's zapi:key value, and 'total_items' value should match
+            input doc's zapi:numItems value
         """
         groups_data = self.zot.groups_data(self.groups_parsed)
         self.assertEqual('DFW', groups_data[0]['id'])
