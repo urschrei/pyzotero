@@ -82,7 +82,39 @@ class ZoteroTests(unittest.TestCase):
         </content>
       </entry>
     </feed>"""
-        self.feed = feedparser.parse(self.item_doc)
+        self.collections_doc = """<?xml version="1.0"?>
+        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
+          <title>Zotero / urschrei / Collections</title>
+          <id>http://zotero.org/users/436/collections?limit=1</id>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1"/>
+          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;start=36"/>
+          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/collections?limit=1"/>
+          <zapi:totalResults>37</zapi:totalResults>
+          <zapi:apiVersion>1</zapi:apiVersion>
+          <updated>2010-04-26T14:23:45Z</updated>
+          <entry>
+            <title>A Midsummer Night's Dream</title>
+            <author>
+              <name>urschrei</name>
+              <uri>http://zotero.org/urschrei</uri>
+            </author>
+            <id>http://zotero.org/urschrei/collections/PRMD6BGB</id>
+            <published>2010-04-19T13:06:58Z</published>
+            <updated>2010-04-26T14:23:45Z</updated>
+            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/collections/PRMD6BGB"/>
+            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/collections/PRMD6BGB"/>
+            <zapi:key>PRMD6BGB</zapi:key>
+            <zapi:numCollections>0</zapi:numCollections>
+            <zapi:numItems>5</zapi:numItems>
+            <content type="html">
+              <div xmlns="http://www.w3.org/1999/xhtml"/>
+            </content>
+          </entry>
+        </feed>"""
+        self.doc_parsed = feedparser.parse(self.item_doc)
+        self.collections_parsed = feedparser.parse(self.collections_doc)
 
     def testFailWithoutCredentials(self):
         """ Instance creattion should fail, because we're leaving out a
@@ -113,9 +145,19 @@ class ZoteroTests(unittest.TestCase):
             input doc's zapi:key value, and author should have been correctly
             parsed out of the XHTML payload
         """
-        items_data = self.zot.items_data(self.feed)
+        items_data = self.zot.items_data(self.doc_parsed)
         self.assertEqual('T4AH4RZA', items_data[0]['id'], 'message')
         self.assertEqual('T. J. McIntyre', items_data[0]['author'], 'message')
+
+    def testParseCollectionsAtomDoc(self):
+        """ Should successfully return a list of collection dicts, ID should match
+            input doc's zapi:key value, and 'title' value should match input
+            doc's title value
+        """
+        collections_data = self.zot.collections_data(self.collections_parsed)
+        self.assertEqual('PRMD6BGB', collections_data[0]['id'])
+        self.assertEqual('A Midsummer Night\'s Dream',
+        collections_data[0]['title'])
 
     def tearDown(self):
         """ Tear stuff down
