@@ -11,12 +11,12 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'Pyzotero',
-    version = '0.6',
+    version = '0.6.1',
     description = 'Python wrapper for the Zotero API',
     author = 'Stephan Hügel',
     author_email = 'hugels@tcd.ie',
     license = 'GNU GPL Version 3',
     url = 'https://github.com/urschrei/pyzotero',
-    packages = find_packages(exclude = 'tests'),
+    packages = find_packages(exclude = '*tests*'),
     install_requires = ['feedparser >= 5.0.1'],
 )
