@@ -17,6 +17,6 @@ setup(
     author_email = 'hugels@tcd.ie',
     license = 'GNU GPL Version 3',
     url = 'https://github.com/urschrei/pyzotero',
-    packages = find_packages(),
+    packages = find_packages(exclude = 'tests'),
     install_requires = ['feedparser >= 5.0.1'],
 )
