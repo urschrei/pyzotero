@@ -124,8 +124,6 @@ class Zotero(object):
         """ Set request parameters. Will always add the user ID if it hasn't
             been specifically set by an API call
         """
-        # blow away existing URL params
-        self.url_params = None
         try:
             query = urllib.quote(query_string.format(u = self.user_id))
         except KeyError, err:
@@ -373,6 +371,7 @@ class Zotero(object):
             zipped['title'] = item_title[index].encode('utf-8')
             zipped['id'] = item_id[index].encode('utf-8')
             items.append(zipped)
+            self.url_params = None
         return items
 
     def bib_items(self, retrieved):
@@ -381,6 +380,7 @@ class Zotero(object):
         items = []
         for bib in retrieved.entries:
             items.append(bib['content'][0]['value'].encode('utf-8'))
+            self.url_params = None
         return items
 
     def collections_data(self, retrieved):
@@ -397,6 +397,7 @@ class Zotero(object):
             if int(collection_sub[index]) > 0:
                 collection_data['subcollections'] = int(collection_sub[index])
             collections.append(collection_data)
+            self.url_params = None
         return collections
 
     def groups_data(self, retrieved):
@@ -412,12 +413,14 @@ class Zotero(object):
             group_data['total_items'] = group_items[index].encode('utf-8')
             group_data['owner'] = group_author[index].encode('utf-8')
             groups.append(group_data)
+            self.url_params = None
         return groups
 
     def tags_data(self, retrieved):
         """ Format and return data from API call which return Tags
         """
         tags = [t['title'].encode('utf-8') for t in retrieved.entries]
+        self.url_params = None
         return tags
 
 

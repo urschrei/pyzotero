@@ -17,7 +17,6 @@ class ZoteroTests(unittest.TestCase):
         """ Set stuff up
         """
         self.zot = z.Zotero('myuserID', 'myuserkey')
-        self.zot.add_parameters(start = 10)
         self.item_doc = u"""<?xml version="1.0"?>
     <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
       <title>Zotero / urschrei / Top-Level Items</title>
@@ -174,6 +173,7 @@ class ZoteroTests(unittest.TestCase):
         self.collections_parsed = feedparser.parse(self.collections_doc)
         self.tags_parsed = feedparser.parse(self.tags_doc)
         self.groups_parsed = feedparser.parse(self.groups_doc)
+        self.zot.add_parameters(start = 10)
 
     def testFailWithoutCredentials(self):
         """ Instance creation should fail, because we're leaving out a
@@ -248,7 +248,8 @@ class ZoteroTests(unittest.TestCase):
         """
         self.zot.add_parameters(start = 5, limit = 10)
         self.zot._build_query('/whatever')
-        self.assertEqual(None, self.zot.url_params)
+        self.zot.add_parameters(start = 2)
+        self.assertEqual('start=2&key=myuserkey', self.zot.url_params)
 
     def testDedup(self):
         """ Ensure that de-duplication of a list containing some repeating
