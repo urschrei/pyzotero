@@ -113,7 +113,13 @@ Running zotero.py from the command line will attempt to import your ID and key f
 
 **ZOTERO LIBRARY ITEMS ARE NOT ASCII-ENCODED**. In Python 2.x, the `print` function will attempt to encode its output as ASCII unless you specifically tell it otherwise. Customising your encoding is usually accomplished using `sitecustomize.py`, but you're going to have to load and fire your own foot-gun.  
 
+# Testing #
+
+Run `tests.py` in the pyzotero directory, or, using [Nose][5], `nosetests --with-coverage --cover-package=pyzotero` from this directory, if you wish to see coverage statistics.
+
+
 [1]: http://www.zotero.org/support/dev/server_api "Zotero Server API"
 [2]: http://www.zotero.org/settings/keys/new "New Zotero Access Credentials"
 [3]: http://feedparser.org/ "Mark Pilgrim's Universal Feed Parser"
 [4]: http://pypi.python.org/pypi/pip "Pip Installs Packages"
+[5]: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html "nose is nicer testing for Python"
