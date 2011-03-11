@@ -113,8 +113,67 @@ class ZoteroTests(unittest.TestCase):
             </content>
           </entry>
         </feed>"""
+        self.tags_doc = """<?xml version="1.0"?>
+        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
+          <title>Zotero / urschrei / Tags</title>
+          <id>http://zotero.org/users/436/tags?limit=1</id>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1"/>
+          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;start=453"/>
+          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/tags?limit=1"/>
+          <zapi:totalResults>454</zapi:totalResults>
+          <zapi:apiVersion>1</zapi:apiVersion>
+          <updated>2010-03-27T13:56:08Z</updated>
+          <entry xmlns:zxfer="http://zotero.org/ns/transfer">
+            <title>Authority in literature</title>
+            <author>
+              <name>urschrei</name>
+              <uri>http://zotero.org/urschrei</uri>
+            </author>
+            <id>http://zotero.org/urschrei/tags/Authority+in+literature</id>
+            <published>2010-03-26T18:23:14Z</published>
+            <updated>2010-03-27T13:56:08Z</updated>
+            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/tags/Authority+in+literature"/>
+            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/tags/Authority+in+literature"/>
+            <zapi:numItems>2</zapi:numItems>
+            <content type="xhtml">
+              <div xmlns="http://www.w3.org/1999/xhtml"/>
+            </content>
+          </entry>
+        </feed>"""
+        self.groups_doc = """<?xml version="1.0"?>
+        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
+          <title>urschrei&#x2019;s Groups</title>
+          <id>http://zotero.org/users/436/groups</id>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/groups"/>
+          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/groups"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/groups"/>
+          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/groups"/>
+          <zapi:totalResults>1</zapi:totalResults>
+          <zapi:apiVersion>1</zapi:apiVersion>
+          <updated>2010-07-04T21:56:22Z</updated>
+          <entry xmlns:zxfer="http://zotero.org/ns/transfer">
+            <title>DFW</title>
+            <author>
+              <name>urschrei</name>
+              <uri>http://zotero.org/urschrei</uri>
+            </author>
+            <id>http://zotero.org/groups/dfw</id>
+            <published>2010-01-20T12:31:26Z</published>
+            <updated>2010-07-04T21:56:22Z</updated>
+            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/groups/10248"/>
+            <link rel="alternate" type="text/html" href="http://zotero.org/groups/dfw"/>
+            <zapi:numItems>346</zapi:numItems>
+            <content type="html">
+              <div xmlns="http://www.w3.org/1999/xhtml"/>
+            </content>
+          </entry>
+         </feed>"""
         self.doc_parsed = feedparser.parse(self.item_doc)
         self.collections_parsed = feedparser.parse(self.collections_doc)
+        self.tags_parsed = feedparser.parse(self.tags_doc)
+        self.groups_parsed = feedparser.parse(self.groups_doc)
 
     def testFailWithoutCredentials(self):
         """ Instance creattion should fail, because we're leaving out a
@@ -158,6 +217,21 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual('PRMD6BGB', collections_data[0]['id'])
         self.assertEqual('A Midsummer Night\'s Dream',
         collections_data[0]['title'])
+
+    def testParseTagsAtomDoc(self):
+        """ Should successfully return a list of tags
+        """
+        tags_data = self.zot.tags_data(self.tags_parsed)
+        self.assertEqual('Authority in literature', tags_data[0])
+
+    def testParseGroupsAtomDoc(self):
+        """ Should successfully return a list of group dicts, ID should match
+            input doc's zapi:key value, and 'title' value should match input
+            doc's title value
+        """
+        groups_data = self.zot.groups_data(self.groups_parsed)
+        self.assertEqual('DFW', groups_data[0]['id'])
+        self.assertEqual('346', groups_data[0]['total_items'])
 
     def tearDown(self):
         """ Tear stuff down
