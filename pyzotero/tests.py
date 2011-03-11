@@ -250,6 +250,14 @@ class ZoteroTests(unittest.TestCase):
         self.zot._build_query('/whatever')
         self.assertEqual(None, self.zot.url_params)
 
+    def testDedup(self):
+        """ Ensure that de-duplication of a list containing some repeating
+            strings works OK
+        """
+        test_strings = ['foo', 'foo', 'bar', 'baz']
+        deduped = z.dedup(test_strings)
+        self.assertEqual(['foo', 'foo_2', 'bar', 'baz'], deduped)
+
     def tearDown(self):
         """ Tear stuff down
         """
