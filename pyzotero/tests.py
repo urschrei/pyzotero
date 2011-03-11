@@ -176,7 +176,7 @@ class ZoteroTests(unittest.TestCase):
         self.groups_parsed = feedparser.parse(self.groups_doc)
 
     def testFailWithoutCredentials(self):
-        """ Instance creattion should fail, because we're leaving out a
+        """ Instance creation should fail, because we're leaving out a
             credential
         """
         with self.assertRaises(ze.MissingCredentials):
