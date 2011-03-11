@@ -121,7 +121,7 @@ class Zotero(object):
         """
         params = {'u': self.user_id}
         try:
-            query = query_string.format(**params)
+            query = urllib.quote(query_string.format(**params))
         except KeyError, err:
             raise ze.ParamNotPassed, \
             'There\'s a request parameter missing: %s' % err
