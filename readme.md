@@ -43,7 +43,7 @@ Valid parameters:
 * `limit` (integer, 1 – 99, default: 50), limits the number of returned results
 * `start` (integer, default: 0) sets the start point for returned results
 * `order` (string, valid Zotero field name)
-* `sort` (string: 'asc' or 'desc')
+* `sort` (string, 'asc' or 'desc')
 
 Special parameters: `content` and `style`
 
