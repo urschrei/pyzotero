@@ -14,6 +14,15 @@ I assume that running setup.py will also work using `easy_install`, but I haven'
 
 The [feedparser][3] module is required. It should automatically be installed when installing pyzotero using [pip][4].
 
+## Testing ##
+
+Run `tests.py` in the pyzotero directory, or, using [Nose][5], `nosetests` from this directory. If you wish to see coverage statistics, run `nosetests --with-coverage --cover-package=pyzotero`.
+
+### Encoding issues ###
+
+The tests check that your Python installation will print both unicode strings (implicitly converting them first), and print unicode strings converted to UTF-8 (explicitly converting them). This test passes on OS X 10.6.6 running Python 2.7, and Ubuntu 10.10 running Python 2.7, using both the 'ascii' and 'utf-8' encodings.
+If the test fails, open an [issue][6].
+
 # Usage #
 ## Hello World ##
 
@@ -111,13 +120,10 @@ If you attempt to call/print/access a key which does not exist, a `KeyError` wil
 
 Running zotero.py from the command line will attempt to import your ID and key from a file named `zotero_keys.txt` in your home directory (see comment in `main()` for details), create a new Zotero object and call some of the methods.
 
-# Testing #
-
-Run `tests.py` in the pyzotero directory, or, using [Nose][5], `nosetests --with-coverage --cover-package=pyzotero` from this directory, if you wish to see coverage statistics.
-
 
 [1]: http://www.zotero.org/support/dev/server_api "Zotero Server API"
 [2]: http://www.zotero.org/settings/keys/new "New Zotero Access Credentials"
 [3]: http://feedparser.org/ "Mark Pilgrim's Universal Feed Parser"
 [4]: http://pypi.python.org/pypi/pip "Pip Installs Packages"
 [5]: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html "nose is nicer testing for Python"
+[6]: https://github.com/urschrei/pyzotero/issues

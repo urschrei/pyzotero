@@ -433,8 +433,9 @@ def main():
     zot_id = auth_values[0]
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
-    # zot.add_parameters(limit = 3, start = 50)
+    zot.add_parameters(limit = 4)
     items = zot.top()
+    print items[2]
     for item in items:
         print 'Title: %s\nItem ID: %s\n' % (
         item['title'], item['id'])
