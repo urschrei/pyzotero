@@ -12,7 +12,7 @@ Example: `pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip`
 
 I assume that running setup.py will also work using `easy_install`, but I haven't tested it.
 
-The [feedparser][3] module is required. It should automatically be installed when installing pyzotero using [pip][4].
+The [feedparser][3] and [ElementTree][7] modules are required. They should automatically be installed when installing pyzotero using [pip][4].
 
 ## Testing ##
 
@@ -123,3 +123,5 @@ Running zotero.py from the command line will attempt to import your ID and key f
 [4]: http://pypi.python.org/pypi/pip "Pip Installs Packages"
 [5]: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html "nose is nicer testing for Python"
 [6]: https://github.com/urschrei/pyzotero/issues
+[7]: http://effbot.org/zone/element-index.htm
+
