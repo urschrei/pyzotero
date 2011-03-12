@@ -168,10 +168,10 @@ class ZoteroTests(unittest.TestCase):
             </content>
           </entry>
          </feed>"""
-        self.doc_parsed = feedparser.parse(self.item_doc)
-        self.collections_parsed = feedparser.parse(self.collections_doc)
-        self.tags_parsed = feedparser.parse(self.tags_doc)
-        self.groups_parsed = feedparser.parse(self.groups_doc)
+        self.doc_parsed = feedparser.parse(self.item_doc.encode('utf-8'))
+        self.collections_parsed = feedparser.parse(self.collections_doc.encode('utf-8'))
+        self.tags_parsed = feedparser.parse(self.tags_doc.encode('utf-8'))
+        self.groups_parsed = feedparser.parse(self.groups_doc.encode('utf-8'))
         self.zot.add_parameters(start = 10)
 
     def testFailWithoutCredentials(self):

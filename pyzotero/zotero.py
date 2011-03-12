@@ -362,15 +362,13 @@ class Zotero(object):
         item_id = [i['zapi_key'] for i in retrieved.entries]
         items = []
         for index, content in enumerate(item_parsed):
-            # define a utf-8 parser with which to parse the content HTML
-            utf = xml.XMLParser(encoding = 'utf-8')
-            elem = xml.XML(content, utf)
+            elem = xml.fromstring(content.encode('utf-8'))
             keys = dedup(
-            [e.text.lower().encode('utf-8') for e in elem.iter('th')])
-            values = [v.text.encode('utf-8') for v in elem.iter('td')]
+            [e.text.lower() for e in elem.iter('th')])
+            values = [v.text for v in elem.iter('td')]
             zipped = dict(zip(keys, values))
-            zipped['title'] = item_title[index].encode('utf-8')
-            zipped['id'] = item_id[index].encode('utf-8')
+            zipped['title'] = item_title[index]
+            zipped['id'] = item_id[index]
             items.append(zipped)
             self.url_params = None
         return items
@@ -380,7 +378,7 @@ class Zotero(object):
         """
         items = []
         for bib in retrieved.entries:
-            items.append(bib['content'][0]['value'].encode('utf-8'))
+            items.append(bib['content'][0]['value'])
             self.url_params = None
         return items
 
@@ -393,8 +391,8 @@ class Zotero(object):
         collection_sub = [s['zapi_numcollections'] for s in retrieved.entries]
         for index in range(len(collection_key)):
             collection_data = {}
-            collection_data['id'] = collection_key[index].encode('utf-8')
-            collection_data['title'] = collection_title[index].encode('utf-8')
+            collection_data['id'] = collection_key[index]
+            collection_data['title'] = collection_title[index]
             if int(collection_sub[index]) > 0:
                 collection_data['subcollections'] = int(collection_sub[index])
             collections.append(collection_data)
@@ -410,9 +408,9 @@ class Zotero(object):
         group_author = [a['author'] for a in retrieved.entries]
         for index in range(len(group_id)):
             group_data = {}
-            group_data['id'] = group_id[index].encode('utf-8')
-            group_data['total_items'] = group_items[index].encode('utf-8')
-            group_data['owner'] = group_author[index].encode('utf-8')
+            group_data['id'] = group_id[index]
+            group_data['total_items'] = group_items[index]
+            group_data['owner'] = group_author[index]
             groups.append(group_data)
             self.url_params = None
         return groups
@@ -420,7 +418,7 @@ class Zotero(object):
     def tags_data(self, retrieved):
         """ Format and return data from API call which return Tags
         """
-        tags = [t['title'].encode('utf-8') for t in retrieved.entries]
+        tags = [t['title'] for t in retrieved.entries]
         self.url_params = None
         return tags
 
@@ -435,11 +433,11 @@ def main():
     zot_id = auth_values[0]
     zot_key = auth_values[1]
     zot = Zotero(zot_id, zot_key)
-    zot.add_parameters(limit=3, start=50)
+    # zot.add_parameters(limit = 3, start = 50)
     items = zot.top()
-    print items[0]
     for item in items:
-        print 'Title: %s\nItem ID: %s\n' % (item['title'], item['id'])
+        print 'Title: %s\nItem ID: %s\n' % (
+        item['title'], item['id'])
     # print zot.collections()
     # print zot.groups()
     # print zot.tags()

@@ -109,9 +109,7 @@ If you attempt to call/print/access a key which does not exist, a `KeyError` wil
 
 **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.  
 
-Running zotero.py from the command line will attempt to import your ID and key from a file named `zotero_keys.txt` in your home directory (see comment in `main()` for details), create a new Zotero object and call some of the methods.  
-
-**ZOTERO LIBRARY ITEMS ARE NOT ASCII-ENCODED**. In Python 2.x, the `print` function will attempt to encode its output as ASCII unless you specifically tell it otherwise. Customising your encoding is usually accomplished using `sitecustomize.py`, but you're going to have to load and fire your own foot-gun.  
+Running zotero.py from the command line will attempt to import your ID and key from a file named `zotero_keys.txt` in your home directory (see comment in `main()` for details), create a new Zotero object and call some of the methods.
 
 # Testing #
 
