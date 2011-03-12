@@ -206,10 +206,21 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual('T4AH4RZA', items_data[0]['id'])
         self.assertEqual(u'T. J. McIntyre', items_data[0]['author'])
         self.assertEqual(u'Joürnal Article', items_data[0]['type'])
+
+    def testEncodings(self):
+        """ Should be able to print unicode strings to stdout, and convert
+            them to UTF-8 before printing them
+        """
+        items_data = self.zot.items_data(self.doc_parsed)
         try:
             print items_data[0]['type']
         except UnicodeError:
             self.fail('Your Python install appears unable to print unicode')
+        try:
+            print items_data[0]['type'].encode('utf-8')
+        except UnicodeError:
+            self.fail(
+'Your Python install appears to dislike encoding unicode strings as UTF-8')
 
     def testParseItemAtomBibDoc(self):
         """ Should fail, as setting the content = 'bib' param causes the
