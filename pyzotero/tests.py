@@ -266,6 +266,13 @@ class ZoteroTests(unittest.TestCase):
         self.zot.add_parameters(start = 2)
         self.assertEqual('start=2&key=myuserkey', self.zot.url_params)
 
+    def testParamsBlankAfterCall(self):
+        """ self.url_params should be blank after an API call
+        """
+        self.zot.add_parameters(start = 5)
+        items = self.zot.items_data(self.doc_parsed)
+        self.assertEqual(None, self.zot.url_params)
+
     def testDedup(self):
         """ Ensure that de-duplication of a list containing some repeating
             strings works OK
