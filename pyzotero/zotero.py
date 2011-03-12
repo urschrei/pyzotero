@@ -20,6 +20,7 @@ import xml.etree.ElementTree as xml
 import zotero_errors as ze
 import traceback
 
+
 def open_file(to_read):
     """ Open a text file for reading, and strip the newlines
         returns a list, one list item per line
@@ -88,7 +89,7 @@ class Zotero(object):
 "No results for the following query:\n%s" % full_url
             else:
                 raise ze.HTTPError, \
-                "HTTP Error %s (%s)\nURL: %s" % (
+"HTTP Error %s (%s)\nURL: %s" % (
                 error.msg, error.code, full_url)
         # parse the result into Python data structures
         return feedparser.parse(data)
