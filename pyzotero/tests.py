@@ -7,7 +7,6 @@ Tests for the Pyzotero module
 import unittest
 
 import zotero as z
-import zotero_errors as ze
 import feedparser
 
 class ZoteroTests(unittest.TestCase):
@@ -179,7 +178,7 @@ class ZoteroTests(unittest.TestCase):
         """ Instance creation should fail, because we're leaving out a
             credential
         """
-        with self.assertRaises(ze.MissingCredentials):
+        with self.assertRaises(z.ze.MissingCredentials):
             zf = z.Zotero('myuserID')
 
     def testRequestBuilder(self):
