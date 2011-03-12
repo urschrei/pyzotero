@@ -1,6 +1,6 @@
 # Description #
 
-Because it's 2011, and I have no intention of using PHP for anything, let alone writing it, this is a first pass at implementing a Python wrapper for the [Zotero API][1]. There's no use case as yet, since I'm not sure what's going to be the ultimate consumer of the returned data. Expect a lot of initial fragility, if not outright breakage. You'll require a user ID and access key, which can be set up [here][2].
+This is a first pass at implementing a Python wrapper for the [Zotero API][1]. There's no use case as yet, since I'm not sure what's going to be the ultimate consumer of the returned data. Expect a lot of initial fragility, if not outright breakage. You'll require a user ID and access key, which can be set up [here][2].
 
 # Installation #
 
@@ -18,10 +18,6 @@ The [feedparser][3] module is required. It should automatically be installed whe
 
 Run `tests.py` in the pyzotero directory, or, using [Nose][5], `nosetests` from this directory. If you wish to see coverage statistics, run `nosetests --with-coverage --cover-package=pyzotero`.
 
-### Encoding issues ###
-
-The tests check that your Python installation will print both unicode strings (implicitly converting them first), and print unicode strings converted to UTF-8 (explicitly converting them). This test passes on OS X 10.6.6 running Python 2.7, and Ubuntu 10.10 running Python 2.7, using both the 'ascii' and 'utf-8' encodings.
-If the test fails, open an [issue][6].
 
 # Usage #
 ## Hello World ##
