@@ -29,7 +29,7 @@ class ZoteroTests(unittest.TestCase):
       <zapi:apiVersion>1</zapi:apiVersion>
       <updated>2011-02-14T00:27:03Z</updated>
       <entry>
-        <title>Copyright in cüstom code: Who owns commissioned software?</title>
+        <title>\u201cWe Need a Popular Discipline\u201d</title>
         <author>
           <name>urschrei</name>
           <uri>http://zotero.org/urschrei</uri>
@@ -213,11 +213,11 @@ class ZoteroTests(unittest.TestCase):
         """
         items_data = self.zot.items_data(self.doc_parsed)
         try:
-            print items_data[0]['type']
+            print items_data[0]['title']
         except UnicodeError:
             self.fail('Your Python install appears unable to print unicode')
         try:
-            print items_data[0]['type'].encode('utf-8')
+            print items_data[0]['title'].encode('utf-8')
         except UnicodeError:
             self.fail(
 'Your Python install appears to dislike encoding unicode strings as UTF-8')
