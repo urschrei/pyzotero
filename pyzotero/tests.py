@@ -29,7 +29,7 @@ class ZoteroTests(unittest.TestCase):
       <zapi:apiVersion>1</zapi:apiVersion>
       <updated>2011-02-14T00:27:03Z</updated>
       <entry>
-        <title>Copyright in custom code: Who owns commissioned software?</title>
+        <title>Copyright in cüstom code: Who owns commissioned software?</title>
         <author>
           <name>urschrei</name>
           <uri>http://zotero.org/urschrei</uri>
@@ -49,7 +49,7 @@ class ZoteroTests(unittest.TestCase):
             <table>
               <tr class="itemType">
                 <th style="text-align: right">Type</th>
-                <td>Journal Article</td>
+                <td>Joürnal Article</td>
               </tr>
               <tr class="creator">
                 <th style="text-align: right">Author</th>
@@ -203,8 +203,13 @@ class ZoteroTests(unittest.TestCase):
             parsed out of the XHTML payload
         """
         items_data = self.zot.items_data(self.doc_parsed)
-        self.assertEqual('T4AH4RZA', items_data[0]['id'], 'message')
-        self.assertEqual('T. J. McIntyre', items_data[0]['author'], 'message')
+        self.assertEqual('T4AH4RZA', items_data[0]['id'])
+        self.assertEqual(u'T. J. McIntyre', items_data[0]['author'])
+        self.assertEqual(u'Joürnal Article', items_data[0]['type'])
+        try:
+            print items_data[0]['type']
+        except UnicodeError:
+            self.fail('Your Python install appears unable to print unicode')
 
     def testParseItemAtomBibDoc(self):
         """ Should fail, as setting the content = 'bib' param causes the
