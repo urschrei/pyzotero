@@ -1,6 +1,6 @@
 # Description #
 
-This is a first pass at implementing a Python wrapper for the [Zotero API][1]. There's no use case as yet, since I'm not sure what's going to be the ultimate consumer of the returned data. Expect a lot of initial fragility, if not outright breakage. You'll require a user ID and access key, which can be set up [here][2].
+This is a first pass at implementing a Python wrapper for the [Zotero API][1]. You'll require a user ID and access key, which can be set up [here][2].
 
 # Installation #
 
@@ -12,7 +12,7 @@ Example: `pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip`
 
 I assume that running setup.py will also work using `easy_install`, but I haven't tested it.
 
-The [feedparser][3] and [ElementTree][7] modules are required. They should automatically be installed when installing pyzotero using [pip][4].
+The [feedparser][3] (>= v5.0.1) and [ElementTree][7] (>= v1.2.7) modules are required. They should automatically be installed when installing pyzotero using [pip][4].
 
 ## Testing ##
 
