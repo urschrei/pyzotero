@@ -92,6 +92,7 @@ def mock_response(req):
 class MyHTTPSHandler(urllib2.HTTPSHandler):
     """ Mock response for urllib2
     """
+    # Change HTTPSHandler and https_open to http for non-https calls
     def https_open(self, req):
         return mock_response(req)
 
