@@ -13,35 +13,12 @@ import feedparser
 import urllib2
 from StringIO import StringIO
 
+
+
 def mock_response(req):
     """ Mock response for MyHTTPSHandler
     """
-    resp = urllib2.addinfourl(StringIO(os.path.join(os.path.dirname(__file__),
-    'test_item.xml')), 'This is a mocked URI!', req.get_full_url())
-    resp.code = 200
-    resp.msg = "OK"
-    return resp
-
-
-
-class MyHTTPSHandler(urllib2.HTTPSHandler):
-    """ Mock response for urllib2
-    """
-    def https_open(self, req):
-        return mock_response(req)
-
-
-
-class ZoteroTests(unittest.TestCase):
-    """ Tests for pyzotero
-    """
-    def setUp(self):
-        """ Set stuff up
-        """
-        my_opener = urllib2.build_opener(MyHTTPSHandler)
-        z.urllib2.install_opener(my_opener)
-        self.zot = z.Zotero('myuserID', 'myuserkey')
-        self.item_doc = u"""<?xml version="1.0"?>
+    test_item = """<?xml version="1.0"?>
     <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
       <title>Zotero / urschrei / Top-Level Items</title>
       <id>http://zotero.org/users/436/items/top?limit=1</id>
@@ -105,6 +82,30 @@ class ZoteroTests(unittest.TestCase):
         </content>
       </entry>
     </feed>"""
+    resp = urllib2.addinfourl(StringIO(test_item), 'This is a mocked URI!', req.get_full_url())
+    resp.code = 200
+    resp.msg = "OK"
+    return resp
+
+
+
+class MyHTTPSHandler(urllib2.HTTPSHandler):
+    """ Mock response for urllib2
+    """
+    def https_open(self, req):
+        return mock_response(req)
+
+
+
+class ZoteroTests(unittest.TestCase):
+    """ Tests for pyzotero
+    """
+    def setUp(self):
+        """ Set stuff up
+        """
+        my_opener = urllib2.build_opener(MyHTTPSHandler)
+        z.urllib2.install_opener(my_opener)
+        self.zot = z.Zotero('myuserID', 'myuserkey')
         self.collections_doc = u"""<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Collections</title>
@@ -193,7 +194,6 @@ class ZoteroTests(unittest.TestCase):
             </content>
           </entry>
          </feed>"""
-        self.doc_parsed = feedparser.parse(self.item_doc.encode('utf-8'))
         self.collections_parsed = feedparser.parse(self.collections_doc.encode('utf-8'))
         self.tags_parsed = feedparser.parse(self.tags_doc.encode('utf-8'))
         self.groups_parsed = feedparser.parse(self.groups_doc.encode('utf-8'))
@@ -234,7 +234,7 @@ class ZoteroTests(unittest.TestCase):
             input doc's zapi:key value, and author should have been correctly
             parsed out of the XHTML payload
         """
-        items_data = self.zot.items_data(self.doc_parsed)
+        items_data = self.zot.items()
         self.assertEqual('T4AH4RZA', items_data[0]['id'])
         self.assertEqual(u'T. J. McIntyre', items_data[0]['author'])
         self.assertEqual(u'Joürnal Article', items_data[0]['type'])
@@ -243,7 +243,7 @@ class ZoteroTests(unittest.TestCase):
         """ Should be able to print unicode strings to stdout, and convert
             them to UTF-8 before printing them
         """
-        items_data = self.zot.items_data(self.doc_parsed)
+        items_data = self.zot.items()
         try:
             print items_data[0]['title']
         except UnicodeError:
@@ -260,7 +260,7 @@ class ZoteroTests(unittest.TestCase):
             parsing method
         """
         self.zot.url_params = 'content=bib'
-        items_data = self.zot.items_data(self.doc_parsed)
+        items_data = self.zot.items()
         with self.assertRaises(TypeError):
             self.assertEqual('T4AH4RZA', items_data[0]['id'], 'message')
 
@@ -302,7 +302,7 @@ class ZoteroTests(unittest.TestCase):
         """ self.url_params should be blank after an API call
         """
         self.zot.add_parameters(start = 5)
-        items = self.zot.items_data(self.doc_parsed)
+        items = self.zot.items()
         self.assertEqual(None, self.zot.url_params)
 
     def testDedup(self):
