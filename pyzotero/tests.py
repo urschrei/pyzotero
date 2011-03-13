@@ -202,7 +202,7 @@ class ZoteroTests(unittest.TestCase):
     def testRetrieveData(self):
         """ Should return an item retrieved from mock_response file
         """
-        print sys.path[0]
+        print os.path.dirname(__file__), 'test_item.xml'
         items = self.zot.items()
         self.assertEqual('T. J. McIntyre', items[0]['author'], 'message')
 
