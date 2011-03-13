@@ -5,9 +5,33 @@ Tests for the Pyzotero module
 """
 
 import unittest
-
+import sys
+import os
 import zotero as z
 import feedparser
+
+import urllib2
+from StringIO import StringIO
+
+def mock_response(req):
+    """ Mock response for MyHTTPSHandler
+    """
+    resp = urllib2.addinfourl(StringIO(os.path.join(sys.path[0],
+    'pyzotero/pyzotero',
+    'test_item.xml')), 'This is a mocked URI!', req.get_full_url())
+    resp.code = 200
+    resp.msg = "OK"
+    return resp
+
+
+
+class MyHTTPSHandler(urllib2.HTTPSHandler):
+    """ Mock response for urllib2
+    """
+    def https_open(self, req):
+        return mock_response(req)
+
+
 
 class ZoteroTests(unittest.TestCase):
     """ Tests for pyzotero
@@ -15,6 +39,8 @@ class ZoteroTests(unittest.TestCase):
     def setUp(self):
         """ Set stuff up
         """
+        my_opener = urllib2.build_opener(MyHTTPSHandler)
+        z.urllib2.install_opener(my_opener)
         self.zot = z.Zotero('myuserID', 'myuserkey')
         self.item_doc = u"""<?xml version="1.0"?>
     <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
@@ -173,6 +199,12 @@ class ZoteroTests(unittest.TestCase):
         self.tags_parsed = feedparser.parse(self.tags_doc.encode('utf-8'))
         self.groups_parsed = feedparser.parse(self.groups_doc.encode('utf-8'))
         self.zot.add_parameters(start = 10)
+
+    def testRetrieveData(self):
+        """ Should return an item retrieved from mock_response file
+        """
+        items = self.zot.items()
+        self.assertEqual('T. J. McIntyre', items[0]['author'], 'message')
 
     def testFailWithoutCredentials(self):
         """ Instance creation should fail, because we're leaving out a
