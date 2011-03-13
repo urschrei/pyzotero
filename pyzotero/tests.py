@@ -16,8 +16,7 @@ from StringIO import StringIO
 def mock_response(req):
     """ Mock response for MyHTTPSHandler
     """
-    resp = urllib2.addinfourl(StringIO(os.path.join(sys.path[0],
-    'pyzotero/pyzotero',
+    resp = urllib2.addinfourl(StringIO(os.path.join(os.path.dirname(__file__),
     'test_item.xml')), 'This is a mocked URI!', req.get_full_url())
     resp.code = 200
     resp.msg = "OK"
