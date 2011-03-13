@@ -82,7 +82,9 @@ def mock_response(req):
         </content>
       </entry>
     </feed>"""
-    resp = urllib2.addinfourl(StringIO(test_item), 'This is a mocked URI!', req.get_full_url())
+    resp = urllib2.addinfourl(StringIO(test_item),
+    'This is a mocked URI!',
+    req.get_full_url())
     resp.code = 200
     resp.msg = "OK"
     return resp
@@ -195,7 +197,8 @@ class ZoteroTests(unittest.TestCase):
             </content>
           </entry>
          </feed>"""
-        self.collections_parsed = feedparser.parse(self.collections_doc.encode('utf-8'))
+        self.collections_parsed = feedparser.parse(
+        self.collections_doc.encode('utf-8'))
         self.tags_parsed = feedparser.parse(self.tags_doc.encode('utf-8'))
         self.groups_parsed = feedparser.parse(self.groups_doc.encode('utf-8'))
         self.zot.add_parameters(start = 10)
