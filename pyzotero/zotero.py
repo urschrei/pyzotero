@@ -9,7 +9,7 @@ Copyright Stephan Hügel, 2011
 License: http://www.gnu.org/licenses/gpl-3.0.txt
 """
 
-__version__ = '0.6.6'
+__version__ = '0.6.7'
 
 
 import urllib
@@ -392,7 +392,6 @@ class Zotero(object):
         """ Format and return data from API calls which return Groups
         """
         groups = []
-        print retrieved.entries
         group_id = [i['id'] for i in retrieved.entries]
         group_title = [t['title'] for t in retrieved.entries]
         group_items = [i['zapi_numitems'] for i in retrieved.entries]

@@ -90,7 +90,7 @@ Example of returned data: `[{'id': 'PRMD6BGB', 'title': "A Midsummer Night's Dre
 
  * `groups()`, returns Zotero library groups
 
-Example of returned data: `[{'total_items': '468', 'owner': 'urschrei', 'id': 'DFW'}, … ]`
+Example of returned data: `[{'total_items': '468', 'owner': 'urschrei', 'id': '153', 'uid': 'http://zotero.org/groups/dfw', 'title': 'DFW'}, … ]`
 
 ### To retrieve tags: ###
 
