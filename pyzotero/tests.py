@@ -382,7 +382,7 @@ class ZoteroTests(unittest.TestCase):
             zot.items()
 
     def testResponseUnsupported(self):
-        """ Ensure that an error is properly raised for 400
+        """ Ensure that an error is properly raised for 404
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 404))
         z.urllib2.install_opener(my_opener)
