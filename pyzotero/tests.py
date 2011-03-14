@@ -28,7 +28,7 @@ def mock_response(req, resp_obj, resp_code):
 
 class MyHTTPSHandler(urllib2.HTTPSHandler):
     """ Mock response for urllib2
-        takes a single argument, a string or a reference to a file
+        takes 2 arguments: a string or a reference to a file, and response code
         this is what's returned by .read()
     """
     def __init__(self, resp_obj, resp_code = None):
