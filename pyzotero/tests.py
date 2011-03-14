@@ -335,7 +335,7 @@ class ZoteroTests(unittest.TestCase):
         z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'myuserkey')
         groups_data = zot.groups()
-        self.assertEqual('DFW', groups_data[0]['id'])
+        self.assertEqual('DFW', groups_data[0]['title'])
         self.assertEqual('346', groups_data[0]['total_items'])
 
     def testParamsReset(self):
