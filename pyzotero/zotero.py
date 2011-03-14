@@ -11,14 +11,13 @@ License: http://www.gnu.org/licenses/gpl-3.0.txt
 
 __version__ = '0.6.4'
 
-import sys
-import os
+
 import urllib
 import urllib2
 import feedparser
 import xml.etree.ElementTree as xml
 import zotero_errors as ze
-import traceback
+
 
 
 def open_file(to_read):
