@@ -15,74 +15,10 @@ from StringIO import StringIO
 
 
 
-def mock_response(req):
+def mock_response(req, resp_obj):
     """ Mock response for MyHTTPSHandler
     """
-    test_item = """<?xml version="1.0"?>
-    <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-      <title>Zotero / urschrei / Top-Level Items</title>
-      <id>http://zotero.org/users/436/items/top?limit=1</id>
-      <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1"/>
-      <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1"/>
-      <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;start=1"/>
-      <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;start=949"/>
-      <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items/top?limit=1"/>
-      <zapi:totalResults>950</zapi:totalResults>
-      <zapi:apiVersion>1</zapi:apiVersion>
-      <updated>2011-02-14T00:27:03Z</updated>
-      <entry>
-        <title>\u201cWe Need a Popular Discipline\u201d</title>
-        <author>
-          <name>urschrei</name>
-          <uri>http://zotero.org/urschrei</uri>
-        </author>
-        <id>http://zotero.org/urschrei/items/T4AH4RZA</id>
-        <published>2011-02-14T00:27:03Z</published>
-        <updated>2011-02-14T00:27:03Z</updated>
-        <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/T4AH4RZA"/>
-        <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/T4AH4RZA"/>
-        <zapi:key>T4AH4RZA</zapi:key>
-        <zapi:itemType>journalArticle</zapi:itemType>
-        <zapi:creatorSummary>McIntyre</zapi:creatorSummary>
-        <zapi:numChildren>1</zapi:numChildren>
-        <zapi:numTags>0</zapi:numTags>
-        <content type="xhtml">
-          <div xmlns="http://www.w3.org/1999/xhtml">
-            <table>
-              <tr class="itemType">
-                <th style="text-align: right">Type</th>
-                <td>Joürnal Article</td>
-              </tr>
-              <tr class="creator">
-                <th style="text-align: right">Author</th>
-                <td>T. J. McIntyre</td>
-              </tr>
-              <tr class="publicationTitle">
-                <th style="text-align: right">Publication</th>
-                <td>Journal of Intellectual Property Law &amp; Practice</td>
-              </tr>
-              <tr class="ISSN">
-                <th style="text-align: right">ISSN</th>
-                <td>1747-1532</td>
-              </tr>
-              <tr class="date">
-                <th style="text-align: right">Date</th>
-                <td>2007</td>
-              </tr>
-              <tr class="libraryCatalog">
-                <th style="text-align: right">Library Catalog</th>
-                <td>Google Scholar</td>
-              </tr>
-              <tr class="shortTitle">
-                <th style="text-align: right">Short Title</th>
-                <td>Copyright in custom code</td>
-              </tr>
-            </table>
-          </div>
-        </content>
-      </entry>
-    </feed>"""
-    resp = urllib2.addinfourl(StringIO(test_item),
+    resp = urllib2.addinfourl(StringIO(resp_obj),
     'This is a mocked URI!',
     req.get_full_url())
     resp.code = 200
@@ -90,13 +26,16 @@ def mock_response(req):
     return resp
 
 
-
 class MyHTTPSHandler(urllib2.HTTPSHandler):
     """ Mock response for urllib2
+        takes a single argument, a string or a reference to a file
+        this is what's returned by .read()
     """
+    def __init__(self, resp_obj):
+        self.resp_obj = resp_obj
     # Change HTTPSHandler and https_open to http for non-https calls
     def https_open(self, req):
-        return mock_response(req)
+        return mock_response(req, self.resp_obj)
 
 
 
@@ -106,9 +45,70 @@ class ZoteroTests(unittest.TestCase):
     def setUp(self):
         """ Set stuff up
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler)
-        z.urllib2.install_opener(my_opener)
-        self.zot = z.Zotero('myuserID', 'myuserkey')
+        self.items_doc = """<?xml version="1.0"?>
+        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
+          <title>Zotero / urschrei / Top-Level Items</title>
+          <id>http://zotero.org/users/436/items/top?limit=1</id>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1"/>
+          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;start=949"/>
+          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items/top?limit=1"/>
+          <zapi:totalResults>950</zapi:totalResults>
+          <zapi:apiVersion>1</zapi:apiVersion>
+          <updated>2011-02-14T00:27:03Z</updated>
+          <entry>
+            <title>\u201cWe Need a Popular Discipline\u201d</title>
+            <author>
+              <name>urschrei</name>
+              <uri>http://zotero.org/urschrei</uri>
+            </author>
+            <id>http://zotero.org/urschrei/items/T4AH4RZA</id>
+            <published>2011-02-14T00:27:03Z</published>
+            <updated>2011-02-14T00:27:03Z</updated>
+            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/T4AH4RZA"/>
+            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/T4AH4RZA"/>
+            <zapi:key>T4AH4RZA</zapi:key>
+            <zapi:itemType>journalArticle</zapi:itemType>
+            <zapi:creatorSummary>McIntyre</zapi:creatorSummary>
+            <zapi:numChildren>1</zapi:numChildren>
+            <zapi:numTags>0</zapi:numTags>
+            <content type="xhtml">
+              <div xmlns="http://www.w3.org/1999/xhtml">
+                <table>
+                  <tr class="itemType">
+                    <th style="text-align: right">Type</th>
+                    <td>Joürnal Article</td>
+                  </tr>
+                  <tr class="creator">
+                    <th style="text-align: right">Author</th>
+                    <td>T. J. McIntyre</td>
+                  </tr>
+                  <tr class="publicationTitle">
+                    <th style="text-align: right">Publication</th>
+                    <td>Journal of Intellectual Property Law &amp; Practice</td>
+                  </tr>
+                  <tr class="ISSN">
+                    <th style="text-align: right">ISSN</th>
+                    <td>1747-1532</td>
+                  </tr>
+                  <tr class="date">
+                    <th style="text-align: right">Date</th>
+                    <td>2007</td>
+                  </tr>
+                  <tr class="libraryCatalog">
+                    <th style="text-align: right">Library Catalog</th>
+                    <td>Google Scholar</td>
+                  </tr>
+                  <tr class="shortTitle">
+                    <th style="text-align: right">Short Title</th>
+                    <td>Copyright in custom code</td>
+                  </tr>
+                </table>
+              </div>
+            </content>
+          </entry>
+        </feed>"""
         self.collections_doc = u"""<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Collections</title>
@@ -197,17 +197,10 @@ class ZoteroTests(unittest.TestCase):
             </content>
           </entry>
          </feed>"""
-        self.collections_parsed = feedparser.parse(
-        self.collections_doc.encode('utf-8'))
-        self.tags_parsed = feedparser.parse(self.tags_doc.encode('utf-8'))
-        self.groups_parsed = feedparser.parse(self.groups_doc.encode('utf-8'))
-        self.zot.add_parameters(start = 10)
+        # Add the item file to the mock response by default
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc))
+        z.urllib2.install_opener(my_opener)
 
-    def testRetrieveData(self):
-        """ Should return an item retrieved from mock_response file
-        """
-        items = self.zot.items()
-        self.assertEqual('T. J. McIntyre', items[0]['author'], 'message')
 
     def testFailWithoutCredentials(self):
         """ Instance creation should fail, because we're leaving out a
@@ -219,15 +212,18 @@ class ZoteroTests(unittest.TestCase):
     def testRequestBuilder(self):
         """ Should add the user key, then url-encode all other added parameters
         """
-        self.zot.add_parameters(limit = 0, start = 7)
-        self.assertEqual('start=7&limit=0&key=myuserkey', self.zot.url_params)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        zot.add_parameters(limit = 0, start = 7)
+        self.assertEqual('start=7&limit=0&key=myuserkey', zot.url_params)
 
     def testBuildQuery(self):
         """ Check that spaces etc. are being correctly URL-encoded and added
             to the URL parameters
         """
+        zot = z.Zotero('myuserID', 'myuserkey')
+        zot.add_parameters(start = 10)
         query_string = '/users/000/tags/hi there/items'
-        query = self.zot._build_query(query_string)
+        query = zot._build_query(query_string)
         self.assertEqual(
         '/users/000/tags/hi%20there/items?start=10&key=myuserkey',
         query)
@@ -237,7 +233,8 @@ class ZoteroTests(unittest.TestCase):
             input doc's zapi:key value, and author should have been correctly
             parsed out of the XHTML payload
         """
-        items_data = self.zot.items()
+        zot = z.Zotero('myuserID', 'myuserkey')
+        items_data = zot.items()
         self.assertEqual('T4AH4RZA', items_data[0]['id'])
         self.assertEqual(u'T. J. McIntyre', items_data[0]['author'])
         self.assertEqual(u'Joürnal Article', items_data[0]['type'])
@@ -246,7 +243,8 @@ class ZoteroTests(unittest.TestCase):
         """ Should be able to print unicode strings to stdout, and convert
             them to UTF-8 before printing them
         """
-        items_data = self.zot.items()
+        zot = z.Zotero('myuserID', 'myuserkey')
+        items_data = zot.items()
         try:
             print items_data[0]['title']
         except UnicodeError:
@@ -262,8 +260,9 @@ class ZoteroTests(unittest.TestCase):
             return result to be passed to the bib_items
             parsing method
         """
-        self.zot.url_params = 'content=bib'
-        items_data = self.zot.items()
+        zot = z.Zotero('myuserID', 'myuserkey')
+        zot.url_params = 'content=bib'
+        items_data = zot.items()
         with self.assertRaises(TypeError):
             self.assertEqual('T4AH4RZA', items_data[0]['id'], 'message')
 
@@ -272,7 +271,10 @@ class ZoteroTests(unittest.TestCase):
             match input doc's zapi:key value, and 'title' value should match
             input doc's title value
         """
-        collections_data = self.zot.collections_data(self.collections_parsed)
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.collections_doc))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        collections_data = zot.collections()
         self.assertEqual('PRMD6BGB', collections_data[0]['id'])
         self.assertEqual('A Midsummer Night\'s Dream',
         collections_data[0]['title'])
@@ -280,7 +282,10 @@ class ZoteroTests(unittest.TestCase):
     def testParseTagsAtomDoc(self):
         """ Should successfully return a list of tags
         """
-        tags_data = self.zot.tags_data(self.tags_parsed)
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.tags_doc))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        tags_data = zot.tags()
         self.assertEqual('Authority in literature', tags_data[0])
 
     def testParseGroupsAtomDoc(self):
@@ -288,7 +293,10 @@ class ZoteroTests(unittest.TestCase):
             input doc's zapi:key value, and 'total_items' value should match
             input doc's zapi:numItems value
         """
-        groups_data = self.zot.groups_data(self.groups_parsed)
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        groups_data = zot.groups()
         self.assertEqual('DFW', groups_data[0]['id'])
         self.assertEqual('346', groups_data[0]['total_items'])
 
@@ -296,17 +304,18 @@ class ZoteroTests(unittest.TestCase):
         """ Should successfully reset URL parameters after a query string
             is built
         """
-        self.zot.add_parameters(start = 5, limit = 10)
-        self.zot._build_query('/whatever')
-        self.zot.add_parameters(start = 2)
-        self.assertEqual('start=2&key=myuserkey', self.zot.url_params)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        zot.add_parameters(start = 5, limit = 10)
+        zot._build_query('/whatever')
+        zot.add_parameters(start = 2)
+        self.assertEqual('start=2&key=myuserkey', zot.url_params)
 
     def testParamsBlankAfterCall(self):
         """ self.url_params should be blank after an API call
         """
-        self.zot.add_parameters(start = 5)
-        items = self.zot.items()
-        self.assertEqual(None, self.zot.url_params)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        items = zot.items()
+        self.assertEqual(None, zot.url_params)
 
     def testDedup(self):
         """ Ensure that de-duplication of a list containing some repeating
