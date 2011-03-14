@@ -61,7 +61,7 @@ class ZoteroTests(unittest.TestCase):
           <zapi:apiVersion>1</zapi:apiVersion>
           <updated>2011-02-14T00:27:03Z</updated>
           <entry>
-            <title>\u201cWe Need a Popular Discipline\u201d</title>
+            <title>“We Need a Popular Discipline”</title>
             <author>
               <name>urschrei</name>
               <uri>http://zotero.org/urschrei</uri>
