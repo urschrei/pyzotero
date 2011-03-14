@@ -19,19 +19,6 @@ import xml.etree.ElementTree as xml
 import zotero_errors as ze
 
 
-
-def open_file(to_read):
-    """ Open a text file for reading, and strip the newlines
-        returns a list, one list item per line
-    """
-    try:
-        with open(to_read, 'r') as opened:
-            return [got_lines.rstrip('\n') for got_lines in opened.readlines()]
-    except IOError:
-        print "Couldn't read values from %s\nCan't continue." % to_read
-        raise
-
-
 def dedup(suspects):
     """ Check for duplicate key entries (e.g. contributor) and append a number
         to these. This is a horrible hack, but the Zotero API returns items
