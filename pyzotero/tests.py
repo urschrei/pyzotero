@@ -381,13 +381,22 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.UnsupportedParams):
             zot.items()
 
-    def testResponseUnsupported(self):
+    def testResponseNotFound(self):
         """ Ensure that an error is properly raised for 404
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 404))
         z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'myuserkey')
         with self.assertRaises(z.ze.ResourceNotFound):
+            zot.items()
+
+    def testResponseMiscError(self):
+        """ Ensure that an error is properly raised for unspecified errors
+        """
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 500))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        with self.assertRaises(z.ze.HTTPError):
             zot.items()
 
     def tearDown(self):
