@@ -18,6 +18,7 @@ The [feedparser][3] (>= v5.0.1) and [ElementTree][7] (>= v1.2.7) modules are req
 
 Run `tests.py` in the pyzotero directory, or, using [Nose][5], `nosetests` from this directory. If you wish to see coverage statistics, run `nosetests --with-coverage --cover-package=pyzotero`.
 
+Additionally, a basic script, `sample.py`, is included.
 
 # Usage #
 ## Hello World ##
@@ -113,8 +114,6 @@ All methods return **lists** of **dicts** or, in the case of tag methods, **list
 If you attempt to call/print/access a key which does not exist, a `KeyError` will be raised. Alternatively, you can use e.g. `item.get('author', None)` which will simply return `None` if a key does not exist. Frequently missing keys are a definite possibility, since Zotero library items have very few mandatory fields.
 
 **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.  
-
-Running zotero.py from the command line will attempt to import your ID and key from a file named `zotero_keys.txt` in your home directory (see comment in `main()` for details), create a new Zotero object and call some of the methods.
 
 
 [1]: http://www.zotero.org/support/dev/server_api "Zotero Server API"
