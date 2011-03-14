@@ -63,16 +63,17 @@ class Zotero(object):
         req = urllib2.Request(full_url)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
-            data = urllib2.urlopen(req).read()
+            response = urllib2.urlopen(req)
+            data = response.read()
         except urllib2.HTTPError, error:
             if error.code == 401 or error.code == 403:
                 raise ze.UserNotAuthorised, \
 "You are not authorised to retrieve this resource (%s)" % error.code
-            if error.code == 400:
+            elif error.code == 400:
                 raise ze.UnsupportedParams, \
 "Invalid request, probably due to unsupported parameters: %s" % \
                 full_url
-            if error.code == 404:
+            elif error.code == 404:
                 raise ze.ResourceNotFound, \
 "No results for the following query:\n%s" % full_url
             else:
