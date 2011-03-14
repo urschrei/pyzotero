@@ -60,8 +60,10 @@ class Zotero(object):
             Returns a dict containing feed items and lists of entries
         """
         full_url = '%s%s' % (self.endpoint, request)
+        req = urllib2.Request(full_url)
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
-            data = urllib2.urlopen(full_url).read()
+            data = urllib2.urlopen(req).read()
         except urllib2.HTTPError, error:
             if error.code == 401 or error.code == 403:
                 raise ze.UserNotAuthorised, \
