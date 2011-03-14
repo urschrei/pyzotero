@@ -197,6 +197,41 @@ class ZoteroTests(unittest.TestCase):
             </content>
           </entry>
          </feed>"""
+        self.bib_doc = """<?xml version="1.0"?>
+         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
+           <title>Zotero / urschrei / Top-Level Items</title>
+           <id>http://zotero.org/users/436/items/top?limit=1&amp;content=bib</id>
+           <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;content=bib"/>
+           <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;content=bib"/>
+           <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;content=bib&amp;start=1"/>
+           <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;content=bib&amp;start=949"/>
+           <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items/top?limit=1"/>
+           <zapi:totalResults>950</zapi:totalResults>
+           <zapi:apiVersion>1</zapi:apiVersion>
+           <updated>2011-02-14T00:27:03Z</updated>
+           <entry>
+             <title>Copyright in custom code: Who owns commissioned software?</title>
+             <author>
+               <name>urschrei</name>
+               <uri>http://zotero.org/urschrei</uri>
+             </author>
+             <id>http://zotero.org/urschrei/items/T4AH4RZA</id>
+             <published>2011-02-14T00:27:03Z</published>
+             <updated>2011-02-14T00:27:03Z</updated>
+             <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/T4AH4RZA?content=bib"/>
+             <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/T4AH4RZA"/>
+             <zapi:key>T4AH4RZA</zapi:key>
+             <zapi:itemType>journalArticle</zapi:itemType>
+             <zapi:creatorSummary>McIntyre</zapi:creatorSummary>
+             <zapi:numChildren>1</zapi:numChildren>
+             <zapi:numTags>0</zapi:numTags>
+             <content type="xhtml">
+               <div xmlns="http://www.w3.org/1999/xhtml" class="csl-bib-body" style="line-height: 1.35; padding-left: 2em; text-indent:-2em;">
+           <div class="csl-entry">McIntyre, T. J. &#x201C;Copyright in custom code: Who owns commissioned software?&#x201D; <i>Journal of Intellectual Property Law &amp; Practice</i> (2007).</div>
+         </div>
+             </content>
+           </entry>
+         </feed>"""
         # Add the item file to the mock response by default
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc))
         z.urllib2.install_opener(my_opener)
@@ -256,15 +291,15 @@ class ZoteroTests(unittest.TestCase):
 'Your Python install appears to dislike encoding unicode strings as UTF-8')
 
     def testParseItemAtomBibDoc(self):
-        """ Should fail, as setting the content = 'bib' param causes the
-            return result to be passed to the bib_items
-            parsing method
+        """ Should match a DIV with class = csl-entry
         """
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.bib_doc))
+        z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'myuserkey')
         zot.url_params = 'content=bib'
         items_data = zot.items()
-        with self.assertRaises(TypeError):
-            self.assertEqual('T4AH4RZA', items_data[0]['id'], 'message')
+        dec = items_data[0].encode('utf-8')
+        self.assertTrue(dec.startswith("""<div class="csl-entry">"""))
 
     def testParseCollectionsAtomDoc(self):
         """ Should successfully return a list of collection dicts, ID should
