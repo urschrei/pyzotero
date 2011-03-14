@@ -67,9 +67,9 @@ class Zotero(object):
                 raise ze.UserNotAuthorised, \
 "You are not authorised to retrieve this resource (%s)" % error.code
             if error.code == 400:
-                raise ze.RateLimitExceeded, \
+                raise ze.UnsupportedParams, \
 "Invalid request, probably due to unsupported parameters: %s" % \
-                data
+                full_url
             if error.code == 404:
                 raise ze.ResourceNotFound, \
 "No results for the following query:\n%s" % full_url

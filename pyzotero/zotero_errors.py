@@ -33,8 +33,8 @@ class CallDoesNotExist(PyZoteroError):
 
 
 
-class RateLimitExceeded(PyZoteroError):
-    """ Raised when the API rate limit is exceeded
+class UnsupportedParams(PyZoteroError):
+    """ Raised when unsupported parameters are passed
     """
     pass
 

@@ -15,13 +15,13 @@ from StringIO import StringIO
 
 
 
-def mock_response(req, resp_obj):
+def mock_response(req, resp_obj, resp_code):
     """ Mock response for MyHTTPSHandler
     """
     resp = urllib2.addinfourl(StringIO(resp_obj),
     'This is a mocked URI!',
     req.get_full_url())
-    resp.code = 200
+    resp.code = resp_code
     resp.msg = "OK"
     return resp
 
@@ -31,11 +31,14 @@ class MyHTTPSHandler(urllib2.HTTPSHandler):
         takes a single argument, a string or a reference to a file
         this is what's returned by .read()
     """
-    def __init__(self, resp_obj):
+    def __init__(self, resp_obj, resp_code = None):
         self.resp_obj = resp_obj
+        if not resp_code:
+            self.resp_code = 200
+        else: self.resp_code = resp_code
     # Change HTTPSHandler and https_open to http for non-https calls
     def https_open(self, req):
-        return mock_response(req, self.resp_obj)
+        return mock_response(req, self.resp_obj, self.resp_code)
 
 
 
@@ -359,6 +362,33 @@ class ZoteroTests(unittest.TestCase):
         test_strings = ['foo', 'foo', 'bar', 'baz']
         deduped = z.dedup(test_strings)
         self.assertEqual(['foo', 'foo_2', 'bar', 'baz'], deduped)
+
+    def testResponseForbidden(self):
+        """ Ensure that an error is properly raised for 403
+        """
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 403))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        with self.assertRaises(z.ze.UserNotAuthorised):
+            zot.items()
+
+    def testResponseUnsupported(self):
+        """ Ensure that an error is properly raised for 400
+        """
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 400))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        with self.assertRaises(z.ze.UnsupportedParams):
+            zot.items()
+
+    def testResponseUnsupported(self):
+        """ Ensure that an error is properly raised for 400
+        """
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 404))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        with self.assertRaises(z.ze.ResourceNotFound):
+            zot.items()
 
     def tearDown(self):
         """ Tear stuff down
