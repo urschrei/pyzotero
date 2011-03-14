@@ -392,17 +392,18 @@ class Zotero(object):
         """ Format and return data from API calls which return Groups
         """
         groups = []
-        group_id = [i['id'] for i in retrieved.entries]
+        group_uid = [i['id'] for i in retrieved.entries]
         group_title = [t['title'] for t in retrieved.entries]
         group_items = [i['zapi_numitems'] for i in retrieved.entries]
         group_author = [a['author'] for a in retrieved.entries]
         group_uid = [u['links'][0]['href'] for u in retrieved.entries]
         for index in range(len(group_id)):
             group_data = {}
-            group_data['uid'] = group_id[index]
+            group_data['uid'] = group_uid[index]
             group_data['title'] = group_title[index]
             group_data['total_items'] = group_items[index]
             group_data['owner'] = group_author[index]
+            # Ugh. Fix your fucking API. See also: dedup()
             group_data['id'] = group_uid[index].split('/')[-1]
             groups.append(group_data)
             self.url_params = None
