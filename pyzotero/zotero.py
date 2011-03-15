@@ -11,13 +11,18 @@ License: http://www.gnu.org/licenses/gpl-3.0.txt
 
 __version__ = '0.6.7'
 
-
 import urllib
 import urllib2
+import socket
 import feedparser
 import xml.etree.ElementTree as xml
+
 import zotero_errors as ze
 
+
+# Avoid hanging the application if there's no server response
+timeout = 30
+socket.setdefaulttimeout(timeout)
 
 def dedup(suspects):
     """ Check for duplicate key entries (e.g. contributor) and append a number
@@ -65,21 +70,26 @@ class Zotero(object):
         try:
             response = urllib2.urlopen(req)
             data = response.read()
-        except urllib2.HTTPError, error:
-            if error.code == 401 or error.code == 403:
-                raise ze.UserNotAuthorised, \
-"You are not authorised to retrieve this resource (%s)" % error.code
-            elif error.code == 400:
-                raise ze.UnsupportedParams, \
-"Invalid request, probably due to unsupported parameters: %s" % \
-                full_url
-            elif error.code == 404:
-                raise ze.ResourceNotFound, \
-"No results for the following query:\n%s" % full_url
-            else:
-                raise ze.HTTPError, \
-"HTTP Error %s (%s)\nURL: %s" % (
-                error.msg, error.code, full_url)
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            # Distinguish between URL errors and HTTP status codes of 400+
+            if hasattr(error, 'reason'):
+                raise ze.CouldNotReachURL, \
+    "Could not reach server. Reason: %s\nURL: %s" % (error, full_url)
+            elif hasattr(error, 'code'):
+                if error.code == 401 or error.code == 403:
+                    raise ze.UserNotAuthorised, \
+    "You are not authorised to retrieve this resource (%s)" % error.code
+                elif error.code == 400:
+                    raise ze.UnsupportedParams, \
+    "Invalid request, probably due to unsupported parameters: %s" % \
+                    full_url
+                elif error.code == 404:
+                    raise ze.ResourceNotFound, \
+    "No results for the following query:\n%s" % full_url
+                else:
+                    raise ze.HTTPError, \
+    "HTTP Error %s (%s)\nURL: %s" % (
+                    error.msg, error.code, full_url)
         # parse the result into Python data structures
         return feedparser.parse(data)
 

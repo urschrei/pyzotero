@@ -66,3 +66,10 @@ class HTTPError(PyZoteroError):
     """ Raised for miscellaneous URLLib errors
     """
     pass
+
+
+
+class CouldNotReachURL(PyZoteroError):
+    """ Raised when we can't reach a URL
+    """
+    pass
