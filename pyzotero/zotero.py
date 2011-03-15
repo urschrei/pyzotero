@@ -11,6 +11,7 @@ License: http://www.gnu.org/licenses/gpl-3.0.txt
 
 __version__ = '0.6.7'
 
+
 import urllib
 import urllib2
 import socket
