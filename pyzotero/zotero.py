@@ -61,7 +61,8 @@ class Zotero(object):
         self.url_params = None
 
     def retrieve_data(self, request = None):
-        """ Method for retrieving Zotero items via the API
+        """ Retrieve Zotero items via the API
+            Combine endpoint and request to access the specific resource
             Returns a dict containing feed items and lists of entries
         """
         full_url = '%s%s' % (self.endpoint, request)
@@ -122,7 +123,7 @@ class Zotero(object):
 
     def _build_query(self, query_string):
         """ Set request parameters. Will always add the user ID if it hasn't
-            been specifically set by an API call
+            been specifically set by an API method
         """
         try:
             query = urllib.quote(query_string.format(u = self.user_id))
