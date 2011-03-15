@@ -149,7 +149,7 @@ class Zotero(object):
 
     @retrieve('self.items_data')
     def children(self, item):
-        """ Get a specific item
+        """ Get a specific item's child items
         """
         query_string = '/users/{u}/items/{i}/children'.format(
         u = self.user_id,
@@ -219,7 +219,7 @@ class Zotero(object):
 
     @retrieve('self.items_data')
     def group_collection_items(self, group, collection):
-        """ Get a specific group's items for a specific collection
+        """ Get a specific group's items from a specific collection
         """
         query_string = '/groups/{g}/collections/{c}/items'.format(
         g = group,
@@ -228,7 +228,7 @@ class Zotero(object):
 
     @retrieve('self.items_data')
     def group_collection_top(self, group, collection):
-        """ Get a specific group's top-level items for a specific collection
+        """ Get a specific group's top-level items from a specific collection
         """
         query_string = '/groups/{g}/collections/{c}/items/top'.format(
         g = group,
@@ -272,7 +272,7 @@ class Zotero(object):
 
     @retrieve('self.collections_data')
     def group_collection(self, group, collection):
-        """ Get collections for a specific group
+        """ Get a specific collection for a specific group
         """
         query_string = '/groups/{g}/collections/{c}'.format(
         u = self.user_id,
@@ -324,7 +324,7 @@ class Zotero(object):
 
     @retrieve('self.tags_data')
     def group_item_tags(self, group, item):
-        """ Get tags for a specific group
+        """ Get tags for a specific item in a specific group
         """
         query_string = '/groups/{g}/items/{i}/tags'.format(
         u = self.user_id,
@@ -363,7 +363,7 @@ class Zotero(object):
         return items
 
     def bib_items(self, retrieved):
-        """ Returns a list of strings formatted as HTML bibliography entries
+        """ Return a list of strings formatted as HTML bibliography entries
         """
         items = []
         for bib in retrieved.entries:
@@ -372,7 +372,7 @@ class Zotero(object):
         return items
 
     def collections_data(self, retrieved):
-        """ Format and return data from API calls which return collections
+        """ Format and return data from API calls which return Collections
         """
         collections = []
         collection_key = [k['zapi_key'] for k in retrieved.entries]
@@ -410,7 +410,7 @@ class Zotero(object):
         return groups
 
     def tags_data(self, retrieved):
-        """ Format and return data from API call which return Tags
+        """ Format and return data from API calls which return Tags
         """
         tags = [t['title'] for t in retrieved.entries]
         self.url_params = None
