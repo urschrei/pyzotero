@@ -103,7 +103,13 @@ class Zotero(object):
             """ Wrapper for original function
             """
             def wrapped_f(self, *args, **kwargs):
-                """ Returns result of _retrieve_data(), then output_func
+                """ Returns result of retrieve_data(), then output_func
+
+                    orig_func's return value is part of a URI, and it's this
+                    which is intercepted and passed to retrieve_data:
+                    '/users/123/items?key=abc123'
+                    the feed-parsed atom doc returned by retrieve_data is then
+                    passed to output_func (items, groups, tags, collections)
                 """
                 orig_func = func(self, *args, **kwargs)
                 retr = self.retrieve_data(orig_func)
