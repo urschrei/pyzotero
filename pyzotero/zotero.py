@@ -143,6 +143,7 @@ class Zotero(object):
         query = '%s?%s' % (query, self.url_params)
         return query
 
+    # The following methods are all Zotero API calls
     @retrieve('self.items_data')
     def items(self):
         """ Get user items 
@@ -350,6 +351,7 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
+    # These methods process the returned data from API calls, returning lists
     def items_data(self, retrieved):
         """ Call either standard_items or bib_items, depending on the URL param
         """
