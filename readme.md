@@ -22,13 +22,13 @@ Additionally, a basic script, `sample.py`, is included.
 
 # Usage #
 ## Hello World ##
-
-    from pyzotero import zotero
-    zot = zotero.Zotero(user_id, user_key)
-    items = zot.items()
-    for item in items:
-        print 'Author: %s | Title: %s' % (item['author'], item['title'])
-
+``` Python
+from pyzotero import zotero
+zot = zotero.Zotero(user_id, user_key)
+items = zot.items()
+for item in items:
+    print 'Author: %s | Title: %s' % (item['author'], item['title'])
+```
 ## General Usage ##
 
 Additional parameters may be set using the following method:  
@@ -73,8 +73,10 @@ The following methods are currently available:
  * `group_collection_top(group ID, collection ID)`, returns a specific collection's top-level items from a specific group
  * `collection_items(collection ID)`, returns items from the specified collection
 
-Example of returned data: `[{'publication': 'Genetic Joyce Studies', 'author': 'Susan Brown', 'url': 'http://www.geneticjoycestudies.org/GJS7/GJS7brown.html', 'type': 'Journal Article', 'title': 'The Mystery of the Fuga per Canonem Solved', 'date': 'Spring 2007', 'accessed': '2010-03-25 20:30:18', 'issue': '7', 'id': '9T3K4EES'}, … ]`  
- 
+Example of returned data:
+``` Python
+[{'publication': 'Genetic Joyce Studies', 'author': 'Susan Brown', 'url': 'http://www.geneticjoycestudies.org/GJS7/GJS7brown.html', 'type': 'Journal Article', 'title': 'The Mystery of the Fuga per Canonem Solved', 'date': 'Spring 2007', 'accessed': '2010-03-25 20:30:18', 'issue': '7', 'id': '9T3K4EES'}, … ]
+```
 See ‘Hello World’ example, above  
 
 ### To retrieve collections:###
@@ -84,13 +86,18 @@ See ‘Hello World’ example, above
  * `group_collections(group ID)`, returns collections for a specific group
  * `group_collection(group ID, collection ID)`, returns a specific collection from a specific group
 
-Example of returned data: `[{'id': 'PRMD6BGB', 'title': "A Midsummer Night's Dream"}, … ]`
-
+Example of returned data:
+``` Python
+[{'id': 'PRMD6BGB', 'title': "A Midsummer Night's Dream"}, … ]
+```
 ### To retrieve groups:###
 
  * `groups()`, returns Zotero library groups
 
-Example of returned data: `[{'total_items': '468', 'owner': 'urschrei', 'id': '153', 'uid': 'http://zotero.org/groups/dfw', 'title': 'DFW'}, … ]`
+Example of returned data:
+``` Python
+[{'total_items': '468', 'owner': 'urschrei', 'id': '153', 'uid': 'http://zotero.org/groups/dfw', 'title': 'DFW'}, … ]
+```
 
 ### To retrieve tags: ###
 
@@ -99,17 +106,21 @@ Example of returned data: `[{'total_items': '468', 'owner': 'urschrei', 'id': '1
 * `group_tags(group ID)`, returns tags from a specific group
 * `group_item_tags(group ID, item ID)`, returns tags from a specific item from a specific group
 
-Example of returned data: `['Authority in literature', 'Errata', … ]`
+Example of returned data:
+``` Python
+['Authority in literature', 'Errata', … ]
+```
 
 # Notes #
 
 
 All methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. Example:  
-
-    zot = zotero.Zotero(user_id, user_key)  
-    collections = zot.collections()  
-    for collection in collections:  
-        print 'Name: %s | ID: %s' % (collection['title'], collection['id'])  
+``` Python
+zot = zotero.Zotero(user_id, user_key)  
+collections = zot.collections()  
+for collection in collections:  
+    print 'Name: %s | ID: %s' % (collection['title'], collection['id'])
+```
 
 If you attempt to call/print/access a key which does not exist, a `KeyError` will be raised. Alternatively, you can use e.g. `item.get('author', None)` which will simply return `None` if a key does not exist. Frequently missing keys are a definite possibility, since Zotero library items have very few mandatory fields.
 
