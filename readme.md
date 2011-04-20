@@ -22,7 +22,7 @@ Additionally, a basic script, `sample.py`, is included.
 
 # Usage #
 ## Hello World ##
-``` Python
+``` python
 from pyzotero import zotero
 zot = zotero.Zotero(user_id, user_key)
 items = zot.items()
@@ -74,9 +74,8 @@ The following methods are currently available:
  * `collection_items(collection ID)`, returns items from the specified collection
 
 Example of returned data:
-``` Python
-[{'publication': 'Genetic Joyce Studies', 'author': 'Susan Brown', 'url': 'http://www.geneticjoycestudies.org/GJS7/GJS7brown.html', 'type': 'Journal Article', 'title': 'The Mystery of the Fuga per Canonem Solved', 'date': 'Spring 2007', 'accessed': '2010-03-25 20:30:18', 'issue': '7', 'id': '9T3K4EES'}, … ]
-```
+
+`[{'publication': 'Genetic Joyce Studies', 'author': 'Susan Brown', 'url': 'http://www.geneticjoycestudies.org/GJS7/GJS7brown.html', 'type': 'Journal Article', 'title': 'The Mystery of the Fuga per Canonem Solved', 'date': 'Spring 2007', 'accessed': '2010-03-25 20:30:18', 'issue': '7', 'id': '9T3K4EES'}, … ]`
 See ‘Hello World’ example, above  
 
 ### To retrieve collections:###
@@ -87,17 +86,17 @@ See ‘Hello World’ example, above
  * `group_collection(group ID, collection ID)`, returns a specific collection from a specific group
 
 Example of returned data:
-``` Python
-[{'id': 'PRMD6BGB', 'title': "A Midsummer Night's Dream"}, … ]
-```
+
+`[{'id': 'PRMD6BGB', 'title': "A Midsummer Night's Dream"}, … ]`
+
 ### To retrieve groups:###
 
  * `groups()`, returns Zotero library groups
 
 Example of returned data:
-``` Python
-[{'total_items': '468', 'owner': 'urschrei', 'id': '153', 'uid': 'http://zotero.org/groups/dfw', 'title': 'DFW'}, … ]
-```
+
+`[{'total_items': '468', 'owner': 'urschrei', 'id': '153', 'uid':
+'http://zotero.org/groups/dfw', 'title': 'DFW'}, … ]`
 
 ### To retrieve tags: ###
 
@@ -107,15 +106,15 @@ Example of returned data:
 * `group_item_tags(group ID, item ID)`, returns tags from a specific item from a specific group
 
 Example of returned data:
-``` Python
-['Authority in literature', 'Errata', … ]
-```
+
+`['Authority in literature', 'Errata', … ]`
 
 # Notes #
 
 
 All methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. Example:  
-``` Python
+
+``` python  
 zot = zotero.Zotero(user_id, user_key)  
 collections = zot.collections()  
 for collection in collections:  
