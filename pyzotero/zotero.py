@@ -17,6 +17,7 @@ import urllib2
 import socket
 import feedparser
 import xml.etree.ElementTree as xml
+from collections import defaultdict
 
 import zotero_errors as ze
 
@@ -142,6 +143,10 @@ class Zotero(object):
             self.add_parameters()
         query = '%s?%s' % (query, self.url_params)
         return query
+
+    def _default_factory(self):
+        """ set a default value for keys which don't exist """
+        return 'Not Set'
 
     # The following methods are all Zotero API calls
     @retrieve('self.items_data')
@@ -375,7 +380,7 @@ class Zotero(object):
             keys = dedup(
             [e.text.lower() for e in elem.iter('th')])
             values = [v.text for v in elem.iter('td')]
-            zipped = dict(zip(keys, values))
+            zipped = defaultdict(self._default_factory, zip(keys, values))
             zipped['title'] = item_title[index]
             zipped['id'] = item_id[index]
             items.append(zipped)
@@ -399,7 +404,7 @@ class Zotero(object):
         collection_title = [t['title'] for t in retrieved.entries]
         collection_sub = [s['zapi_numcollections'] for s in retrieved.entries]
         for index in range(len(collection_key)):
-            collection_data = {}
+            collection_data = defaultdict(self._default_factory)
             collection_data['id'] = collection_key[index]
             collection_data['title'] = collection_title[index]
             if int(collection_sub[index]) > 0:
@@ -418,7 +423,7 @@ class Zotero(object):
         group_author = [a['author'] for a in retrieved.entries]
         group_id = [u['links'][0]['href'] for u in retrieved.entries]
         for index in range(len(group_uid)):
-            group_data = {}
+            group_data = defaultdict(self._default_factory)
             group_data['uid'] = group_uid[index]
             group_data['title'] = group_title[index]
             group_data['total_items'] = group_items[index]

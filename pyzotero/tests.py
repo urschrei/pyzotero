@@ -355,6 +355,13 @@ class ZoteroTests(unittest.TestCase):
         items = zot.items()
         self.assertEqual(None, zot.url_params)
 
+    def testItemNotSet(self):
+        """ Calling an item's property should return 'Not Set' if it doesn't exist
+        """
+        zot = z.Zotero('myuserID', 'myuserkey')
+        items = zot.items()
+        self.assertEqual('Not Set', items[0]['foo'])
+
     def testDedup(self):
         """ Ensure that de-duplication of a list containing some repeating
             strings works OK
