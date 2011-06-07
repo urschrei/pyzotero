@@ -362,6 +362,24 @@ class ZoteroTests(unittest.TestCase):
         items = zot.items()
         self.assertEqual('Not Set', items[0]['foo'])
 
+    def testCollectionNotSet(self):
+        """ Calling an item's property should return 'Not Set' if it doesn't exist
+        """
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.collections_doc))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        coll = zot.collections()
+        self.assertEqual('Not Set', coll[0]['bar'])
+
+    def testGroupNotSet(self):
+        """ Calling an item's property should return 'Not Set' if it doesn't exist
+        """
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        groups = zot.groups()
+        self.assertEqual('Not Set', groups[0]['baz'])
+
     def testDedup(self):
         """ Ensure that de-duplication of a list containing some repeating
             strings works OK
