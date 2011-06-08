@@ -122,7 +122,14 @@ for collection in collections:
     print 'Name: %s | ID: %s' % (collection['title'], collection['id'])
 ```
 
-If you attempt to call/print/access a key which does not exist, a `KeyError` will be raised. Alternatively, you can use e.g. `item.get('author', None)` which will simply return `None` if a key does not exist. Frequently missing keys are a definite possibility, since Zotero library items have very few mandatory fields.
+Frequently missing keys are a definite possibility, since Zotero library items have very few mandatory fields. Pyzotero now uses `defaultdict` dicts, so calling an item, collection or group key which does not exist will return 'Not Set', as opposed to raising a `KeyError`:
+
+``` python  
+zot = zotero.Zotero(user_id, user_key)  
+items = zot.items()  
+print items[0]['ham']  
+>>> Not Set  
+```
 
 **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.  
 
