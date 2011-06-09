@@ -26,22 +26,6 @@ import zotero_errors as ze
 timeout = 30
 socket.setdefaulttimeout(timeout)
 
-def dedup(suspects):
-    """ Check for duplicate key entries (e.g. contributor) and append a number
-        to these. This is a horrible hack, but the Zotero API returns items
-        with non-unique key values (arbitrary no. of contributors/authors/eds)
-    """
-    seen = []
-    counter = 2
-    for candidate in suspects:
-        if candidate in seen:
-            candidate = '%s_%s' % (candidate, counter)
-            counter += 1
-            seen.append(candidate)
-        else:
-            seen.append(candidate)
-    return seen
-
 
 
 class Zotero(object):
@@ -96,27 +80,22 @@ class Zotero(object):
         # parse the result into Python data structures
         return feedparser.parse(data)
 
-    def retrieve(output_func):
-        """ Decorator for Zotero methods; calls _retrieve_data() and passes
-            the result to the function specified by output_func
+    def retrieve(func):
+        """ Decorator for Zotero methods; calls retrieve_data() and passes
+            the result to the JSON processor
         """
-        def wrap(func):
-            """ Wrapper for original function
-            """
-            def wrapped_f(self, *args, **kwargs):
-                """ Returns result of retrieve_data(), then output_func
+        def wrapped_f(self, *args, **kwargs):
+            """ Returns result of retrieve_data()
 
-                    orig_func's return value is part of a URI, and it's this
-                    which is intercepted and passed to retrieve_data:
-                    '/users/123/items?key=abc123'
-                    the feed-parsed atom doc returned by retrieve_data is then
-                    passed to output_func (items, groups, tags, collections)
-                """
-                orig_func = func(self, *args, **kwargs)
-                retr = self.retrieve_data(orig_func)
-                return eval(output_func)(retr)
-            return wrapped_f
-        return wrap
+                orig_func's return value is part of a URI, and it's this
+                which is intercepted and passed to retrieve_data:
+                '/users/123/items?key=abc123'
+                the feed-parsed atom doc returned by retrieve_data is then
+                passed to process_content
+            """
+            orig_func = func(self, *args, **kwargs)
+            return self.process_content(self.retrieve_data(orig_func))
+        return wrapped_f
 
     def add_parameters(self, **params):
         """ Set URL parameters. Will always add the user key
@@ -152,21 +131,21 @@ class Zotero(object):
         return None
 
     # The following methods are all Zotero API calls
-    @retrieve('self.items_data')
+    @retrieve
     def items(self):
         """ Get user items
         """
         query_string = '/users/{u}/items'
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def top(self):
         """ Get user top-level items
         """
         query_string = '/users/{u}/items/top'
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def item(self, item):
         """ Get a specific item
         """
@@ -174,7 +153,7 @@ class Zotero(object):
         u = self.user_id, i = item)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def children(self, item):
         """ Get a specific item's child items
         """
@@ -183,7 +162,7 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def tag_items(self, tag):
         """ Get items for a specific tag
         """
@@ -192,7 +171,7 @@ class Zotero(object):
         t = tag)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def collection_items(self, collection):
         """ Get a specific collection's items
         """
@@ -201,7 +180,7 @@ class Zotero(object):
         c = collection)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def group_items(self, group):
         """ Get a specific group's items
         """
@@ -209,7 +188,7 @@ class Zotero(object):
         g = group)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def group_top(self, group):
         """ Get a specific group's top-level items
         """
@@ -217,7 +196,7 @@ class Zotero(object):
         g = group)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def group_item(self, group, item):
         """ Get a specific group item
         """
@@ -226,7 +205,7 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def group_item_children(self, group, item):
         """ Get a specific group item's child items
         """
@@ -235,7 +214,7 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def group_items_tag(self, group, tag):
         """ Get a specific group's items for a specific tag
         """
@@ -244,7 +223,7 @@ class Zotero(object):
         t = tag)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def group_collection_items(self, group, collection):
         """ Get a specific group's items from a specific collection
         """
@@ -253,7 +232,7 @@ class Zotero(object):
         c = collection)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def group_collection_top(self, group, collection):
         """ Get a specific group's top-level items from a specific collection
         """
@@ -262,7 +241,7 @@ class Zotero(object):
         c = collection)
         return self._build_query(query_string)
 
-    @retrieve('self.items_data')
+    @retrieve
     def group_collection_item(self, group, collection, item):
         """ Get a specific collection's item from a specific group
         """
@@ -272,14 +251,14 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
-    @retrieve('self.collections_data')
+    @retrieve
     def collections(self):
         """ Get user collections
         """
         query_string = '/users/{u}/collections'
         return self._build_query(query_string)
 
-    @retrieve('self.collections_data')
+    @retrieve
     def collections_sub(self, collection):
         """ Get subcollections for a specific collection
         """
@@ -288,7 +267,7 @@ class Zotero(object):
         c = collection)
         return self._build_query(query_string)
 
-    @retrieve('self.collections_data')
+    @retrieve
     def group_collections(self, group):
         """ Get collections for a specific group
         """
@@ -297,7 +276,7 @@ class Zotero(object):
         g = group)
         return self._build_query(query_string)
 
-    @retrieve('self.collections_data')
+    @retrieve
     def group_collection(self, group, collection):
         """ Get a specific collection for a specific group
         """
@@ -307,7 +286,7 @@ class Zotero(object):
         c = collection)
         return self._build_query(query_string)
 
-    @retrieve('self.collections_data')
+    @retrieve
     def group_collection_sub(self, group, collection):
         """ Get collections for a specific group
         """
@@ -317,21 +296,21 @@ class Zotero(object):
         c = collection)
         return self._build_query(query_string)
 
-    @retrieve('self.groups_data')
+    @retrieve
     def groups(self):
         """ Get user groups
         """
         query_string = '/users/{u}/groups'
         return self._build_query(query_string)
 
-    @retrieve('self.tags_data')
+    @retrieve
     def tags(self):
         """ Get tags for a specific item
         """
         query_string = '/users/{u}/tags'
         return self._build_query(query_string)
 
-    @retrieve('self.tags_data')
+    @retrieve
     def item_tags(self, item):
         """ Get tags for a specific item
         """
@@ -340,7 +319,7 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
-    @retrieve('self.tags_data')
+    @retrieve
     def group_tags(self, group):
         """ Get tags for a specific group
         """
@@ -349,7 +328,7 @@ class Zotero(object):
         g = group)
         return self._build_query(query_string)
 
-    @retrieve('self.tags_data')
+    @retrieve
     def group_item_tags(self, group, item):
         """ Get tags for a specific item in a specific group
         """
@@ -360,7 +339,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     # These methods process the returned data from API calls, returning lists
-    def items_data(self, retrieved):
+    def process_content(self, retrieved):
         """ Call either standard_items or bib_items, depending on the URL param
         """
         # Content request in 'bib' format, so call bib_items
@@ -372,11 +351,23 @@ class Zotero(object):
     def standard_items(self, retrieved):
         """ Format and return data from API calls which return Items
         """
-        item_id = [i['zapi_key'] for i in retrieved.entries]
         items = [defaultdict(self._default_factory,
             json.loads(a['content'][0]['value'])) for a in retrieved.entries]
-        for k, val in enumerate(items):
-            val['id'] = item_id[k]
+        # Try to get an item ID, and add it to the dict
+        try:
+            item_id = [i['zapi_key'] for i in retrieved.entries]
+            for k, val in enumerate(items):
+                val['id'] = item_id[k]
+        except KeyError:
+            pass
+        # Try to get a group ID, and add it to the dict
+        try:
+            group_id = [g['links'][0]['href'].split('/')[-1]
+                    for g in retrieved.entries]
+            for k, val in enumerate(items):
+                val['group_id'] = group_id[k]
+        except KeyError:
+            pass
         self.url_params = None
         return items
 
@@ -388,44 +379,6 @@ class Zotero(object):
             items.append(bib['content'][0]['value'])
         self.url_params = None
         return items
-
-    def collections_data(self, retrieved):
-        """ Format and return data from API calls which return Collections
-        """
-        collections = []
-        collection_key = [k['zapi_key'] for k in retrieved.entries]
-        collection_title = [t['title'] for t in retrieved.entries]
-        collection_sub = [s['zapi_numcollections'] for s in retrieved.entries]
-        for index in range(len(collection_key)):
-            collection_data = defaultdict(self._default_factory)
-            collection_data['id'] = collection_key[index]
-            collection_data['title'] = collection_title[index]
-            if int(collection_sub[index]) > 0:
-                collection_data['subcollections'] = int(collection_sub[index])
-            collections.append(collection_data)
-            self.url_params = None
-        return collections
-
-    def groups_data(self, retrieved):
-        """ Format and return data from API calls which return Groups
-        """
-        groups = []
-        group_uid = [i['id'] for i in retrieved.entries]
-        group_title = [t['title'] for t in retrieved.entries]
-        group_items = [i['zapi_numitems'] for i in retrieved.entries]
-        group_author = [a['author'] for a in retrieved.entries]
-        group_id = [u['links'][0]['href'] for u in retrieved.entries]
-        for index in range(len(group_uid)):
-            group_data = defaultdict(self._default_factory)
-            group_data['uid'] = group_uid[index]
-            group_data['title'] = group_title[index]
-            group_data['total_items'] = group_items[index]
-            group_data['owner'] = group_author[index]
-            # Ugh. Fix your fucking API. See also: dedup()
-            group_data['id'] = group_id[index].split('/')[-1]
-            groups.append(group_data)
-            self.url_params = None
-        return groups
 
     def tags_data(self, retrieved):
         """ Format and return data from API calls which return Tags

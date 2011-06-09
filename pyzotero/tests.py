@@ -82,32 +82,30 @@ class ZoteroTests(unittest.TestCase):
         self.collections_doc = u"""<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Collections</title>
-          <id>http://zotero.org/users/436/collections?limit=1</id>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1"/>
-          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;start=36"/>
+          <id>http://zotero.org/users/436/collections?limit=1&amp;content=json</id>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;content=json"/>
+          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;content=json"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;content=json&amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;content=json&amp;start=37"/>
           <link rel="alternate" type="text/html" href="http://zotero.org/users/436/collections?limit=1"/>
-          <zapi:totalResults>37</zapi:totalResults>
+          <zapi:totalResults>38</zapi:totalResults>
           <zapi:apiVersion>1</zapi:apiVersion>
-          <updated>2010-04-26T14:23:45Z</updated>
+          <updated>2011-03-16T15:00:09Z</updated>
           <entry>
-            <title>A Midsummer Night's Dream</title>
+            <title>Badiou</title>
             <author>
               <name>urschrei</name>
               <uri>http://zotero.org/urschrei</uri>
             </author>
-            <id>http://zotero.org/urschrei/collections/PRMD6BGB</id>
-            <published>2010-04-19T13:06:58Z</published>
-            <updated>2010-04-26T14:23:45Z</updated>
-            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/collections/PRMD6BGB"/>
-            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/collections/PRMD6BGB"/>
-            <zapi:key>PRMD6BGB</zapi:key>
+            <id>http://zotero.org/urschrei/collections/HTUHVPE5</id>
+            <published>2011-03-16T14:48:18Z</published>
+            <updated>2011-03-16T15:00:09Z</updated>
+            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/collections/HTUHVPE5"/>
+            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/collections/HTUHVPE5"/>
+            <zapi:key>HTUHVPE5</zapi:key>
             <zapi:numCollections>0</zapi:numCollections>
-            <zapi:numItems>5</zapi:numItems>
-            <content type="html">
-              <div xmlns="http://www.w3.org/1999/xhtml"/>
-            </content>
+            <zapi:numItems>27</zapi:numItems>
+            <content type="application/json" etag="c04bada0055b8a12decd459302b2f777">{"name":"Badiou","parent":false}</content>
           </entry>
         </feed>"""
         self.tags_doc = u"""<?xml version="1.0"?>
@@ -142,12 +140,13 @@ class ZoteroTests(unittest.TestCase):
         self.groups_doc = u"""<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>urschrei&#x2019;s Groups</title>
-          <id>http://zotero.org/users/436/groups</id>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/groups"/>
-          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/groups"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/groups"/>
-          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/groups"/>
-          <zapi:totalResults>1</zapi:totalResults>
+          <id>http://zotero.org/users/436/groups?limit=1&amp;content=json</id>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json"/>
+          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json&amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json&amp;start=1"/>
+          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/groups?limit=1"/>
+          <zapi:totalResults>2</zapi:totalResults>
           <zapi:apiVersion>1</zapi:apiVersion>
           <updated>2010-07-04T21:56:22Z</updated>
           <entry xmlns:zxfer="http://zotero.org/ns/transfer">
@@ -161,12 +160,10 @@ class ZoteroTests(unittest.TestCase):
             <updated>2010-07-04T21:56:22Z</updated>
             <link rel="self" type="application/atom+xml" href="https://api.zotero.org/groups/10248"/>
             <link rel="alternate" type="text/html" href="http://zotero.org/groups/dfw"/>
-            <zapi:numItems>346</zapi:numItems>
-            <content type="html">
-              <div xmlns="http://www.w3.org/1999/xhtml"/>
-            </content>
+            <zapi:numItems>468</zapi:numItems>
+            <content type="application/json">{"name":"DFW","owner":436,"type":"PublicOpen","description":"%3Cp%3EA+grouped+collection+of+the+David+Foster+Wallace+bibliography%2C+adapted%2Fedited%2Fupdated+from+what%27s+available+elsewhere.%3C%2Fp%3E","url":"","hasImage":1,"libraryEnabled":1,"libraryEditing":"admins","libraryReading":"all","fileEditing":"none","members":{"2":539271}}</content>
           </entry>
-         </feed>"""
+        </feed>"""
         self.bib_doc = """<?xml version="1.0"?>
          <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
            <title>Zotero / urschrei / Top-Level Items</title>
@@ -280,9 +277,9 @@ class ZoteroTests(unittest.TestCase):
         z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'myuserkey')
         collections_data = zot.collections()
-        self.assertEqual('PRMD6BGB', collections_data[0]['id'])
-        self.assertEqual('A Midsummer Night\'s Dream',
-        collections_data[0]['title'])
+        self.assertEqual(u'HTUHVPE5', collections_data[0]['id'])
+        self.assertEqual('Badiou',
+        collections_data[0]['name'])
 
     def testParseTagsAtomDoc(self):
         """ Should successfully return a list of tags
@@ -302,8 +299,8 @@ class ZoteroTests(unittest.TestCase):
         z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'myuserkey')
         groups_data = zot.groups()
-        self.assertEqual('DFW', groups_data[0]['title'])
-        self.assertEqual('346', groups_data[0]['total_items'])
+        self.assertEqual('DFW', groups_data[0]['name'])
+        self.assertEqual('10248', groups_data[0]['group_id'])
 
     def testParamsReset(self):
         """ Should successfully reset URL parameters after a query string
@@ -346,14 +343,6 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'myuserkey')
         groups = zot.groups()
         self.assertEqual(None, groups[0]['baz'])
-
-    def testDedup(self):
-        """ Ensure that de-duplication of a list containing some repeating
-            strings works OK
-        """
-        test_strings = ['foo', 'foo', 'bar', 'baz']
-        deduped = z.dedup(test_strings)
-        self.assertEqual(['foo', 'foo_2', 'bar', 'baz'], deduped)
 
     def testResponseForbidden(self):
         """ Ensure that an error is properly raised for 403
