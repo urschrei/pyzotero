@@ -16,7 +16,7 @@ import urllib
 import urllib2
 import socket
 import feedparser
-import xml.etree.ElementTree as xml
+import json
 from collections import defaultdict
 
 import zotero_errors as ze
@@ -124,8 +124,11 @@ class Zotero(object):
         self.url_params = None
         if params:
             params['key'] = self.user_key
-        else: 
+        else:
             params = {'key': self.user_key}
+        # always return json
+        if not params.get('content', None) == 'bib' or None:
+            params['content'] = 'json'
         params = urllib.urlencode(params)
         self.url_params = params
 
@@ -146,12 +149,12 @@ class Zotero(object):
 
     def _default_factory(self):
         """ set a default value for keys which don't exist """
-        return 'Not Set'
+        return None
 
     # The following methods are all Zotero API calls
     @retrieve('self.items_data')
     def items(self):
-        """ Get user items 
+        """ Get user items
         """
         query_string = '/users/{u}/items'
         return self._build_query(query_string)
@@ -369,22 +372,12 @@ class Zotero(object):
     def standard_items(self, retrieved):
         """ Format and return data from API calls which return Items
         """
-        # Shunt each 'content' block into a list
-        item_parsed = [a['content'][0]['value'] for a in retrieved.entries]
-        # Shunt each 'title' and item ID value into a list
-        item_title = [t['title'] for t in retrieved.entries]
         item_id = [i['zapi_key'] for i in retrieved.entries]
-        items = []
-        for index, content in enumerate(item_parsed):
-            elem = xml.fromstring(content.encode('utf-8'))
-            keys = dedup(
-            [e.text.lower() for e in elem.iter('th')])
-            values = [v.text for v in elem.iter('td')]
-            zipped = defaultdict(self._default_factory, zip(keys, values))
-            zipped['title'] = item_title[index]
-            zipped['id'] = item_id[index]
-            items.append(zipped)
-            self.url_params = None
+        items = [defaultdict(self._default_factory,
+            json.loads(a['content'][0]['value'])) for a in retrieved.entries]
+        for k, val in enumerate(items):
+            val['id'] = item_id[k]
+        self.url_params = None
         return items
 
     def bib_items(self, retrieved):
@@ -393,7 +386,7 @@ class Zotero(object):
         items = []
         for bib in retrieved.entries:
             items.append(bib['content'][0]['value'])
-            self.url_params = None
+        self.url_params = None
         return items
 
     def collections_data(self, retrieved):

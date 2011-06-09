@@ -50,67 +50,34 @@ class ZoteroTests(unittest.TestCase):
         """
         self.items_doc = """<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-          <title>Zotero / urschrei / Top-Level Items</title>
-          <id>http://zotero.org/users/436/items/top?limit=1</id>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1"/>
-          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;start=949"/>
-          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items/top?limit=1"/>
-          <zapi:totalResults>950</zapi:totalResults>
-          <zapi:apiVersion>1</zapi:apiVersion>
-          <updated>2011-02-14T00:27:03Z</updated>
-          <entry>
-            <title>“We Need a Popular Discipline”</title>
-            <author>
-              <name>urschrei</name>
-              <uri>http://zotero.org/urschrei</uri>
-            </author>
-            <id>http://zotero.org/urschrei/items/T4AH4RZA</id>
-            <published>2011-02-14T00:27:03Z</published>
-            <updated>2011-02-14T00:27:03Z</updated>
-            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/T4AH4RZA"/>
-            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/T4AH4RZA"/>
-            <zapi:key>T4AH4RZA</zapi:key>
-            <zapi:itemType>journalArticle</zapi:itemType>
-            <zapi:creatorSummary>McIntyre</zapi:creatorSummary>
-            <zapi:numChildren>1</zapi:numChildren>
-            <zapi:numTags>0</zapi:numTags>
-            <content type="xhtml">
-              <div xmlns="http://www.w3.org/1999/xhtml">
-                <table>
-                  <tr class="itemType">
-                    <th style="text-align: right">Type</th>
-                    <td>Joürnal Article</td>
-                  </tr>
-                  <tr class="creator">
-                    <th style="text-align: right">Author</th>
-                    <td>T. J. McIntyre</td>
-                  </tr>
-                  <tr class="publicationTitle">
-                    <th style="text-align: right">Publication</th>
-                    <td>Journal of Intellectual Property Law &amp; Practice</td>
-                  </tr>
-                  <tr class="ISSN">
-                    <th style="text-align: right">ISSN</th>
-                    <td>1747-1532</td>
-                  </tr>
-                  <tr class="date">
-                    <th style="text-align: right">Date</th>
-                    <td>2007</td>
-                  </tr>
-                  <tr class="libraryCatalog">
-                    <th style="text-align: right">Library Catalog</th>
-                    <td>Google Scholar</td>
-                  </tr>
-                  <tr class="shortTitle">
-                    <th style="text-align: right">Short Title</th>
-                    <td>Copyright in custom code</td>
-                  </tr>
-                </table>
-              </div>
-            </content>
-          </entry>
+          <title>Zotero / urschrei / Items</title>
+          <id>http://zotero.org/users/436/items?limit=3&amp;content=json</id>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
+          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json&amp;start=3"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json&amp;start=1086"/>
+          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items?limit=1"/>
+          <zapi:totalResults>1087</zapi:totalResults>
+          <zapi:apiVersion>1</zapi:apiVersion>
+          <updated>2011-05-28T11:07:58Z</updated>
+          <entry>
+            <title>Copyright in custom code: Who owns commissioned software?</title>
+            <author>
+              <name>urschrei</name>
+              <uri>http://zotero.org/urschrei</uri>
+            </author>
+            <id>http://zotero.org/urschrei/items/T4AH4RZA</id>
+            <published>2011-02-14T00:27:03Z</published>
+            <updated>2011-02-14T00:27:03Z</updated>
+            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/T4AH4RZA?content=json"/>
+            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/T4AH4RZA"/>
+            <zapi:key>T4AH4RZA</zapi:key>
+            <zapi:itemType>journalArticle</zapi:itemType>
+            <zapi:creatorSummary>McIntyre</zapi:creatorSummary>
+            <zapi:numChildren>1</zapi:numChildren>
+            <zapi:numTags>0</zapi:numTags>
+            <content type="application/json" etag="65c303d6ad4a3efb6d2cf72df437759c">{"itemType":"journalArticle","title":"Copyright in custom code: Who owns commissioned software?","creators":[{"creatorType":"author","firstName":"T. J.","lastName":"McIntyre"}],"abstractNote":"","publicationTitle":"Journal of Intellectual Property Law \u0026 Practice","volume":"","issue":"","pages":"","date":"2007","series":"","seriesTitle":"","seriesText":"","journalAbbreviation":"","language":"","DOI":"","ISSN":"1747-1532","shortTitle":"Copyright in custom code","url":"","accessDate":"","archive":"","archiveLocation":"","libraryCatalog":"Google Scholar","callNumber":"","rights":"","extra":"","tags":[]}</content>
+          </entry>
         </feed>"""
         self.collections_doc = u"""<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
@@ -252,7 +219,7 @@ class ZoteroTests(unittest.TestCase):
         """
         zot = z.Zotero('myuserID', 'myuserkey')
         zot.add_parameters(limit = 0, start = 7)
-        self.assertEqual('start=7&limit=0&key=myuserkey', zot.url_params)
+        self.assertEqual('content=json&start=7&limit=0&key=myuserkey', zot.url_params)
 
     def testBuildQuery(self):
         """ Check that spaces etc. are being correctly URL-encoded and added
@@ -263,7 +230,7 @@ class ZoteroTests(unittest.TestCase):
         query_string = '/users/000/tags/hi there/items'
         query = zot._build_query(query_string)
         self.assertEqual(
-        '/users/000/tags/hi%20there/items?start=10&key=myuserkey',
+        '/users/000/tags/hi%20there/items?content=json&start=10&key=myuserkey',
         query)
 
     def testParseItemAtomDoc(self):
@@ -274,8 +241,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'myuserkey')
         items_data = zot.items()
         self.assertEqual('T4AH4RZA', items_data[0]['id'])
-        self.assertEqual(u'T. J. McIntyre', items_data[0]['author'])
-        self.assertEqual(u'Joürnal Article', items_data[0]['type'])
+        self.assertEqual(u'McIntyre', items_data[0]['creators'][0]['lastName'])
+        self.assertEqual(u'journalArticle', items_data[0]['itemType'])
 
     def testEncodings(self):
         """ Should be able to print unicode strings to stdout, and convert
@@ -346,7 +313,7 @@ class ZoteroTests(unittest.TestCase):
         zot.add_parameters(start = 5, limit = 10)
         zot._build_query('/whatever')
         zot.add_parameters(start = 2)
-        self.assertEqual('start=2&key=myuserkey', zot.url_params)
+        self.assertEqual('content=json&start=2&key=myuserkey', zot.url_params)
 
     def testParamsBlankAfterCall(self):
         """ self.url_params should be blank after an API call
@@ -360,7 +327,7 @@ class ZoteroTests(unittest.TestCase):
         """
         zot = z.Zotero('myuserID', 'myuserkey')
         items = zot.items()
-        self.assertEqual('Not Set', items[0]['foo'])
+        self.assertEqual(None, items[0]['foo'])
 
     def testCollectionNotSet(self):
         """ Calling an item's property should return 'Not Set' if it doesn't exist
@@ -369,7 +336,7 @@ class ZoteroTests(unittest.TestCase):
         z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'myuserkey')
         coll = zot.collections()
-        self.assertEqual('Not Set', coll[0]['bar'])
+        self.assertEqual(None, coll[0]['bar'])
 
     def testGroupNotSet(self):
         """ Calling an item's property should return 'Not Set' if it doesn't exist
@@ -378,7 +345,7 @@ class ZoteroTests(unittest.TestCase):
         z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'myuserkey')
         groups = zot.groups()
-        self.assertEqual('Not Set', groups[0]['baz'])
+        self.assertEqual(None, groups[0]['baz'])
 
     def testDedup(self):
         """ Ensure that de-duplication of a list containing some repeating
