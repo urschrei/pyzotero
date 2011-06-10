@@ -76,7 +76,7 @@ The following methods are currently available:
 Example of returned data:
 
 ``` python
-{'DOI': '',
+[{'DOI': '',
  'ISSN': '1747-1532',
  'abstractNote': '',
  'accessDate': '',
@@ -103,7 +103,7 @@ Example of returned data:
  'tags': [],
  'title': 'Copyright in custom code: Who owns commissioned software?',
  'url': '',
- 'volume': ''}
+ 'volume': ''} … ]
 ```
 
 See ‘Hello World’ example, above  
@@ -117,7 +117,7 @@ See ‘Hello World’ example, above
 
 Example of returned data:
 
-`[{'id': 'PRMD6BGB', 'title': "A Midsummer Night's Dream"}, … ]`
+`[{'id': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"}, … ]`
 
 ### To retrieve groups:###
 
@@ -125,8 +125,23 @@ Example of returned data:
 
 Example of returned data:
 
-`[{'total_items': '468', 'owner': 'urschrei', 'id': '153', 'uid':
-'http://zotero.org/groups/dfw', 'title': 'DFW'}, … ]`
+``` python
+[{u'description': u'%3Cp%3EBibliographic+resources+and+media+clips+of+German+Cinema+and+related+literature.%3C%2Fp%3E',
+  u'fileEditing': u'none',
+  'group_id': u'153',
+  u'hasImage': 1,
+  u'libraryEditing': u'admins',
+  u'libraryEnabled': 1,
+  u'libraryReading': u'all',
+  u'members': {u'0': 436,
+               u'1': 6972,
+               u'15': 499956,
+               u'16': 521307,
+               u'17': 619180},
+  u'name': u'German Cinema',
+  u'owner': 10421,
+  u'type': u'PublicOpen',
+  u'url': u''} … ]```
 
 ### To retrieve tags: ###
 
@@ -151,24 +166,7 @@ Full [Write API][8] methods are WIP. Currently, the following methods are availa
 
 # Notes #
 
-
-All methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. Example:  
-
-``` python  
-zot = zotero.Zotero(user_id, user_key)  
-collections = zot.collections()  
-for collection in collections:  
-    print 'Name: %s | ID: %s' % (collection['title'], collection['id'])
-```
-
-Frequently missing keys are a definite possibility, since Zotero library items have very few mandatory fields. Pyzotero now uses `defaultdict` dicts, so calling an item, collection or group key which does not exist will return 'Not Set', as opposed to raising a `KeyError`:
-
-``` python  
-zot = zotero.Zotero(user_id, user_key)  
-items = zot.items()  
-print items[0]['ham']  
->>> Not Set  
-```
+All methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. 
 
 **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.  
 

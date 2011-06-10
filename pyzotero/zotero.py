@@ -17,7 +17,6 @@ import urllib2
 import socket
 import feedparser
 import json
-from collections import defaultdict
 
 import zotero_errors as ze
 
@@ -126,10 +125,6 @@ class Zotero(object):
             self.add_parameters()
         query = '%s?%s' % (query, self.url_params)
         return query
-
-    def _default_factory(self):
-        """ set a default value for keys which don't exist """
-        return None
 
     # The following methods are all Zotero API calls
     @retrieve
@@ -384,8 +379,7 @@ class Zotero(object):
         """
         # send entries to tags_data if there's no JSON
         try:
-            items = [defaultdict(self._default_factory,
-                json.loads(a['content'][0]['value']))
+            items = [json.loads(a['content'][0]['value'])
                 for a in retrieved.entries]
         except ValueError:
             return self.tags_data(retrieved)

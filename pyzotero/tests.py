@@ -319,31 +319,6 @@ class ZoteroTests(unittest.TestCase):
         items = zot.items()
         self.assertEqual(None, zot.url_params)
 
-    def testItemNotSet(self):
-        """ Calling an item's property should return 'Not Set' if it doesn't exist
-        """
-        zot = z.Zotero('myuserID', 'myuserkey')
-        items = zot.items()
-        self.assertEqual(None, items[0]['foo'])
-
-    def testCollectionNotSet(self):
-        """ Calling an item's property should return 'Not Set' if it doesn't exist
-        """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.collections_doc))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
-        coll = zot.collections()
-        self.assertEqual(None, coll[0]['bar'])
-
-    def testGroupNotSet(self):
-        """ Calling an item's property should return 'Not Set' if it doesn't exist
-        """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
-        groups = zot.groups()
-        self.assertEqual(None, groups[0]['baz'])
-
     def testResponseForbidden(self):
         """ Ensure that an error is properly raised for 403
         """
