@@ -48,7 +48,7 @@ class ZoteroTests(unittest.TestCase):
     def setUp(self):
         """ Set stuff up
         """
-        self.items_doc = """<?xml version="1.0"?>
+        self.items_doc = u"""<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Items</title>
           <id>http://zotero.org/users/436/items?limit=3&amp;content=json</id>
