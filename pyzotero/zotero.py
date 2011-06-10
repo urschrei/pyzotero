@@ -9,7 +9,7 @@ Copyright Stephan Hügel, 2011
 License: http://www.gnu.org/licenses/gpl-3.0.txt
 """
 
-__version__ = '0.6.7'
+__version__ = '0.6.8'
 
 
 import urllib
@@ -78,7 +78,7 @@ class Zotero(object):
     "HTTP Error %s (%s)\nURL: %s" % (
                     error.msg, error.code, full_url)
         # parse the result into Python data structures
-        return feedparser.parse(data)
+        return data
 
     def retrieve(func):
         """ Decorator for Zotero methods; calls retrieve_data() and passes
@@ -94,7 +94,8 @@ class Zotero(object):
                 passed to process_content
             """
             orig_func = func(self, *args, **kwargs)
-            return self.process_content(self.retrieve_data(orig_func))
+            retrieved = self.retrieve_data(orig_func)
+            return self.process_content(feedparser.parse(retrieved))
         return wrapped_f
 
     def add_parameters(self, **params):
