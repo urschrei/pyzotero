@@ -27,7 +27,7 @@ from pyzotero import zotero
 zot = zotero.Zotero(user_id, user_key)
 items = zot.items()
 for item in items:
-    print 'Author: %s | Title: %s' % (item['author'], item['title'])
+    print 'Author: %s | Title: %s' % (item['creators'][0]['lastName'], item['title'])
 ```
 ## General Usage ##
 
@@ -75,7 +75,36 @@ The following methods are currently available:
 
 Example of returned data:
 
-`[{'publication': 'Genetic Joyce Studies', 'author': 'Susan Brown', 'url': 'http://www.geneticjoycestudies.org/GJS7/GJS7brown.html', 'type': 'Journal Article', 'title': 'The Mystery of the Fuga per Canonem Solved', 'date': 'Spring 2007', 'accessed': '2010-03-25 20:30:18', 'issue': '7', 'id': '9T3K4EES'}, … ]`  
+``` python
+{'DOI': '',
+ 'ISSN': '1747-1532',
+ 'abstractNote': '',
+ 'accessDate': '',
+ 'archive': '',
+ 'archiveLocation': '',
+ 'callNumber': '',
+ 'creators': [{'creatorType': 'author',
+               'firstName': 'T. J.',
+               'lastName': 'McIntyre'}],
+ 'date': '2007',
+ 'extra': '',
+ 'issue': '',
+ 'itemType': 'journalArticle',
+ 'journalAbbreviation': '',
+ 'language': '',
+ 'libraryCatalog': 'Google Scholar',
+ 'pages': '',
+ 'publicationTitle': 'Journal of Intellectual Property Law & Practice',
+ 'rights': '',
+ 'series': '',
+ 'seriesText': '',
+ 'seriesTitle': '',
+ 'shortTitle': 'Copyright in custom code',
+ 'tags': [],
+ 'title': 'Copyright in custom code: Who owns commissioned software?',
+ 'url': '',
+ 'volume': ''}
+```
 
 See ‘Hello World’ example, above  
 
