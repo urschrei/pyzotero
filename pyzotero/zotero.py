@@ -351,8 +351,13 @@ class Zotero(object):
     def standard_items(self, retrieved):
         """ Format and return data from API calls which return Items
         """
-        items = [defaultdict(self._default_factory,
-            json.loads(a['content'][0]['value'])) for a in retrieved.entries]
+        # send entries to tags_data if there's no JSON
+        try:
+            items = [defaultdict(self._default_factory,
+                json.loads(a['content'][0]['value']))
+                for a in retrieved.entries]
+        except ValueError:
+            return self.tags_data(retrieved)
         # Try to get an item ID, and add it to the dict
         try:
             item_id = [i['zapi_key'] for i in retrieved.entries]
