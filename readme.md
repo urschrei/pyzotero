@@ -141,7 +141,8 @@ Example of returned data:
   u'name': u'German Cinema',
   u'owner': 10421,
   u'type': u'PublicOpen',
-  u'url': u''} … ]```
+  u'url': u''} … ]
+```
 
 ### To retrieve tags: ###
 
