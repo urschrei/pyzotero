@@ -139,6 +139,16 @@ Example of returned data:
 
 `['Authority in literature', 'Errata', … ]`
 
+## Write API Methods ##
+
+Full [Write API][8] methods are WIP. Currently, the following methods are available, primarily to retrieve available item types, fields, and templates:
+
+* `item_types()`, returns a dict of all available item types 
+* `item_fields()`, returns a dict of all available item fields
+* `item_creator_types(itemtype)`, returns a dict of all valid creator types for the specified item type 
+* `item_template(itemtype)`, returns an item creation template dict for the specified item type 
+
+
 # Notes #
 
 
@@ -170,4 +180,5 @@ print items[0]['ham']
 [5]: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html "nose is nicer testing for Python"
 [6]: https://github.com/urschrei/pyzotero/issues
 [7]: http://effbot.org/zone/element-index.htm
+[8]: http://www.zotero.org/support/dev/server_api/write_api
 
