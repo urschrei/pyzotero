@@ -339,6 +339,36 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
+    def item_types(self):
+        """ Get all available item types
+        """
+        query_string = '/itemTypes'
+        retrieved = self.retrieve_data(query_string)
+        return json.loads(retrieved)
+
+    def item_fields(self):
+        """ Get all available item fields
+        """
+        query_string = '/itemFields'
+        retrieved = self.retrieve_data(query_string)
+        return json.loads(retrieved)
+
+    def item_creator_types(self, itemtype):
+        """ Get all available creator types for an item
+        """
+        query_string = '/itemTypeCreatorTypes?itemType={i}'.format(
+        i = itemtype)
+        retrieved = self.retrieve_data(query_string)
+        return json.loads(retrieved)
+
+    def item_template(self, itemtype):
+        """ Get a template for a new item
+        """
+        query_string = '/items/new?itemType={i}'.format(
+        i = itemtype)
+        retrieved = self.retrieve_data(query_string)
+        return json.loads(retrieved)
+
     # These methods process the returned data from API calls, returning lists
     def process_content(self, retrieved):
         """ Call either standard_items or bib_items, depending on the URL param
