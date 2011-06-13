@@ -265,7 +265,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'myuserkey')
         zot.url_params = 'content=bib'
         items_data = zot.items()
-        dec = items_data[0].encode('utf-8')
+        dec = items_data[0]
         self.assertTrue(dec.startswith("""<div class="csl-entry">"""))
 
     def testParseCollectionsAtomDoc(self):
