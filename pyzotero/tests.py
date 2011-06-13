@@ -105,7 +105,7 @@ class ZoteroTests(unittest.TestCase):
             <zapi:key>HTUHVPE5</zapi:key>
             <zapi:numCollections>0</zapi:numCollections>
             <zapi:numItems>27</zapi:numItems>
-            <content type="application/json" etag="c04bada0055b8a12decd459302b2f777">{"name":"Badiou","parent":false}</content>
+            <content type="application/json" etag="c04bada0055b8a12decd459302b2f777">{"name":"A Midsummer Night's Dream","parent":false}</content>
           </entry>
         </feed>"""
         self.tags_doc = u"""<?xml version="1.0"?>
@@ -278,7 +278,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'myuserkey')
         collections_data = zot.collections()
         self.assertEqual(u'HTUHVPE5', collections_data[0]['id'])
-        self.assertEqual('Badiou',
+        self.assertEqual("A Midsummer Night's Dream",
         collections_data[0]['name'])
 
     def testParseTagsAtomDoc(self):
