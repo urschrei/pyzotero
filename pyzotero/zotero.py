@@ -379,9 +379,9 @@ class Zotero(object):
         """
         # send entries to tags_data if there's no JSON
         try:
-            items = [json.loads(a['content'][0]['value'])
-                for a in retrieved.entries]
-        except ValueError:
+            items = [json.loads(e['content'][0]['value'])
+                for e in retrieved.entries]
+        except ValueError, err:
             return self.tags_data(retrieved)
         # Try to get an item ID, and add it to the dict
         try:
