@@ -28,6 +28,27 @@ socket.setdefaulttimeout(timeout)
 
 
 
+def ib64_patched(self, attrsD, contentparams):
+    """
+    Patch isBase64 to prevent Base64 encoding of JSON content
+    """
+    if attrsD.get('mode', '') == 'base64':
+        return 1
+    if self.contentparams['type'].startswith('text/'):
+        return 0
+    if self.contentparams['type'].endswith('+xml'):
+        return 0
+    if self.contentparams['type'].endswith('/xml'):
+        return 0
+    if self.contentparams['type'].endswith('/json'):
+        return 0
+    return 1
+
+
+# Override feedparser's buggy isBase64 method until they fix it
+feedparser._FeedParserMixin._isBase64 = ib64_patched
+
+
 class Zotero(object):
     """ Zotero API methods
         A full list of methods can be found here:
