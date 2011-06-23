@@ -409,7 +409,7 @@ class Zotero(object):
         try:
             item_id = [i['zapi_key'] for i in retrieved.entries]
             for k, val in enumerate(items):
-                val['id'] = item_id[k]
+                val[u'id'] = item_id[k]
         except KeyError:
             pass
         # Try to get a group ID, and add it to the dict
@@ -417,7 +417,7 @@ class Zotero(object):
             group_id = [g['links'][0]['href'].split('/')[-1]
                     for g in retrieved.entries]
             for k, val in enumerate(items):
-                val['group_id'] = group_id[k]
+                val[u'group_id'] = group_id[k]
         except KeyError:
             pass
         self.url_params = None
