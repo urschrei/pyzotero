@@ -73,3 +73,19 @@ class CouldNotReachURL(PyZoteroError):
     """ Raised when we can't reach a URL
     """
     pass
+
+
+
+class Conflict(PyZoteroError):
+    """ 409 - Raised when the target library is locked
+    """
+    pass
+
+
+
+class PreConditionFailed(PyZoteroError):
+    """ 412 - Raised when the provided X-Zotero-Write-Token has already been
+        submitted
+    """
+    pass
+
