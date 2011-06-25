@@ -48,7 +48,7 @@ class ZoteroTests(unittest.TestCase):
     def setUp(self):
         """ Set stuff up
         """
-        self.items_doc = u"""<?xml version="1.0"?>
+        self.items_doc = """<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Items</title>
           <id>http://zotero.org/users/436/items?limit=3&amp;content=json</id>
@@ -76,10 +76,10 @@ class ZoteroTests(unittest.TestCase):
             <zapi:creatorSummary>McIntyre</zapi:creatorSummary>
             <zapi:numChildren>1</zapi:numChildren>
             <zapi:numTags>0</zapi:numTags>
-            <content type="application/json" etag="65c303d6ad4a3efb6d2cf72df437759c">{"itemType":"journalArticle","title":"Copyright in custom code: Who owns commissioned software?","creators":[{"creatorType":"author","firstName":"T. J.","lastName":"McIntyre"}],"abstractNote":"","publicationTitle":"Journal of Intellectual Property Law \u0026 Practice","volume":"","issue":"","pages":"","date":"2007","series":"","seriesTitle":"","seriesText":"","journalAbbreviation":"","language":"","DOI":"","ISSN":"1747-1532","shortTitle":"Copyright in custom code","url":"","accessDate":"","archive":"","archiveLocation":"","libraryCatalog":"Google Scholar","callNumber":"","rights":"","extra":"","tags":[]}</content>
+            <content type="application/json" zapi:etag="7252daf2495feb8ec89c61f391bcba24">{"itemType":"journalArticle","title":"Copyright in custom code: Who owns commissioned software?","creators":[{"creatorType":"author","firstName":"T. J.","lastName":"McIntyre"}],"abstractNote":"","publicationTitle":"Journal of Intellectual Property Law \u0026 Practice","volume":"","issue":"","pages":"","date":"2007","series":"","seriesTitle":"","seriesText":"","journalAbbreviation":"","language":"","DOI":"","ISSN":"1747-1532","shortTitle":"Copyright in custom code","url":"","accessDate":"","archive":"","archiveLocation":"","libraryCatalog":"Google Scholar","callNumber":"","rights":"","extra":"","tags":[]}</content>
           </entry>
         </feed>"""
-        self.collections_doc = u"""<?xml version="1.0"?>
+        self.collections_doc = """<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Collections</title>
           <id>http://zotero.org/users/436/collections?limit=1&amp;content=json</id>
@@ -105,10 +105,10 @@ class ZoteroTests(unittest.TestCase):
             <zapi:key>HTUHVPE5</zapi:key>
             <zapi:numCollections>0</zapi:numCollections>
             <zapi:numItems>27</zapi:numItems>
-            <content type="application/json" etag="c04bada0055b8a12decd459302b2f777">{"name":"A Midsummer Night's Dream","parent":false}</content>
+            <content type="application/json" zapi:etag="7252daf2495feb8ec89c61f391bcba24">{"name":"A Midsummer Night's Dream","parent":false}</content>
           </entry>
         </feed>"""
-        self.tags_doc = u"""<?xml version="1.0"?>
+        self.tags_doc = """<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Tags</title>
           <id>http://zotero.org/users/436/tags?limit=1</id>
@@ -132,12 +132,12 @@ class ZoteroTests(unittest.TestCase):
             <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/tags/Authority+in+literature"/>
             <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/tags/Authority+in+literature"/>
             <zapi:numItems>2</zapi:numItems>
-            <content type="xhtml">
+            <content type="xhtml" zapi:etag="7252daf2495feb8ec89c61f391bcba24">
               <div xmlns="http://www.w3.org/1999/xhtml"/>
             </content>
           </entry>
         </feed>"""
-        self.groups_doc = u"""<?xml version="1.0"?>
+        self.groups_doc = """<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>urschrei&#x2019;s Groups</title>
           <id>http://zotero.org/users/436/groups?limit=1&amp;content=json</id>
@@ -158,10 +158,10 @@ class ZoteroTests(unittest.TestCase):
             <id>http://zotero.org/groups/dfw</id>
             <published>2010-01-20T12:31:26Z</published>
             <updated>2010-07-04T21:56:22Z</updated>
-            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/groups/10248"/>
+            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/groups/10248?content=json"/>
             <link rel="alternate" type="text/html" href="http://zotero.org/groups/dfw"/>
             <zapi:numItems>468</zapi:numItems>
-            <content type="application/json">{"name":"DFW","owner":436,"type":"PublicOpen","description":"%3Cp%3EA+grouped+collection+of+the+David+Foster+Wallace+bibliography%2C+adapted%2Fedited%2Fupdated+from+what%27s+available+elsewhere.%3C%2Fp%3E","url":"","hasImage":1,"libraryEnabled":1,"libraryEditing":"admins","libraryReading":"all","fileEditing":"none","members":{"2":539271}}</content>
+            <content type="application/json" zapi:etag="7252daf2495feb8ec89c61f391bcba24">{"name":"DFW","owner":436,"type":"PublicOpen","description":"%3Cp%3EA+grouped+collection+of+the+David+Foster+Wallace+bibliography%2C+adapted%2Fedited%2Fupdated+from+what%27s+available+elsewhere.%3C%2Fp%3E","url":"","hasImage":1,"libraryEnabled":1,"libraryEditing":"admins","libraryReading":"all","fileEditing":"none","members":{"2":539271}}</content>
           </entry>
         </feed>"""
         self.bib_doc = """<?xml version="1.0"?>
@@ -192,7 +192,7 @@ class ZoteroTests(unittest.TestCase):
              <zapi:creatorSummary>McIntyre</zapi:creatorSummary>
              <zapi:numChildren>1</zapi:numChildren>
              <zapi:numTags>0</zapi:numTags>
-             <content type="xhtml">
+             <content type="xhtml" zapi:etag="7252daf2495feb8ec89c61f391bcba24">
                <div xmlns="http://www.w3.org/1999/xhtml" class="csl-bib-body" style="line-height: 1.35; padding-left: 2em; text-indent:-2em;">
            <div class="csl-entry">McIntyre, T. J. &#x201C;Copyright in custom code: Who owns commissioned software?&#x201D; <i>Journal of Intellectual Property Law &amp; Practice</i> (2007).</div>
          </div>
@@ -231,13 +231,14 @@ class ZoteroTests(unittest.TestCase):
         query)
 
     def testParseItemAtomDoc(self):
-        """ Should successfully return a list of item dicts, ID should match
+        """ Should successfully return a list of item dicts, key should match
             input doc's zapi:key value, and author should have been correctly
             parsed out of the XHTML payload
         """
         zot = z.Zotero('myuserID', 'myuserkey')
         items_data = zot.items()
-        self.assertEqual('T4AH4RZA', items_data[0]['id'])
+        self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
+        self.assertEqual(u'7252daf2495feb8ec89c61f391bcba24', items_data[0]['etag'])
         self.assertEqual(u'McIntyre', items_data[0]['creators'][0]['lastName'])
         self.assertEqual(u'journalArticle', items_data[0]['itemType'])
 
@@ -269,7 +270,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertTrue(dec.startswith("""<div class="csl-entry">"""))
 
     def testParseCollectionsAtomDoc(self):
-        """ Should successfully return a list of collection dicts, ID should
+        """ Should successfully return a list of collection dicts, key should
             match input doc's zapi:key value, and 'title' value should match
             input doc's title value
         """
@@ -277,7 +278,7 @@ class ZoteroTests(unittest.TestCase):
         z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'myuserkey')
         collections_data = zot.collections()
-        self.assertEqual(u'HTUHVPE5', collections_data[0]['id'])
+        self.assertEqual(u'HTUHVPE5', collections_data[0]['key'])
         self.assertEqual("A Midsummer Night's Dream",
         collections_data[0]['name'])
 
