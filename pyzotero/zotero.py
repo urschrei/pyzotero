@@ -18,6 +18,7 @@ import urllib2
 import socket
 import feedparser
 import json
+from xml.dom import minidom
 
 import zotero_errors as ze
 
@@ -116,6 +117,11 @@ class Zotero(object):
             """
             orig_func = func(self, *args, **kwargs)
             retrieved = self.retrieve_data(orig_func)
+            # Parse Atom as straight XML in order to get the etags FFS
+            xmldoc = minidom.parseString(retrieved)
+            self.etags = [c.attributes['zapi:etag'].value for
+                c in xmldoc.getElementsByTagName('content')]
+            # return the parsed Atom doc
             return self.process_content(feedparser.parse(retrieved))
         return wrapped_f
 
@@ -405,13 +411,20 @@ class Zotero(object):
                 for e in retrieved.entries]
         except ValueError, err:
             return self.tags_data(retrieved)
-        # Try to get an item ID, and add it to the dict
-        try:
-            item_id = [i['zapi_key'] for i in retrieved.entries]
-            for k, val in enumerate(items):
-                val[u'id'] = item_id[k]
-        except KeyError:
-            pass
+
+        # try to add various namespaced values to the items
+        zapi_keys = ['key', 'etag']
+        for zapi in zapi_keys:
+            try:
+                for key, _ in enumerate(items):
+                    items[key][unicode(zapi)] = \
+                            retrieved.entries[key][unicode('zapi_%s' % zapi)]
+            except KeyError:
+                pass
+        # add the etags
+        for k, _ in enumerate(items):
+            items[k][u'etag'] = self.etags[k]
+
         # Try to get a group ID, and add it to the dict
         try:
             group_id = [g['links'][0]['href'].split('/')[-1]
