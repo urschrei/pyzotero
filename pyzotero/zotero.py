@@ -409,7 +409,7 @@ class Zotero(object):
         try:
             items = [json.loads(e['content'][0]['value'])
                 for e in retrieved.entries]
-        except ValueError, err:
+        except ValueError:
             return self.tags_data(retrieved)
 
         # try to add various namespaced values to the items
@@ -427,7 +427,7 @@ class Zotero(object):
 
         # Try to get a group ID, and add it to the dict
         try:
-            group_id = [g['links'][0]['href'].split('/')[-1]
+            group_id = [g['links'][0]['href'].split('/')[-1].split('?')[0]
                     for g in retrieved.entries]
             for k, val in enumerate(items):
                 val[u'group_id'] = group_id[k]
