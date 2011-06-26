@@ -18,5 +18,5 @@ setup(
     license = 'GNU GPL Version 3',
     url = 'https://github.com/urschrei/pyzotero',
     packages = find_packages(),
-    install_requires = ['feedparser >= 5.0.1', 'elementtree >= 1.2.7'],
+    install_requires = ['feedparser >= 5.0.1'],
 )
