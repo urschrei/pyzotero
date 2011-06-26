@@ -10,7 +10,7 @@ License: http://www.gnu.org/licenses/gpl-3.0.txt
 """
 
 __author__ = 'urschrei@gmail.com'
-__version__ = '0.6.8'
+__version__ = '0.6.9'
 
 
 import urllib
@@ -18,6 +18,7 @@ import urllib2
 import socket
 import feedparser
 import json
+import uuid
 from xml.dom import minidom
 
 import zotero_errors as ze
@@ -80,25 +81,7 @@ class Zotero(object):
             response = urllib2.urlopen(req)
             data = response.read()
         except (urllib2.HTTPError, urllib2.URLError), error:
-            # Distinguish between URL errors and HTTP status codes of 400+
-            if hasattr(error, 'reason'):
-                raise ze.CouldNotReachURL, \
-    "Could not reach server. Reason: %s\nURL: %s" % (error, full_url)
-            elif hasattr(error, 'code'):
-                if error.code == 401 or error.code == 403:
-                    raise ze.UserNotAuthorised, \
-    "You are not authorised to retrieve this resource (%s)" % error.code
-                elif error.code == 400:
-                    raise ze.UnsupportedParams, \
-    "Invalid request, probably due to unsupported parameters: %s" % \
-                    full_url
-                elif error.code == 404:
-                    raise ze.ResourceNotFound, \
-    "No results for the following query:\n%s" % full_url
-                else:
-                    raise ze.HTTPError, \
-    "HTTP Error %s (%s)\nURL: %s" % (
-                    error.msg, error.code, full_url)
+            self._error_handler(req, error)
         # parse the result into Python data structures
         return data
 
@@ -154,7 +137,7 @@ class Zotero(object):
         query = '%s?%s' % (query, self.url_params)
         return query
 
-    # The following methods are all Zotero API calls
+    # The following methods are all Zotero Read API calls
     @retrieve
     def items(self):
         """ Get user items
@@ -392,7 +375,7 @@ class Zotero(object):
         retrieved = self.retrieve_data(query_string)
         return json.loads(retrieved)
 
-    # These methods process the returned data from API calls, returning lists
+    # These methods process returned data from Read API calls, returning lists
     def process_content(self, retrieved):
         """ Call either standard_items or bib_items, depending on the URL param
         """
@@ -451,3 +434,60 @@ class Zotero(object):
         tags = [t['title'] for t in retrieved.entries]
         self.url_params = None
         return tags
+
+    # The following are Write API calls
+
+    def create_items(self, items):
+        """
+        Create new Zotero items
+        Accepts one argument, a list containing one or more item dicts
+        """
+        # remove stuff we may have added
+        for i in items:
+            try:
+                del i['etag'], i['key'], i['group_id']
+            except KeyError:
+                pass
+        to_send = json.dumps(items)
+        token = str(uuid.uuid4()).replace('-','')
+        req = urllib2.Request(
+        self.endpoint + '/users/{u}/items'.format(u = self.user_id) +
+        '?' + urllib.urlencode({'key': self.user_key}))
+        req.add_data(to_send)
+        req.add_header('X-Zotero-Write-Token', token)
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            resp = urllib2.urlopen(req)
+            data = resp.read()
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
+        return data
+
+    def _error_handler(self, req, error):
+        """
+        error handler for HTTP requests
+        """
+        # Distinguish between URL errors and HTTP status codes of 400+
+        if hasattr(error, 'reason'):
+            raise ze.CouldNotReachURL, \
+"Could not reach server. Reason: %s\nURL: %s" % (error, req)
+        elif hasattr(error, 'code'):
+            if error.code == 401 or error.code == 403:
+                raise ze.UserNotAuthorised, \
+"Not authorised: (%s)\nURL: %s\nType: %s\nData: %s" % (
+        error.code, req.get_full_url(), req.get_method(), req.get_data())
+            elif error.code == 400:
+                raise ze.UnsupportedParams, \
+"Invalid request, probably due to unsupported parameters: %s" % \
+                req
+            elif error.code == 404:
+                raise ze.ResourceNotFound, \
+"No results for the following query:\n%s" % req
+            elif error.code == 409:
+                raise ze.Conflict, \
+"The target library is locked"
+            else:
+                raise ze.HTTPError, \
+"HTTP Error %s (%s)\nURL: %s" % (
+                error.msg, error.code, req)
+
