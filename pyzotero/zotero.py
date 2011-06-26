@@ -450,18 +450,18 @@ class Zotero(object):
 
     # The following are Write API calls
 
-    def create_items(self, items):
+    def create_items(self, payload):
         """
         Create new Zotero items
         Accepts one argument, a list containing one or more item dicts
         """
-        # remove stuff we may have added
-        for i in items:
+        # remove keys we may have added
+        for p in payload:
             try:
-                del i['etag'], i['key'], i['group_id']
+                del p['etag'], p['key'], p['group_id']
             except KeyError:
                 pass
-        to_send = json.dumps(items)
+        to_send = json.dumps({'items': payload})
         token = str(uuid.uuid4()).replace('-','')
         req = urllib2.Request(
         self.endpoint + '/users/{u}/items'.format(u = self.user_id) +
