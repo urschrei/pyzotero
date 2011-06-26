@@ -171,6 +171,9 @@ All methods return **lists** of **dicts** or, in the case of tag methods, **list
 
 **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.  
 
+# License #
+
+Pyzotero is licensed under the [GNU GPL Version 3][9] license, in line with Zotero's own license. Details can be found in the file `license.txt`.
 
 [1]: http://www.zotero.org/support/dev/server_api "Zotero Server API"
 [2]: http://www.zotero.org/settings/keys/new "New Zotero Access Credentials"
@@ -180,4 +183,4 @@ All methods return **lists** of **dicts** or, in the case of tag methods, **list
 [6]: https://github.com/urschrei/pyzotero/issues
 [7]: http://effbot.org/zone/element-index.htm
 [8]: http://www.zotero.org/support/dev/server_api/write_api
-
+[9]: http://www.gnu.org/licenses/gpl.html "GNU GPL Version 3"
