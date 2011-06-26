@@ -409,7 +409,7 @@ class Zotero(object):
             return self.tags_data(retrieved)
 
         # try to add various namespaced values to the items
-        zapi_keys = ['key', 'etag']
+        zapi_keys = ['key']
         for zapi in zapi_keys:
             try:
                 for key, _ in enumerate(items):
@@ -478,12 +478,12 @@ class Zotero(object):
 
     def _error_handler(self, req, error):
         """
-        error handler for HTTP requests
+        Error handler for HTTP requests
         """
         # Distinguish between URL errors and HTTP status codes of 400+
         if hasattr(error, 'reason'):
             raise ze.CouldNotReachURL, \
-"Could not reach server. Reason: %s\nURL: %s" % (error, req)
+"Could not reach server. Reason: %s\nURL: %s" % (error, req.get_full_url())
         elif hasattr(error, 'code'):
             if error.code == 401 or error.code == 403:
                 raise ze.UserNotAuthorised, \
@@ -492,15 +492,15 @@ class Zotero(object):
             elif error.code == 400:
                 raise ze.UnsupportedParams, \
 "Invalid request, probably due to unsupported parameters: %s" % \
-                req
+                req.get_full_url()
             elif error.code == 404:
                 raise ze.ResourceNotFound, \
-"No results for the following query:\n%s" % req
+"No results for the following query:\n%s" % req.get_full_url()
             elif error.code == 409:
                 raise ze.Conflict, \
 "The target library is locked"
             else:
                 raise ze.HTTPError, \
-"HTTP Error %s (%s)\nURL: %s" % (
-                error.msg, error.code, req)
+"HTTP Error %s (%s)\nURL: %s\nData: %s" % (
+                error.msg, error.code, req.get_full_url(), req.get_data())
 
