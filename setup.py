@@ -11,10 +11,10 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'Pyzotero',
-    version = '0.6.7',
+    version = '0.6.9',
     description = 'Python wrapper for the Zotero API',
     author = 'Stephan Hügel',
-    author_email = 'hugels@tcd.ie',
+    author_email = 'urschrei@gmail.com',
     license = 'GNU GPL Version 3',
     url = 'https://github.com/urschrei/pyzotero',
     packages = find_packages(),
