@@ -173,7 +173,7 @@ template['title'] = 'Maris Kundzins: A Life'
 resp = zot.create_item([template])
 ```
 
-If successful, `resp` will have the same structure as an item retrieved with an item() call (see example, above).
+If successful, `resp` will have the same structure as an item retrieved with an `items()` call (see example, above).
 
 # Notes #
 
