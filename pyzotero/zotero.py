@@ -82,6 +82,15 @@ class Zotero(object):
             'Please provide both the user ID and the user key'
         self.url_params = None
 
+    def _etags(self, incoming):
+        """
+        Return a list of etags parsed out of the XML response
+        """
+        # Parse Atom as straight XML in order to get the etags FFS
+        xmldoc = minidom.parseString(incoming)
+        return [c.attributes['zapi:etag'].value for
+            c in xmldoc.getElementsByTagName('content')]
+
     def retrieve_data(self, request = None):
         """ Retrieve Zotero items via the API
             Combine endpoint and request to access the specific resource
@@ -113,10 +122,8 @@ class Zotero(object):
             """
             orig_func = func(self, *args, **kwargs)
             retrieved = self.retrieve_data(orig_func)
-            # Parse Atom as straight XML in order to get the etags FFS
-            xmldoc = minidom.parseString(retrieved)
-            self.etags = [c.attributes['zapi:etag'].value for
-                c in xmldoc.getElementsByTagName('content')]
+            # get etags from the response
+            self.etags = self._etags(retrieved)
             # return the parsed Atom doc
             return self.process_content(feedparser.parse(retrieved))
         return wrapped_f
@@ -472,9 +479,10 @@ class Zotero(object):
         try:
             resp = urllib2.urlopen(req)
             data = resp.read()
+            self.etags = self._etags(data)
         except (urllib2.HTTPError, urllib2.URLError), error:
             self._error_handler(req, error)
-        return data
+        return self.standard_items(feedparser.parse(data))
 
     def _error_handler(self, req, error):
         """

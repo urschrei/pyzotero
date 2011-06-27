@@ -163,7 +163,17 @@ Full [Write API][8] methods are WIP. Currently, the following methods are availa
 * `item_fields()`, returns a dict of all available item fields
 * `item_creator_types(itemtype)`, returns a dict of all valid creator types for the specified item type 
 * `item_template(itemtype)`, returns an item creation template dict for the specified item type 
+* `create_item([items])`, create Zotero library items. Accepts a list of dicts as its only argument. Returns a copy of the created item, if successful. The use of `item_template(itemType)` is recommended in order to first obtain a dict with a structure which the API will accept:
 
+``` python
+template = zot.item_template('book')
+template['creators'][0]['firstName'] = 'Monty'
+template['creators'][0]['lastName'] = 'Cantsin'
+template['title'] = 'Maris Kundzins: A Life'
+resp = zot.create_item([template])
+```
+
+If successful, `resp` will have the same structure as an item retrieved with an item() call (see example, above).
 
 # Notes #
 
