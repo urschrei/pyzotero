@@ -522,11 +522,6 @@ class Zotero(object):
         """
         etag = payload['etag']
         ident = payload['key']
-        # remove keys we added when retrieving the original
-        try:
-            del payload['etag'], payload['key'], payload['group_id']
-        except KeyError:
-            pass
         # Override urllib2 to give it a DELETE verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
