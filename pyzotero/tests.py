@@ -230,6 +230,148 @@ class ZoteroTests(unittest.TestCase):
           "tags" : [],
           "notes" : []
         }"""
+        self.item_types ="""[
+        {
+            "itemType":"artwork",
+            "localized":"Artwork"
+        },
+        {
+            "itemType":"audioRecording",
+            "localized":"Audio Recording"
+        },
+        {
+            "itemType":"bill",
+            "localized":"Bill"
+        },
+        {
+            "itemType":"blogPost",
+            "localized":"Blog Post"
+        },
+        {
+            "itemType":"book",
+            "localized":"Book"
+        },
+        {
+            "itemType":"bookSection",
+            "localized":"Book Section"
+        },
+        {
+            "itemType":"case",
+            "localized":"Case"
+        },
+        {
+            "itemType":"computerProgram",
+            "localized":"Computer Program"
+        },
+        {
+            "itemType":"conferencePaper",
+            "localized":"Conference Paper"
+        },
+        {
+            "itemType":"dictionaryEntry",
+            "localized":"Dictionary Entry"
+        },
+        {
+            "itemType":"document",
+            "localized":"Document"
+        },
+        {
+            "itemType":"email",
+            "localized":"E-mail"
+        },
+        {
+            "itemType":"encyclopediaArticle",
+            "localized":"Encyclopedia Article"
+        },
+        {
+            "itemType":"film",
+            "localized":"Film"
+        },
+        {
+            "itemType":"forumPost",
+            "localized":"Forum Post"
+        },
+        {
+            "itemType":"hearing",
+            "localized":"Hearing"
+        },
+        {
+            "itemType":"instantMessage",
+            "localized":"Instant Message"
+        },
+        {
+            "itemType":"interview",
+            "localized":"Interview"
+        },
+        {
+            "itemType":"journalArticle",
+            "localized":"Journal Article"
+        },
+        {
+            "itemType":"letter",
+            "localized":"Letter"
+        },
+        {
+            "itemType":"magazineArticle",
+            "localized":"Magazine Article"
+        },
+        {
+            "itemType":"manuscript",
+            "localized":"Manuscript"
+        },
+        {
+            "itemType":"map",
+            "localized":"Map"
+        },
+        {
+            "itemType":"newspaperArticle",
+            "localized":"Newspaper Article"
+        },
+        {
+            "itemType":"note",
+            "localized":"Note"
+        },
+        {
+            "itemType":"patent",
+            "localized":"Patent"
+        },
+        {
+            "itemType":"podcast",
+            "localized":"Podcast"
+        },
+        {
+            "itemType":"presentation",
+            "localized":"Presentation"
+        },
+        {
+            "itemType":"radioBroadcast",
+            "localized":"Radio Broadcast"
+        },
+        {
+            "itemType":"report",
+            "localized":"Report"
+        },
+        {
+            "itemType":"statute",
+            "localized":"Statute"
+        },
+        {
+            "itemType":"tvBroadcast",
+            "localized":"TV Broadcast"
+        },
+        {
+            "itemType":"thesis",
+            "localized":"Thesis"
+        },
+        {
+            "itemType":"videoRecording",
+            "localized":"Video Recording"
+        },
+        {
+            "itemType":"webpage",
+            "localized":"Web Page"
+        }
+        ]"""
         # Add the item file to the mock response by default
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc))
         z.urllib2.install_opener(my_opener)
@@ -386,6 +528,15 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'myuserkey')
         with self.assertRaises(z.ze.HTTPError):
             zot.items()
+
+    def testGetItems(self):
+        """ Ensure that we can retrieve a list of all items """
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_types, 200))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        t = zot.item_types()
+        self.assertEqual(t[0]['itemType'], 'artwork')
+        self.assertEqual(t[-1]['itemType'], 'webpage')
 
     def testGetTemplate(self):
         """ Ensure that item templates are retrieved and converted into dicts
