@@ -216,6 +216,20 @@ class ZoteroTests(unittest.TestCase):
              </content>
            </entry>
          </feed>"""
+        self.item_templt = """{
+          "itemType" : "book",
+          "title" : "",
+          "creators" : [
+            {
+              "creatorType" : "author",
+              "firstName" : "",
+              "lastName" : ""
+            }
+          ],
+          "url" : "",
+          "tags" : [],
+          "notes" : []
+        }"""
         # Add the item file to the mock response by default
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc))
         z.urllib2.install_opener(my_opener)
@@ -372,6 +386,15 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'myuserkey')
         with self.assertRaises(z.ze.HTTPError):
             zot.items()
+
+    def testGetTemplate(self):
+        """ Ensure that item templates are retrieved and converted into dicts
+        """
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_templt, 200))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        t = zot.item_template('book')
+        self.assertEqual('book', t['itemType'])
 
     def tearDown(self):
         """ Tear stuff down
