@@ -186,7 +186,7 @@ i = zot.items()
 i[0]['title] = 'The Sheltering Sky'
 i[0]['creators'][0]['firstName'] = 'Paul'
 i[0]['creators'][0]['lastName'] = 'Bowles'
-zot.update_items(i[0])
+zot.update_item(i[0])
 ```
 
 # Notes #
