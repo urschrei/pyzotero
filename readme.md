@@ -71,7 +71,7 @@ The following methods are currently available:
  * `group_collection_top(group ID, collection ID)`, returns a specific collection's top-level items from a specific group
  * `collection_items(collection ID)`, returns items from the specified collection
 
-Example of returned data:
+**Example of returned data:**
 
 ``` python
 [{'DOI': '',
@@ -113,7 +113,7 @@ See ‘Hello World’ example, above
  * `group_collections(group ID)`, returns collections for a specific group
  * `group_collection(group ID, collection ID)`, returns a specific collection from a specific group
 
-Example of returned data:
+**Example of returned data:**
 
 `[{'id': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"}, … ]`
 
@@ -121,7 +121,7 @@ Example of returned data:
 
  * `groups()`, returns Zotero library groups
 
-Example of returned data:
+**Example of returned data:**
 
 ``` python
 [{u'description': u'%3Cp%3EBibliographic+resources+and+media+clips+of+German+Cinema+and+related+literature.%3C%2Fp%3E',
@@ -149,19 +149,21 @@ Example of returned data:
 * `group_tags(group ID)`, returns tags from a specific group
 * `group_item_tags(group ID, item ID)`, returns tags from a specific item from a specific group
 
-Example of returned data:
+**Example of returned data:**
 
 `['Authority in literature', 'Errata', … ]`
 
 ## Write API Methods ##
 
-Full [Write API][8] methods are WIP. Currently, the following methods are available, primarily to retrieve available item types, fields, and templates:
+Full [Write API][8] methods are WIP. The following methods are currently available:
 
 * `item_types()`, returns a dict of all available item types 
 * `item_fields()`, returns a dict of all available item fields
 * `item_creator_types(itemtype)`, returns a dict of all valid creator types for the specified item type 
 * `item_template(itemtype)`, returns an item creation template dict for the specified item type 
-* `create_item([items])`, create Zotero library items. Accepts a list of one or more dicts as its only argument. Returns a copy of the created item(s), if successful. The use of `item_template(itemType)` is recommended in order to first obtain a dict with a structure which the API will accept:
+* `create_item([items])`, create Zotero library items. Accepts a list of one or more dicts as its only argument. Returns a copy of the created item(s), if successful. The use of `item_template(itemType)` is recommended in order to first obtain a dict with a structure which the API will accept.
+
+**Example:**
 
 ``` python
 template = zot.item_template('book')
@@ -175,7 +177,7 @@ If successful, `resp` will have the same structure as items retrieved with an `i
 
 * `update_item(item)`, update an item in your library. Accepts a dict containing item data as its only argument.
 
-Example:
+**Example:**
 
 ``` python
 i = zot.items()
@@ -189,7 +191,7 @@ zot.update_item(i[0])
 
 * `delete_item()`, delete an item from your library. Accepts a dict containing item data as its only argument. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass them to the method one by one. Deletion of multiple items is trivial, using a simple for loop.
 
-Example:
+**Example:**
 
 ``` python
 i = zot.items()
