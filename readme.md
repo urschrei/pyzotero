@@ -175,6 +175,20 @@ resp = zot.create_item([template])
 
 If successful, `resp` will have the same structure as items retrieved with an `items()` call, e.g. a list of one or more dicts (see example, above).
 
+* `update_item(item)`, update an item in your library. Accepts a dict containing item data as its only argument.
+
+Example:
+
+``` python
+i = zot.items()
+# see example above for example of returned item structure
+# modify the latest item in added to your library
+i[0]['title] = 'The Sheltering Sky'
+i[0]['creators'][0]['firstName'] = 'Paul'
+i[0]['creators'][0]['lastName'] = 'Bowles'
+zot.update_items(i[0])
+```
+
 # Notes #
 
 All methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. 

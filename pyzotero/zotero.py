@@ -485,6 +485,35 @@ class Zotero(object):
             self._error_handler(req, error)
         return self.standard_items(feedparser.parse(data))
 
+    def update_item(self, payload):
+        """
+        Update an existing item
+        Accepts one argument, a dict containing Item data
+        """
+        etag = payload['etag']
+        ident = payload['key']
+        # remove keys we added when retrieving the original
+        try:
+            del payload['etag'], payload['key'], payload['group_id']
+        except KeyError:
+            pass
+        to_send = json.dumps(payload)
+        # Override urllib2 to give it a PUT request
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
+            u = self.user_id) + ident +
+            '?' + urllib.urlencode({'key': self.user_key}))
+        req.get_method = lambda: 'PUT'
+        req.add_data(to_send)
+        req.add_header('If-Match', etag)
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            resp = opener.open(req)
+            data = resp.read()
+            self.etags = self._etags(data)
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
+
     def _error_handler(self, req, error):
         """
         Error handler for HTTP requests
