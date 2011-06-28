@@ -531,7 +531,7 @@ class Zotero(object):
         req.add_header('If-Match', etag)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
-            resp = opener.open(req)
+            opener.open(req)
             return True
         except (urllib2.HTTPError, urllib2.URLError), error:
             self._error_handler(req, error)
