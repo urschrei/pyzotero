@@ -22,11 +22,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-import sys
-import os
 import zotero as z
-import feedparser
-
 import urllib2
 from StringIO import StringIO
 
@@ -230,7 +226,7 @@ class ZoteroTests(unittest.TestCase):
           "tags" : [],
           "notes" : []
         }"""
-        self.item_types ="""[
+        self.item_types = """[
         {
             "itemType":"artwork",
             "localized":"Artwork"
@@ -490,7 +486,7 @@ class ZoteroTests(unittest.TestCase):
         """ self.url_params should be blank after an API call
         """
         zot = z.Zotero('myuserID', 'myuserkey')
-        items = zot.items()
+        _ = zot.items()
         self.assertEqual(None, zot.url_params)
 
     def testResponseForbidden(self):
@@ -560,7 +556,7 @@ class ZoteroTests(unittest.TestCase):
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
         z.urllib2.install_opener(my_opener)
         with self.assertRaises(z.ze.UserNotAuthorised) as e:
-            r = zot.create_items([t])
+            _ = zot.create_items([t])
         exc = e.exception
         # this test is a kludge; we're only checking that 'journalArticle' is in the POST data
         self.assertIn("journalArticle", str(exc))
