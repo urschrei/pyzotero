@@ -413,7 +413,6 @@ class ZoteroTests(unittest.TestCase):
         exc = e.exception
         # this test is a kludge; we're only checking that 'journalArticle' is in the POST data
         self.assertIn("journalArticle", str(exc))
-        print vars(e)
 
 
 
