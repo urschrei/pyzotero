@@ -396,6 +396,27 @@ class ZoteroTests(unittest.TestCase):
         t = zot.item_template('book')
         self.assertEqual('book', t['itemType'])
 
+    def testCreateItem(self):
+        """ Ensure that items can be created
+        """
+        # first, retrieve an item template
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_templt, 200))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'myuserkey')
+        t = zot.item_template('book')
+        t['itemType'] = 'journalArticle'
+        # new opener which will return 503
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
+        z.urllib2.install_opener(my_opener)
+        with self.assertRaises(z.ze.UserNotAuthorised) as e:
+            r = zot.create_items([t])
+        exc = e.exception
+        # this test is a kludge; we're only checking that 'journalArticle' is in the POST data
+        self.assertIn("journalArticle", str(exc))
+        print vars(e)
+
+
+
     def tearDown(self):
         """ Tear stuff down
         """
