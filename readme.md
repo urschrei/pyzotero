@@ -182,7 +182,7 @@ Example:
 ``` python
 i = zot.items()
 # see example above for example of returned item structure
-# modify the latest item in added to your library
+# modify the latest item which was added to your library
 i[0]['title] = 'The Sheltering Sky'
 i[0]['creators'][0]['firstName'] = 'Paul'
 i[0]['creators'][0]['lastName'] = 'Bowles'
