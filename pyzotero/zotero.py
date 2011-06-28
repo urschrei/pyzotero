@@ -81,6 +81,7 @@ class Zotero(object):
             raise ze.MissingCredentials, \
             'Please provide both the user ID and the user key'
         self.url_params = None
+        self.etags = None
 
     def _etags(self, incoming):
         """
@@ -463,9 +464,9 @@ class Zotero(object):
         Accepts one argument, a list containing one or more item dicts
         """
         # remove keys we may have added
-        for p in payload:
+        for item in payload:
             try:
-                del p['etag'], p['key'], p['group_id']
+                del item['etag'], item['key'], item['group_id']
             except KeyError:
                 pass
         to_send = json.dumps({'items': payload})
