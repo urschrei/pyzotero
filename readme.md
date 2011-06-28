@@ -181,12 +181,24 @@ Example:
 
 ``` python
 i = zot.items()
-# see example above for example of returned item structure
+# see above for example of returned item structure
 # modify the latest item which was added to your library
 i[0]['title] = 'The Sheltering Sky'
 i[0]['creators'][0]['firstName'] = 'Paul'
 i[0]['creators'][0]['lastName'] = 'Bowles'
 zot.update_item(i[0])
+```
+
+* `delete_item()`, delete an item from your library. Accepts a dict containing item data as its only argument. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass them to the method one by one. Deletion of multiple items is trivial, using a simple for loop.
+
+Example:
+
+``` python
+i = zot.items()
+# only delete the last five items we added
+to_delete = i[0:6]
+for d in to_delete:
+    zot.delete_item(d)
 ```
 
 # Notes #

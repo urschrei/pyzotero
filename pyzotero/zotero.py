@@ -513,6 +513,33 @@ class Zotero(object):
             self.etags = self._etags(data)
         except (urllib2.HTTPError, urllib2.URLError), error:
             self._error_handler(req, error)
+        return self.standard_items(feedparser.parse(data))
+
+    def delete_item(self, payload):
+        """
+        Delete an Item from a Zotero library
+        Accepts a single argument: a dict containing item data
+        """
+        etag = payload['etag']
+        ident = payload['key']
+        # remove keys we added when retrieving the original
+        try:
+            del payload['etag'], payload['key'], payload['group_id']
+        except KeyError:
+            pass
+        # Override urllib2 to give it a DELETE verb
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
+            u = self.user_id) + ident +
+            '?' + urllib.urlencode({'key': self.user_key}))
+        req.get_method = lambda: 'DELETE'
+        req.add_header('If-Match', etag)
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            resp = opener.open(req)
+            return True
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
 
     def _error_handler(self, req, error):
         """
