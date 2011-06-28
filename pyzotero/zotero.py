@@ -498,7 +498,7 @@ class Zotero(object):
         except KeyError:
             pass
         to_send = json.dumps(payload)
-        # Override urllib2 to give it a PUT request
+        # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
             u = self.user_id) + ident +
