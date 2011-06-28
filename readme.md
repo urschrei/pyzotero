@@ -18,8 +18,6 @@ The [feedparser][3] (>= v5.0.1) module is required. It should automatically be i
 
 Run `tests.py` in the pyzotero directory, or, using [Nose][5], `nosetests` from this directory. If you wish to see coverage statistics, run `nosetests --with-coverage --cover-package=pyzotero`.
 
-Additionally, a basic script, `sample.py`, is included.
-
 # Usage #
 ## Hello World ##
 ``` python
