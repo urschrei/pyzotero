@@ -54,6 +54,7 @@ The return value is a **list** of UTF-8 formatted HTML `div`s, each containing a
 
 The following methods are currently available:
 
+## Read API Methods: ##
 ### To retrieve items:###
 
  * `items()`, returns Zotero library items
@@ -153,7 +154,8 @@ See ‘Hello World’ example, above
 
 `['Authority in literature', 'Errata', … ]`
 
-## Write API Methods ##
+## Write API Methods: ##
+### Item Methods: ###
 
 Full [Write API][8] methods are WIP. The following methods are currently available:
 
@@ -161,6 +163,9 @@ Full [Write API][8] methods are WIP. The following methods are currently availab
 * `item_fields()`, returns a dict of all available item fields
 * `item_creator_types(itemtype)`, returns a dict of all valid creator types for the specified item type 
 * `item_template(itemtype)`, returns an item creation template dict for the specified item type 
+
+---
+
 * `create_item([items])`, create Zotero library items. Accepts a list of one or more dicts as its only argument. Returns a copy of the created item(s), if successful. The use of `item_template(itemType)` is recommended in order to first obtain a dict with a structure which the API will accept.
 
 **Example:**
@@ -201,12 +206,14 @@ for d in to_delete:
     zot.delete_item(d)
 ```
 
+### Collection Methods: ###
+
+* `create_collection(name)`, create a new collection in the Zotero library. Accepts one argument, a dict containing the key `name` and the value of the new collection name you wish to create. Optionally, the key `parent`, and the value containing the ID of an existing collection may be included. The collection will then be created as a child collection of the passed collection ID. Returns `True` if successful.
 * `addto_collection(collection, items)`, add the specified item(s) to the specified collection. Accepts two arguments: a collection key, and a list of one or more item dicts. Collection keys can be obtained by a call to `collections()` (see details above). Returns `True` if successful.
 * `deletefrom_collection(collection, item)`, remove the specified item from the specified collection. Accepts two arguments: a collection key, and a dict containing item data. See the `delete_item()` example for multiple-item removal. Returns `True` if successful.
-* `create_collection(name)`, create a new collection in the Zotero library. Accepts one argument, a dict containing the key `name` and the value of the new collection name you wish to create. Optionally, the key `parent`, and the value containing the ID of an existing collection may be included. The collection will then be created as a child collection of the passed collection ID. Returns `True` if successful.
 * `update_collection`, update an existing collection name. Accepts a single argument: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. `collections()`). Returns `True` if successful.
 
-Example:
+**Example:**
 
 ``` python
 # get existing collections, which will return a list of dicts
