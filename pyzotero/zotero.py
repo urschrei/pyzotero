@@ -65,9 +65,10 @@ feedparser._FeedParserMixin._isBase64 = ib64_patched
 
 
 class Zotero(object):
-    """ Zotero API methods
-        A full list of methods can be found here:
-        http://www.zotero.org/support/dev/server_api
+    """
+    Zotero API methods
+    A full list of methods can be found here:
+    http://www.zotero.org/support/dev/server_api
     """
 
     def __init__(self, user_id = None, user_key = None):
@@ -93,9 +94,10 @@ class Zotero(object):
             c in xmldoc.getElementsByTagName('content')]
 
     def _retrieve_data(self, request = None):
-        """ Retrieve Zotero items via the API
-            Combine endpoint and request to access the specific resource
-            Returns a dict containing feed items and lists of entries
+        """
+        Retrieve Zotero items via the API
+        Combine endpoint and request to access the specific resource
+        Returns a dict containing feed items and lists of entries
         """
         full_url = '%s%s' % (self.endpoint, request)
         req = urllib2.Request(full_url)
@@ -109,17 +111,19 @@ class Zotero(object):
         return data
 
     def retrieve(func):
-        """ Decorator for Zotero methods; calls _retrieve_data() and passes
-            the result to the JSON processor
+        """
+        Decorator for Zotero methods; calls _retrieve_data() and passes
+        the result to the JSON processor
         """
         def wrapped_f(self, *args, **kwargs):
-            """ Returns result of _retrieve_data()
+            """
+            Returns result of _retrieve_data()
 
-                orig_func's return value is part of a URI, and it's this
-                which is intercepted and passed to _retrieve_data:
-                '/users/123/items?key=abc123'
-                the feed-parsed atom doc returned by _retrieve_data is then
-                passed to _process_content
+            orig_func's return value is part of a URI, and it's this
+            which is intercepted and passed to _retrieve_data:
+            '/users/123/items?key=abc123'
+            the feed-parsed atom doc returned by _retrieve_data is then
+            passed to _process_content
             """
             orig_func = func(self, *args, **kwargs)
             retrieved = self._retrieve_data(orig_func)
@@ -144,8 +148,9 @@ class Zotero(object):
         self.url_params = params
 
     def _build_query(self, query_string):
-        """ Set request parameters. Will always add the user ID if it hasn't
-            been specifically set by an API method
+        """
+        Set request parameters. Will always add the user ID if it hasn't
+        been specifically set by an API method
         """
         try:
             query = urllib.quote(query_string.format(u = self.user_id))
@@ -366,10 +371,10 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
-    # These methods process returned data from Read API calls, returning lists
+    # The following are API calls
 
     def _process_content(self, retrieved):
-        """ Call either _standard_items or _bib_items, depending on the URL param
+        """ Call either _standard_items or _bib_items, based on the URL param
         """
         # Content request in 'bib' format, so call _bib_items
         if self.url_params.find('=bib') != -1:
