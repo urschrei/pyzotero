@@ -17,6 +17,25 @@ setup(
     author_email = 'urschrei@gmail.com',
     license = 'GNU GPL Version 3',
     url = 'https://github.com/urschrei/pyzotero',
+    keywords = ['zotero'],
+    classifiers = [
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Operating System :: OS Independent',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        ],
     packages = find_packages(),
     install_requires = ['feedparser >= 5.0.1'],
+    long_description = """\
+A Python wrapper for the Zotero Server API
+------------------------------------------
+
+Provides methods for accessing all Zotero Server API calls currently provided.
+A full list is available here: http://www.zotero.org/support/dev/server_api
+
+This version requires Python 2.7.x
+            """
 )
