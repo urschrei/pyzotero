@@ -191,7 +191,7 @@ zot.update_item(i[0])
 
 * `delete_item()`, delete an item from your library. Accepts a dict containing item data as its only argument. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a `for` loop. Returns `True` if successful.
 
-**Examples:**
+**Example:**
 
 ``` python
 i = zot.items()
@@ -201,11 +201,11 @@ for d in to_delete:
     zot.delete_item(d)
 ```
 
-* `addto_collection(collection, items)`, add the specified item(s) to the specified collection. Accepts two arguments: a collection key, and a list of one or more item dicts. Collection keys can be obtained by a call to `collections` (see details above). Returns `True` if successful.
+* `addto_collection(collection, items)`, add the specified item(s) to the specified collection. Accepts two arguments: a collection key, and a list of one or more item dicts. Collection keys can be obtained by a call to `collections()` (see details above). Returns `True` if successful.
 
 # Notes #
 
-All methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. 
+All Read API methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. 
 
 **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.  
 
