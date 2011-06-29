@@ -29,7 +29,7 @@ for item in items:
 ```
 ## General Usage ##
 
-Additional parameters may be set using the following method:  
+Additional parameters may be set on Read API methods using the following method:  
     
     zot.add_parameters(parameter=value, … parameter n = value n)
 Example:  
@@ -54,7 +54,7 @@ The return value is a **list** of UTF-8 formatted HTML `div`s, each containing a
 
 The following methods are currently available:
 
-## Read API Methods: ##
+## Read API Methods ##
 ### To retrieve items:###
 
  * `items()`, returns Zotero library items
@@ -154,7 +154,7 @@ See ‘Hello World’ example, above
 
 `['Authority in literature', 'Errata', … ]`
 
-## Write API Methods: ##
+## Write API Methods ##
 ### Item Methods: ###
 
 * `item_types()`, returns a dict of all available item types 
@@ -226,7 +226,7 @@ zot.update_collection(c[0])
 
 # Notes #
 
-All Read API methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. 
+All Read API methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. Most Write API methods return either `True` if successful, or raise an error. See `zotero_errors.py` for a full listing of these.
 
 **URL parameters will supersede API calls which should return e.g. a single item:** `https://api.zotero.org/users/436/items/ABC?start=50&limit=10` will return 10 items beginning at position 50, even though `ABC` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.  
 
