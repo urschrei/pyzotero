@@ -485,6 +485,31 @@ class Zotero(object):
             self._error_handler(req, error)
         return self.standard_items(feedparser.parse(data))
 
+    def create_collection(self, payload):
+        """
+        Create a new Zotero collection
+        Accepts one argument, a dict containing the following keys:
+
+        'name': the name of the collection
+        'parent': OPTIONAL, the parent collection to which you wish to add this
+        """
+        # add a blank 'parent' key if it hasn't been passed
+        if not 'parent' in payload:
+            payload['parent'] = ''
+        to_send = json.dumps(payload)
+        token = str(uuid.uuid4()).replace('-','')
+        req = urllib2.Request(
+        self.endpoint + '/users/{u}/collections'.format(u = self.user_id) +
+        '?' + urllib.urlencode({'key': self.user_key}))
+        req.add_data(to_send)
+        req.add_header('X-Zotero-Write-Token', token)
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            urllib2.urlopen(req)
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
+        return True
+
     def update_item(self, payload):
         """
         Update an existing item
@@ -593,8 +618,8 @@ class Zotero(object):
         error.code, req.get_full_url(), req.get_method(), req.get_data())
             elif error.code == 400:
                 raise ze.UnsupportedParams, \
-"Invalid request, probably due to unsupported parameters: %s" % \
-                req.get_full_url()
+"Invalid request, probably due to unsupported parameters: %s\n%s\n%s" % \
+                (req.get_full_url(), req.get_method(), req.get_data())
             elif error.code == 404:
                 raise ze.ResourceNotFound, \
 "No results for the following query:\n%s" % req.get_full_url()
