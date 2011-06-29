@@ -553,9 +553,9 @@ class Zotero(object):
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
             opener.open(req)
-            return True
         except (urllib2.HTTPError, urllib2.URLError), error:
             self._error_handler(req, error)
+        return True
 
     def _error_handler(self, req, error):
         """
