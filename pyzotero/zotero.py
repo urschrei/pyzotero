@@ -23,7 +23,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 __author__ = 'urschrei@gmail.com'
-__version__ = '0.7.0'
+__version__ = '0.8.0'
 
 
 import urllib
@@ -627,6 +627,27 @@ class Zotero(object):
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
             u = self.user_id) + ident +
+            '?' + urllib.urlencode({'key': self.user_key}))
+        req.get_method = lambda: 'DELETE'
+        req.add_header('If-Match', etag)
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            opener.open(req)
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
+        return True
+
+    def delete_collection(self, payload):
+        """
+        Delete a Collection from a Zotero library
+        Accepts a single argument: a dict containing item data
+        """
+        etag = payload['etag']
+        ident = payload['key']
+        # Override urllib2 to give it a DELETE verb
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        req = urllib2.Request(self.endpoint + '/users/{u}/collections/{c}'
+            .format(u = self.user_id, c = ident) +
             '?' + urllib.urlencode({'key': self.user_key}))
         req.get_method = lambda: 'DELETE'
         req.add_header('If-Match', etag)

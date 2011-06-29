@@ -157,8 +157,6 @@ See ‘Hello World’ example, above
 ## Write API Methods: ##
 ### Item Methods: ###
 
-Full [Write API][8] methods are WIP. The following methods are currently available:
-
 * `item_types()`, returns a dict of all available item types 
 * `item_fields()`, returns a dict of all available item fields
 * `item_creator_types(itemtype)`, returns a dict of all valid creator types for the specified item type 
@@ -166,7 +164,7 @@ Full [Write API][8] methods are WIP. The following methods are currently availab
 
 ---
 
-* `create_item(items)`, create Zotero library items. Accepts a list of one or more dicts as its only argument. Returns a copy of the created item(s), if successful. The use of `item_template(itemType)` is recommended in order to first obtain a dict with a structure which the API will accept.
+* `create_item(items)`, create Zotero library items. Accepts a single argument: a list of one or more dicts containing item data. Returns a copy of the created item(s), if successful. The use of `item_template(itemType)` is recommended in order to first obtain a dict with a structure which the API will accept.
 
 **Example:**
 
@@ -180,7 +178,7 @@ resp = zot.create_item([template])
 
 If successful, `resp` will have the same structure as items retrieved with an `items()` call, e.g. a list of one or more dicts (see example, above).
 
-* `update_item(item)`, update an item in your library. Accepts a dict containing item data as its only argument.
+* `update_item(item)`, update an item in your library. Accepts a single argument: a dict containing item data.
 
 **Example:**
 
@@ -194,7 +192,7 @@ i[0]['creators'][0]['lastName'] = 'Bowles'
 zot.update_item(i[0])
 ```
 
-* `delete_item()`, delete an item from your library. Accepts a dict containing item data as its only argument. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a `for` loop. Returns `True` if successful.
+* `delete_item()`, delete an item from your library. Accepts one argument: a dict containing item data. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a `for` loop. Returns `True` if successful.
 
 **Example:**
 
@@ -208,7 +206,7 @@ for d in to_delete:
 
 ### Collection Methods: ###
 
-* `create_collection(name)`, create a new collection in the Zotero library. Accepts one argument, a dict containing the key `name` and the value of the new collection name you wish to create. Optionally, the key `parent`, and the value containing the ID of an existing collection may be included. The collection will then be created as a child collection of the passed collection ID. Returns `True` if successful.
+* `create_collection(name)`, create a new collection in the Zotero library. Accepts one argument: a dict containing the key `name` and the value of the new collection name you wish to create. Optionally, the key `parent`, and the value containing the ID of an existing collection may be included. The collection will then be created as a child collection of the passed collection ID. Returns `True` if successful.
 * `addto_collection(collection, items)`, add the specified item(s) to the specified collection. Accepts two arguments: a collection key, and a list of one or more item dicts. Collection keys can be obtained by a call to `collections()` (see details above). Returns `True` if successful.
 * `deletefrom_collection(collection, item)`, remove the specified item from the specified collection. Accepts two arguments: a collection key, and a dict containing item data. See the `delete_item()` example for multiple-item removal. Returns `True` if successful.
 * `update_collection()`, update an existing collection name. Accepts a single argument: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. `collections()`). Returns `True` if successful.
@@ -223,6 +221,8 @@ c[0]['name'] = 'Whither Digital Humanities?'
 # update collection name on the server
 zot.update_collection(c[0])
 ```
+
+* `delete_collection()`, delete a collection from the Zotero library. Accepts a single argument: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. `collections()`). Returns `True` if successful. See the `delete_item()` example for ways to delete multiple collections.
 
 # Notes #
 
