@@ -517,16 +517,18 @@ class Zotero(object):
         using e.g. 'collections()'
 
         """
-        token = payload['etag']
-        key = payload['key']
+        # we don't want to overwrite the dict we passed in, so make a copy
+        to_update = dict(payload)
+        token = to_update['etag']
+        key = to_update['key']
         # remove any keys we've added
         try:
-            del payload['etag']
-            del payload['key']
-            del payload['group_id']
+            del to_update['etag']
+            del to_update['key']
+            del to_update['group_id']
         except KeyError:
             pass
-        to_send = json.dumps(payload)
+        to_send = json.dumps(to_update)
 
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
@@ -549,14 +551,16 @@ class Zotero(object):
         Update an existing item
         Accepts one argument, a dict containing Item data
         """
-        etag = payload['etag']
-        ident = payload['key']
+        # we don't want to modify the dict we passed in, so create a copy
+        to_update = dict(payload)
+        etag = to_update['etag']
+        ident = to_update['key']
         # remove keys we added when retrieving the original
         try:
-            del payload['etag'], payload['key'], payload['group_id']
+            del to_update['etag'], to_update['key'], to_update['group_id']
         except KeyError:
             pass
-        to_send = json.dumps(payload)
+        to_send = json.dumps(to_update)
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
