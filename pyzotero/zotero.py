@@ -580,6 +580,9 @@ class Zotero(object):
             elif error.code == 409:
                 raise ze.Conflict, \
 "The target library is locked"
+            elif error.code == 412:
+                raise ze.PreConditionFailed, \
+"The item was already submitted, or has changed since you retrieved it"
             else:
                 raise ze.HTTPError, \
 "HTTP Error %s (%s)\nURL: %s\nData: %s" % (
