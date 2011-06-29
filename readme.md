@@ -202,6 +202,7 @@ for d in to_delete:
 ```
 
 * `addto_collection(collection, items)`, add the specified item(s) to the specified collection. Accepts two arguments: a collection key, and a list of one or more item dicts. Collection keys can be obtained by a call to `collections()` (see details above). Returns `True` if successful.
+* `deletefrom_collection(collection, item)`, remove the specified item from the specified collection. Accepts two arguments: a collection key, and a dict containing item data. See the `delete_item()` example for multiple-item removal. Returns `True` if successful.
 
 # Notes #
 

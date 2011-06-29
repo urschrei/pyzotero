@@ -536,6 +536,27 @@ class Zotero(object):
             self._error_handler(req, error)
         return True
 
+    def deletefrom_collection(self, collection, payload):
+        """
+        Delete an item from a collection
+        Accepts two arguments:
+        The collection ID, and a dict containing one or more item dicts
+        """
+        ident = payload['key']
+        # Override urllib2 to give it a DELETE verb
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        req = urllib2.Request(
+        self.endpoint + '/users/{u}/collections/{c}/items/'.format(
+            u = self.user_id, c = collection) + ident +
+            '?' + urllib.urlencode({'key': self.user_key}))
+        req.get_method = lambda: 'DELETE'
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            opener.open(req)
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
+        return True
+
     def delete_item(self, payload):
         """
         Delete an Item from a Zotero library
