@@ -510,6 +510,40 @@ class Zotero(object):
             self._error_handler(req, error)
         return True
 
+    def update_collection(self, payload):
+        """
+        Update a Zotero collection
+        Accepts one argument, a dict containing collection data retrieved
+        using e.g. 'collections()'
+
+        """
+        token = payload['etag']
+        key = payload['key']
+        # remove any keys we've added
+        try:
+            del payload['etag']
+            del payload['key']
+            del payload['group_id']
+        except KeyError:
+            pass
+        to_send = json.dumps(payload)
+
+        # Override urllib2 to give it a PUT verb
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        req = urllib2.Request(
+        self.endpoint + '/users/{u}/collections/{c}'.format(
+            u = self.user_id, c = key) +
+            '?' + urllib.urlencode({'key': self.user_key}))
+        req.add_data(to_send)
+        req.get_method = lambda: 'PUT'
+        req.add_header('If-Match', token)
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            opener.open(req)
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
+        return True
+
     def update_item(self, payload):
         """
         Update an existing item
