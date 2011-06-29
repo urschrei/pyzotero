@@ -92,7 +92,7 @@ class Zotero(object):
         return [c.attributes['zapi:etag'].value for
             c in xmldoc.getElementsByTagName('content')]
 
-    def retrieve_data(self, request = None):
+    def _retrieve_data(self, request = None):
         """ Retrieve Zotero items via the API
             Combine endpoint and request to access the specific resource
             Returns a dict containing feed items and lists of entries
@@ -109,27 +109,27 @@ class Zotero(object):
         return data
 
     def retrieve(func):
-        """ Decorator for Zotero methods; calls retrieve_data() and passes
+        """ Decorator for Zotero methods; calls _retrieve_data() and passes
             the result to the JSON processor
         """
         def wrapped_f(self, *args, **kwargs):
-            """ Returns result of retrieve_data()
+            """ Returns result of _retrieve_data()
 
                 orig_func's return value is part of a URI, and it's this
-                which is intercepted and passed to retrieve_data:
+                which is intercepted and passed to _retrieve_data:
                 '/users/123/items?key=abc123'
-                the feed-parsed atom doc returned by retrieve_data is then
-                passed to process_content
+                the feed-parsed atom doc returned by _retrieve_data is then
+                passed to _process_content
             """
             orig_func = func(self, *args, **kwargs)
-            retrieved = self.retrieve_data(orig_func)
+            retrieved = self._retrieve_data(orig_func)
             # get etags from the response
             self.etags = self._etags(retrieved)
             # return the parsed Atom doc
-            return self.process_content(feedparser.parse(retrieved))
+            return self._process_content(feedparser.parse(retrieved))
         return wrapped_f
 
-    def add_parameters(self, **params):
+    def _add_parameters(self, **params):
         """ Set URL parameters. Will always add the user key
         """
         self.url_params = None
@@ -154,7 +154,7 @@ class Zotero(object):
             'There\'s a request parameter missing: %s' % err
         # Add the URL parameters and the user key, if necessary
         if not self.url_params:
-            self.add_parameters()
+            self._add_parameters()
         query = '%s?%s' % (query, self.url_params)
         return query
 
@@ -366,55 +366,26 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
-    def item_types(self):
-        """ Get all available item types
-        """
-        query_string = '/itemTypes'
-        retrieved = self.retrieve_data(query_string)
-        return json.loads(retrieved)
-
-    def item_fields(self):
-        """ Get all available item fields
-        """
-        query_string = '/itemFields'
-        retrieved = self.retrieve_data(query_string)
-        return json.loads(retrieved)
-
-    def item_creator_types(self, itemtype):
-        """ Get all available creator types for an item
-        """
-        query_string = '/itemTypeCreatorTypes?itemType={i}'.format(
-        i = itemtype)
-        retrieved = self.retrieve_data(query_string)
-        return json.loads(retrieved)
-
-    def item_template(self, itemtype):
-        """ Get a template for a new item
-        """
-        query_string = '/items/new?itemType={i}'.format(
-        i = itemtype)
-        retrieved = self.retrieve_data(query_string)
-        return json.loads(retrieved)
-
     # These methods process returned data from Read API calls, returning lists
-    def process_content(self, retrieved):
-        """ Call either standard_items or bib_items, depending on the URL param
-        """
-        # Content request in 'bib' format, so call bib_items
-        if self.url_params.find('=bib') != -1:
-            return self.bib_items(retrieved)
-        else:
-            return self.standard_items(retrieved)
 
-    def standard_items(self, retrieved):
+    def _process_content(self, retrieved):
+        """ Call either _standard_items or _bib_items, depending on the URL param
+        """
+        # Content request in 'bib' format, so call _bib_items
+        if self.url_params.find('=bib') != -1:
+            return self._bib_items(retrieved)
+        else:
+            return self._standard_items(retrieved)
+
+    def _standard_items(self, retrieved):
         """ Format and return data from API calls which return Items
         """
-        # send entries to tags_data if there's no JSON
+        # send entries to _tags_data if there's no JSON
         try:
             items = [json.loads(e['content'][0]['value'])
                 for e in retrieved.entries]
         except ValueError:
-            return self.tags_data(retrieved)
+            return self._tags_data(retrieved)
 
         # try to add various namespaced values to the items
         zapi_keys = ['key']
@@ -440,7 +411,7 @@ class Zotero(object):
         self.url_params = None
         return items
 
-    def bib_items(self, retrieved):
+    def _bib_items(self, retrieved):
         """ Return a list of strings formatted as HTML bibliography entries
         """
         items = []
@@ -449,7 +420,7 @@ class Zotero(object):
         self.url_params = None
         return items
 
-    def tags_data(self, retrieved):
+    def _tags_data(self, retrieved):
         """ Format and return data from API calls which return Tags
         """
         tags = [t['title'] for t in retrieved.entries]
@@ -458,6 +429,35 @@ class Zotero(object):
 
     # The following are Write API calls
 
+    def item_template(self, itemtype):
+        """ Get a template for a new item
+        """
+        query_string = '/items/new?itemType={i}'.format(
+        i = itemtype)
+        retrieved = self._retrieve_data(query_string)
+        return json.loads(retrieved)
+
+    def item_types(self):
+        """ Get all available item types
+        """
+        query_string = '/itemTypes'
+        retrieved = self._retrieve_data(query_string)
+        return json.loads(retrieved)
+
+    def item_fields(self):
+        """ Get all available item fields
+        """
+        query_string = '/itemFields'
+        retrieved = self._retrieve_data(query_string)
+        return json.loads(retrieved)
+
+    def item_creator_types(self, itemtype):
+        """ Get all available creator types for an item
+        """
+        query_string = '/itemTypeCreatorTypes?itemType={i}'.format(
+        i = itemtype)
+        retrieved = self._retrieve_data(query_string)
+        return json.loads(retrieved)
     def create_items(self, payload):
         """
         Create new Zotero items
@@ -483,7 +483,7 @@ class Zotero(object):
             self.etags = self._etags(data)
         except (urllib2.HTTPError, urllib2.URLError), error:
             self._error_handler(req, error)
-        return self.standard_items(feedparser.parse(data))
+        return self._standard_items(feedparser.parse(data))
 
     def create_collection(self, payload):
         """
@@ -576,7 +576,7 @@ class Zotero(object):
             self.etags = self._etags(data)
         except (urllib2.HTTPError, urllib2.URLError), error:
             self._error_handler(req, error)
-        return self.standard_items(feedparser.parse(data))
+        return self._standard_items(feedparser.parse(data))
 
     def addto_collection(self, collection, payload):
         """

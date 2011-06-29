@@ -384,7 +384,7 @@ class ZoteroTests(unittest.TestCase):
         """ Should add the user key, then url-encode all other added parameters
         """
         zot = z.Zotero('myuserID', 'myuserkey')
-        zot.add_parameters(limit = 0, start = 7)
+        zot._add_parameters(limit = 0, start = 7)
         self.assertEqual('content=json&start=7&limit=0&key=myuserkey', zot.url_params)
 
     def testBuildQuery(self):
@@ -392,7 +392,7 @@ class ZoteroTests(unittest.TestCase):
             to the URL parameters
         """
         zot = z.Zotero('myuserID', 'myuserkey')
-        zot.add_parameters(start = 10)
+        zot._add_parameters(start = 10)
         query_string = '/users/000/tags/hi there/items'
         query = zot._build_query(query_string)
         self.assertEqual(
@@ -477,9 +477,9 @@ class ZoteroTests(unittest.TestCase):
             is built
         """
         zot = z.Zotero('myuserID', 'myuserkey')
-        zot.add_parameters(start = 5, limit = 10)
+        zot._add_parameters(start = 5, limit = 10)
         zot._build_query('/whatever')
-        zot.add_parameters(start = 2)
+        zot._add_parameters(start = 2)
         self.assertEqual('content=json&start=2&key=myuserkey', zot.url_params)
 
     def testParamsBlankAfterCall(self):
