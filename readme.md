@@ -115,7 +115,7 @@ See ‘Hello World’ example, above
 
 **Example of returned data:**
 
-`[{'id': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"}, … ]`
+`[{'key': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"}, … ]`
 
 ### To retrieve groups:###
 
@@ -189,7 +189,7 @@ i[0]['creators'][0]['lastName'] = 'Bowles'
 zot.update_item(i[0])
 ```
 
-* `delete_item()`, delete an item from your library. Accepts a dict containing item data as its only argument. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a `for` loop.
+* `delete_item()`, delete an item from your library. Accepts a dict containing item data as its only argument. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a `for` loop. Returns `True` if successful.
 
 **Examples:**
 
@@ -201,12 +201,7 @@ for d in to_delete:
     zot.delete_item(d)
 ```
 
-Or, using more compact syntax:
-
-``` python
-# delete the last five top-level items we added
-_ = [zot.delete_item(d) for d in zot.top()[:6]]
-```
+* `addto_collection(collection, items)`, add the specified item(s) to the specified collection. Accepts two arguments: a collection key, and a list of one or more item dicts. Collection keys can be obtained by a call to `collections` (see details above). Returns `True` if successful.
 
 # Notes #
 

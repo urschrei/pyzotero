@@ -515,6 +515,27 @@ class Zotero(object):
             self._error_handler(req, error)
         return self.standard_items(feedparser.parse(data))
 
+    def addto_collection(self, collection, payload):
+        """
+        Add one or more items to a collection
+        Accepts two arguments:
+        The collection ID, and a list containing one or more item dicts
+        """
+        # create a string containing item IDs
+        to_send = ' '.join([p['key'].encode('utf8') for p in payload])
+
+        req = urllib2.Request(
+        self.endpoint + '/users/{u}/collections/{c}/items'.format(
+            u = self.user_id, c = collection) +
+            '?' + urllib.urlencode({'key': self.user_key}))
+        req.add_data(to_send)
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            urllib2.urlopen(req)
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
+        return True
+
     def delete_item(self, payload):
         """
         Delete an Item from a Zotero library
