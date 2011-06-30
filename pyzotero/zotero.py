@@ -372,6 +372,24 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
+    def all_top(self):
+        """ Retrieve all top-level items
+        """
+        # get a single top-level item
+        query = self._build_query('/users/{u}/items/top')
+        self.add_parameters(limit=1)
+        data = self._retrieve_data(query)
+        self.url_params = None
+        parsed = feedparser.parse(data)
+        # extract the 'total results' figure
+        total = int(parsed['feed']['zapi_totalresults'].encode('utf8'))
+        all_results = []
+        # Retrieve all top-level items, 99 at a time
+        for i in xrange(1, total + 1, 99):
+            self.add_parameters(start = i, limit = 99)
+            all_results.extend(self.top())
+        return all_results
+
     # The following methods process data returned by Read API calls
     def _process_content(self, retrieved):
         """ Call either _standard_items or _bib_items, based on the URL param
