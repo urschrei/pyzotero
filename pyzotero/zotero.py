@@ -142,8 +142,8 @@ class Zotero(object):
             params['key'] = self.user_key
         else:
             params = {'key': self.user_key}
-        # always return json
-        if not params.get('content', None) == 'bib' or None:
+        # always return json, unless different format is specified
+        if 'content' not in params:
             params['content'] = 'json'
         params = urllib.urlencode(params)
         self.url_params = params
