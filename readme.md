@@ -1,6 +1,6 @@
 # Description #
 
-This is a first pass at implementing a Python wrapper for the [Zotero API][1]. You'll require a user ID and access key, which can be set up [here][2].
+A Python wrapper for the [Zotero API][1]. You'll require a user ID and access key, which can be set up [here][2].
 
 # Installation #
 
@@ -17,7 +17,7 @@ pip install .
 ```
     
 
-* Alternatively, download the latest  version from <https://github.com/urschrei/pyzotero/downloads>, and point pip at the zip file:  
+* Alternatively, download the latest version from <https://github.com/urschrei/pyzotero/downloads>, and point pip at the zip file:  
 Example: `pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip`
 
 I assume that running setup.py will also work using `easy_install`, but I haven't tested it.
@@ -44,7 +44,7 @@ Additional parameters may be set on Read API methods using the following method:
     zot.add_parameters(parameter=value, … parameter n = value n)
 Example:  
 
-    zot.add_parameters(limit = 5)
+    zot.add_parameters(limit=7,start=3)
     
 These parameters will be valid *for the next call only*  
 Valid parameters:  

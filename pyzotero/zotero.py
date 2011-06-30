@@ -97,7 +97,7 @@ class Zotero(object):
         """
         Retrieve Zotero items via the API
         Combine endpoint and request to access the specific resource
-        Returns a dict containing feed items and lists of entries
+        Returns an Atom document
         """
         full_url = '%s%s' % (self.endpoint, request)
         req = urllib2.Request(full_url)
