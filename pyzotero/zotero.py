@@ -122,8 +122,9 @@ class Zotero(object):
             orig_func's return value is part of a URI, and it's this
             which is intercepted and passed to _retrieve_data:
             '/users/123/items?key=abc123'
-            the feed-parsed atom doc returned by _retrieve_data is then
-            passed to _process_content
+            the atom doc returned by _retrieve_data is then
+            passed to _etags in order to extract the etag attributes
+            from each entry, then to feedparser, then to _process_content
             """
             orig_func = func(self, *args, **kwargs)
             retrieved = self._retrieve_data(orig_func)
@@ -133,8 +134,8 @@ class Zotero(object):
             return self._process_content(feedparser.parse(retrieved))
         return wrapped_f
 
-    def _add_parameters(self, **params):
-        """ Set URL parameters. Will always add the user key
+    def add_parameters(self, **params):
+        """ Add URL parameters. Will always add the user key
         """
         self.url_params = None
         if params:
@@ -159,7 +160,7 @@ class Zotero(object):
             'There\'s a request parameter missing: %s' % err
         # Add the URL parameters and the user key, if necessary
         if not self.url_params:
-            self._add_parameters()
+            self.add_parameters()
         query = '%s?%s' % (query, self.url_params)
         return query
 
