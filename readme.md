@@ -4,10 +4,19 @@ This is a first pass at implementing a Python wrapper for the [Zotero API][1]. Y
 
 # Installation #
 
-* From github: `pip install git+git://github.com/urschrei/pyzotero.git`  
-* From a local clone: `pip install /path/to/pyzotero/dir`  
-Example: `pip install ~/repos/pyzotero`  
-* Alternatively, download the latest version from <https://github.com/urschrei/pyzotero/downloads>, and point pip at the zip file:  
+* using pip: `pip install pyzotero` 
+* From a local clone, if you wish to install Pyzotero from a specific branch: 
+
+Example:
+``` shell
+git clone git://github.com/urschrei/pyzotero.git
+cd pyzotero
+git checkout dev
+pip install .
+```
+    
+
+* Alternatively, download the latest  version from <https://github.com/urschrei/pyzotero/downloads>, and point pip at the zip file:  
 Example: `pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip`
 
 I assume that running setup.py will also work using `easy_install`, but I haven't tested it.
