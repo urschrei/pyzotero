@@ -8,7 +8,7 @@ This is a first pass at implementing a Python wrapper for the [Zotero API][1]. Y
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
 Example:
-``` shell
+``` bash
 git clone git://github.com/urschrei/pyzotero.git
 cd pyzotero
 git checkout dev
