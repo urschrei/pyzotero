@@ -491,7 +491,7 @@ class Zotero(object):
         to_create = list(payload)
         # remove keys we may have added
         for tempkey in self.temp_keys:
-            [tc.pop(tempkey) for tc in to_create if tempkey in tc]
+            _ = [tc.pop(tempkey) for tc in to_create if tempkey in tc]
         to_send = json.dumps({'items': to_create})
         token = str(uuid.uuid4()).replace('-','')
         req = urllib2.Request(
