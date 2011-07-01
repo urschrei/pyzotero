@@ -496,7 +496,7 @@ class Zotero(object):
         token = str(uuid.uuid4()).replace('-','')
         req = urllib2.Request(
         self.endpoint + '/users/{u}/items'.format(u = self.user_id) +
-        '?' + urllib.urlencode({'key': self.user_key}))
+            '?' + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
         req.add_header('X-Zotero-Write-Token', token)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
@@ -523,7 +523,7 @@ class Zotero(object):
         token = str(uuid.uuid4()).replace('-','')
         req = urllib2.Request(
         self.endpoint + '/users/{u}/collections'.format(u = self.user_id) +
-        '?' + urllib.urlencode({'key': self.user_key}))
+            '?' + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
         req.add_header('X-Zotero-Write-Token', token)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
