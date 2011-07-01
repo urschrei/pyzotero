@@ -83,6 +83,7 @@ class Zotero(object):
             'Please provide both the user ID and the user key'
         self.url_params = None
         self.etags = None
+        self.temp_keys = ['key', 'etag', 'group_id']
 
     def _etags(self, incoming):
         """
@@ -480,18 +481,18 @@ class Zotero(object):
         i = itemtype)
         retrieved = self._retrieve_data(query_string)
         return json.loads(retrieved)
+
     def create_items(self, payload):
         """
         Create new Zotero items
         Accepts one argument, a list containing one or more item dicts
         """
+        # we don't want to overwrite our items, so make a copy
+        to_create = list(payload)
         # remove keys we may have added
-        for item in payload:
-            try:
-                del item['etag'], item['key'], item['group_id']
-            except KeyError:
-                pass
-        to_send = json.dumps({'items': payload})
+        for tempkey in self.temp_keys:
+            [tc.pop(tempkey) for tc in to_create if tempkey in tc]
+        to_send = json.dumps({'items': to_create})
         token = str(uuid.uuid4()).replace('-','')
         req = urllib2.Request(
         self.endpoint + '/users/{u}/items'.format(u = self.user_id) +
@@ -544,14 +545,9 @@ class Zotero(object):
         token = to_update['etag']
         key = to_update['key']
         # remove any keys we've added
-        try:
-            del to_update['etag']
-            del to_update['key']
-            del to_update['group_id']
-        except KeyError:
-            pass
+        for tempkey in self.temp_keys:
+            to_update.pop(tempkey, None)
         to_send = json.dumps(to_update)
-
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(
@@ -577,11 +573,9 @@ class Zotero(object):
         to_update = dict(payload)
         etag = to_update['etag']
         ident = to_update['key']
-        # remove keys we added when retrieving the original
-        try:
-            del to_update['etag'], to_update['key'], to_update['group_id']
-        except KeyError:
-            pass
+        # remove any keys we've added
+        for tempkey in self.temp_keys:
+            to_update.pop(tempkey, None)
         to_send = json.dumps(to_update)
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)

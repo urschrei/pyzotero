@@ -224,7 +224,8 @@ class ZoteroTests(unittest.TestCase):
           ],
           "url" : "",
           "tags" : [],
-          "notes" : []
+          "notes" : [],
+          "etag" : ""
         }"""
         self.item_types = """[
         {
@@ -552,14 +553,15 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'myuserkey')
         t = zot.item_template('book')
         t['itemType'] = 'journalArticle'
-        # new opener which will return 503
+        # new opener which will return 403
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
         z.urllib2.install_opener(my_opener)
         with self.assertRaises(z.ze.UserNotAuthorised) as e:
             _ = zot.create_items([t])
         exc = e.exception
-        # this test is a kludge; we're only checking that 'journalArticle' is in the POST data
+        # this test is a kludge; we're checking the POST data in the 403 response
         self.assertIn("journalArticle", str(exc))
+        self.assertNotIn("etag", str(exc))
 
 
 
