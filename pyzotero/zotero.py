@@ -391,6 +391,19 @@ class Zotero(object):
             all_results.extend(self.top())
         return all_results
 
+    def get_subset(self, subset):
+        """
+        Retrieve a subset of items
+        Accepts a single argument: a list of item IDs
+        """
+        if len(subset) > 50:
+            # we should really raise an error for this
+            return False
+        retr = []
+        for itm in subset:
+            retr.extend(self.item(itm))
+        return retr
+
     # The following methods process data returned by Read API calls
     def _process_content(self, retrieved):
         """ Call either _standard_items or _bib_items, based on the URL param

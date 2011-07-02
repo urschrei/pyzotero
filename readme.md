@@ -81,8 +81,9 @@ The following methods are currently available:
  * `group_collection_item(group ID, collection ID, item ID)`, returns a specific collection's item from a specific group
  * `group_collection_top(group ID, collection ID)`, returns a specific collection's top-level items from a specific group
  * `collection_items(collection ID)`, returns items from the specified collection
+ * `get_subset(item IDs)`, accepts a single argument: a list of Item IDs. Returns a list containing item dicts. This can be used to retrieve an arbitrary set of non-andjacent items. Limited to 50 items per call.
 
-**Example of returned data:**
+**Example of returned Item data:**
 
 ``` python
 [{'DOI': '',
