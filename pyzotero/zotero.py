@@ -32,6 +32,7 @@ import socket
 import feedparser
 import json
 import uuid
+import time
 from xml.dom import minidom
 
 import zotero_errors as ze
@@ -83,7 +84,7 @@ class Zotero(object):
             'Please provide both the user ID and the user key'
         self.url_params = None
         self.etags = None
-        self.temp_keys = ['key', 'etag', 'group_id']
+        self.temp_keys = ['key', 'etag', 'group_id', 'updated']
 
     def _etags(self, incoming):
         """
@@ -423,6 +424,15 @@ class Zotero(object):
                 for key, _ in enumerate(items):
                     items[key][unicode(zapi)] = \
                             retrieved.entries[key][unicode('zapi_%s' % zapi)]
+            except KeyError:
+                pass
+        # try to add the updated time in the same format the server expects it
+        for key, _ in enumerate(items):
+            try:
+                items[key][u'updated'] = \
+                        time.strftime(
+                                "%a, %d %b %Y %H:%M:%S %Z",
+                                retrieved.entries[key]['updated_parsed'])
             except KeyError:
                 pass
         # add the etags

@@ -411,6 +411,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(u'7252daf2495feb8ec89c61f391bcba24', items_data[0]['etag'])
         self.assertEqual(u'McIntyre', items_data[0]['creators'][0]['lastName'])
         self.assertEqual(u'journalArticle', items_data[0]['itemType'])
+        self.assertEqual(u'Mon, 14 Feb 2011 00:27:03 GMT', items_data[0]['updated'])
 
     def testEncodings(self):
         """ Should be able to print unicode strings to stdout, and convert
