@@ -394,10 +394,10 @@ class ZoteroTests(unittest.TestCase):
         """
         zot = z.Zotero('myuserID', 'myuserkey')
         zot.add_parameters(start = 10)
-        query_string = '/users/000/tags/hi there/items'
+        query_string = '/users/{u}/tags/hi there/items'
         query = zot._build_query(query_string)
         self.assertEqual(
-        '/users/000/tags/hi%20there/items?content=json&start=10&key=myuserkey',
+        '/users/myuserID/tags/hi%20there/items?content=json&start=10&key=myuserkey',
         query)
 
     def testParseItemAtomDoc(self):
@@ -562,8 +562,6 @@ class ZoteroTests(unittest.TestCase):
         # this test is a kludge; we're checking the POST data in the 403 response
         self.assertIn("journalArticle", str(exc))
         self.assertNotIn("etag", str(exc))
-
-
 
     def tearDown(self):
         """ Tear stuff down
