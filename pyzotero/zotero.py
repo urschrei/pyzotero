@@ -185,7 +185,7 @@ class Zotero(object):
         """ Get a specific item
         """
         query_string = '/users/{u}/items/{i}'.format(
-        u = self.user_id, i = item)
+        i = item)
         return self._build_query(query_string)
 
     @retrieve
@@ -193,7 +193,6 @@ class Zotero(object):
         """ Get a specific item's child items
         """
         query_string = '/users/{u}/items/{i}/children'.format(
-        u = self.user_id,
         i = item)
         return self._build_query(query_string)
 
@@ -202,7 +201,6 @@ class Zotero(object):
         """ Get items for a specific tag
         """
         query_string = '/users/{u}/tags/{t}/items'.format(
-        u = self.user_id,
         t = tag)
         return self._build_query(query_string)
 
@@ -211,7 +209,6 @@ class Zotero(object):
         """ Get a specific collection's items
         """
         query_string = '/users/{u}/collections/{c}/items'.format(
-        u = self.user_id,
         c = collection)
         return self._build_query(query_string)
 
@@ -316,7 +313,6 @@ class Zotero(object):
         """ Get a specific collection for a specific group
         """
         query_string = '/groups/{g}/collections/{c}'.format(
-        u = self.user_id,
         g = group,
         c = collection)
         return self._build_query(query_string)
@@ -326,7 +322,6 @@ class Zotero(object):
         """ Get collections for a specific group
         """
         query_string = '/groups/{g}/collections/{c}/collections'.format(
-        u = self.user_id,
         g = group,
         c = collection)
         return self._build_query(query_string)
@@ -350,7 +345,6 @@ class Zotero(object):
         """ Get tags for a specific item
         """
         query_string = '/users/{u}/items/{i}/tags'.format(
-        u = self.user_id,
         i = item)
         return self._build_query(query_string)
 
@@ -359,7 +353,6 @@ class Zotero(object):
         """ Get tags for a specific group
         """
         query_string = '/groups/{g}/tags'.format(
-        u = self.user_id,
         g = group)
         return self._build_query(query_string)
 
@@ -368,7 +361,6 @@ class Zotero(object):
         """ Get tags for a specific item in a specific group
         """
         query_string = '/groups/{g}/items/{i}/tags'.format(
-        u = self.user_id,
         g = group,
         i = item)
         return self._build_query(query_string)
