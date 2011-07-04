@@ -2,6 +2,8 @@
 
 A Python wrapper for the [Zotero API][1]. You'll require a user ID and access key, which can be set up [here][2].
 
+See <http://packages.python.org/Pyzotero/> for full documentation.
+
 # Installation #
 
 * using pip: `pip install pyzotero` 
@@ -81,7 +83,7 @@ The following methods are currently available:
  * `group_collection_item(group ID, collection ID, item ID)`, returns a specific collection's item from a specific group
  * `group_collection_top(group ID, collection ID)`, returns a specific collection's top-level items from a specific group
  * `collection_items(collection ID)`, returns items from the specified collection
- * `get_subset(item IDs)`, accepts a single argument: a list of Item IDs. Returns a list containing item dicts. This can be used to retrieve an arbitrary set of non-andjacent items. Limited to 50 items per call.
+ * `get_subset(item IDs)`, accepts a single argument: a list of Item IDs. Returns a list containing item dicts. This can be used to retrieve an arbitrary set of non-adjacent items. Limited to 50 items per call.
 
 **Example of returned Item data:**
 
@@ -217,10 +219,10 @@ for d in to_delete:
 
 ### Collection Methods: ###
 
-* `create_collection(name)`, create a new collection in the Zotero library. Accepts one argument: a dict containing the key `name` and the value of the new collection name you wish to create. Optionally, the key `parent`, and the value containing the ID of an existing collection may be included. The collection will then be created as a child collection of the passed collection ID. Returns `True` if successful.
-* `addto_collection(collection, items)`, add the specified item(s) to the specified collection. Accepts two arguments: a collection key, and a list of one or more item dicts. Collection keys can be obtained by a call to `collections()` (see details above). Returns `True` if successful.
-* `deletefrom_collection(collection, item)`, remove the specified item from the specified collection. Accepts two arguments: a collection key, and a dict containing item data. See the `delete_item()` example for multiple-item removal. Returns `True` if successful.
-* `update_collection()`, update an existing collection name. Accepts a single argument: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. `collections()`). Returns `True` if successful.
+* `create_collection(name)`, create a new collection in the Zotero library. Accepts one argument: a :type:`dict` containing the :key:`name` and the value of the new collection name you wish to create. Optionally, the :key:`parent`, and the value containing the ID of an existing collection may be included. The collection will then be created as a child collection of the passed collection ID. Returns :rtype:`True` if successful.
+* `addto_collection(collection, items)`, add the specified item(s) to the specified collection. Accepts two arguments: a :string:`collection` key, and a :list: of one or more item :dicts:. Collection keys can be obtained by a call to `collections()` (see details above). Returns :rtype:`True` if successful.
+* `deletefrom_collection(collection, item)`, remove the specified item from the specified collection. Accepts two arguments: a collection key, and a dict containing item data. See the `delete_item()` example for multiple-item removal. Returns :rtype:`True` if successful.
+* `update_collection(collection)`, update an existing collection name. Accepts a single argument: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. `collections()`). Returns :rtype:`True` if successful.
 
 **Example:**
 
@@ -233,7 +235,7 @@ c[0]['name'] = 'Whither Digital Humanities?'
 zot.update_collection(c[0])
 ```
 
-* `delete_collection()`, delete a collection from the Zotero library. Accepts a single argument: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. `collections()`). Returns `True` if successful. See the `delete_item()` example for ways to delete multiple collections.
+* `delete_collection(collection)`, delete a collection from the Zotero library. Accepts a single argument: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. `collections()`). Returns :rtype:`True` if successful. See the :py:meth:`delete_item()` example for ways to delete multiple collections.
 
 # Notes #
 
