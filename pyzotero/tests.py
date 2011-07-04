@@ -573,6 +573,16 @@ class ZoteroTests(unittest.TestCase):
         self.assertNotIn("GROUPABC123", str(exc))
         self.assertNotIn("updated", str(exc))
 
+    def testTooManyItems(self):
+        """ Should fail because we're passing too many items
+        """
+        itms = [i for i in xrange(51)]
+        zot = z.Zotero('myuserID', 'myuserkey')
+        with self.assertRaises(z.ze.TooManyItems):
+            zot.create_items(itms)
+
+
+
     def tearDown(self):
         """ Tear stuff down
         """

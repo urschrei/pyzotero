@@ -390,8 +390,8 @@ class Zotero(object):
         Accepts a single argument: a list of item IDs
         """
         if len(subset) > 50:
-            # we should really raise an error for this
-            return False
+            raise ze.TooManyItems, \
+                    "You may only retrieve 50 items per call"
         retr = []
         for itm in subset:
             retr.extend(self.item(itm))
@@ -502,6 +502,9 @@ class Zotero(object):
         Create new Zotero items
         Accepts one argument, a list containing one or more item dicts
         """
+        if len(payload) > 50:
+            raise ze.TooManyItems, \
+                    "You may only create up to 50 items per call"
         # we don't want to overwrite our items, so make a copy
         to_create = list(payload)
         # remove keys we may have added

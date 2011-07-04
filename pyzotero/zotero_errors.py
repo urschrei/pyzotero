@@ -60,6 +60,12 @@ class UserNotAuthorised(PyZoteroError):
 
 
 
+class TooManyItems(PyZoteroError):
+    """ Raised when too many items are passed to a Write API method
+    """
+
+
+
 class MissingCredentials(PyZoteroError):
     """ Raised when an attempt is made to create a Zotero instance
         without providing both the user ID and the user key
