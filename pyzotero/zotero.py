@@ -514,6 +514,7 @@ class Zotero(object):
             '?' + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
         req.add_header('X-Zotero-Write-Token', token)
+        req.add_header('Content-Type', 'application/json' )
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
             resp = urllib2.urlopen(req)
