@@ -565,13 +565,13 @@ class ZoteroTests(unittest.TestCase):
         z.urllib2.install_opener(my_opener)
         with self.assertRaises(z.ze.UserNotAuthorised) as e:
             _ = zot.create_items([t])
-        exc = e.exception
+        exc = str(e.exception)
         # this test is a kludge; we're checking the POST data in the 403 response
-        self.assertIn("journalArticle", str(exc))
-        self.assertNotIn("KEYABC123", str(exc))
-        self.assertNotIn("TAGABC123", str(exc))
-        self.assertNotIn("GROUPABC123", str(exc))
-        self.assertNotIn("updated", str(exc))
+        self.assertIn("journalArticle", exc)
+        self.assertNotIn("KEYABC123", exc)
+        self.assertNotIn("TAGABC123", exc)
+        self.assertNotIn("GROUPABC123", exc)
+        self.assertNotIn("updated", exc)
 
     def testTooManyItems(self):
         """ Should fail because we're passing too many items
