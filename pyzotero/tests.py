@@ -553,7 +553,13 @@ class ZoteroTests(unittest.TestCase):
         z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'myuserkey')
         t = zot.item_template('book')
+        # Update the item type
         t['itemType'] = 'journalArticle'
+        # Add keys which should be removed before the data is sent
+        t['key'] = 'KEYABC123'
+        t['etag'] = 'TAGABC123'
+        t['group_id'] = 'GROUPABC123'
+        t['updated'] = '14 March, 2011'
         # new opener which will return 403
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
         z.urllib2.install_opener(my_opener)
@@ -562,7 +568,10 @@ class ZoteroTests(unittest.TestCase):
         exc = e.exception
         # this test is a kludge; we're checking the POST data in the 403 response
         self.assertIn("journalArticle", str(exc))
-        self.assertNotIn("etag", str(exc))
+        self.assertNotIn("KEYABC123", str(exc))
+        self.assertNotIn("TAGABC123", str(exc))
+        self.assertNotIn("GROUPABC123", str(exc))
+        self.assertNotIn("updated", str(exc))
 
     def tearDown(self):
         """ Tear stuff down
