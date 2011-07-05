@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="2.0"
+      unique-identifier="unknown">
+  <metadata xmlns:opf="http://www.idpf.org/2007/opf"
+        xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:language>en</dc:language>
+    <dc:title>Pyzotero</dc:title>
+    <dc:creator opf:role="aut">Stephan Hügel</dc:creator>
+    <dc:publisher>Stephan Hügel</dc:publisher>
+    <dc:rights>2011, Stephan Hügel</dc:rights>
+    <dc:identifier id="unknown" opf:scheme="unknown">unknown</dc:identifier>
+    <dc:date>2011-07-05</dc:date>
+  </metadata>
+  <manifest>
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml" />
+    <item id="genindex.html"
+          href="genindex.html"
+          media-type="application/xhtml+xml" />
+    <item id="index.html"
+          href="index.html"
+          media-type="application/xhtml+xml" />
+    <item id="py-modindex.html"
+          href="py-modindex.html"
+          media-type="application/xhtml+xml" />
+    <item id="search.html"
+          href="search.html"
+          media-type="application/xhtml+xml" />
+    <item id="_static_basic.css"
+          href="_static/basic.css"
+          media-type="text/css" />
+    <item id="_static_epub.css"
+          href="_static/epub.css"
+          media-type="text/css" />
+    <item id="_static_file.png"
+          href="_static/file.png"
+          media-type="image/png" />
+    <item id="_static_minus.png"
+          href="_static/minus.png"
+          media-type="image/png" />
+    <item id="_static_plus.png"
+          href="_static/plus.png"
+          media-type="image/png" />
+    <item id="_static_pygments.css"
+          href="_static/pygments.css"
+          media-type="text/css" />
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="index.html" />
+    <itemref idref="py-modindex.html" />
+    <itemref idref="genindex.html" />
+  </spine>
+</package>

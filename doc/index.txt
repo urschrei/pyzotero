@@ -181,7 +181,7 @@ Retrieving Items
         Returns the child items of a specific item from a specific group
 
         :param str groupID: a Zotero group ID
-        :param str itemID: a zotero item ID
+        :param str itemID: a Zotero item ID
         :rtype: list of dicts
 
 
@@ -298,7 +298,7 @@ Retrieving Collections
         Returns a specific collection from a specific group
     
         :param str groupID: a Zotero group ID
-        :param str collectionID: a zotero collection ID
+        :param str collectionID: a Zotero collection ID
         :rtype: list of dicts
 
     Example of returned data::

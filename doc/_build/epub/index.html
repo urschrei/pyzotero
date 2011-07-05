@@ -1,0 +1,919 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Description</title>
+    <link rel="stylesheet" href="_static/epub.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">Pyzotero v0.8.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+          <div class="body">
+            
+  <div class="section" id="description">
+<h1>Description</h1>
+<p>A Python wrapper for the <a class="reference external" href="http://www.zotero.org/support/dev/server_api">Zotero API</a><span class="link-target"> [http://www.zotero.org/support/dev/server_api]</span>. You&#8217;ll require a user ID and access key, which can be set up <a class="reference external" href="http://www.zotero.org/settings/keys/new">here</a><span class="link-target"> [http://www.zotero.org/settings/keys/new]</span>.</p>
+<span class="target" id="module-pyzotero.zotero"></span><div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables</h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+<div class="section" id="installation">
+<h1>Installation</h1>
+<p>Using pip: <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pyzotero</span></tt></p>
+<p>From a local clone, if you wish to install Pyzotero from a specific branch:</p>
+<div class="highlight-python"><pre>git clone git://github.com/urschrei/pyzotero.git
+cd pyzotero
+git checkout dev
+pip install .</pre>
+</div>
+<p>Alternatively, download the latest version from <a class="reference external" href="https://github.com/urschrei/pyzotero/downloads">https://github.com/urschrei/pyzotero/downloads</a>, and point pip at the zip file.
+Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip</span></tt></p>
+<p>I assume that running setup.py will also work using <tt class="docutils literal"><span class="pre">easy_install</span></tt>, but I haven&#8217;t tested it.</p>
+<p>The <a class="reference external" href="http://feedparser.org">feedparser</a><span class="link-target"> [http://feedparser.org]</span> module (&gt;= 0.5.1) is required. It should automatically be installed when installing Pyzotero using pip.</p>
+<div class="section" id="testing">
+<h2>Testing</h2>
+<p>Run <tt class="docutils literal"><span class="pre">tests.py</span></tt> in the pyzotero directory, or, using <a class="reference external" href="http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html">Nose</a><span class="link-target"> [http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html]</span>, <tt class="docutils literal"><span class="pre">nosetests</span></tt> from this directory. If you wish to see coverage statistics, run <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">--with-coverage</span> <span class="pre">--cover-package=pyzotero</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="usage">
+<h1>Usage</h1>
+<div class="section" id="hello-world">
+<span id="id1"></span><h2>Hello World</h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
+<span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_key</span><span class="p">)</span>
+<span class="n">items</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;Author: </span><span class="si">%s</span><span class="s"> | Title: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;lastName&#39;</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="general-usage">
+<h2>General Usage</h2>
+<p>First, create a new Zotero instance:</p>
+<blockquote>
+<div><dl class="class">
+<dt id="pyzotero.zotero.Zotero">
+<em class="property">class </em><tt class="descclassname">pyzotero.zotero.</tt><tt class="descname">Zotero</tt><big>(</big><em>userID</em>, <em>userKey</em><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>userID</strong> (<em>str</em>) &#8211; a valid Zotero API user ID</li>
+<li><strong>userKey</strong> (<em>str</em>) &#8211; a valid Zotero API user key</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="mi">123</span><span class="p">,</span> <span class="n">ABC1234XYZ</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div></blockquote>
+<p>Additional parameters may be set on Read API methods using the following method. They are <strong>optional</strong>:</p>
+<blockquote>
+<div><dl class="method">
+<dt id="pyzotero.zotero.Zotero.add_parameters">
+<tt class="descclassname">Zotero.</tt><tt class="descname">add_parameters</tt><big>(</big><span class="optional">[</span><em>limit=None</em>, <em>start=None</em>, <em>order=None</em>, <em>sort=None</em><span class="optional">[</span>, <em>content=None</em><span class="optional">[</span>, <em>style=None</em><span class="optional">]</span><span class="optional">]</span><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>limit</strong> (<em>int</em>) &#8211; 1 – 99 or None</li>
+<li><strong>start</strong> (<em>int</em>) &#8211; 1 – total number of items in your library or None</li>
+<li><strong>order</strong> (<em>str</em>) &#8211; A valid Zotero field or None</li>
+<li><strong>sort</strong> (<em>str</em>) &#8211; asc or desc or None</li>
+<li><strong>content</strong> (<em>str</em>) &#8211; &#8216;html&#8217; or &#8216;bib&#8217;, default: &#8216;html&#8217;. If &#8216;bib&#8217; is passed, you may also pass:</li>
+<li><strong>style</strong> (<em>str</em>) &#8211; Any valid CSL style in the Zotero style repository</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of HTML strings or None</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">start</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Any parameters you set will be valid <strong>for the next call only</strong></p>
+</div>
+<p>The special parameters <tt class="docutils literal"><span class="pre">content</span></tt> and <tt class="docutils literal"><span class="pre">style</span></tt>:</p>
+<blockquote>
+<div><p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s">&#39;bib&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;mla&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If these are set, the return value is a <strong>list</strong> of UTF-8 formatted HTML <tt class="docutils literal"><span class="pre">div</span></tt> elements, each containing an item:</p>
+<p><tt class="docutils literal"><span class="pre">['&lt;div</span> <span class="pre">class=&quot;csl-entry&quot;&gt;(content)&lt;/div&gt;',</span> <span class="pre">…</span> <span class="pre">]</span></tt></p>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="read-api-methods">
+<h1>Read API Methods</h1>
+<div class="section" id="retrieving-items">
+<h2>Retrieving Items</h2>
+<blockquote>
+<div><dl class="method">
+<dt id="pyzotero.zotero.Zotero.items">
+<tt class="descclassname">Zotero.</tt><tt class="descname">items</tt><big>(</big><big>)</big></dt>
+<dd><p>Returns Zotero library items</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.top">
+<tt class="descclassname">Zotero.</tt><tt class="descname">top</tt><big>(</big><big>)</big></dt>
+<dd><p>Returns top-level Zotero library items</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.item">
+<tt class="descclassname">Zotero.</tt><tt class="descname">item</tt><big>(</big><em>itemID</em><big>)</big></dt>
+<dd><p>Returns a specific item</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>itemID</strong> (<em>str</em>) &#8211; a zotero item ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.children">
+<tt class="descclassname">Zotero.</tt><tt class="descname">children</tt><big>(</big><em>itemID</em><big>)</big></dt>
+<dd><p>Returns the child items of a specific item</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>itemID</strong> (<em>str</em>) &#8211; a zotero item ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.tag_items">
+<tt class="descclassname">Zotero.</tt><tt class="descname">tag_items</tt><big>(</big><em>itemID</em><big>)</big></dt>
+<dd><p>Returns items for a specific tag</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>itemID</strong> (<em>str</em>) &#8211; a zotero item ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_items">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_items</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<dd><p>Returns items from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_top">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_top</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<dd><p>Returns top-level items from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_item">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_item</tt><big>(</big><em>groupID</em>, <em>itemID</em><big>)</big></dt>
+<dd><p>Returns a specific item from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</li>
+<li><strong>itemID</strong> (<em>str</em>) &#8211; a zotero item ID</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of dicts</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_item_children">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_item_children</tt><big>(</big><em>groupID</em>, <em>itemID</em><big>)</big></dt>
+<dd><p>Returns the child items of a specific item from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</li>
+<li><strong>itemID</strong> (<em>str</em>) &#8211; a Zotero item ID</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of dicts</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_items_tag">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_items_tag</tt><big>(</big><em>groupID</em>, <em>tag</em><big>)</big></dt>
+<dd><p>Returns a specific group&#8217;s items for a specific tag</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</li>
+<li><strong>tag</strong> (<em>str</em>) &#8211; a tag whose items you wish to return</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of dicts</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_collection_items">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection_items</tt><big>(</big><em>groupID</em>, <em>collection ID</em><big>)</big></dt>
+<dd><p>Returns a specific collection&#8217;s items from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</li>
+<li><strong>collectionID</strong> (<em>str</em>) &#8211; a Zotero collection ID</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of dicts</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_collection_item">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection_item</tt><big>(</big><em>groupID</em>, <em>collectionID</em>, <em>itemID</em><big>)</big></dt>
+<dd><p>Returns a specific collection&#8217;s item from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</li>
+<li><strong>collectionID</strong> (<em>str</em>) &#8211; a Zotero collection ID</li>
+<li><strong>itemID</strong> (<em>str</em>) &#8211; a zotero item ID</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of dicts</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_collection_top">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection_top</tt><big>(</big><em>groupID</em>, <em>collectionID</em><big>)</big></dt>
+<dd><p>Returns a specific collection&#8217;s top-level items from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</li>
+<li><strong>groupID</strong> &#8211; a Zotero collection ID</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of dicts</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.collection_items">
+<tt class="descclassname">Zotero.</tt><tt class="descname">collection_items</tt><big>(</big><em>collectionID</em><big>)</big></dt>
+<dd><p>Returns items from the specified collection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collectionID</strong> (<em>str</em>) &#8211; a Zotero collection ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.get_subset">
+<tt class="descclassname">Zotero.</tt><tt class="descname">get_subset</tt><big>(</big><em>itemIDs</em><big>)</big></dt>
+<dd><p>Retrieve an arbitrary set of non-adjacent items. Limited to 50 items per call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>itemIDs</strong> (<em>list</em>) &#8211; a list of Zotero Item IDs</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div></blockquote>
+<blockquote id="returned">
+<div><p>Example of returned data:</p>
+<div class="highlight-python"><pre>[{'DOI': '',
+ 'ISSN': '1747-1532',
+ 'abstractNote': '',
+ 'accessDate': '',
+ 'archive': '',
+ 'archiveLocation': '',
+ 'callNumber': '',
+ 'creators': [{'creatorType': 'author',
+               'firstName': 'T. J.',
+               'lastName': 'McIntyre'}],
+ 'date': '2007',
+ 'extra': '',
+ 'issue': '',
+ 'itemType': 'journalArticle',
+ 'journalAbbreviation': '',
+ 'language': '',
+ 'libraryCatalog': 'Google Scholar',
+ 'pages': '',
+ 'publicationTitle': 'Journal of Intellectual Property Law &amp; Practice',
+ 'rights': '',
+ 'series': '',
+ 'seriesText': '',
+ 'seriesTitle': '',
+ 'shortTitle': 'Copyright in custom code',
+ 'tags': [],
+ 'title': 'Copyright in custom code: Who owns commissioned software?',
+ 'url': '',
+ 'volume': ''} … ]</pre>
+</div>
+<p>See <a class="reference internal" href="#hello-world"><em>&#8216;Hello World&#8217;</em></a> example, above</p>
+</div></blockquote>
+</div>
+<div class="section" id="retrieving-collections">
+<h2>Retrieving Collections</h2>
+<blockquote>
+<div><dl class="method">
+<dt id="pyzotero.zotero.Zotero.collections">
+<tt class="descclassname">Zotero.</tt><tt class="descname">collections</tt><big>(</big><big>)</big></dt>
+<dd><p>Returns a user&#8217;s collections</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.collections_sub">
+<tt class="descclassname">Zotero.</tt><tt class="descname">collections_sub</tt><big>(</big><em>collectionID</em><big>)</big></dt>
+<dd><p>Returns a sub-collection from a specific collection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collectionID</strong> (<em>str</em>) &#8211; a Zotero library collection ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_collections">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collections</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<dd><p>Returns collections for a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_collection">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection</tt><big>(</big><em>groupID</em>, <em>collectionID</em><big>)</big></dt>
+<dd><p>Returns a specific collection from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</li>
+<li><strong>collectionID</strong> (<em>str</em>) &#8211; a Zotero collection ID</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of dicts</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>Example of returned data:</p>
+<div class="highlight-python"><pre>[{'key': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"} … ]</pre>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="retrieving-groups">
+<h2>Retrieving groups</h2>
+<blockquote>
+<div><dl class="method">
+<dt id="pyzotero.zotero.Zotero.groups">
+<tt class="descclassname">Zotero.</tt><tt class="descname">groups</tt><big>(</big><big>)</big></dt>
+<dd><p>Retrieve the Zotero group data to which the current user key has access</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+<p>Example of returned data:</p>
+<div class="highlight-python"><pre>[{u'description': u'%3Cp%3EBGerman+Cinema+and+related+literature.%3C%2Fp%3E',
+    u'fileEditing': u'none',
+    u'group_id': u'153',
+    u'hasImage': 1,
+    u'libraryEditing': u'admins',
+    u'libraryEnabled': 1,
+    u'libraryReading': u'all',
+    u'members': {u'0': 436,
+       u'1': 6972,
+       u'15': 499956,
+       u'16': 521307,
+       u'17': 619180},
+    u'name': u'German Cinema',
+    u'owner': 10421,
+    u'type': u'PublicOpen',
+    u'url': u''} … ]</pre>
+</div>
+</dd></dl>
+
+</div></blockquote>
+</div>
+<div class="section" id="retrieving-tags">
+<h2>Retrieving Tags</h2>
+<blockquote>
+<div><dl class="method">
+<dt id="pyzotero.zotero.Zotero.tags">
+<tt class="descclassname">Zotero.</tt><tt class="descname">tags</tt><big>(</big><big>)</big></dt>
+<dd><p>Returns a user&#8217;s tags</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of strings</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.item_tags">
+<tt class="descclassname">Zotero.</tt><tt class="descname">item_tags</tt><big>(</big><em>itemID</em><big>)</big></dt>
+<dd><p>Returns tags from a specific item</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>itemID</strong> (<em>str</em>) &#8211; a valid Zotero library Item ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of strings</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_tags">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_tags</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<dd><p>Returns tags from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>groupID</strong> (<em>str</em>) &#8211; a valid Zotero library group ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of strings</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_item_tags">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_item_tags</tt><big>(</big><em>groupID</em>, <em>itemID</em><big>)</big></dt>
+<dd><p>Returns tags from a specific item from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>groupID</strong> (<em>str</em>) &#8211; a valid Zotero library group ID</li>
+<li><strong>itemID</strong> (<em>str</em>) &#8211; a valid Zotero library Item ID</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of strings</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div></blockquote>
+<p>Example of returned data:</p>
+<div class="highlight-python"><pre>['Authority in literature', 'Errata', … ]</pre>
+</div>
+</div>
+</div>
+<div class="section" id="write-api-methods">
+<h1>Write API Methods</h1>
+<div class="section" id="item-methods">
+<h2>Item Methods</h2>
+<blockquote>
+<div><dl class="method">
+<dt id="pyzotero.zotero.Zotero.item_types">
+<tt class="descclassname">Zotero.</tt><tt class="descname">item_types</tt><big>(</big><big>)</big></dt>
+<dd><p>Returns a dict containing all available item types</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.item_fields">
+<tt class="descclassname">Zotero.</tt><tt class="descname">item_fields</tt><big>(</big><big>)</big></dt>
+<dd><p>Returns a dict of all available item fields</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.item_creator_types">
+<tt class="descclassname">Zotero.</tt><tt class="descname">item_creator_types</tt><big>(</big><em>itemtype</em><big>)</big></dt>
+<dd><p>Returns a dict of all valid creator types for the specified item type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>itemtype</strong> (<em>str</em>) &#8211; a valid Zotero item type. A list of available item types can be obtained by the use of <a class="reference internal" href="#pyzotero.zotero.Zotero.item_types" title="pyzotero.zotero.Zotero.item_types"><tt class="xref py py-meth docutils literal"><span class="pre">item_types()</span></tt></a></td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.item_template">
+<tt class="descclassname">Zotero.</tt><tt class="descname">item_template</tt><big>(</big><em>itemtype</em><big>)</big></dt>
+<dd><p>Returns an item creation template for the specified item type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>itemtype</strong> (<em>str</em>) &#8211; a valid Zotero item type. A list of available item types can be obtained by the use of <a class="reference internal" href="#pyzotero.zotero.Zotero.item_types" title="pyzotero.zotero.Zotero.item_types"><tt class="xref py py-meth docutils literal"><span class="pre">item_types()</span></tt></a></td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.create_item">
+<tt class="descclassname">Zotero.</tt><tt class="descname">create_item</tt><big>(</big><em>items</em><big>)</big></dt>
+<dd><p>Create Zotero library items.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>items</strong> (<em>list</em>) &#8211; one or more dicts containing item data.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+<p>Returns a copy of the created item(s), if successful. The use of <a class="reference internal" href="#pyzotero.zotero.Zotero.item_template" title="pyzotero.zotero.Zotero.item_template"><tt class="xref py py-meth docutils literal"><span class="pre">item_template()</span></tt></a> is recommended in order to first obtain a dict with a structure which the API will accept.
+Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">template</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">item_template</span><span class="p">(</span><span class="s">&#39;book&#39;</span><span class="p">)</span>
+<span class="n">template</span><span class="p">[</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;firstName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Monty&#39;</span>
+<span class="n">template</span><span class="p">[</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;lastName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Cantsin&#39;</span>
+<span class="n">template</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Maris Kundzins: A Life&#39;</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">create_item</span><span class="p">([</span><span class="n">template</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>If successful, <tt class="docutils literal"><span class="pre">resp</span></tt> will have the same structure as items retrieved with an <a class="reference internal" href="#pyzotero.zotero.Zotero.items" title="pyzotero.zotero.Zotero.items"><tt class="xref py py-meth docutils literal"><span class="pre">items()</span></tt></a> call, e.g. a list of one or more dicts (see <a class="reference internal" href="#returned"><em>Item Data</em></a>, above).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.update_item">
+<tt class="descclassname">Zotero.</tt><tt class="descname">update_item</tt><big>(</big><em>item</em><big>)</big></dt>
+<dd><p>Update an item in your library.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<em>dict</em>) &#8211; a dict containing item data.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">i</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="c"># see above for example of returned item structure</span>
+<span class="c"># modify the latest item which was added to your library</span>
+<span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;The Sheltering Sky&#39;</span>
+<span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;firstName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Paul&#39;</span>
+<span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;lastName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Bowles&#39;</span>
+<span class="n">zot</span><span class="o">.</span><span class="n">update_item</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.delete_item">
+<tt class="descclassname">Zotero.</tt><tt class="descname">delete_item</tt><big>(</big><em>item</em><big>)</big></dt>
+<dd><p>Delete an item from your library.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<em>dict</em>) &#8211; a dict containing item data. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a <tt class="docutils literal"><span class="pre">for</span></tt> loop.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">i</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="c"># only delete the last five items we added</span>
+<span class="n">to_delete</span> <span class="o">=</span> <span class="n">i</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">to_delete</span><span class="p">:</span>
+    <span class="n">zot</span><span class="o">.</span><span class="n">delete_item</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div></blockquote>
+</div>
+<div class="section" id="collection-methods">
+<h2>Collection Methods</h2>
+<blockquote>
+<div><dl class="method">
+<dt id="pyzotero.zotero.Zotero.create_collection">
+<tt class="descclassname">Zotero.</tt><tt class="descname">create_collection</tt><big>(</big><em>name</em><big>)</big></dt>
+<dd><p>Create a new collection in the Zotero library.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>dict</em>) &#8211; dict containing the key <tt class="docutils literal"><span class="pre">name</span></tt> and the value of the new collection name you wish to create. May optionally contain a <tt class="docutils literal"><span class="pre">parent</span></tt> key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.addto_collection">
+<tt class="descclassname">Zotero.</tt><tt class="descname">addto_collection</tt><big>(</big><em>collection</em>, <em>items</em><big>)</big></dt>
+<dd><p>Add the specified item(s) to the specified collection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>collection</strong> (<em>str</em>) &#8211; a collection key</li>
+<li><strong>items</strong> (<em>list</em>) &#8211; list of one or more item dicts.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Boolean</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Collection keys can be obtained by a call to <a class="reference internal" href="#pyzotero.zotero.Zotero.collections" title="pyzotero.zotero.Zotero.collections"><tt class="xref py py-meth docutils literal"><span class="pre">collections()</span></tt></a> (see details above).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.deletefrom_collection">
+<tt class="descclassname">Zotero.</tt><tt class="descname">deletefrom_collection</tt><big>(</big><em>collection</em>, <em>item</em><big>)</big></dt>
+<dd><p>Remove the specified item from the specified collection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>collection</strong> (<em>str</em>) &#8211; a collection key</li>
+<li><strong>item</strong> (<em>dict</em>) &#8211; dict containing item data.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Boolean</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>See the <a class="reference internal" href="#pyzotero.zotero.Zotero.delete_item" title="pyzotero.zotero.Zotero.delete_item"><tt class="xref py py-meth docutils literal"><span class="pre">delete_item()</span></tt></a> example for multiple-item removal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.update_collection">
+<tt class="descclassname">Zotero.</tt><tt class="descname">update_collection</tt><big>(</big><em>collection</em><big>)</big></dt>
+<dd><p>Update an existing collection name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collection</strong> (<em>dict</em>) &#8211; a dict containing collection data, previously retrieved using one of the Collections calls (e.g. <a class="reference internal" href="#pyzotero.zotero.Zotero.collections" title="pyzotero.zotero.Zotero.collections"><tt class="xref py py-meth docutils literal"><span class="pre">collections()</span></tt></a>).</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># get existing collections, which will return a list of dicts</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">collections</span><span class="p">()</span>
+<span class="c"># rename the last collection created in the library</span>
+<span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Whither Digital Humanities?&#39;</span>
+<span class="c"># update collection name on the server</span>
+<span class="n">zot</span><span class="o">.</span><span class="n">update_collection</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.delete_collection">
+<tt class="descclassname">Zotero.</tt><tt class="descname">delete_collection</tt><big>(</big><em>collection</em><big>)</big></dt>
+<dd><p>Delete a collection from the Zotero library.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collection</strong> (<em>dict</em>) &#8211; a dict containing collection data, previously retrieved using one of the Collections calls (e.g. <a class="reference internal" href="#pyzotero.zotero.Zotero.collections" title="pyzotero.zotero.Zotero.collections"><tt class="xref py py-meth docutils literal"><span class="pre">collections()</span></tt></a>).</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
+</tr>
+</tbody>
+</table>
+<p>See the <a class="reference internal" href="#pyzotero.zotero.Zotero.delete_item" title="pyzotero.zotero.Zotero.delete_item"><tt class="xref py py-meth docutils literal"><span class="pre">delete_item()</span></tt></a> example for ways to delete multiple collections.</p>
+</dd></dl>
+
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="notes">
+<h1>Notes</h1>
+<p>All Read API methods return <strong>lists</strong> of <strong>dicts</strong> or, in the case of tag methods, <strong>lists</strong> of <strong>strings</strong>. Most Write API methods return either <tt class="xref docutils literal"><span class="pre">True</span></tt> if successful, or raise an error. See <tt class="docutils literal"><span class="pre">zotero_errors.py</span></tt> for a full listing of these.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">URL parameters will supersede API calls which should return e.g. a single item: <tt class="docutils literal"><span class="pre">https://api.zotero.org/users/436/items/ABC?start=50&amp;limit=10</span></tt> will return 10 items beginning at position 50, even though <tt class="docutils literal"><span class="pre">ABC</span></tt> does not exist. Be aware of this, and don&#8217;t pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there&#8217;s nothing I can do about it.</p>
+</div>
+</div>
+<div class="section" id="license">
+<h1>License</h1>
+<p>Pyzotero is licensed under the <a class="reference external" href="http://www.gnu.org/licenses/gpl.html">GNU GPL Version 3</a><span class="link-target"> [http://www.gnu.org/licenses/gpl.html]</span>  license, in line with Zotero&#8217;s own license. Details can be found in the file <tt class="docutils literal"><span class="pre">license.txt</span></tt>.</p>
+</div>
+
+
+          </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Stephan Hügel.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

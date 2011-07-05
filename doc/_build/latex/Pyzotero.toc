@@ -1,0 +1,19 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Indices and tables}{3}{chapter.1}
+\contentsline {chapter}{\numberline {2}Installation}{5}{chapter.2}
+\contentsline {section}{\numberline {2.1}Testing}{5}{section.2.1}
+\contentsline {chapter}{\numberline {3}Usage}{7}{chapter.3}
+\contentsline {section}{\numberline {3.1}Hello World}{7}{section.3.1}
+\contentsline {section}{\numberline {3.2}General Usage}{7}{section.3.2}
+\contentsline {chapter}{\numberline {4}Read API Methods}{9}{chapter.4}
+\contentsline {section}{\numberline {4.1}Retrieving Items}{9}{section.4.1}
+\contentsline {section}{\numberline {4.2}Retrieving Collections}{11}{section.4.2}
+\contentsline {section}{\numberline {4.3}Retrieving groups}{12}{section.4.3}
+\contentsline {section}{\numberline {4.4}Retrieving Tags}{12}{section.4.4}
+\contentsline {chapter}{\numberline {5}Write API Methods}{15}{chapter.5}
+\contentsline {section}{\numberline {5.1}Item Methods}{15}{section.5.1}
+\contentsline {section}{\numberline {5.2}Collection Methods}{16}{section.5.2}
+\contentsline {chapter}{\numberline {6}Notes}{19}{chapter.6}
+\contentsline {chapter}{\numberline {7}License}{21}{chapter.7}
+\contentsline {chapter}{Python Module Index}{23}{section*.43}
+\contentsline {chapter}{Index}{25}{section*.44}
