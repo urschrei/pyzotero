@@ -33,6 +33,7 @@ import feedparser
 import json
 import uuid
 import time
+from urlparse import urlparse
 from xml.dom import minidom
 
 import zotero_errors as ze
@@ -441,7 +442,7 @@ class Zotero(object):
 
         # Try to get a group ID, and add it to the dict
         try:
-            group_id = [g['links'][0]['href'].split('/')[-1].split('?')[0]
+            group_id = [urlparse(g['links'][0]['href']).path.split('/')[2]
                     for g in retrieved.entries]
             for k, val in enumerate(items):
                 val[u'group_id'] = group_id[k]
