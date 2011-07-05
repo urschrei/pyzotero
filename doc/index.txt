@@ -312,7 +312,7 @@ Retrieving groups
 
         Retrieve the Zotero group data to which the current user key has access
     
-        :rtype: list
+        :rtype: list of dicts
         
         Example of returned data::
 
@@ -408,7 +408,7 @@ Item Methods
         Create Zotero library items.
     
         :param list items: one or more dicts containing item data.
-        :rtype: list 
+        :rtype: list of dicts
     
         Returns a copy of the created item(s), if successful. The use of :py:meth:`item_template` is recommended in order to first obtain a dict with a structure which the API will accept.
         Example::
