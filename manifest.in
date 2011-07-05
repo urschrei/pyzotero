@@ -1,2 +1,4 @@
 include license.txt
 include readme.md
+include doc/_build/latex/Pyzotero.pdf
+include doc/_build/epub/Pyzotero.epub
