@@ -367,6 +367,29 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
+    def check_updated(self, payload):
+        """
+        Check if an item's been updated
+        Accepts a dict containing item data
+        Returns True or False
+        """
+        opener = urllib2.build_opener(NotModifiedHandler())
+        query = self.endpoint + self._build_query(
+            '/users/{u}/items/{i}'.format(
+                u = self.user_id,
+                i = payload['key']))
+        req = urllib2.Request(query)
+        req.add_header('If-Modified-Since', payload['updated'])
+        try:
+            url_handle = opener.open(req)
+            _ = url_handle.info()
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
+        if hasattr(url_handle, 'code') and url_handle.code == 304:
+            return False
+        else:
+            return True
+
     def all_top(self):
         """ Retrieve all top-level items
         """
