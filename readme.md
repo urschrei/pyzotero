@@ -34,7 +34,7 @@ Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` fro
 [1]: http://www.zotero.org/support/dev/server_api
 [2]: https://www.zotero.org/settings/keys/new
 [3]: http://pyzotero.readthedocs.org/en/latest/
-[4]: http://http://packages.python.org/Pyzotero/
+[4]: http://packages.python.org/Pyzotero/
 [5]: http://feedparser.org
 [6]: http://pypi.python.org/pypi/pip
 [7]: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/
