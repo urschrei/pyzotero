@@ -181,7 +181,7 @@ Retrieving Items
         Returns the child items of a specific item from a specific group
 
         :param str groupID: a Zotero group ID
-        :param str itemID: a zotero item ID
+        :param str itemID: a Zotero item ID
         :rtype: list of dicts
 
 
@@ -265,6 +265,7 @@ Retrieving Items
          'shortTitle': 'Copyright in custom code',
          'tags': [],
          'title': 'Copyright in custom code: Who owns commissioned software?',
+         'updated': 'Mon, 14 Mar 2011 22:30:17 GMT',
          'url': '',
          'volume': ''} … ]
 
@@ -298,7 +299,7 @@ Retrieving Collections
         Returns a specific collection from a specific group
     
         :param str groupID: a Zotero group ID
-        :param str collectionID: a zotero collection ID
+        :param str collectionID: a Zotero collection ID
         :rtype: list of dicts
 
     Example of returned data::
@@ -403,11 +404,18 @@ Item Methods
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
         :rtype: dict
 
+    .. py:method:: Zotero.check_updated(item)
+    
+        Check whether a Zotero library item has been updated on the server since you retrieved it
+        
+        :param dict item: a dict containing item data
+        :rtype: Boolean
+
     .. py:method:: Zotero.create_item(items)
 
-        Create Zotero library items.
+        Create Zotero library items
     
-        :param list items: one or more dicts containing item data.
+        :param list items: one or more dicts containing item data
         :rtype: list of dicts
     
         Returns a copy of the created item(s), if successful. The use of :py:meth:`item_template` is recommended in order to first obtain a dict with a structure which the API will accept.
@@ -423,9 +431,9 @@ Item Methods
     
     .. py:method:: Zotero.update_item(item)
     
-        Update an item in your library.
+        Update an item in your library
     
-        :param dict item: a dict containing item data.
+        :param dict item: a dict containing item data
         :rtype: Boolean
     
         Example::
@@ -440,7 +448,7 @@ Item Methods
 
     .. py:method:: Zotero.delete_item(item)
 
-        Delete an item from your library.
+        Delete an item from your library
     
         :param dict item: a dict containing item data. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a ``for`` loop.
         :rtype: Boolean
@@ -459,36 +467,36 @@ Collection Methods
 
     .. py:method:: Zotero.create_collection(name)
 
-        Create a new collection in the Zotero library.
+        Create a new collection in the Zotero library
     
         :param dict name: dict containing the key ``name`` and the value of the new collection name you wish to create. May optionally contain a ``parent`` key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.
         :rtype: Boolean
 
     .. py:method:: Zotero.addto_collection(collection, items)
 
-        Add the specified item(s) to the specified collection.
+        Add the specified item(s) to the specified collection
     
         :param str collection: a collection key
-        :param list items: list of one or more item dicts.
+        :param list items: list of one or more item dicts
         :rtype: Boolean
     
         Collection keys can be obtained by a call to :py:meth:`collections()` (see details above).
 
     .. py:method:: Zotero.deletefrom_collection(collection, item)
 
-        Remove the specified item from the specified collection.
+        Remove the specified item from the specified collection
     
         :param str collection: a collection key
-        :param dict item: dict containing item data.
+        :param dict item: dict containing item data
         :rtype: Boolean
     
         See the :py:meth:`delete_item()` example for multiple-item removal.
 
     .. py:method:: Zotero.update_collection(collection)
 
-        Update an existing collection name. 
+        Update an existing collection name
     
-        :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`).
+        :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`)
         :rtype: Boolean
     
         Example::
@@ -502,9 +510,9 @@ Collection Methods
 
     .. py:method:: Zotero.delete_collection(collection)
 
-        Delete a collection from the Zotero library. 
+        Delete a collection from the Zotero library
     
-        :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`).
+        :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`)
         :rtype: Boolean
     
         See the :py:meth:`delete_item()` example for ways to delete multiple collections.

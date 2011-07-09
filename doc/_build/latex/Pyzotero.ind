@@ -7,6 +7,7 @@
 
   \indexspace
   \bigletter C
+  \item check\_updated() (pyzotero.zotero.Zotero method), \hyperpage{15}
   \item children() (pyzotero.zotero.Zotero method), \hyperpage{9}
   \item collection\_items() (pyzotero.zotero.Zotero method), \hyperpage{10}
   \item collections() (pyzotero.zotero.Zotero method), \hyperpage{11}
@@ -18,7 +19,7 @@
   \bigletter D
   \item delete\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
   \item delete\_item() (pyzotero.zotero.Zotero method), \hyperpage{16}
-  \item deletefrom\_collection() (pyzotero.zotero.Zotero method), \hyperpage{16}
+  \item deletefrom\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
 
   \indexspace
   \bigletter G
@@ -60,7 +61,7 @@
   \indexspace
   \bigletter U
   \item update\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
-  \item update\_item() (pyzotero.zotero.Zotero method), \hyperpage{15}
+  \item update\_item() (pyzotero.zotero.Zotero method), \hyperpage{16}
 
   \indexspace
   \bigletter Z

@@ -12,8 +12,8 @@
 
 
 \title{Pyzotero Documentation}
-\date{July 05, 2011}
-\release{0.8.2}
+\date{July 09, 2011}
+\release{0.8.3}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
 \renewcommand{\releasename}{Release}
@@ -588,6 +588,7 @@ Example of returned data:
  'shortTitle': 'Copyright in custom code',
  'tags': @PYGZlb[]@PYGZrb[],
  'title': 'Copyright in custom code: Who owns commissioned software?',
+ 'updated': 'Mon, 14 Mar 2011 22:30:17 GMT',
  'url': '',
  'volume': ''} … @PYGZrb[]
 \end{Verbatim}
@@ -868,14 +869,31 @@ dict
 \end{fulllineitems}
 
 
+\index{check\_updated() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.check_updated}\pysiglinewithargsret{\code{Zotero.}\bfcode{check\_updated}}{\emph{item}}{}
+Check whether a Zotero library item has been updated on the server since you retrieved it
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\textbf{item} (\emph{dict}) -- a dict containing item data
+
+\item[{Return type}] \leavevmode
+Boolean
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
 \index{create\_item() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:pyzotero.zotero.Zotero.create_item}\pysiglinewithargsret{\code{Zotero.}\bfcode{create\_item}}{\emph{items}}{}
-Create Zotero library items.
+Create Zotero library items
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
-\textbf{items} (\emph{list}) -- one or more dicts containing item data.
+\textbf{items} (\emph{list}) -- one or more dicts containing item data
 
 \item[{Return type}] \leavevmode
 list of dicts
@@ -902,10 +920,10 @@ If successful, \code{resp} will have the same structure as items retrieved with 
 
 \begin{fulllineitems}
 \phantomsection\label{index:pyzotero.zotero.Zotero.update_item}\pysiglinewithargsret{\code{Zotero.}\bfcode{update\_item}}{\emph{item}}{}
-Update an item in your library.
+Update an item in your library
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
-\textbf{item} (\emph{dict}) -- a dict containing item data.
+\textbf{item} (\emph{dict}) -- a dict containing item data
 
 \item[{Return type}] \leavevmode
 Boolean
@@ -931,7 +949,7 @@ Example:
 
 \begin{fulllineitems}
 \phantomsection\label{index:pyzotero.zotero.Zotero.delete_item}\pysiglinewithargsret{\code{Zotero.}\bfcode{delete\_item}}{\emph{item}}{}
-Delete an item from your library.
+Delete an item from your library
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
 \textbf{item} (\emph{dict}) -- a dict containing item data. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a \code{for} loop.
@@ -963,7 +981,7 @@ Example:
 
 \begin{fulllineitems}
 \phantomsection\label{index:pyzotero.zotero.Zotero.create_collection}\pysiglinewithargsret{\code{Zotero.}\bfcode{create\_collection}}{\emph{name}}{}
-Create a new collection in the Zotero library.
+Create a new collection in the Zotero library
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
 \textbf{name} (\emph{dict}) -- dict containing the key \code{name} and the value of the new collection name you wish to create. May optionally contain a \code{parent} key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.
@@ -980,14 +998,14 @@ Boolean
 
 \begin{fulllineitems}
 \phantomsection\label{index:pyzotero.zotero.Zotero.addto_collection}\pysiglinewithargsret{\code{Zotero.}\bfcode{addto\_collection}}{\emph{collection}, \emph{items}}{}
-Add the specified item(s) to the specified collection.
+Add the specified item(s) to the specified collection
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
 \textbf{collection} (\emph{str}) -- a collection key
 
 \item {} 
-\textbf{items} (\emph{list}) -- list of one or more item dicts.
+\textbf{items} (\emph{list}) -- list of one or more item dicts
 
 \end{itemize}
 
@@ -1005,14 +1023,14 @@ Collection keys can be obtained by a call to {\hyperref[index:pyzotero.zotero.Zo
 
 \begin{fulllineitems}
 \phantomsection\label{index:pyzotero.zotero.Zotero.deletefrom_collection}\pysiglinewithargsret{\code{Zotero.}\bfcode{deletefrom\_collection}}{\emph{collection}, \emph{item}}{}
-Remove the specified item from the specified collection.
+Remove the specified item from the specified collection
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
 \textbf{collection} (\emph{str}) -- a collection key
 
 \item {} 
-\textbf{item} (\emph{dict}) -- dict containing item data.
+\textbf{item} (\emph{dict}) -- dict containing item data
 
 \end{itemize}
 
@@ -1030,10 +1048,10 @@ See the {\hyperref[index:pyzotero.zotero.Zotero.delete_item]{\code{delete\_item(
 
 \begin{fulllineitems}
 \phantomsection\label{index:pyzotero.zotero.Zotero.update_collection}\pysiglinewithargsret{\code{Zotero.}\bfcode{update\_collection}}{\emph{collection}}{}
-Update an existing collection name.
+Update an existing collection name
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
-\textbf{collection} (\emph{dict}) -- a dict containing collection data, previously retrieved using one of the Collections calls (e.g. {\hyperref[index:pyzotero.zotero.Zotero.collections]{\code{collections()}}}).
+\textbf{collection} (\emph{dict}) -- a dict containing collection data, previously retrieved using one of the Collections calls (e.g. {\hyperref[index:pyzotero.zotero.Zotero.collections]{\code{collections()}}})
 
 \item[{Return type}] \leavevmode
 Boolean
@@ -1058,10 +1076,10 @@ Example:
 
 \begin{fulllineitems}
 \phantomsection\label{index:pyzotero.zotero.Zotero.delete_collection}\pysiglinewithargsret{\code{Zotero.}\bfcode{delete\_collection}}{\emph{collection}}{}
-Delete a collection from the Zotero library.
+Delete a collection from the Zotero library
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
-\textbf{collection} (\emph{dict}) -- a dict containing collection data, previously retrieved using one of the Collections calls (e.g. {\hyperref[index:pyzotero.zotero.Zotero.collections]{\code{collections()}}}).
+\textbf{collection} (\emph{dict}) -- a dict containing collection data, previously retrieved using one of the Collections calls (e.g. {\hyperref[index:pyzotero.zotero.Zotero.collections]{\code{collections()}}})
 
 \item[{Return type}] \leavevmode
 Boolean

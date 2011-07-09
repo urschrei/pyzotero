@@ -21,7 +21,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pyzotero v0.8.2 documentation</a> &raquo;</li> 
+        <li><a href="#">Pyzotero v0.8.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -448,6 +448,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
  'shortTitle': 'Copyright in custom code',
  'tags': [],
  'title': 'Copyright in custom code: Who owns commissioned software?',
+ 'updated': 'Mon, 14 Mar 2011 22:30:17 GMT',
  'url': '',
  'volume': ''} … ]</pre>
 </div>
@@ -708,14 +709,30 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </dd></dl>
 
 <dl class="method">
-<dt id="pyzotero.zotero.Zotero.create_item">
-<tt class="descclassname">Zotero.</tt><tt class="descname">create_item</tt><big>(</big><em>items</em><big>)</big></dt>
-<dd><p>Create Zotero library items.</p>
+<dt id="pyzotero.zotero.Zotero.check_updated">
+<tt class="descclassname">Zotero.</tt><tt class="descname">check_updated</tt><big>(</big><em>item</em><big>)</big></dt>
+<dd><p>Check whether a Zotero library item has been updated on the server since you retrieved it</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>items</strong> (<em>list</em>) &#8211; one or more dicts containing item data.</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<em>dict</em>) &#8211; a dict containing item data</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.create_item">
+<tt class="descclassname">Zotero.</tt><tt class="descname">create_item</tt><big>(</big><em>items</em><big>)</big></dt>
+<dd><p>Create Zotero library items</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>items</strong> (<em>list</em>) &#8211; one or more dicts containing item data</td>
 </tr>
 <tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
 </tr>
@@ -736,12 +753,12 @@ Example:</p>
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.update_item">
 <tt class="descclassname">Zotero.</tt><tt class="descname">update_item</tt><big>(</big><em>item</em><big>)</big></dt>
-<dd><p>Update an item in your library.</p>
+<dd><p>Update an item in your library</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<em>dict</em>) &#8211; a dict containing item data.</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<em>dict</em>) &#8211; a dict containing item data</td>
 </tr>
 <tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
 </tr>
@@ -762,7 +779,7 @@ Example:</p>
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.delete_item">
 <tt class="descclassname">Zotero.</tt><tt class="descname">delete_item</tt><big>(</big><em>item</em><big>)</big></dt>
-<dd><p>Delete an item from your library.</p>
+<dd><p>Delete an item from your library</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -791,7 +808,7 @@ Example:</p>
 <div><dl class="method">
 <dt id="pyzotero.zotero.Zotero.create_collection">
 <tt class="descclassname">Zotero.</tt><tt class="descname">create_collection</tt><big>(</big><em>name</em><big>)</big></dt>
-<dd><p>Create a new collection in the Zotero library.</p>
+<dd><p>Create a new collection in the Zotero library</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -807,14 +824,14 @@ Example:</p>
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.addto_collection">
 <tt class="descclassname">Zotero.</tt><tt class="descname">addto_collection</tt><big>(</big><em>collection</em>, <em>items</em><big>)</big></dt>
-<dd><p>Add the specified item(s) to the specified collection.</p>
+<dd><p>Add the specified item(s) to the specified collection</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>collection</strong> (<em>str</em>) &#8211; a collection key</li>
-<li><strong>items</strong> (<em>list</em>) &#8211; list of one or more item dicts.</li>
+<li><strong>items</strong> (<em>list</em>) &#8211; list of one or more item dicts</li>
 </ul>
 </td>
 </tr>
@@ -829,14 +846,14 @@ Example:</p>
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.deletefrom_collection">
 <tt class="descclassname">Zotero.</tt><tt class="descname">deletefrom_collection</tt><big>(</big><em>collection</em>, <em>item</em><big>)</big></dt>
-<dd><p>Remove the specified item from the specified collection.</p>
+<dd><p>Remove the specified item from the specified collection</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>collection</strong> (<em>str</em>) &#8211; a collection key</li>
-<li><strong>item</strong> (<em>dict</em>) &#8211; dict containing item data.</li>
+<li><strong>item</strong> (<em>dict</em>) &#8211; dict containing item data</li>
 </ul>
 </td>
 </tr>
@@ -851,12 +868,12 @@ Example:</p>
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.update_collection">
 <tt class="descclassname">Zotero.</tt><tt class="descname">update_collection</tt><big>(</big><em>collection</em><big>)</big></dt>
-<dd><p>Update an existing collection name.</p>
+<dd><p>Update an existing collection name</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collection</strong> (<em>dict</em>) &#8211; a dict containing collection data, previously retrieved using one of the Collections calls (e.g. <a class="reference internal" href="#pyzotero.zotero.Zotero.collections" title="pyzotero.zotero.Zotero.collections"><tt class="xref py py-meth docutils literal"><span class="pre">collections()</span></tt></a>).</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collection</strong> (<em>dict</em>) &#8211; a dict containing collection data, previously retrieved using one of the Collections calls (e.g. <a class="reference internal" href="#pyzotero.zotero.Zotero.collections" title="pyzotero.zotero.Zotero.collections"><tt class="xref py py-meth docutils literal"><span class="pre">collections()</span></tt></a>)</td>
 </tr>
 <tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
 </tr>
@@ -876,12 +893,12 @@ Example:</p>
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.delete_collection">
 <tt class="descclassname">Zotero.</tt><tt class="descname">delete_collection</tt><big>(</big><em>collection</em><big>)</big></dt>
-<dd><p>Delete a collection from the Zotero library.</p>
+<dd><p>Delete a collection from the Zotero library</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collection</strong> (<em>dict</em>) &#8211; a dict containing collection data, previously retrieved using one of the Collections calls (e.g. <a class="reference internal" href="#pyzotero.zotero.Zotero.collections" title="pyzotero.zotero.Zotero.collections"><tt class="xref py py-meth docutils literal"><span class="pre">collections()</span></tt></a>).</td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>collection</strong> (<em>dict</em>) &#8211; a dict containing collection data, previously retrieved using one of the Collections calls (e.g. <a class="reference internal" href="#pyzotero.zotero.Zotero.collections" title="pyzotero.zotero.Zotero.collections"><tt class="xref py py-meth docutils literal"><span class="pre">collections()</span></tt></a>)</td>
 </tr>
 <tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
 </tr>
