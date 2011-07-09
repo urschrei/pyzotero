@@ -2,7 +2,7 @@
 
 A Python wrapper for the [Zotero API][1]. You'll require a user ID and access key, which can be set up [here][2].
 
-See <http://pyzotero.readthedocs.org/en/latest/> or <http://packages.python.org/Pyzotero/> for full documentation of available methods. The package itself also includes complete documentation in HTML, PDF and ePub formats.
+See [Read The Docs][3] or [packages.python.org][4] for full documentation of available methods. The package itself also includes complete documentation in HTML, PDF and ePub formats.
 
 # Installation #
 
@@ -24,8 +24,17 @@ Example: `pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip`
 
 I assume that running setup.py will also work using `easy_install`, but I haven't tested it.
 
-The [feedparser][3] (>= v5.0.1) module is required. It should automatically be installed when installing pyzotero using [pip][4].
+The [feedparser][5] (>= v5.0.1) module is required. It should automatically be installed when installing pyzotero using [pip][6].
 
 ## Testing ##
 
-Run `tests.py` in the `pyzotero` directory, or, using [Nose][5], `nosetests` from the top-level directory.
+Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` from the top-level directory.
+
+
+[1]: http://www.zotero.org/support/dev/server_api
+[2]: https://www.zotero.org/settings/keys/new
+[3]: http://pyzotero.readthedocs.org/en/latest/
+[4]: http://http://packages.python.org/Pyzotero/
+[5]: http://feedparser.org
+[6]: http://pypi.python.org/pypi/pip
+[7]: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/
