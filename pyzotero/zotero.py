@@ -559,6 +559,10 @@ class Zotero(object):
         'name': the name of the collection
         'parent': OPTIONAL, the parent collection to which you wish to add this
         """
+        # no point in proceeding if there's no 'name' key
+        if 'name' not in payload:
+            raise ze.ParamNotPassed, \
+                    "The dict you pass must include a 'name' key"
         # add a blank 'parent' key if it hasn't been passed
         if not 'parent' in payload:
             payload['parent'] = ''

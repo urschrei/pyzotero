@@ -545,6 +545,14 @@ class ZoteroTests(unittest.TestCase):
         t = zot.item_template('book')
         self.assertEqual('book', t['itemType'])
 
+    def testCreateCollectionError(self):
+        """ Ensure that collection creation fails with the wrong dict
+        """
+        zot = z.Zotero('myuserID', 'myuserkey')
+        t = {'foo': 'bar'}
+        with self.assertRaises(z.ze.ParamNotPassed):
+            t = zot.create_collection(t)
+
     def testCreateItem(self):
         """ Ensure that items can be created
         """
