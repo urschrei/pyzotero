@@ -30,6 +30,10 @@ The [feedparser][5] (>= v5.0.1) module is required. It should automatically be i
 
 Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` from the top-level directory.
 
+# License #
+
+Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See `license.txt` for details.
+
 
 [1]: http://www.zotero.org/support/dev/server_api
 [2]: https://www.zotero.org/settings/keys/new
@@ -38,3 +42,4 @@ Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` fro
 [5]: http://feedparser.org
 [6]: http://pypi.python.org/pypi/pip
 [7]: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/
+[8]: http://www.gnu.org/copyleft/gpl.html
