@@ -87,6 +87,10 @@ class Zotero(object):
         self.etags = None
         self.temp_keys = ['key', 'etag', 'group_id', 'updated']
 
+    def _token(self):
+        """ Return a unique 32-char write-token """
+        return str(uuid.uuid4()).replace('-','')
+
     def _etags(self, incoming):
         """
         Return a list of etags parsed out of the XML response
@@ -535,12 +539,11 @@ class Zotero(object):
         for tempkey in self.temp_keys:
             _ = [tc.pop(tempkey) for tc in to_create if tempkey in tc]
         to_send = json.dumps({'items': to_create})
-        token = str(uuid.uuid4()).replace('-','')
         req = urllib2.Request(
         self.endpoint + '/users/{u}/items'.format(u = self.user_id) +
             '?' + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
-        req.add_header('X-Zotero-Write-Token', token)
+        req.add_header('X-Zotero-Write-Token', self._token())
         req.add_header('Content-Type', 'application/json' )
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
@@ -567,12 +570,11 @@ class Zotero(object):
         if not 'parent' in payload:
             payload['parent'] = ''
         to_send = json.dumps(payload)
-        token = str(uuid.uuid4()).replace('-','')
         req = urllib2.Request(
         self.endpoint + '/users/{u}/collections'.format(u = self.user_id) +
             '?' + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
-        req.add_header('X-Zotero-Write-Token', token)
+        req.add_header('X-Zotero-Write-Token', self._token())
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
             urllib2.urlopen(req)
