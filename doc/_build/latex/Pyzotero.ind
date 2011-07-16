@@ -7,13 +7,14 @@
 
   \indexspace
   \bigletter C
+  \item check\_keys() (pyzotero.zotero.Zotero method), \hyperpage{15}
   \item check\_updated() (pyzotero.zotero.Zotero method), \hyperpage{15}
   \item children() (pyzotero.zotero.Zotero method), \hyperpage{9}
   \item collection\_items() (pyzotero.zotero.Zotero method), \hyperpage{10}
   \item collections() (pyzotero.zotero.Zotero method), \hyperpage{11}
   \item collections\_sub() (pyzotero.zotero.Zotero method), \hyperpage{11}
   \item create\_collection() (pyzotero.zotero.Zotero method), \hyperpage{16}
-  \item create\_item() (pyzotero.zotero.Zotero method), \hyperpage{15}
+  \item create\_items() (pyzotero.zotero.Zotero method), \hyperpage{15}
 
   \indexspace
   \bigletter D

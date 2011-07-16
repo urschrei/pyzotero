@@ -739,8 +739,24 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </dd></dl>
 
 <dl class="method">
-<dt id="pyzotero.zotero.Zotero.create_item">
-<tt class="descclassname">Zotero.</tt><tt class="descname">create_item</tt><big>(</big><em>items</em><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.create_item" title="Permalink to this definition">¶</a></dt>
+<dt id="pyzotero.zotero.Zotero.check_keys">
+<tt class="descclassname">Zotero.</tt><tt class="descname">check_keys</tt><big>(</big><em>items</em><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.check_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling <a class="reference internal" href="#pyzotero.zotero.Zotero.item_fields" title="pyzotero.zotero.Zotero.item_fields"><tt class="xref py py-meth docutils literal"><span class="pre">item_fields()</span></tt></a>, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a <tt class="docutils literal"><span class="pre">KeyError</span></tt> exception is raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>items</strong> (<em>list</em>) &#8211; one or more dicts containing item data</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.create_items">
+<tt class="descclassname">Zotero.</tt><tt class="descname">create_items</tt><big>(</big><em>items</em><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.create_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create Zotero library items</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -758,7 +774,7 @@ Example:</p>
 <span class="n">template</span><span class="p">[</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;firstName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Monty&#39;</span>
 <span class="n">template</span><span class="p">[</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;lastName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Cantsin&#39;</span>
 <span class="n">template</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Maris Kundzins: A Life&#39;</span>
-<span class="n">resp</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">create_item</span><span class="p">([</span><span class="n">template</span><span class="p">])</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">create_items</span><span class="p">([</span><span class="n">template</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>If successful, <tt class="docutils literal"><span class="pre">resp</span></tt> will have the same structure as items retrieved with an <a class="reference internal" href="#pyzotero.zotero.Zotero.items" title="pyzotero.zotero.Zotero.items"><tt class="xref py py-meth docutils literal"><span class="pre">items()</span></tt></a> call, e.g. a list of one or more dicts (see <a class="reference internal" href="#returned"><em>Item Data</em></a>, above).</p>

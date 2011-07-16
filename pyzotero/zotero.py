@@ -100,6 +100,7 @@ class Zotero(object):
         return [c.attributes['zapi:etag'].value for
             c in xmldoc.getElementsByTagName('content')]
 
+
     def _retrieve_data(self, request = None):
         """
         Retrieve Zotero items via the API
@@ -502,6 +503,25 @@ class Zotero(object):
         i = itemtype)
         retrieved = self._retrieve_data(query_string)
         return json.loads(retrieved)
+
+    def check_items(self, items):
+        """
+        Check that items to be created contain no invalid dict keys
+        Accepts a single argument: a list of one or more dicts
+        """
+        template = set(t['field'] for t in self.item_fields())
+        # add fields we know to be OK
+        template = template | set(['tags', 'notes', 'itemType', 'creators'])
+        if self.temp_keys:
+            template = template | set(self.temp_keys)
+        for pos, item in enumerate(items):
+            to_check = set(i for i in item.iterkeys())
+            difference = to_check.difference(template)
+            if difference:
+                raise KeyError, \
+"Invalid keys present in item %s: %s" % (pos + 1,
+        ' '.join(i for i in difference))
+        return True
 
     def item_types(self):
         """ Get all available item types

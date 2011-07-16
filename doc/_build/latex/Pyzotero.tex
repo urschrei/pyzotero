@@ -12,7 +12,7 @@
 
 
 \title{Pyzotero Documentation}
-\date{July 09, 2011}
+\date{July 16, 2011}
 \release{0.8.3}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
@@ -886,10 +886,27 @@ Boolean
 \end{fulllineitems}
 
 
-\index{create\_item() (pyzotero.zotero.Zotero method)}
+\index{check\_keys() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pyzotero.zotero.Zotero.create_item}\pysiglinewithargsret{\code{Zotero.}\bfcode{create\_item}}{\emph{items}}{}
+\phantomsection\label{index:pyzotero.zotero.Zotero.check_keys}\pysiglinewithargsret{\code{Zotero.}\bfcode{check\_keys}}{\emph{items}}{}
+Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling {\hyperref[index:pyzotero.zotero.Zotero.item_fields]{\code{item\_fields()}}}, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a \code{KeyError} exception is raised.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\textbf{items} (\emph{list}) -- one or more dicts containing item data
+
+\item[{Return type}] \leavevmode
+Boolean
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
+\index{create\_items() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.create_items}\pysiglinewithargsret{\code{Zotero.}\bfcode{create\_items}}{\emph{items}}{}
 Create Zotero library items
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
@@ -908,7 +925,7 @@ Example:
 \PYG{n}{template}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{creators}\PYG{l+s}{'}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{firstName}\PYG{l+s}{'}\PYG{p}{]} \PYG{o}{=} \PYG{l+s}{'}\PYG{l+s}{Monty}\PYG{l+s}{'}
 \PYG{n}{template}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{creators}\PYG{l+s}{'}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{lastName}\PYG{l+s}{'}\PYG{p}{]} \PYG{o}{=} \PYG{l+s}{'}\PYG{l+s}{Cantsin}\PYG{l+s}{'}
 \PYG{n}{template}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{title}\PYG{l+s}{'}\PYG{p}{]} \PYG{o}{=} \PYG{l+s}{'}\PYG{l+s}{Maris Kundzins: A Life}\PYG{l+s}{'}
-\PYG{n}{resp} \PYG{o}{=} \PYG{n}{zot}\PYG{o}{.}\PYG{n}{create\PYGZus{}item}\PYG{p}{(}\PYG{p}{[}\PYG{n}{template}\PYG{p}{]}\PYG{p}{)}
+\PYG{n}{resp} \PYG{o}{=} \PYG{n}{zot}\PYG{o}{.}\PYG{n}{create\PYGZus{}items}\PYG{p}{(}\PYG{p}{[}\PYG{n}{template}\PYG{p}{]}\PYG{p}{)}
 \end{Verbatim}
 
 If successful, \code{resp} will have the same structure as items retrieved with an {\hyperref[index:pyzotero.zotero.Zotero.items]{\code{items()}}} call, e.g. a list of one or more dicts (see {\hyperref[index:returned]{\emph{Item Data}}}, above).
