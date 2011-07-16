@@ -725,8 +725,8 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </dd></dl>
 
 <dl class="method">
-<dt id="pyzotero.zotero.Zotero.check_keys">
-<tt class="descclassname">Zotero.</tt><tt class="descname">check_keys</tt><big>(</big><em>items</em><big>)</big></dt>
+<dt id="pyzotero.zotero.Zotero.check_items">
+<tt class="descclassname">Zotero.</tt><tt class="descname">check_items</tt><big>(</big><em>items</em><big>)</big></dt>
 <dd><p>Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling <a class="reference internal" href="#pyzotero.zotero.Zotero.item_fields" title="pyzotero.zotero.Zotero.item_fields"><tt class="xref py py-meth docutils literal"><span class="pre">item_fields()</span></tt></a>, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a <tt class="docutils literal"><span class="pre">KeyError</span></tt> exception is raised.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

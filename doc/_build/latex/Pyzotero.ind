@@ -7,7 +7,7 @@
 
   \indexspace
   \bigletter C
-  \item check\_keys() (pyzotero.zotero.Zotero method), \hyperpage{15}
+  \item check\_items() (pyzotero.zotero.Zotero method), \hyperpage{15}
   \item check\_updated() (pyzotero.zotero.Zotero method), \hyperpage{15}
   \item children() (pyzotero.zotero.Zotero method), \hyperpage{9}
   \item collection\_items() (pyzotero.zotero.Zotero method), \hyperpage{10}
