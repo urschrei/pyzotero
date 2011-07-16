@@ -86,6 +86,7 @@ class Zotero(object):
         self.url_params = None
         self.etags = None
         self.temp_keys = ['key', 'etag', 'group_id', 'updated']
+        self.fields_template = None
 
     def _token(self):
         """ Return a unique 32-char write-token """
@@ -509,11 +510,14 @@ class Zotero(object):
         Check that items to be created contain no invalid dict keys
         Accepts a single argument: a list of one or more dicts
         """
-        template = set(t['field'] for t in self.item_fields())
+        if not self.fields_template:
+            template = set(t['field'] for t in self.item_fields())
+            self.fields_template = template
+        else:
+            template = set(t['field'] for t in self.fields_template)
         # add fields we know to be OK
         template = template | set(['tags', 'notes', 'itemType', 'creators'])
-        if self.temp_keys:
-            template = template | set(self.temp_keys)
+        template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
             to_check = set(i for i in item.iterkeys())
             difference = to_check.difference(template)
