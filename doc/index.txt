@@ -411,7 +411,7 @@ Item Methods
         :param dict item: a dict containing item data
         :rtype: Boolean
 
-    .. py:method:: Zotero.create_item(items)
+    .. py:method:: Zotero.create_items(items)
 
         Create Zotero library items
     
@@ -425,7 +425,7 @@ Item Methods
             template['creators'][0]['firstName'] = 'Monty'
             template['creators'][0]['lastName'] = 'Cantsin'
             template['title'] = 'Maris Kundzins: A Life'
-            resp = zot.create_item([template])
+            resp = zot.create_items([template])
     
         If successful, ``resp`` will have the same structure as items retrieved with an :py:meth:`items()` call, e.g. a list of one or more dicts (see :ref:`Item Data <returned>`, above).
     
