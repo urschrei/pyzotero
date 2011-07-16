@@ -787,14 +787,6 @@ class Zotero(object):
 class NotModifiedHandler(urllib2.BaseHandler):
     """
     304 Not Modified handler for urllib2
-    use like so:
-    - opener = urllib2.build_opener(NotModifiedHandler())
-    - add the If-Modified-Since header to the request
-    - req.get_method = lambda: 'PUT'/'DELETE'
-    - url_handle = opener.open(req)
-    - headers = url_handle.info()
-    - if hasattr(url_handle, 'code') and url_handle.code == 304:
-    -   return False
     http://goo.gl/2fhI3
     """
     def __init__(self):
