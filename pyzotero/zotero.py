@@ -557,27 +557,30 @@ class Zotero(object):
         """
         Check that items to be created contain no invalid dict keys
         Accepts a single argument: a list of one or more dicts
-        The retrieved fields are cached for 60 minutes
+        The retrieved fields are cached and re-used until a 304 call fails
         """
-        if self.fields_template and \
-            abs(datetime.datetime.utcnow() -
-            self.fields_template['updated']).seconds < 3600:
+        # if we have a template and it hasn't been updated since we stored it
+        if self.fields_template and not \
+                self._updated('/itemFields', self.fields_template):
             template = set(t for t in self.fields_template['tmplt'])
         else:
             template = set(t['field'] for t in self.item_fields())
-            # cache the template for subsequent calls
+            # cache template and retrieval time for subsequent calls
+            thetime = datetime.datetime.utcnow().replace(
+                tzinfo=pytz.timezone('GMT'))
             self.fields_template = {
-                    'tmplt': list(template),
-                    'updated': datetime.datetime.utcnow()}
+                'tmplt': list(template),
+                'updated': thetime.strftime("%a, %d %b %Y %H:%M:%S %Z")}
         # add fields we know to be OK
         template = template | set(['tags', 'notes', 'itemType', 'creators'])
-        template = template | self.temp_keys
+        template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
             to_check = set(i for i in item.iterkeys())
-            if to_check.difference(template):
+            difference = to_check.difference(template)
+            if difference:
                 raise KeyError, \
 "Invalid keys present in item %s: %s" % (pos + 1,
-        ' '.join(to_check.difference(template)))
+        ' '.join(i for i in difference))
         return True
 
     def item_types(self):
