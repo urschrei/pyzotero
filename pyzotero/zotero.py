@@ -515,14 +515,14 @@ class Zotero(object):
         """
         if self.fields_template and \
             abs(datetime.datetime.utcnow() -
-                    self.fields_template['retrieved']).seconds < 3600:
+                    self.fields_template['updated']).seconds < 3600:
             template = set(t for t in self.fields_template['tmplt'])
         else:
             template = set(t['field'] for t in self.item_fields())
             # cache the template for subsequent calls
             self.fields_template = {
                     'tmplt': list(template),
-                    'retrieved': datetime.datetime.utcnow()}
+                    'updated': datetime.datetime.utcnow()}
         # add fields we know to be OK
         template = template | set(['tags', 'notes', 'itemType', 'creators'])
         template = template | set(self.temp_keys)
