@@ -511,17 +511,18 @@ class Zotero(object):
         """
         Check that items to be created contain no invalid dict keys
         Accepts a single argument: a list of one or more dicts
+        The retrieved fields are cached for 60 minutes
         """
-        if not self.fields_template:
+        if self.fields_template and \
+            abs(datetime.datetime.utcnow() -
+                    self.fields_template['retrieved']).seconds < 3600:
+            template = set(t for t in self.fields_template['tmplt'])
+        else:
             template = set(t['field'] for t in self.item_fields())
             # cache the template for subsequent calls
             self.fields_template = {
                     'tmplt': list(template),
                     'retrieved': datetime.datetime.utcnow()}
-        else:
-            # use the cached version
-            # TO DO check the cached duration < 60 mins
-            template = set(t for t in self.fields_template['tmplt'])
         # add fields we know to be OK
         template = template | set(['tags', 'notes', 'itemType', 'creators'])
         template = template | set(self.temp_keys)
