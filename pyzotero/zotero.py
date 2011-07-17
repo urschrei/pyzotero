@@ -33,8 +33,10 @@ import feedparser
 import json
 import uuid
 import time
+import datetime
 from urlparse import urlparse
 from xml.dom import minidom
+
 
 import zotero_errors as ze
 
@@ -512,9 +514,14 @@ class Zotero(object):
         """
         if not self.fields_template:
             template = set(t['field'] for t in self.item_fields())
-            self.fields_template = template
+            # cache the template for subsequent calls
+            self.fields_template = {
+                    'tmplt': list(template),
+                    'retrieved': datetime.datetime.utcnow()}
         else:
-            template = set(t['field'] for t in self.fields_template)
+            # use the cached version
+            # TO DO check the cached duration < 60 mins
+            template = set(t for t in self.fields_template['tmplt'])
         # add fields we know to be OK
         template = template | set(['tags', 'notes', 'itemType', 'creators'])
         template = template | set(self.temp_keys)
