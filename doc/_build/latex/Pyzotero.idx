@@ -35,7 +35,7 @@
 \indexentry{update\_item() (pyzotero.zotero.Zotero method)|hyperpage}{16}
 \indexentry{delete\_item() (pyzotero.zotero.Zotero method)|hyperpage}{16}
 \indexentry{create\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{16}
-\indexentry{addto\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{16}
+\indexentry{addto\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{17}
 \indexentry{deletefrom\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{17}
 \indexentry{update\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{17}
 \indexentry{delete\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{17}
