@@ -34,6 +34,7 @@ import json
 import uuid
 import time
 import datetime
+import pytz
 from urlparse import urlparse
 from xml.dom import minidom
 
@@ -103,7 +104,6 @@ class Zotero(object):
         return [c.attributes['zapi:etag'].value for
             c in xmldoc.getElementsByTagName('content')]
 
-
     def _retrieve_data(self, request = None):
         """
         Retrieve Zotero items via the API
@@ -120,6 +120,30 @@ class Zotero(object):
             self._error_handler(req, error)
         # parse the result into Python data structures
         return data
+
+    def _updated(self, url, payload):
+        """
+        Generic call to see if a request returns 304
+        accepts:
+        - a string to combine with the API endpoint
+        - a dict of format values for the string and updated header
+        """
+        opener = urllib2.build_opener(NotModifiedHandler())
+        query = self.endpoint + self._build_query(
+            url.format(u = self.user_id, **payload))
+        req = urllib2.Request(query)
+        req.add_header('If-Modified-Since',
+                        payload['updated'])
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            url_handle = opener.open(req)
+            _ = url_handle.info()
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            self._error_handler(req, error)
+        if hasattr(url_handle, 'code') and url_handle.code == 304:
+            return False
+        else:
+            return True
 
     def retrieve(func):
         """
@@ -381,22 +405,8 @@ class Zotero(object):
         Accepts a dict containing item data
         Returns True or False
         """
-        opener = urllib2.build_opener(NotModifiedHandler())
-        query = self.endpoint + self._build_query(
-            '/users/{u}/items/{i}'.format(
-                u = self.user_id,
-                i = payload['key']))
-        req = urllib2.Request(query)
-        req.add_header('If-Modified-Since', payload['updated'])
-        try:
-            url_handle = opener.open(req)
-            _ = url_handle.info()
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
-        if hasattr(url_handle, 'code') and url_handle.code == 304:
-            return False
-        else:
-            return True
+        url = '/users/{u}/items/{key}'
+        return self._updated(url, payload)
 
     def all_top(self):
         """ Retrieve all top-level items

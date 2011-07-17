@@ -29,7 +29,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         ],
     packages = find_packages(),
-    install_requires = ['feedparser >= 5.0.1'],
+    install_requires = ['feedparser >= 5.0.1', 'pytz'],
     long_description = """\
 A Python wrapper for the Zotero Server API
 ------------------------------------------
