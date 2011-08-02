@@ -24,7 +24,7 @@ Example: `pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip`
 
 I assume that running setup.py will also work using `easy_install`, but I haven't tested it.
 
-The [feedparser][5] (>= v5.0.1) module is required. It should automatically be installed when installing pyzotero using [pip][6].
+The [feedparser][5] (>= v5.0.1) and [pytz][9] modules are required. They will be automatically installed when installing pyzotero using [pip][6].
 
 ## Testing ##
 
@@ -43,3 +43,4 @@ Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See
 [6]: http://pypi.python.org/pypi/pip
 [7]: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/
 [8]: http://www.gnu.org/copyleft/gpl.html
+[9]: http://pypi.python.org/pypi/pytz/
