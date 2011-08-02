@@ -466,7 +466,7 @@ Item Methods
     
             i = zot.items()
             # only delete the last five items we added
-            to_delete = i[:6]
+            to_delete = i[:5]
             for d in to_delete:
                 zot.delete_item(d)
 
