@@ -575,12 +575,8 @@ class Zotero(object):
         if len(payload) > 50:
             raise ze.TooManyItems, \
                     "You may only create up to 50 items per call"
-        # we don't want to overwrite our items, so make a copy
-        to_create = list(payload)
-        # remove keys we may have added
-        for tempkey in self.temp_keys:
-            _ = [tc.pop(tempkey) for tc in to_create if tempkey in tc]
-        to_send = json.dumps({'items': to_create})
+        to_send = json.dumps([{k: v for k, v in li.iteritems() if
+            k not in self.temp_keys} for li in payload])
         req = urllib2.Request(
         self.endpoint + '/users/{u}/items'.format(u = self.user_id) +
             '?' + urllib.urlencode({'key': self.user_key}))
@@ -631,14 +627,10 @@ class Zotero(object):
         using e.g. 'collections()'
 
         """
-        # we don't want to overwrite the dict we passed in, so make a copy
-        to_update = dict(payload)
-        token = to_update['etag']
-        key = to_update['key']
+        token = payload['etag']
+        key = payload['key']
         # remove any keys we've added
-        for tempkey in self.temp_keys:
-            to_update.pop(tempkey, None)
-        to_send = json.dumps(to_update)
+        to_send = {k: v for k, v in payload if k not in self.temp_keys}
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(
@@ -660,14 +652,10 @@ class Zotero(object):
         Update an existing item
         Accepts one argument, a dict containing Item data
         """
-        # we don't want to modify the dict we passed in, so create a copy
-        to_update = dict(payload)
-        etag = to_update['etag']
-        ident = to_update['key']
-        # remove any keys we've added
-        for tempkey in self.temp_keys:
-            to_update.pop(tempkey, None)
-        to_send = json.dumps(to_update)
+        etag = payload['etag']
+        ident = payload['key']
+        to_send = json.dumps({k: v for k, v in payload.iteritems() if
+            k not in self.temp_keys})
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
