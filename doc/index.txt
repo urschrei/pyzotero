@@ -371,6 +371,43 @@ Example of returned data::
     ['Authority in literature', 'Errata', … ]
 
 
+========================================
+Additional Parameters for Read API calls
+========================================
+
+Additional parameters may be set on Read API methods using the following method. They are **optional**:
+
+    .. py:method:: Zotero.add_parameters([limit=None, start=None, order=None, sort=None, [content=None[ ,style=None]]])
+
+        :param int limit: 1 – 99 or None
+        :param int start: 1 – total number of items in your library or None
+        :param str order: A valid Zotero field or None
+        :param str sort: asc or desc or None
+        :param str content: 'html' or 'bib', default: 'html'. If 'bib' is passed, you may also pass:
+        :param str style: Any valid CSL style in the Zotero style repository
+        :rtype: list of HTML strings or None
+
+        Example::
+
+            zot.add_parameters(limit=7,start=3)
+
+.. note::
+
+    Any parameters you set will be valid **for the next call only**  
+
+
+The special parameters ``content`` and ``style``:
+
+    Example:: 
+
+        zot.add_parameters(content='bib', format='mla')
+
+    If these are set, the return value is a **list** of UTF-8 formatted HTML ``div`` elements, each containing an item:  
+
+    ``['<div class="csl-entry">(content)</div>', … ]``
+
+
+
 Write API Methods
 =================
 
