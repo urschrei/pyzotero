@@ -219,7 +219,7 @@ class Zotero(object):
         """ Get a specific item
         """
         query_string = '/users/{u}/items/{i}'.format(
-        i = item)
+        u = self.user_id, i = item)
         return self._build_query(query_string)
 
     @retrieve
@@ -227,7 +227,7 @@ class Zotero(object):
         """ Get a specific item's child items
         """
         query_string = '/users/{u}/items/{i}/children'.format(
-        i = item)
+        u = self.user_id, i = item)
         return self._build_query(query_string)
 
     @retrieve
@@ -235,7 +235,7 @@ class Zotero(object):
         """ Get items for a specific tag
         """
         query_string = '/users/{u}/tags/{t}/items'.format(
-        t = tag)
+        u = self.user_id, t = tag)
         return self._build_query(query_string)
 
     @retrieve
@@ -243,7 +243,7 @@ class Zotero(object):
         """ Get a specific collection's items
         """
         query_string = '/users/{u}/collections/{c}/items'.format(
-        c = collection)
+        u = self.user_id, c = collection)
         return self._build_query(query_string)
 
     @retrieve
@@ -329,8 +329,7 @@ class Zotero(object):
         """ Get subcollections for a specific collection
         """
         query_string = '/users/{u}/collections/{c}/collections'.format(
-        u = self.user_id,
-        c = collection)
+        u = self.user_id, c = collection)
         return self._build_query(query_string)
 
     @retrieve
@@ -379,7 +378,7 @@ class Zotero(object):
         """ Get tags for a specific item
         """
         query_string = '/users/{u}/items/{i}/tags'.format(
-        i = item)
+        u = self.user_id, i = item)
         return self._build_query(query_string)
 
     @retrieve

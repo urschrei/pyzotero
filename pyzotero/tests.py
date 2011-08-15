@@ -413,6 +413,12 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(u'journalArticle', items_data[0]['itemType'])
         self.assertEqual(u'Mon, 14 Feb 2011 00:27:03 GMT', items_data[0]['updated'])
 
+    def testParseChildItems(self):
+        """ Try and parse child items """
+        zot = z.Zotero('myuserID', 'myuserkey')
+        items_data = zot.children('ABC123')
+        self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
+
     def testEncodings(self):
         """ Should be able to print unicode strings to stdout, and convert
             them to UTF-8 before printing them
