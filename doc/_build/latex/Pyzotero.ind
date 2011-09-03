@@ -2,7 +2,7 @@
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
 
   \bigletter A
-  \item add\_parameters() (pyzotero.zotero.Zotero method), \hyperpage{7}
+  \item add\_parameters() (pyzotero.zotero.Zotero method), \hyperpage{13}
   \item addto\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
 
   \indexspace

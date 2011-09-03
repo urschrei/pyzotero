@@ -1,6 +1,5 @@
 \indexentry{pyzotero.zotero (module)|hyperpage}{1}
 \indexentry{Zotero (class in pyzotero.zotero)|hyperpage}{7}
-\indexentry{add\_parameters() (pyzotero.zotero.Zotero method)|hyperpage}{7}
 \indexentry{items() (pyzotero.zotero.Zotero method)|hyperpage}{9}
 \indexentry{top() (pyzotero.zotero.Zotero method)|hyperpage}{9}
 \indexentry{item() (pyzotero.zotero.Zotero method)|hyperpage}{9}
@@ -25,6 +24,7 @@
 \indexentry{item\_tags() (pyzotero.zotero.Zotero method)|hyperpage}{12}
 \indexentry{group\_tags() (pyzotero.zotero.Zotero method)|hyperpage}{12}
 \indexentry{group\_item\_tags() (pyzotero.zotero.Zotero method)|hyperpage}{13}
+\indexentry{add\_parameters() (pyzotero.zotero.Zotero method)|hyperpage}{13}
 \indexentry{item\_types() (pyzotero.zotero.Zotero method)|hyperpage}{15}
 \indexentry{item\_fields() (pyzotero.zotero.Zotero method)|hyperpage}{15}
 \indexentry{item\_creator\_types() (pyzotero.zotero.Zotero method)|hyperpage}{15}

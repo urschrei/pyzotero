@@ -9,7 +9,7 @@
     <dc:publisher>Stephan Hügel</dc:publisher>
     <dc:rights>2011, Stephan Hügel</dc:rights>
     <dc:identifier id="unknown" opf:scheme="unknown">unknown</dc:identifier>
-    <dc:date>2011-08-02</dc:date>
+    <dc:date>2011-09-03</dc:date>
   </metadata>
   <manifest>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml" />

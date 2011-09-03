@@ -10,6 +10,7 @@
 \contentsline {section}{\numberline {4.2}Retrieving Collections}{11}{section.4.2}
 \contentsline {section}{\numberline {4.3}Retrieving groups}{12}{section.4.3}
 \contentsline {section}{\numberline {4.4}Retrieving Tags}{12}{section.4.4}
+\contentsline {section}{\numberline {4.5}Additional Parameters for Read API calls}{13}{section.4.5}
 \contentsline {chapter}{\numberline {5}Write API Methods}{15}{chapter.5}
 \contentsline {section}{\numberline {5.1}Item Methods}{15}{section.5.1}
 \contentsline {section}{\numberline {5.2}Collection Methods}{16}{section.5.2}

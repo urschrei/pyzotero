@@ -101,50 +101,6 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </dd></dl>
 
 </div></blockquote>
-<p>Additional parameters may be set on Read API methods using the following method. They are <strong>optional</strong>:</p>
-<blockquote>
-<div><dl class="method">
-<dt id="pyzotero.zotero.Zotero.add_parameters">
-<tt class="descclassname">Zotero.</tt><tt class="descname">add_parameters</tt><big>(</big><span class="optional">[</span><em>limit=None</em>, <em>start=None</em>, <em>order=None</em>, <em>sort=None</em><span class="optional">[</span>, <em>content=None</em><span class="optional">[</span>, <em>style=None</em><span class="optional">]</span><span class="optional">]</span><span class="optional">]</span><big>)</big></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>limit</strong> (<em>int</em>) &#8211; 1 – 99 or None</li>
-<li><strong>start</strong> (<em>int</em>) &#8211; 1 – total number of items in your library or None</li>
-<li><strong>order</strong> (<em>str</em>) &#8211; A valid Zotero field or None</li>
-<li><strong>sort</strong> (<em>str</em>) &#8211; asc or desc or None</li>
-<li><strong>content</strong> (<em>str</em>) &#8211; &#8216;html&#8217; or &#8216;bib&#8217;, default: &#8216;html&#8217;. If &#8216;bib&#8217; is passed, you may also pass:</li>
-<li><strong>style</strong> (<em>str</em>) &#8211; Any valid CSL style in the Zotero style repository</li>
-</ul>
-</td>
-</tr>
-<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of HTML strings or None</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">start</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div></blockquote>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Any parameters you set will be valid <strong>for the next call only</strong></p>
-</div>
-<p>The special parameters <tt class="docutils literal"><span class="pre">content</span></tt> and <tt class="docutils literal"><span class="pre">style</span></tt>:</p>
-<blockquote>
-<div><p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s">&#39;bib&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;mla&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>If these are set, the return value is a <strong>list</strong> of UTF-8 formatted HTML <tt class="docutils literal"><span class="pre">div</span></tt> elements, each containing an item:</p>
-<p><tt class="docutils literal"><span class="pre">['&lt;div</span> <span class="pre">class=&quot;csl-entry&quot;&gt;(content)&lt;/div&gt;',</span> <span class="pre">…</span> <span class="pre">]</span></tt></p>
-</div></blockquote>
 </div>
 </div>
 <div class="section" id="read-api-methods">
@@ -642,6 +598,53 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <div class="highlight-python"><pre>['Authority in literature', 'Errata', … ]</pre>
 </div>
 </div>
+<div class="section" id="additional-parameters-for-read-api-calls">
+<h2>Additional Parameters for Read API calls</h2>
+<p>Additional parameters may be set on Read API methods using the following method. They are <strong>optional</strong>:</p>
+<blockquote>
+<div><dl class="method">
+<dt id="pyzotero.zotero.Zotero.add_parameters">
+<tt class="descclassname">Zotero.</tt><tt class="descname">add_parameters</tt><big>(</big><span class="optional">[</span><em>limit=None</em>, <em>start=None</em>, <em>order=None</em>, <em>sort=None</em><span class="optional">[</span>, <em>content=None</em><span class="optional">[</span>, <em>style=None</em><span class="optional">]</span><span class="optional">]</span><span class="optional">]</span><big>)</big></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>limit</strong> (<em>int</em>) &#8211; 1 – 99 or None</li>
+<li><strong>start</strong> (<em>int</em>) &#8211; 1 – total number of items in your library or None</li>
+<li><strong>order</strong> (<em>str</em>) &#8211; A valid Zotero field or None</li>
+<li><strong>sort</strong> (<em>str</em>) &#8211; asc or desc or None</li>
+<li><strong>content</strong> (<em>str</em>) &#8211; &#8216;html&#8217; or &#8216;bib&#8217;, default: &#8216;html&#8217;. If &#8216;bib&#8217; is passed, you may also pass:</li>
+<li><strong>style</strong> (<em>str</em>) &#8211; Any valid CSL style in the Zotero style repository</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of HTML strings or None</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">start</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Any parameters you set will be valid <strong>for the next call only</strong></p>
+</div>
+<p>The special parameters <tt class="docutils literal"><span class="pre">content</span></tt> and <tt class="docutils literal"><span class="pre">style</span></tt>:</p>
+<blockquote>
+<div><p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s">&#39;bib&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;mla&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If these are set, the return value is a <strong>list</strong> of UTF-8 formatted HTML <tt class="docutils literal"><span class="pre">div</span></tt> elements, each containing an item:</p>
+<p><tt class="docutils literal"><span class="pre">['&lt;div</span> <span class="pre">class=&quot;csl-entry&quot;&gt;(content)&lt;/div&gt;',</span> <span class="pre">…</span> <span class="pre">]</span></tt></p>
+</div></blockquote>
+</div>
 </div>
 <div class="section" id="write-api-methods">
 <h1>Write API Methods</h1>
@@ -809,7 +812,7 @@ Example:</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">i</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
 <span class="c"># only delete the last five items we added</span>
-<span class="n">to_delete</span> <span class="o">=</span> <span class="n">i</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span>
+<span class="n">to_delete</span> <span class="o">=</span> <span class="n">i</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">to_delete</span><span class="p">:</span>
     <span class="n">zot</span><span class="o">.</span><span class="n">delete_item</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 </pre></div>
