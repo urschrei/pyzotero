@@ -163,7 +163,7 @@ class Zotero(object):
             """
             orig_func = func(self, *args, **kwargs)
             retrieved = self._retrieve_data(orig_func)
-            if not self.url_params.find('=bib') != -1:
+            if self.url_params.find('=bib') == -1:
                 # get etags from the response
                 self.etags = self._etags(retrieved)
             # return the parsed Atom doc
