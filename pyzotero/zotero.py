@@ -179,10 +179,9 @@ class Zotero(object):
         else:
             params = {'key': self.user_key}
         # always return json, unless different format is specified
-        if 'content' not in params:
+        if 'content' not in params and 'format' not in params:
             params['content'] = 'json'
-        params = urllib.urlencode(params)
-        self.url_params = params
+        self.url_params = urllib.urlencode(params)
 
     def _build_query(self, query_string):
         """
