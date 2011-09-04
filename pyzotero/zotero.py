@@ -546,7 +546,7 @@ class Zotero(object):
         """
         if self.fields_template and \
             abs(datetime.datetime.utcnow() -
-                    self.fields_template['updated']).seconds < 3600:
+            self.fields_template['updated']).seconds < 3600:
             template = set(t for t in self.fields_template['tmplt'])
         else:
             template = set(t['field'] for t in self.item_fields())
