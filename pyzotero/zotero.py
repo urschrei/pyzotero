@@ -69,6 +69,14 @@ def ib64_patched(self, attrsD, contentparams):
 feedparser._FeedParserMixin._isBase64 = ib64_patched
 
 
+def cleanwrap(func):
+    """ Wrapper for Zotero._cleanup """
+    def enc(self, *args):
+        """ Append cleaned-up dicts """
+        return (func(self, item) for item in args)
+    return enc
+
+
 class Zotero(object):
     """
     Zotero API methods
@@ -103,6 +111,12 @@ class Zotero(object):
         xmldoc = minidom.parseString(incoming)
         return [c.attributes['zapi:etag'].value for
             c in xmldoc.getElementsByTagName('content')]
+
+    @cleanwrap
+    def _cleanup(self, to_clean):
+        """ Remove keys we added for internal use """
+        return {k: v for k, v in to_clean.iteritems() if
+                k not in self.temp_keys}
 
     def _retrieve_data(self, request = None):
         """
@@ -579,8 +593,7 @@ class Zotero(object):
         if len(payload) > 50:
             raise ze.TooManyItems, \
                     "You may only create up to 50 items per call"
-        to_send = json.dumps([{k: v for k, v in li.iteritems() if
-            k not in self.temp_keys} for li in payload])
+        to_send = json.dumps([i for i in self._cleanup(*payload)])
         req = urllib2.Request(
         self.endpoint + '/users/{u}/items'.format(u = self.user_id) +
             '?' + urllib.urlencode({'key': self.user_key}))
@@ -634,7 +647,7 @@ class Zotero(object):
         token = payload['etag']
         key = payload['key']
         # remove any keys we've added
-        to_send = {k: v for k, v in payload if k not in self.temp_keys}
+        to_send = (i for i in self._cleanup(payload))
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(
@@ -658,8 +671,7 @@ class Zotero(object):
         """
         etag = payload['etag']
         ident = payload['key']
-        to_send = json.dumps({k: v for k, v in payload.iteritems() if
-            k not in self.temp_keys})
+        to_send = json.dumps(i for i in self._cleanup(payload))
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(

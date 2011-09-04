@@ -574,11 +574,16 @@ class ZoteroTests(unittest.TestCase):
         t['etag'] = 'TAGABC123'
         t['group_id'] = 'GROUPABC123'
         t['updated'] = '14 March, 2011'
+        tn = dict(t)
+        tn['key'] = 'KEYABC124'
+        ls = []
+        ls.append(t)
+        ls.append(tn)
         # new opener which will return 403
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
         z.urllib2.install_opener(my_opener)
         with self.assertRaises(z.ze.UserNotAuthorised) as e:
-            _ = zot.create_items([t])
+            _ = zot.create_items(ls)
         exc = str(e.exception)
         # this test is a kludge; we're checking the POST data in the 403 response
         self.assertIn("journalArticle", exc)
