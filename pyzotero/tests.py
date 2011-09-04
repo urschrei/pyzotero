@@ -586,6 +586,7 @@ class ZoteroTests(unittest.TestCase):
             _ = zot.create_items(ls)
         exc = str(e.exception)
         # this test is a kludge; we're checking the POST data in the 403 response
+        self.assertIn("\"items\":", exc)
         self.assertIn("journalArticle", exc)
         self.assertNotIn("KEYABC123", exc)
         self.assertNotIn("TAGABC123", exc)
