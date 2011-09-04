@@ -122,7 +122,7 @@ class Zotero(object):
             'Please provide both the user ID and the user key'
         self.url_params = None
         self.etags = None
-        self.temp_keys = ['key', 'etag', 'group_id', 'updated']
+        self.temp_keys = set(['key', 'etag', 'group_id', 'updated'])
         self.fields_template = None
 
     def _token(self):
@@ -556,7 +556,7 @@ class Zotero(object):
                     'updated': datetime.datetime.utcnow()}
         # add fields we know to be OK
         template = template | set(['tags', 'notes', 'itemType', 'creators'])
-        template = template | set(self.temp_keys)
+        template = template | self.temp_keys
         for pos, item in enumerate(items):
             to_check = set(i for i in item.iterkeys())
             difference = to_check.difference(template)
