@@ -77,6 +77,32 @@ def cleanwrap(func):
     return enc
 
 
+def retrieve(func):
+    """
+    Decorator for Zotero read API methods; calls _retrieve_data() and passes
+    the result to the JSON processor
+    """
+    def wrapped_f(self, *args, **kwargs):
+        """
+        Returns result of _retrieve_data()
+
+        orig_func's return value is part of a URI, and it's this
+        which is intercepted and passed to _retrieve_data:
+        '/users/123/items?key=abc123'
+        the atom doc returned by _retrieve_data is then
+        passed to _etags in order to extract the etag attributes
+        from each entry, then to feedparser, then to _process_content
+        """
+        orig_func = func(self, *args, **kwargs)
+        retrieved = self._retrieve_data(orig_func)
+        if self.url_params.find('=bib') == -1:
+            # get etags from the response
+            self.etags = self._etags(retrieved)
+        # return the parsed Atom doc
+        return self._process_content(feedparser.parse(retrieved))
+    return wrapped_f
+
+
 class Zotero(object):
     """
     Zotero API methods
@@ -159,30 +185,7 @@ class Zotero(object):
         else:
             return True
 
-    def retrieve(func):
-        """
-        Decorator for Zotero methods; calls _retrieve_data() and passes
-        the result to the JSON processor
-        """
-        def wrapped_f(self, *args, **kwargs):
-            """
-            Returns result of _retrieve_data()
 
-            orig_func's return value is part of a URI, and it's this
-            which is intercepted and passed to _retrieve_data:
-            '/users/123/items?key=abc123'
-            the atom doc returned by _retrieve_data is then
-            passed to _etags in order to extract the etag attributes
-            from each entry, then to feedparser, then to _process_content
-            """
-            orig_func = func(self, *args, **kwargs)
-            retrieved = self._retrieve_data(orig_func)
-            if self.url_params.find('=bib') == -1:
-                # get etags from the response
-                self.etags = self._etags(retrieved)
-            # return the parsed Atom doc
-            return self._process_content(feedparser.parse(retrieved))
-        return wrapped_f
 
     def add_parameters(self, **params):
         """ Add URL parameters. Will always add the user key
