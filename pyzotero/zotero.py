@@ -596,7 +596,7 @@ class Zotero(object):
         if len(payload) > 50:
             raise ze.TooManyItems, \
                     "You may only create up to 50 items per call"
-        to_send = json.dumps([i for i in self._cleanup(*payload)])
+        to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
         req = urllib2.Request(
         self.endpoint + '/users/{u}/items'.format(u = self.user_id) +
             '?' + urllib.urlencode({'key': self.user_key}))
