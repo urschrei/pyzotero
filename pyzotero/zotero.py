@@ -72,7 +72,7 @@ feedparser._FeedParserMixin._isBase64 = ib64_patched
 def cleanwrap(func):
     """ Wrapper for Zotero._cleanup """
     def enc(self, *args):
-        """ Append cleaned-up dicts """
+        """ Send each item to _cleanup() """
         return (func(self, item) for item in args)
     return enc
 
