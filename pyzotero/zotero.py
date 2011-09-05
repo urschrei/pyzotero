@@ -559,8 +559,7 @@ class Zotero(object):
         template = template | self.temp_keys
         for pos, item in enumerate(items):
             to_check = set(i for i in item.iterkeys())
-            difference = to_check.difference(template)
-            if difference:
+            if to_check.difference(template):
                 raise KeyError, \
 "Invalid keys present in item %s: %s" % (pos + 1,
         ' '.join(i for i in difference))
