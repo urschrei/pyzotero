@@ -562,7 +562,7 @@ class Zotero(object):
             if to_check.difference(template):
                 raise KeyError, \
 "Invalid keys present in item %s: %s" % (pos + 1,
-        ' '.join(i for i in difference))
+        ' '.join(to_check.difference(template)))
         return True
 
     def item_types(self):
