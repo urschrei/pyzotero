@@ -12,7 +12,7 @@
 
 
 \title{Pyzotero Documentation}
-\date{September 04, 2011}
+\date{September 20, 2011}
 \release{0.8.8}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
@@ -742,7 +742,7 @@ Example of returned data:
 
 \section{Additional Parameters for Read API calls}
 \label{index:additional-parameters-for-read-api-calls}
-Additional parameters may be set on Read API methods using the following method. They are \textbf{optional}:
+Additional parameters may be set on Read API methods using the following method. All parameters are optional. \textbf{You may also set a search term here, using the `q' parameter}:
 \begin{quote}
 
 \index{add\_parameters() (pyzotero.zotero.Zotero method)}
@@ -751,16 +751,19 @@ Additional parameters may be set on Read API methods using the following method.
 \phantomsection\label{index:pyzotero.zotero.Zotero.add_parameters}\pysiglinewithargsret{\code{Zotero.}\bfcode{add\_parameters}}{\optional{\emph{limit=None}, \emph{start=None}, \emph{order=None}, \emph{sort=None}\optional{, \emph{content=None}\optional{, \emph{style=None}}}}}{}~\begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
+\textbf{q} (\emph{str}) -- A search term, which currently matches titles and individual creator fields
+
+\item {} 
 \textbf{limit} (\emph{int}) -- 1 – 99 or None
 
 \item {} 
 \textbf{start} (\emph{int}) -- 1 – total number of items in your library or None
 
 \item {} 
-\textbf{order} (\emph{str}) -- A valid Zotero field or None
+\textbf{order} (\emph{str}) -- any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”
 
 \item {} 
-\textbf{sort} (\emph{str}) -- asc or desc or None
+\textbf{sort} (\emph{str}) -- `asc' or `desc'
 
 \item {} 
 \textbf{content} (\emph{str}) -- `html' or `bib', default: `html'. If `bib' is passed, you may also pass:

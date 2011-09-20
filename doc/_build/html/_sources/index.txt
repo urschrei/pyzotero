@@ -344,14 +344,15 @@ Example of returned data::
 Additional Parameters for Read API calls
 ========================================
 
-Additional parameters may be set on Read API methods using the following method. They are **optional**:
+Additional parameters may be set on Read API methods using the following method. All parameters are optional. **You may also set a search term here, using the 'q' parameter**:
 
     .. py:method:: Zotero.add_parameters([limit=None, start=None, order=None, sort=None, [content=None[ ,style=None]]])
 
+        :param str q: A search term, which currently matches titles and individual creator fields
         :param int limit: 1 – 99 or None
         :param int start: 1 – total number of items in your library or None
-        :param str order: A valid Zotero field or None
-        :param str sort: asc or desc or None
+        :param str order: any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”
+        :param str sort: 'asc' or 'desc'
         :param str content: 'html' or 'bib', default: 'html'. If 'bib' is passed, you may also pass:
         :param str style: Any valid CSL style in the Zotero style repository
         :rtype: list of HTML strings or None

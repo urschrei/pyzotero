@@ -600,7 +600,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </div>
 <div class="section" id="additional-parameters-for-read-api-calls">
 <h2>Additional Parameters for Read API calls</h2>
-<p>Additional parameters may be set on Read API methods using the following method. They are <strong>optional</strong>:</p>
+<p>Additional parameters may be set on Read API methods using the following method. All parameters are optional. <strong>You may also set a search term here, using the &#8216;q&#8217; parameter</strong>:</p>
 <blockquote>
 <div><dl class="method">
 <dt id="pyzotero.zotero.Zotero.add_parameters">
@@ -610,10 +610,11 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>q</strong> (<em>str</em>) &#8211; A search term, which currently matches titles and individual creator fields</li>
 <li><strong>limit</strong> (<em>int</em>) &#8211; 1 – 99 or None</li>
 <li><strong>start</strong> (<em>int</em>) &#8211; 1 – total number of items in your library or None</li>
-<li><strong>order</strong> (<em>str</em>) &#8211; A valid Zotero field or None</li>
-<li><strong>sort</strong> (<em>str</em>) &#8211; asc or desc or None</li>
+<li><strong>order</strong> (<em>str</em>) &#8211; any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”</li>
+<li><strong>sort</strong> (<em>str</em>) &#8211; &#8216;asc&#8217; or &#8216;desc&#8217;</li>
 <li><strong>content</strong> (<em>str</em>) &#8211; &#8216;html&#8217; or &#8216;bib&#8217;, default: &#8216;html&#8217;. If &#8216;bib&#8217; is passed, you may also pass:</li>
 <li><strong>style</strong> (<em>str</em>) &#8211; Any valid CSL style in the Zotero style repository</li>
 </ul>
