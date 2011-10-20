@@ -297,6 +297,15 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
+    def group_trash(self, group):
+        """ Get the items in a specific group's trash
+        """
+        query_string = '/groups/{g}/trash'.format(
+        g = group,
+        i = item)
+        return self._build_query(query_string)
+
+    @retrieve
     def group_item_children(self, group, item):
         """ Get a specific group item's child items
         """
