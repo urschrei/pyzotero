@@ -233,6 +233,13 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
+    def trash(self):
+        """ Get all items in the trash
+        """
+        query_string = '/users/{u}/items/trash'
+        return self._build_query(query_string)
+
+    @retrieve
     def item(self, item):
         """ Get a specific item
         """
