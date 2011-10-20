@@ -151,6 +151,20 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </dd></dl>
 
 <dl class="method">
+<dt id="pyzotero.zotero.Zotero.trash">
+<tt class="descclassname">Zotero.</tt><tt class="descname">trash</tt><big>(</big><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.trash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns library items from the user&#8217;s trash</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyzotero.zotero.Zotero.item">
 <tt class="descclassname">Zotero.</tt><tt class="descname">item</tt><big>(</big><em>itemID</em><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.item" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a specific item</p>
@@ -202,6 +216,22 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <dt id="pyzotero.zotero.Zotero.group_items">
 <tt class="descclassname">Zotero.</tt><tt class="descname">group_items</tt><big>(</big><em>groupID</em><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.group_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns items from a specific group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">list of dicts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.group_trash">
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_trash</tt><big>(</big><em>groupID</em><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.group_trash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns items from a specific group&#8217;s trash</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

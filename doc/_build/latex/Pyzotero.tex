@@ -12,7 +12,7 @@
 
 
 \title{Pyzotero Documentation}
-\date{September 20, 2011}
+\date{October 20, 2011}
 \release{0.8.8}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
@@ -236,6 +236,20 @@ list of dicts
 \end{fulllineitems}
 
 
+\index{trash() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.trash}\pysiglinewithargsret{\code{Zotero.}\bfcode{trash}}{}{}
+Returns library items from the user's trash
+\begin{quote}\begin{description}
+\item[{Return type}] \leavevmode
+list of dicts
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
 \index{item() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -292,6 +306,23 @@ list of dicts
 \begin{fulllineitems}
 \phantomsection\label{index:pyzotero.zotero.Zotero.group_items}\pysiglinewithargsret{\code{Zotero.}\bfcode{group\_items}}{\emph{groupID}}{}
 Returns items from a specific group
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\textbf{groupID} (\emph{str}) -- a Zotero group ID
+
+\item[{Return type}] \leavevmode
+list of dicts
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
+\index{group\_trash() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.group_trash}\pysiglinewithargsret{\code{Zotero.}\bfcode{group\_trash}}{\emph{groupID}}{}
+Returns items from a specific group's trash
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
 \textbf{groupID} (\emph{str}) -- a Zotero group ID

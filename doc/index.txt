@@ -99,6 +99,12 @@ Retrieving Items
 
         :rtype: list of dicts
 
+    .. py:method:: Zotero.trash()
+
+        Returns library items from the user's trash
+
+        :rtype: list of dicts
+
     .. py:method:: Zotero.item(itemID)
 
         Returns a specific item
@@ -128,6 +134,15 @@ Retrieving Items
 
         :param str groupID: a Zotero group ID
         :rtype: list of dicts
+
+
+    .. py:method:: Zotero.group_trash(groupID)
+
+        Returns items from a specific group's trash
+
+        :param str groupID: a Zotero group ID
+        :rtype: list of dicts
+
 
     .. py:method:: Zotero.group_top(groupID)
 
