@@ -9,10 +9,11 @@
 \usepackage[Bjarne]{fncychap}
 \usepackage{longtable}
 \usepackage{sphinx}
+\usepackage{multirow}
 
 
 \title{Pyzotero Documentation}
-\date{October 20, 2011}
+\date{November 06, 2011}
 \release{0.8.8}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
@@ -114,8 +115,7 @@
 
 
 A Python wrapper for the \href{http://www.zotero.org/support/dev/server\_api}{Zotero API}. You'll require a user ID and access key, which can be set up \href{http://www.zotero.org/settings/keys/new}{here}.
-\phantomsection\label{index:module-pyzotero.zotero}
-\index{pyzotero.zotero (module)}
+\phantomsection\label{index:module-pyzotero.zotero}\index{pyzotero.zotero (module)}
 
 \chapter{Indices and tables}
 \label{index:indices-and-tables}\label{index:description}\begin{itemize}
@@ -137,7 +137,7 @@ Using pip: \code{pip install pyzotero}
 
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
-\begin{Verbatim}[commandchars=@\[\]]
+\begin{Verbatim}[commandchars=\\\{\}]
 git clone git://github.com/urschrei/pyzotero.git
 cd pyzotero
 git checkout dev
@@ -175,7 +175,6 @@ Run \code{tests.py} in the pyzotero directory, or, using \href{http://somethinga
 \label{index:general-usage}
 First, create a new Zotero instance:
 \begin{quote}
-
 \index{Zotero (class in pyzotero.zotero)}
 
 \begin{fulllineitems}
@@ -207,7 +206,6 @@ Example:
 
 \section{Retrieving Items}
 \label{index:retrieving-items}\begin{quote}
-
 \index{items() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -220,7 +218,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{top() (pyzotero.zotero.Zotero method)}
 
@@ -235,7 +232,6 @@ list of dicts
 
 \end{fulllineitems}
 
-
 \index{trash() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -248,7 +244,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{item() (pyzotero.zotero.Zotero method)}
 
@@ -266,7 +261,6 @@ list of dicts
 
 \end{fulllineitems}
 
-
 \index{children() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -282,7 +276,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{tag\_items() (pyzotero.zotero.Zotero method)}
 
@@ -300,7 +293,6 @@ list of dicts
 
 \end{fulllineitems}
 
-
 \index{group\_items() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -316,7 +308,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{group\_trash() (pyzotero.zotero.Zotero method)}
 
@@ -334,7 +325,6 @@ list of dicts
 
 \end{fulllineitems}
 
-
 \index{group\_top() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -350,7 +340,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{group\_item() (pyzotero.zotero.Zotero method)}
 
@@ -374,7 +363,6 @@ list of dicts
 
 \end{fulllineitems}
 
-
 \index{group\_item\_children() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -396,7 +384,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{group\_items\_tag() (pyzotero.zotero.Zotero method)}
 
@@ -420,7 +407,6 @@ list of dicts
 
 \end{fulllineitems}
 
-
 \index{group\_collection\_items() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -442,7 +428,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{group\_collection\_item() (pyzotero.zotero.Zotero method)}
 
@@ -469,7 +454,6 @@ list of dicts
 
 \end{fulllineitems}
 
-
 \index{group\_collection\_top() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -492,7 +476,6 @@ list of dicts
 
 \end{fulllineitems}
 
-
 \index{collection\_items() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -508,7 +491,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{get\_subset() (pyzotero.zotero.Zotero method)}
 
@@ -531,17 +513,17 @@ list of dicts
 
 Example of returned data:
 
-\begin{Verbatim}[commandchars=@\[\]]
-@PYGZlb[]{'DOI': '',
+\begin{Verbatim}[commandchars=\\\{\}]
+[\PYGZob{}'DOI': '',
  'ISSN': '1747-1532',
  'abstractNote': '',
  'accessDate': '',
  'archive': '',
  'archiveLocation': '',
  'callNumber': '',
- 'creators': @PYGZlb[]{'creatorType': 'author',
+ 'creators': [\PYGZob{}'creatorType': 'author',
                'firstName': 'T. J.',
-               'lastName': 'McIntyre'}@PYGZrb[],
+               'lastName': 'McIntyre'\PYGZcb{}],
  'date': '2007',
  'extra': '',
  'issue': '',
@@ -550,17 +532,17 @@ Example of returned data:
  'language': '',
  'libraryCatalog': 'Google Scholar',
  'pages': '',
- 'publicationTitle': 'Journal of Intellectual Property Law @& Practice',
+ 'publicationTitle': 'Journal of Intellectual Property Law \& Practice',
  'rights': '',
  'series': '',
  'seriesText': '',
  'seriesTitle': '',
  'shortTitle': 'Copyright in custom code',
- 'tags': @PYGZlb[]@PYGZrb[],
+ 'tags': [],
  'title': 'Copyright in custom code: Who owns commissioned software?',
  'updated': 'Mon, 14 Mar 2011 22:30:17 GMT',
  'url': '',
- 'volume': ''} … @PYGZrb[]
+ 'volume': ''\PYGZcb{} … ]
 \end{Verbatim}
 
 See {\hyperref[index:hello-world]{\emph{`Hello World'}}} example, above
@@ -569,7 +551,6 @@ See {\hyperref[index:hello-world]{\emph{`Hello World'}}} example, above
 
 \section{Retrieving Collections}
 \label{index:retrieving-collections}\begin{quote}
-
 \index{collections() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -582,7 +563,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{collections\_sub() (pyzotero.zotero.Zotero method)}
 
@@ -600,7 +580,6 @@ list of dicts
 
 \end{fulllineitems}
 
-
 \index{group\_collections() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -616,7 +595,6 @@ list of dicts
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{group\_collection() (pyzotero.zotero.Zotero method)}
 
@@ -643,15 +621,14 @@ list of dicts
 
 Example of returned data:
 
-\begin{Verbatim}[commandchars=@\[\]]
-@PYGZlb[]{'key': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"} … @PYGZrb[]
+\begin{Verbatim}[commandchars=\\\{\}]
+[\PYGZob{}'key': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"\PYGZcb{} … ]
 \end{Verbatim}
 \end{quote}
 
 
 \section{Retrieving groups}
 \label{index:retrieving-groups}\begin{quote}
-
 \index{groups() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -665,23 +642,23 @@ list of dicts
 
 Example of returned data:
 
-\begin{Verbatim}[commandchars=@\[\]]
-@PYGZlb[]{u'description': u'@%3Cp@%3EBGerman+Cinema+and+related+literature.@%3C@%2Fp@%3E',
+\begin{Verbatim}[commandchars=\\\{\}]
+[\PYGZob{}u'description': u'\%3Cp\%3EBGerman+Cinema+and+related+literature.\%3C\%2Fp\%3E',
     u'fileEditing': u'none',
-    u'group@_id': u'153',
+    u'group\_id': u'153',
     u'hasImage': 1,
     u'libraryEditing': u'admins',
     u'libraryEnabled': 1,
     u'libraryReading': u'all',
-    u'members': {u'0': 436,
+    u'members': \PYGZob{}u'0': 436,
        u'1': 6972,
        u'15': 499956,
        u'16': 521307,
-       u'17': 619180},
+       u'17': 619180\PYGZcb{},
     u'name': u'German Cinema',
     u'owner': 10421,
     u'type': u'PublicOpen',
-    u'url': u''} … @PYGZrb[]
+    u'url': u''\PYGZcb{} … ]
 \end{Verbatim}
 
 \end{fulllineitems}
@@ -691,7 +668,6 @@ Example of returned data:
 
 \section{Retrieving Tags}
 \label{index:retrieving-tags}\begin{quote}
-
 \index{tags() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -704,7 +680,6 @@ list of strings
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{item\_tags() (pyzotero.zotero.Zotero method)}
 
@@ -722,7 +697,6 @@ list of strings
 
 \end{fulllineitems}
 
-
 \index{group\_tags() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -738,7 +712,6 @@ list of strings
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{group\_item\_tags() (pyzotero.zotero.Zotero method)}
 
@@ -766,8 +739,8 @@ list of strings
 
 Example of returned data:
 
-\begin{Verbatim}[commandchars=@\[\]]
-@PYGZlb[]'Authority in literature', 'Errata', … @PYGZrb[]
+\begin{Verbatim}[commandchars=\\\{\}]
+['Authority in literature', 'Errata', … ]
 \end{Verbatim}
 
 
@@ -775,7 +748,6 @@ Example of returned data:
 \label{index:additional-parameters-for-read-api-calls}
 Additional parameters may be set on Read API methods using the following method. All parameters are optional. \textbf{You may also set a search term here, using the `q' parameter}:
 \begin{quote}
-
 \index{add\_parameters() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -843,7 +815,6 @@ If these are set, the return value is a \textbf{list} of UTF-8 formatted HTML \c
 
 \section{Item Methods}
 \label{index:item-methods}\begin{quote}
-
 \index{item\_types() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -857,7 +828,6 @@ dict
 
 \end{fulllineitems}
 
-
 \index{item\_fields() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -870,7 +840,6 @@ dict
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{item\_creator\_types() (pyzotero.zotero.Zotero method)}
 
@@ -888,6 +857,21 @@ dict
 
 \end{fulllineitems}
 
+\index{item\_type\_fields() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.item_type_fields}\pysiglinewithargsret{\code{Zotero.}\bfcode{item\_type\_fields}}{\emph{itemtype}}{}
+Returns all valid fields for the specified item type
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\textbf{itemtype} (\emph{str}) -- a valid Zotero item type. A list of available item types can be obtained by the use of {\hyperref[index:pyzotero.zotero.Zotero.item_types]{\code{item\_types()}}}
+
+\item[{Return type}] \leavevmode
+list of dicts
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
 
 \index{item\_template() (pyzotero.zotero.Zotero method)}
 
@@ -905,7 +889,6 @@ dict
 
 \end{fulllineitems}
 
-
 \index{check\_updated() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -922,7 +905,6 @@ Boolean
 
 \end{fulllineitems}
 
-
 \index{check\_items() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -938,7 +920,6 @@ Boolean
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{create\_items() (pyzotero.zotero.Zotero method)}
 
@@ -969,7 +950,6 @@ If successful, \code{resp} will have the same structure as items retrieved with 
 
 \end{fulllineitems}
 
-
 \index{update\_item() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -997,7 +977,6 @@ Example:
 \end{Verbatim}
 
 \end{fulllineitems}
-
 
 \index{delete\_item() (pyzotero.zotero.Zotero method)}
 
@@ -1030,7 +1009,6 @@ Example:
 
 \section{Collection Methods}
 \label{index:collection-methods}\begin{quote}
-
 \index{create\_collection() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -1046,7 +1024,6 @@ Boolean
 \end{description}\end{quote}
 
 \end{fulllineitems}
-
 
 \index{addto\_collection() (pyzotero.zotero.Zotero method)}
 
@@ -1072,7 +1049,6 @@ Collection keys can be obtained by a call to {\hyperref[index:pyzotero.zotero.Zo
 
 \end{fulllineitems}
 
-
 \index{deletefrom\_collection() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -1096,7 +1072,6 @@ Boolean
 See the {\hyperref[index:pyzotero.zotero.Zotero.delete_item]{\code{delete\_item()}}} example for multiple-item removal.
 
 \end{fulllineitems}
-
 
 \index{update\_collection() (pyzotero.zotero.Zotero method)}
 
@@ -1124,7 +1099,6 @@ Example:
 \end{Verbatim}
 
 \end{fulllineitems}
-
 
 \index{delete\_collection() (pyzotero.zotero.Zotero method)}
 

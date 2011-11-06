@@ -589,6 +589,14 @@ class Zotero(object):
         retrieved = self._retrieve_data(query_string)
         return json.loads(retrieved)
 
+    def item_type_fields(self, itemtype):
+        """ Get all valid fields for an item
+        """
+        query_string = '/itemTypeFields?itemType={i}'.format(
+        i = itemtype)
+        retrieved = self._retrieve_data(query_string)
+        return json.loads(retrieved)
+
     def item_fields(self):
         """ Get all available item fields
         """

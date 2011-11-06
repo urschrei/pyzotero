@@ -419,6 +419,13 @@ Item Methods
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
         :rtype: dict
 
+    .. py:method:: Zotero.item_type_fields(itemtype)
+    
+        Returns all valid fields for the specified item type
+
+        :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
+        :rtype: list of dicts
+
     .. py:method:: Zotero.item_template(itemtype)
 
         Returns an item creation template for the specified item type

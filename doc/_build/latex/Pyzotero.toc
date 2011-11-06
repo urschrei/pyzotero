@@ -13,8 +13,8 @@
 \contentsline {section}{\numberline {4.5}Additional Parameters for Read API calls}{13}{section.4.5}
 \contentsline {chapter}{\numberline {5}Write API Methods}{15}{chapter.5}
 \contentsline {section}{\numberline {5.1}Item Methods}{15}{section.5.1}
-\contentsline {section}{\numberline {5.2}Collection Methods}{16}{section.5.2}
+\contentsline {section}{\numberline {5.2}Collection Methods}{17}{section.5.2}
 \contentsline {chapter}{\numberline {6}Notes}{19}{chapter.6}
 \contentsline {chapter}{\numberline {7}License}{21}{chapter.7}
-\contentsline {chapter}{Python Module Index}{23}{section*.47}
-\contentsline {chapter}{Index}{25}{section*.48}
+\contentsline {chapter}{Python Module Index}{23}{section*.48}
+\contentsline {chapter}{Index}{25}{section*.49}
