@@ -746,7 +746,7 @@ Example of returned data:
 
 \section{Additional Parameters for Read API calls}
 \label{index:additional-parameters-for-read-api-calls}
-Additional parameters may be set on Read API methods using the following method. All parameters are optional. \textbf{You may also set a search term here, using the `q' parameter}:
+Additional parameters may be set on Read API methods using the following method. All parameters are optional. \textbf{You may also set a search term here, using the `itemType', `q', or `tag' parameters}. see \href{http://www.zotero.org/support/dev/server\_api/read\_api\#search\_syntax}{the API documentation} for details of search syntax usage:
 \begin{quote}
 \index{add\_parameters() (pyzotero.zotero.Zotero method)}
 
@@ -754,7 +754,13 @@ Additional parameters may be set on Read API methods using the following method.
 \phantomsection\label{index:pyzotero.zotero.Zotero.add_parameters}\pysiglinewithargsret{\code{Zotero.}\bfcode{add\_parameters}}{\optional{\emph{limit=None}, \emph{start=None}, \emph{order=None}, \emph{sort=None}\optional{, \emph{content=None}\optional{, \emph{style=None}}}}}{}~\begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
-\textbf{q} (\emph{str}) -- A search term, which currently matches titles and individual creator fields
+\textbf{itemType} (\emph{str}) -- item type search
+
+\item {} 
+\textbf{q} (\emph{str}) -- a search term, which currently matches titles and individual creator fields
+
+\item {} 
+\textbf{tag} (\emph{str}) -- tag search
 
 \item {} 
 \textbf{limit} (\emph{int}) -- 1 – 99 or None

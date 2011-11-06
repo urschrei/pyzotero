@@ -647,7 +647,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </div>
 <div class="section" id="additional-parameters-for-read-api-calls">
 <h2>Additional Parameters for Read API calls<a class="headerlink" href="#additional-parameters-for-read-api-calls" title="Permalink to this headline">¶</a></h2>
-<p>Additional parameters may be set on Read API methods using the following method. All parameters are optional. <strong>You may also set a search term here, using the &#8216;q&#8217; parameter</strong>:</p>
+<p>Additional parameters may be set on Read API methods using the following method. All parameters are optional. <strong>You may also set a search term here, using the &#8216;itemType&#8217;, &#8216;q&#8217;, or &#8216;tag&#8217; parameters</strong>. see <a class="reference external" href="http://www.zotero.org/support/dev/server_api/read_api#search_syntax">the API documentation</a> for details of search syntax usage:</p>
 <blockquote>
 <div><dl class="method">
 <dt id="pyzotero.zotero.Zotero.add_parameters">
@@ -657,7 +657,9 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>q</strong> (<em>str</em>) &#8211; A search term, which currently matches titles and individual creator fields</li>
+<li><strong>itemType</strong> (<em>str</em>) &#8211; item type search</li>
+<li><strong>q</strong> (<em>str</em>) &#8211; a search term, which currently matches titles and individual creator fields</li>
+<li><strong>tag</strong> (<em>str</em>) &#8211; tag search</li>
 <li><strong>limit</strong> (<em>int</em>) &#8211; 1 – 99 or None</li>
 <li><strong>start</strong> (<em>int</em>) &#8211; 1 – total number of items in your library or None</li>
 <li><strong>order</strong> (<em>str</em>) &#8211; any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”</li>
