@@ -32,7 +32,7 @@ From a local clone, if you wish to install Pyzotero from a specific branch::
     git checkout dev
     pip install .
     
-Alternatively, download the latest version from https://github.com/urschrei/pyzotero/downloads, and point pip at the zip file.
+Alternatively, download the latest version from https://github.com/urschrei/pyzotero/tags, and point pip at the zip file.
 Example: ``pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip``
 
 I assume that running setup.py will also work using ``easy_install``, but I haven't tested it.
