@@ -812,7 +812,9 @@ Example:
 
 If these are set, the return value is a \textbf{list} of UTF-8 formatted HTML \code{div} elements, each containing an item:
 
-\code{{[}'\textless{}div class="csl-entry"\textgreater{}(content)\textless{}/div\textgreater{}', … {]}}
+\code{{[}'\textless{}div class="csl-entry"\textgreater{}(content)\textless{}/div\textgreater{}', … {]}}.
+
+You may also set \code{content='citation'} if you wish to retrieve citations. Similar to \code{bib}, the result will be a list of one or more HTML \code{span} elements.
 \end{quote}
 
 

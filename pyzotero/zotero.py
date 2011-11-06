@@ -34,6 +34,7 @@ import json
 import uuid
 import time
 import datetime
+import re
 import pytz
 from urlparse import urlparse
 from xml.dom import minidom
@@ -95,7 +96,7 @@ def retrieve(func):
         """
         orig_func = func(self, *args, **kwargs)
         retrieved = self._retrieve_data(orig_func)
-        if self.url_params.find('=bib') == -1:
+        if not self.bibs.search(self.url_params):
             # get etags from the response
             self.etags = self._etags(retrieved)
         # return the parsed Atom doc
@@ -124,6 +125,7 @@ class Zotero(object):
         self.url_params = None
         self.etags = None
         self.temp_keys = set(['key', 'etag', 'group_id', 'updated'])
+        self.bibs = re.compile('bib|citation')
         self.fields_template = None
 
     def _token(self):
@@ -482,7 +484,7 @@ class Zotero(object):
         """ Call either _standard_items or _bib_items, based on the URL param
         """
         # Content request in 'bib' format, so call _bib_items
-        if self.url_params.find('=bib') != -1:
+        if self.bibs.search(self.url_params):
             return self._bib_items(retrieved)
         else:
             return self._standard_items(retrieved)

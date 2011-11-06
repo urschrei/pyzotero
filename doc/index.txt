@@ -391,7 +391,9 @@ The special parameters ``content`` and ``style``:
 
     If these are set, the return value is a **list** of UTF-8 formatted HTML ``div`` elements, each containing an item:  
 
-    ``['<div class="csl-entry">(content)</div>', … ]``
+    ``['<div class="csl-entry">(content)</div>', … ]``.
+
+    You may also set ``content='citation'`` if you wish to retrieve citations. Similar to ``bib``, the result will be a list of one or more HTML ``span`` elements.
 
 
 
