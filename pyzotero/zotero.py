@@ -567,7 +567,7 @@ class Zotero(object):
             template = set(t['field'] for t in self.item_fields())
             # cache template and retrieval time for subsequent calls
             thetime = datetime.datetime.utcnow().replace(
-                tzinfo=pytz.timezone('GMT'))
+                tzinfo = pytz.timezone('GMT'))
             self.fields_template = {
                 'tmplt': list(template),
                 'updated': thetime.strftime("%a, %d %b %Y %H:%M:%S %Z")}
