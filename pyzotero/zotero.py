@@ -300,8 +300,7 @@ class Zotero(object):
         """ Get the items in a specific group's trash
         """
         query_string = '/groups/{g}/trash'.format(
-        g = group,
-        i = item)
+        g = group)
         return self._build_query(query_string)
 
     @retrieve
