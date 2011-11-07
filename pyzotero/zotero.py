@@ -125,7 +125,7 @@ class Zotero(object):
         self.etags = None
         self.temp_keys = set(['key', 'etag', 'group_id', 'updated'])
         self.bibs = re.compile('bib|citation')
-        self.fields_template = None
+        self.templates = {}
 
     def _token(self):
         """ Return a unique 32-char write-token """
@@ -139,6 +139,19 @@ class Zotero(object):
         xmldoc = minidom.parseString(incoming)
         return [c.attributes['zapi:etag'].value for
             c in xmldoc.getElementsByTagName('content')]
+
+    def _cache(self, template, key):
+        """ Add a retrieved template to the cache for 304 checking
+            accepts a dict and key name, adds the retrieval time, and adds both
+            to self.templates as a new dict using the specified key
+        """
+        # cache template and retrieval time for subsequent calls
+        thetime = datetime.datetime.utcnow().replace(
+            tzinfo = pytz.timezone('GMT'))
+        self.templates[key] = {
+            'tmplt': template,
+            'updated': thetime.strftime("%a, %d %b %Y %H:%M:%S %Z")}
+        return template
 
     @cleanwrap
     def _cleanup(self, to_clean):
@@ -165,14 +178,14 @@ class Zotero(object):
 
     def _updated(self, url, payload):
         """
-        Generic call to see if a request returns 304
+        Generic call to see if a template request returns 304
         accepts:
         - a string to combine with the API endpoint
         - a dict of format values for the string and updated header
         """
         opener = urllib2.build_opener(NotModifiedHandler())
-        query = self.endpoint + self._build_query(
-            url.format(u = self.user_id, **payload))
+        query = self.endpoint + url.format(
+            u = self.user_id, **payload)
         req = urllib2.Request(query)
         req.add_header('If-Modified-Since',
                         payload['updated'])
@@ -548,10 +561,16 @@ class Zotero(object):
     def item_template(self, itemtype):
         """ Get a template for a new item
         """
+        # if we have a template and it hasn't been updated since we stored it
+        template_name = 'item_template_' + itemtype
         query_string = '/items/new?itemType={i}'.format(
-        i = itemtype)
+            i = itemtype)
+        if self.templates.get(template_name) and not \
+                self._updated(query_string, self.templates[template_name]):
+            return self.templates[template_name]['tmplt']
+        # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return json.loads(retrieved)
+        return self._cache(json.loads(retrieved), template_name)
 
     def check_items(self, items):
         """
@@ -559,18 +578,12 @@ class Zotero(object):
         Accepts a single argument: a list of one or more dicts
         The retrieved fields are cached and re-used until a 304 call fails
         """
-        # if we have a template and it hasn't been updated since we stored it
-        if self.fields_template and not \
-                self._updated('/itemFields', self.fields_template):
-            template = set(t for t in self.fields_template['tmplt'])
+        # check for a valid cached version
+        if self.templates['item_fields'] and not \
+                self._updated('/itemFields', self.templates['item_fields']):
+            template = set(t for t in self.templates['item_fields']['tmplt'])
         else:
             template = set(t['field'] for t in self.item_fields())
-            # cache template and retrieval time for subsequent calls
-            thetime = datetime.datetime.utcnow().replace(
-                tzinfo = pytz.timezone('GMT'))
-            self.fields_template = {
-                'tmplt': list(template),
-                'updated': thetime.strftime("%a, %d %b %Y %H:%M:%S %Z")}
         # add fields we know to be OK
         template = template | set(['tags', 'notes', 'itemType', 'creators'])
         template = template | set(self.temp_keys)
@@ -586,32 +599,54 @@ class Zotero(object):
     def item_types(self):
         """ Get all available item types
         """
+        # Check for a valid cached version
+        if self.templates.get('item_types') and not \
+                self._updated('/itemTypes', self.templates['item_types']):
+            return self.templates['item_types']['tmplt']
         query_string = '/itemTypes'
+        # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return json.loads(retrieved)
+        return self._cache(json.loads(retrieved), 'item_types')
 
     def item_type_fields(self, itemtype):
         """ Get all valid fields for an item
         """
+        # check for a valid cached version
+        template_name = 'item_type_fields_' + itemtype
         query_string = '/itemTypeFields?itemType={i}'.format(
-        i = itemtype)
+            i = itemtype)
+        if self.templates.get(template_name) and not \
+                self._updated(query_string, self.templates[template_name]):
+            return self.templates[template_name]['tmplt']
+        # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return json.loads(retrieved)
+        return self._cache(json.loads(retrieved), template_name)
 
     def item_fields(self):
         """ Get all available item fields
         """
+        # Check for a valid cached version
+        if self.templates.get('item_fields') and not \
+                self._updated('/itemFields', self.templates['item_fields']):
+            return self.templates['item_fields']['tmplt']
         query_string = '/itemFields'
+        # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return json.loads(retrieved)
+        return self._cache(json.loads(retrieved), 'item_fields')
 
     def item_creator_types(self, itemtype):
         """ Get all available creator types for an item
         """
-        query_string = '/itemTypeCreatorTypes?itemType={i}'.format(
-        i = itemtype)
+        # check for a valid cached version
+        template_name = 'item_creator_types_' + itemtype
+        query_string = '/itemTypeFields?itemType={i}'.format(
+            i = itemtype)
+        if self.templates.get(template_name) and not \
+                self._updated(query_string, self.templates[template_name]):
+            return self.templates[template_name]['tmplt']
+        # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return json.loads(retrieved)
+        return self._cache(json.loads(retrieved), template_name)
 
     def create_items(self, payload):
         """
