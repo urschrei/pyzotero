@@ -443,15 +443,6 @@ class Zotero(object):
         i = item)
         return self._build_query(query_string)
 
-    def check_updated(self, payload):
-        """
-        Check if an item's been updated
-        Accepts a dict containing item data
-        Returns True or False
-        """
-        url = '/users/{u}/items/{key}'
-        return self._updated(url, payload)
-
     def all_top(self):
         """ Retrieve all top-level items
         """
