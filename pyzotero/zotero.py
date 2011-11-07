@@ -150,7 +150,7 @@ class Zotero(object):
             tzinfo = pytz.timezone('GMT'))
         self.templates[key] = {
             'tmplt': template,
-            'updated': thetime.strftime("%a, %d %b %Y %H:%M:%S %Z")}
+            'updated': thetime}
         return template
 
     @cleanwrap
@@ -176,29 +176,39 @@ class Zotero(object):
         # parse the result into Python data structures
         return data
 
-    def _updated(self, url, payload):
+    def _updated(self, url, payload, template = None):
         """
         Generic call to see if a template request returns 304
         accepts:
         - a string to combine with the API endpoint
-        - a dict of format values for the string and updated header
+        - a dict of format values, in case they're required by 'url'
+        - a template name to check for
+        As per the API docs, a template less than 1 hour old is
+        assumed to be fresh, and will immediately return False if found
         """
-        opener = urllib2.build_opener(NotModifiedHandler())
-        query = self.endpoint + url.format(
-            u = self.user_id, **payload)
-        req = urllib2.Request(query)
-        req.add_header('If-Modified-Since',
-                        payload['updated'])
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
-        try:
-            url_handle = opener.open(req)
-            _ = url_handle.info()
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
-        if hasattr(url_handle, 'code') and url_handle.code == 304:
-            return False
-        else:
-            return True
+        # If the template is more than an hour old, try a 304
+        if abs(datetime.datetime.utcnow().replace(
+            tzinfo = pytz.timezone('GMT')) -
+                self.templates[template]['updated']).seconds > 3600:
+            opener = urllib2.build_opener(NotModifiedHandler())
+            query = self.endpoint + url.format(
+                u = self.user_id, **payload)
+            req = urllib2.Request(query)
+            req.add_header(
+                'If-Modified-Since',
+                payload['updated'].strftime("%a, %d %b %Y %H:%M:%S %Z"))
+            req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+            try:
+                url_handle = opener.open(req)
+                _ = url_handle.info()
+            except (urllib2.HTTPError, urllib2.URLError), error:
+                self._error_handler(req, error)
+            if hasattr(url_handle, 'code') and url_handle.code == 304:
+                return False
+            else:
+                return True
+        # Still plenty of life left in't
+        return False
 
     def add_parameters(self, **params):
         """ Add URL parameters. Will always add the user key
@@ -557,7 +567,10 @@ class Zotero(object):
         query_string = '/items/new?itemType={i}'.format(
             i = itemtype)
         if self.templates.get(template_name) and not \
-                self._updated(query_string, self.templates[template_name]):
+                self._updated(
+                    query_string,
+                    self.templates[template_name],
+                    template_name):
             return self.templates[template_name]['tmplt']
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
@@ -571,7 +584,10 @@ class Zotero(object):
         """
         # check for a valid cached version
         if self.templates['item_fields'] and not \
-                self._updated('/itemFields', self.templates['item_fields']):
+                self._updated(
+                    '/itemFields',
+                    self.templates['item_fields'],
+                    'item_fields'):
             template = set(t for t in self.templates['item_fields']['tmplt'])
         else:
             template = set(t['field'] for t in self.item_fields())
@@ -592,7 +608,10 @@ class Zotero(object):
         """
         # Check for a valid cached version
         if self.templates.get('item_types') and not \
-                self._updated('/itemTypes', self.templates['item_types']):
+                self._updated(
+                    '/itemTypes',
+                    self.templates['item_types'],
+                    'item_types'):
             return self.templates['item_types']['tmplt']
         query_string = '/itemTypes'
         # otherwise perform a normal request and cache the response
@@ -604,7 +623,10 @@ class Zotero(object):
         """
         # Check for a valid cached version
         if self.templates.get('creator_fields') and not \
-                self._updated('/creatorFields', self.templates['creator_fields']):
+                self._updated(
+                    '/creatorFields',
+                    self.templates['creator_fields'],
+                    'creator_fields'):
             return self.templates['creator_fields']['tmplt']
         query_string = '/creatorFields'
         # otherwise perform a normal request and cache the response
@@ -619,7 +641,10 @@ class Zotero(object):
         query_string = '/itemTypeFields?itemType={i}'.format(
             i = itemtype)
         if self.templates.get(template_name) and not \
-                self._updated(query_string, self.templates[template_name]):
+                self._updated(
+                    query_string,
+                    self.templates[template_name],
+                    template_name):
             return self.templates[template_name]['tmplt']
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
@@ -630,7 +655,10 @@ class Zotero(object):
         """
         # Check for a valid cached version
         if self.templates.get('item_fields') and not \
-                self._updated('/itemFields', self.templates['item_fields']):
+                self._updated(
+                    '/itemFields',
+                    self.templates['item_fields'],
+                    'item_fields'):
             return self.templates['item_fields']['tmplt']
         query_string = '/itemFields'
         # otherwise perform a normal request and cache the response
@@ -645,7 +673,10 @@ class Zotero(object):
         query_string = '/itemTypeFields?itemType={i}'.format(
             i = itemtype)
         if self.templates.get(template_name) and not \
-                self._updated(query_string, self.templates[template_name]):
+                self._updated(
+                    query_string,
+                    self.templates[template_name],
+                    template_name):
             return self.templates[template_name]['tmplt']
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
