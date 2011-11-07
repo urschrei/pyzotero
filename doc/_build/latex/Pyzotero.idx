@@ -30,14 +30,14 @@
 \indexentry{item\_types() (pyzotero.zotero.Zotero method)|hyperpage}{15}
 \indexentry{item\_fields() (pyzotero.zotero.Zotero method)|hyperpage}{15}
 \indexentry{item\_creator\_types() (pyzotero.zotero.Zotero method)|hyperpage}{15}
+\indexentry{creator\_fields() (pyzotero.zotero.Zotero method)|hyperpage}{15}
 \indexentry{item\_type\_fields() (pyzotero.zotero.Zotero method)|hyperpage}{15}
 \indexentry{item\_template() (pyzotero.zotero.Zotero method)|hyperpage}{15}
-\indexentry{check\_updated() (pyzotero.zotero.Zotero method)|hyperpage}{15}
 \indexentry{check\_items() (pyzotero.zotero.Zotero method)|hyperpage}{15}
 \indexentry{create\_items() (pyzotero.zotero.Zotero method)|hyperpage}{16}
 \indexentry{update\_item() (pyzotero.zotero.Zotero method)|hyperpage}{16}
 \indexentry{delete\_item() (pyzotero.zotero.Zotero method)|hyperpage}{16}
-\indexentry{create\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{17}
+\indexentry{create\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{16}
 \indexentry{addto\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{17}
 \indexentry{deletefrom\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{17}
 \indexentry{update\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{17}

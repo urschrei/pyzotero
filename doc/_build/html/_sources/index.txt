@@ -423,6 +423,12 @@ Item Methods
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
         :rtype: dict
 
+    .. py:method:: Zotero.creator_fields()
+
+        Returns a dict containing all localised creator fields
+
+        :rtype: dict
+
     .. py:method:: Zotero.item_type_fields(itemtype)
     
         Returns all valid fields for the specified item type
@@ -437,21 +443,12 @@ Item Methods
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
         :rtype: dict
 
-    .. py:method:: Zotero.check_updated(item)
-    
-        Check whether a Zotero library item has been updated on the server since you retrieved it. This functionality is currently unreliable on the server side; use it at your own risk.
-        
-        :param dict item: a dict containing item data
-        :rtype: Boolean
-
-
     .. py:method:: Zotero.check_items(items)
     
         Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised.
         
         :param list items: one or more dicts containing item data
         :rtype: Boolean
-
 
     .. py:method:: Zotero.create_items(items)
 

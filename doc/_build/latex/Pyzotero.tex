@@ -13,7 +13,7 @@
 
 
 \title{Pyzotero Documentation}
-\date{November 06, 2011}
+\date{November 07, 2011}
 \release{0.8.9}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
@@ -865,6 +865,19 @@ dict
 
 \end{fulllineitems}
 
+\index{creator\_fields() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.creator_fields}\pysiglinewithargsret{\code{Zotero.}\bfcode{creator\_fields}}{}{}
+Returns a dict containing all localised creator fields
+\begin{quote}\begin{description}
+\item[{Return type}] \leavevmode
+dict
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
 \index{item\_type\_fields() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
@@ -892,22 +905,6 @@ Returns an item creation template for the specified item type
 
 \item[{Return type}] \leavevmode
 dict
-
-\end{description}\end{quote}
-
-\end{fulllineitems}
-
-\index{check\_updated() (pyzotero.zotero.Zotero method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:pyzotero.zotero.Zotero.check_updated}\pysiglinewithargsret{\code{Zotero.}\bfcode{check\_updated}}{\emph{item}}{}
-Check whether a Zotero library item has been updated on the server since you retrieved it. This functionality is currently unreliable on the server side; use it at your own risk.
-\begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode
-\textbf{item} (\emph{dict}) -- a dict containing item data
-
-\item[{Return type}] \leavevmode
-Boolean
 
 \end{description}\end{quote}
 

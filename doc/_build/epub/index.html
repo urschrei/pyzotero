@@ -732,6 +732,20 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </dd></dl>
 
 <dl class="method">
+<dt id="pyzotero.zotero.Zotero.creator_fields">
+<tt class="descclassname">Zotero.</tt><tt class="descname">creator_fields</tt><big>(</big><big>)</big></dt>
+<dd><p>Returns a dict containing all localised creator fields</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyzotero.zotero.Zotero.item_type_fields">
 <tt class="descclassname">Zotero.</tt><tt class="descname">item_type_fields</tt><big>(</big><em>itemtype</em><big>)</big></dt>
 <dd><p>Returns all valid fields for the specified item type</p>
@@ -758,22 +772,6 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>itemtype</strong> (<em>str</em>) &#8211; a valid Zotero item type. A list of available item types can be obtained by the use of <a class="reference internal" href="#pyzotero.zotero.Zotero.item_types" title="pyzotero.zotero.Zotero.item_types"><tt class="xref py py-meth docutils literal"><span class="pre">item_types()</span></tt></a></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyzotero.zotero.Zotero.check_updated">
-<tt class="descclassname">Zotero.</tt><tt class="descname">check_updated</tt><big>(</big><em>item</em><big>)</big></dt>
-<dd><p>Check whether a Zotero library item has been updated on the server since you retrieved it. This functionality is currently unreliable on the server side; use it at your own risk.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<em>dict</em>) &#8211; a dict containing item data</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Boolean</td>
 </tr>
 </tbody>
 </table>

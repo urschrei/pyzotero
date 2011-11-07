@@ -8,13 +8,13 @@
   \indexspace
   \bigletter C
   \item check\_items() (pyzotero.zotero.Zotero method), \hyperpage{15}
-  \item check\_updated() (pyzotero.zotero.Zotero method), \hyperpage{15}
   \item children() (pyzotero.zotero.Zotero method), \hyperpage{9}
   \item collection\_items() (pyzotero.zotero.Zotero method), \hyperpage{11}
   \item collections() (pyzotero.zotero.Zotero method), \hyperpage{11}
   \item collections\_sub() (pyzotero.zotero.Zotero method), \hyperpage{12}
-  \item create\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
+  \item create\_collection() (pyzotero.zotero.Zotero method), \hyperpage{16}
   \item create\_items() (pyzotero.zotero.Zotero method), \hyperpage{16}
+  \item creator\_fields() (pyzotero.zotero.Zotero method), \hyperpage{15}
 
   \indexspace
   \bigletter D
