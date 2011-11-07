@@ -48,7 +48,6 @@ timeout = 30
 socket.setdefaulttimeout(timeout)
 
 
-
 def ib64_patched(self, attrsD, contentparams):
     """
     Patch isBase64 to prevent Base64 encoding of JSON content
@@ -187,8 +186,6 @@ class Zotero(object):
             return False
         else:
             return True
-
-
 
     def add_parameters(self, **params):
         """ Add URL parameters. Will always add the user key
