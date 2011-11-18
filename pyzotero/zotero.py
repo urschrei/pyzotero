@@ -203,10 +203,7 @@ class Zotero(object):
                 _ = url_handle.info()
             except (urllib2.HTTPError, urllib2.URLError), error:
                 self._error_handler(req, error)
-            if hasattr(url_handle, 'code') and url_handle.code == 304:
-                return False
-            else:
-                return True
+            return hasattr(url_handle, 'code') and url_handle.code == 304
         # Still plenty of life left in't
         return False
 
