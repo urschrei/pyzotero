@@ -123,8 +123,11 @@ class Zotero(object):
             'Please provide both the user ID and the user key'
         self.url_params = None
         self.etags = None
+        # these aren't valid item fields, so never send them to the server
         self.temp_keys = set(['key', 'etag', 'group_id', 'updated'])
-        self.bibs = re.compile('bib|citation')
+        # matching any one of these means the item's a bibliography entry
+        bibtypes = ['bib', 'citation']
+        self.bibs = re.compile('|'.join(bib for bib in bibtypes))
         self.templates = {}
 
     def _token(self):
