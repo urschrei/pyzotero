@@ -131,6 +131,7 @@ class Zotero(object):
         # matching any one of these means the item's a bibliography entry
         bibtypes = ['bib', 'citation']
         self.bibs = re.compile('|'.join(bib for bib in bibtypes))
+        self.nxt = None
         self.templates = {}
 
     def _token(self):
