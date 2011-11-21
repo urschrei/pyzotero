@@ -95,9 +95,6 @@ def retrieve(func):
         """
         retrieved = self._retrieve_data(func(self, *args, **kwargs))
         self.xmldoc = minidom.parseString(retrieved)
-        # store the 'next' url
-        self.nxt = self.xmldoc.getElementsByTagName('link')[2].attributes\
-            ['href'].value[22:]
         if not self.bibs.search(self.url_params):
             # get etags from the response
             self.etags = self._etags(retrieved)
@@ -503,6 +500,8 @@ class Zotero(object):
     def _process_content(self, retrieved):
         """ Call either _standard_items or _bib_items, based on the URL param
         """
+        # store 'Next' URI
+        self.nxt = retrieved['feed']['links'][2]['href'][22:]
         # Content request in 'bib' format, so call _bib_items
         if self.bibs.search(self.url_params):
             return self._bib_items(retrieved)
