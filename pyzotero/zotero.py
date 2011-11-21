@@ -95,6 +95,11 @@ def retrieve(func):
         """
         orig_func = func(self, *args, **kwargs)
         retrieved = self._retrieve_data(orig_func)
+
+        self.xmldoc = minidom.parseString(retrieved)
+        # store the 'next' url
+        self.nxt = self.xmldoc.getElementsByTagName('link')[2].attributes\
+            ['href'].value[22:]
         if not self.bibs.search(self.url_params):
             # get etags from the response
             self.etags = self._etags(retrieved)
@@ -139,9 +144,8 @@ class Zotero(object):
         Return a list of etags parsed out of the XML response
         """
         # Parse Atom as straight XML in order to get the etags FFS
-        xmldoc = minidom.parseString(incoming)
         return [c.attributes['zapi:etag'].value for
-            c in xmldoc.getElementsByTagName('content')]
+            c in self.xmldoc.getElementsByTagName('content')]
 
     def _cache(self, template, key):
         """ Add a retrieved template to the cache for 304 checking
@@ -470,6 +474,13 @@ class Zotero(object):
             self.add_parameters(start = i, limit = 99)
             all_results.extend(self.top())
         return all_results
+
+    def follow(self):
+        """ Return the result of the call to the URL in the 'Next' link """
+        if self.nxt:
+            return self._retrieve_data(self.nxt)
+        else:
+            return None
 
     def get_subset(self, subset):
         """
