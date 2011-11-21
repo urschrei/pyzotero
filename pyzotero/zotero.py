@@ -93,9 +93,7 @@ def retrieve(func):
         passed to _etags in order to extract the etag attributes
         from each entry, then to feedparser, then to _process_content
         """
-        orig_func = func(self, *args, **kwargs)
-        retrieved = self._retrieve_data(orig_func)
-
+        retrieved = self._retrieve_data(func(self, *args, **kwargs))
         self.xmldoc = minidom.parseString(retrieved)
         # store the 'next' url
         self.nxt = self.xmldoc.getElementsByTagName('link')[2].attributes\
