@@ -37,7 +37,7 @@ import datetime
 import re
 import pytz
 from urlparse import urlparse
-from xml.dom import minidom
+import xml.etree.ElementTree as et
 
 
 import zotero_errors as ze
@@ -140,9 +140,10 @@ class Zotero(object):
         Return a list of etags parsed out of the XML response
         """
         # Parse Atom as straight XML in order to get the etags FFS
-        self.xmldoc = minidom.parseString(incoming)
-        return [c.attributes['zapi:etag'].value for
-            c in self.xmldoc.getElementsByTagName('content')]
+        atom_ns = '{http://www.w3.org/2005/Atom}'
+        tree = et.fromstring(incoming)
+        return [entry.attrib['{http://zotero.org/ns/api}etag'] for
+            entry in tree.findall('{0}entry/{0}content'.format(atom_ns))]
 
     def _cache(self, template, key):
         """ Add a retrieved template to the cache for 304 checking
