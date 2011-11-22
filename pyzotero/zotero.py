@@ -86,7 +86,7 @@ def retrieve(func):
         """
         Returns result of _retrieve_data()
 
-        orig_func's return value is part of a URI, and it's this
+        func's return value is part of a URI, and it's this
         which is intercepted and passed to _retrieve_data:
         '/users/123/items?key=abc123'
         the atom doc returned by _retrieve_data is then
@@ -94,12 +94,12 @@ def retrieve(func):
         from each entry, then to feedparser, then to _process_content
         """
         retrieved = self._retrieve_data(func(self, *args, **kwargs))
-        self.xmldoc = minidom.parseString(retrieved)
-        if not self.bibs.search(self.url_params):
+        parsed = feedparser.parse(retrieved)
+        if not self.bibs.search(parsed['feed']['links'][0]['href']):
             # get etags from the response
             self.etags = self._etags(retrieved)
         # return the parsed Atom doc
-        return self._process_content(feedparser.parse(retrieved))
+        return self._process_content(parsed)
     return wrapped_f
 
 
@@ -140,6 +140,7 @@ class Zotero(object):
         Return a list of etags parsed out of the XML response
         """
         # Parse Atom as straight XML in order to get the etags FFS
+        self.xmldoc = minidom.parseString(incoming)
         return [c.attributes['zapi:etag'].value for
             c in self.xmldoc.getElementsByTagName('content')]
 
@@ -471,10 +472,11 @@ class Zotero(object):
             all_results.extend(self.top())
         return all_results
 
+    @retrieve
     def follow(self):
         """ Return the result of the call to the URL in the 'Next' link """
         if self.nxt:
-            return self._retrieve_data(self.nxt)
+            return self.nxt
         else:
             return None
 
@@ -497,16 +499,16 @@ class Zotero(object):
         return retr
 
     # The following methods process data returned by Read API calls
-    def _process_content(self, retrieved):
+    def _process_content(self, content):
         """ Call either _standard_items or _bib_items, based on the URL param
         """
         # store 'Next' URI
-        self.nxt = retrieved['feed']['links'][2]['href'][22:]
+        self.nxt = content['feed']['links'][2]['href'][22:]
         # Content request in 'bib' format, so call _bib_items
-        if self.bibs.search(self.url_params):
-            return self._bib_items(retrieved)
+        if self.bibs.search(content['feed']['links'][0]['href']):
+            return self._bib_items(content)
         else:
-            return self._standard_items(retrieved)
+            return self._standard_items(content)
 
     def _standard_items(self, retrieved):
         """ Format and return data from API calls which return Items
