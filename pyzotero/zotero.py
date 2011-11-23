@@ -49,8 +49,7 @@ socket.setdefaulttimeout(timeout)
 
 
 def ib64_patched(self, attrsD, contentparams):
-    """
-    Patch isBase64 to prevent Base64 encoding of JSON content
+    """ Patch isBase64 to prevent Base64 encoding of JSON content
     """
     if attrsD.get('mode', '') == 'base64':
         return 1
@@ -70,7 +69,8 @@ feedparser._FeedParserMixin._isBase64 = ib64_patched
 
 
 def cleanwrap(func):
-    """ Wrapper for Zotero._cleanup """
+    """ Wrapper for Zotero._cleanup
+    """
     def enc(self, *args):
         """ Send each item to _cleanup() """
         return (func(self, item) for item in args)
@@ -132,12 +132,12 @@ class Zotero(object):
         self.templates = {}
 
     def _token(self):
-        """ Return a unique 32-char write-token """
+        """ Return a unique 32-char write-token
+        """
         return str(uuid.uuid4().hex)
 
     def _etags(self, incoming):
-        """
-        Return a list of etags parsed out of the XML response
+        """ Return a list of etags parsed out of the XML response
         """
         # Parse Atom as straight XML in order to get the etags FFS
         atom_ns = '{http://www.w3.org/2005/Atom}'
@@ -146,9 +146,10 @@ class Zotero(object):
             entry in tree.findall('{0}entry/{0}content'.format(atom_ns))]
 
     def _cache(self, template, key):
-        """ Add a retrieved template to the cache for 304 checking
-            accepts a dict and key name, adds the retrieval time, and adds both
-            to self.templates as a new dict using the specified key
+        """
+        Add a retrieved template to the cache for 304 checking
+        accepts a dict and key name, adds the retrieval time, and adds both
+        to self.templates as a new dict using the specified key
         """
         # cache template and retrieval time for subsequent calls
         thetime = datetime.datetime.utcnow().replace(
@@ -160,7 +161,8 @@ class Zotero(object):
 
     @cleanwrap
     def _cleanup(self, to_clean):
-        """ Remove keys we added for internal use """
+        """ Remove keys we added for internal use
+        """
         return {k: v for k, v in to_clean.iteritems() if
                 k not in self.temp_keys}
 
@@ -475,7 +477,8 @@ class Zotero(object):
 
     @retrieve
     def follow(self):
-        """ Return the result of the call to the URL in the 'Next' link """
+        """ Return the result of the call to the URL in the 'Next' link
+        """
         if self.links:
             return self.links['next']
         else:
@@ -754,7 +757,6 @@ class Zotero(object):
         Update a Zotero collection
         Accepts one argument, a dict containing collection data retrieved
         using e.g. 'collections()'
-
         """
         token = payload['etag']
         key = payload['key']
@@ -886,8 +888,7 @@ class Zotero(object):
         return True
 
     def _error_handler(self, req, error):
-        """
-        Error handler for HTTP requests
+        """ Error handler for HTTP requests
         """
         # Distinguish between URL errors and HTTP status codes of 400+
         if hasattr(error, 'reason'):
