@@ -133,7 +133,7 @@ class Zotero(object):
 
     def _token(self):
         """ Return a unique 32-char write-token """
-        return str(uuid.uuid4()).replace('-','')
+        return str(uuid.uuid4().hex)
 
     def _etags(self, incoming):
         """
