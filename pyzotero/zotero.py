@@ -477,7 +477,7 @@ class Zotero(object):
     def follow(self):
         """ Return the result of the call to the URL in the 'Next' link """
         if self.links:
-            return self.links[2]
+            return self.links['next']
         else:
             return None
 
@@ -504,10 +504,10 @@ class Zotero(object):
         """ Call either _standard_items or _bib_items, based on the URL param
         """
         # store self, first, next, last
-        self.links = list()
+        self.links = dict()
         for link in content['feed']['links'][:-1]:
             url = urlparse(link['href'])
-            self.links.append('{0}?{1}'.format(url[2], url[4]))
+            self.links[link['rel']] = '{0}?{1}'.format(url[2], url[4])
         # Content request in 'bib' format, so call _bib_items
         if self.bibs.search(content['feed']['links'][0]['href']):
             return self._bib_items(content)
