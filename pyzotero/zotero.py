@@ -484,6 +484,18 @@ class Zotero(object):
         else:
             return None
 
+    def everything(self, query):
+        """
+        Retrieve all items in the library for a particular query
+        This method will override the 'limit' parameter if it's been set
+        """
+        self.add_parameters(limit = 99)
+        items = []
+        items.extend(query)
+        while not self.links['self'] == self.links['last']:
+            items.extend(self.follow())
+        return items
+
     def get_subset(self, subset):
         """
         Retrieve a subset of items
