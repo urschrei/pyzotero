@@ -128,7 +128,7 @@ class Zotero(object):
         # matching any one of these means the item's a bibliography entry
         bibtypes = ['bib', 'citation']
         self.bibs = re.compile('|'.join(bib for bib in bibtypes))
-        self.nxt = None
+        self.links = None
         self.templates = {}
 
     def _token(self):
@@ -476,8 +476,8 @@ class Zotero(object):
     @retrieve
     def follow(self):
         """ Return the result of the call to the URL in the 'Next' link """
-        if self.nxt:
-            return self.nxt
+        if self.links:
+            return self.links[2]
         else:
             return None
 
@@ -503,8 +503,11 @@ class Zotero(object):
     def _process_content(self, content):
         """ Call either _standard_items or _bib_items, based on the URL param
         """
-        # store 'Next' URI
-        self.nxt = content['feed']['links'][2]['href'][22:]
+        # store self, first, next, last
+        self.links = list()
+        for link in content['feed']['links'][:-1]:
+            url = urlparse(link['href'])
+            self.links.append('{0}?{1}'.format(url[2], url[4]))
         # Content request in 'bib' format, so call _bib_items
         if self.bibs.search(content['feed']['links'][0]['href']):
             return self._bib_items(content)
