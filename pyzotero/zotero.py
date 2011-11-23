@@ -460,20 +460,7 @@ class Zotero(object):
     def all_top(self):
         """ Retrieve all top-level items
         """
-        # get a single top-level item
-        query = self._build_query('/users/{u}/items/top')
-        self.add_parameters(limit=1)
-        data = self._retrieve_data(query)
-        self.url_params = None
-        parsed = feedparser.parse(data)
-        # extract the 'total results' figure
-        total = int(parsed['feed']['zapi_totalresults'].encode('utf8'))
-        all_results = []
-        # Retrieve all top-level items, 99 at a time
-        for i in xrange(1, total + 1, 99):
-            self.add_parameters(start = i, limit = 99)
-            all_results.extend(self.top())
-        return all_results
+        return self.everything(self.top())
 
     @retrieve
     def follow(self):
