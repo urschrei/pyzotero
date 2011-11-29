@@ -505,16 +505,21 @@ class Zotero(object):
     def _process_content(self, content):
         """ Call either _standard_items or _bib_items, based on the URL param
         """
-        # store self, first, next, last
-        self.links = dict()
-        for link in content['feed']['links'][:-1]:
-            url = urlparse(link['href'])
-            self.links[link['rel']] = '{0}?{1}'.format(url[2], url[4])
+        self.links = self._extract_links(content)
         # Content request in 'bib' format, so call _bib_items
         if self.bibs.search(content['feed']['links'][0]['href']):
             return self._bib_items(content)
         else:
             return self._standard_items(content)
+
+    def _extract_links(self, doc):
+        """ Extract self, first, next, last links from an Atom doc
+        """
+        extracted = dict()
+        for link in doc['feed']['links'][:-1]:
+            url = urlparse(link['href'])
+            extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
+        return extracted
 
     def _standard_items(self, retrieved):
         """ Format and return data from API calls which return Items
