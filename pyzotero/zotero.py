@@ -506,7 +506,6 @@ class Zotero(object):
         """ Call either _standard_items or _bib_items, based on the URL param
         """
         self.links = self._extract_links(content)
-        # Content request in 'bib' format, so call _bib_items
         if self.bibs.search(content['feed']['links'][0]['href']):
             return self._bib_items(content)
         else:
@@ -537,26 +536,24 @@ class Zotero(object):
             try:
                 for key, _ in enumerate(items):
                     items[key][unicode(zapi)] = \
-                            retrieved.entries[key][unicode('zapi_%s' % zapi)]
+                        retrieved.entries[key][unicode('zapi_%s' % zapi)]
             except KeyError:
                 pass
-        # try to add the updated time in the same format the server expects it
         for key, _ in enumerate(items):
             try:
+        # add the etags
+                items[key][u'etag'] = self.etags[key]
+        # try to add the updated time in the same format the server expects it
                 items[key][u'updated'] = \
-                        time.strftime(
-                                "%a, %d %b %Y %H:%M:%S %Z",
-                                retrieved.entries[key]['updated_parsed'])
+                    time.strftime(
+                        "%a, %d %b %Y %H:%M:%S %Z",
+                        retrieved.entries[key]['updated_parsed'])
             except KeyError:
                 pass
-        # add the etags
-        for k, _ in enumerate(items):
-            items[k][u'etag'] = self.etags[k]
-
         # Try to get a group ID, and add it to the dict
         try:
             group_id = [urlparse(g['links'][0]['href']).path.split('/')[2]
-                    for g in retrieved.entries]
+                for g in retrieved.entries]
             for k, val in enumerate(items):
                 val[u'group_id'] = group_id[k]
         except KeyError:
