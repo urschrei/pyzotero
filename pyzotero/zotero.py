@@ -156,8 +156,8 @@ class Zotero(object):
     @cleanwrap
     def _cleanup(self, to_clean):
         """ Remove keys we added for internal use """
-        return {k: v for k, v in to_clean.iteritems() if
-                k not in self.temp_keys}
+        return dict([ [k, v] for k, v in to_clean.iteritems()
+                      if k not in self.temp_keys ])
 
     def _retrieve_data(self, request = None):
         """
