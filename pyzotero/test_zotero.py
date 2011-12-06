@@ -601,8 +601,6 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.TooManyItems):
             zot.create_items(itms)
 
-
-
     def tearDown(self):
         """ Tear stuff down
         """
