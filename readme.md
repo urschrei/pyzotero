@@ -30,6 +30,10 @@ The [feedparser][5] (>= v5.0.1) and [pytz][9] modules are required. They will be
 
 Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` from the top-level directory.
 
+## Pull Requests ##
+
+Pull requests are welcomed. Please ensure that you base your changes on the most recent commit in the `dev` branch, rebasing against it prior to opening the request if necessary.
+
 # License #
 
 Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See `license.txt` for details.
