@@ -63,6 +63,7 @@ class UserNotAuthorised(PyZoteroError):
 class TooManyItems(PyZoteroError):
     """ Raised when too many items are passed to a Write API method
     """
+    pass
 
 
 
