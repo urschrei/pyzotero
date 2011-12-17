@@ -212,6 +212,26 @@ class ZoteroTests(unittest.TestCase):
              </content>
            </entry>
          </feed>"""
+        self.created_response = """<?xml version="1.0"?>
+        <entry xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
+          <title>Hell, I don't Know</title>
+          <author>
+            <name>urschrei</name>
+            <uri>http://zotero.org/urschrei</uri>
+          </author>
+          <id>http://zotero.org/urschrei/items/NVGIBE59</id>
+          <published>2011-12-14T19:24:20Z</published>
+          <updated>2011-12-17T19:19:37Z</updated>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/NVGIBE59?content=json"/>
+          <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/NVGIBE59"/>
+          <zapi:key>NVGIBE59</zapi:key>
+          <zapi:itemType>journalArticle</zapi:itemType>
+          <zapi:creatorSummary>Salo</zapi:creatorSummary>
+          <zapi:year/>
+          <zapi:numChildren>1</zapi:numChildren>
+          <zapi:numTags>0</zapi:numTags>
+          <content type="application/json" zapi:etag="1ed002db69174ae2ae0e3b90499df15e">{"itemType":"journalArticle","title":"Hell, I don't Know","creators":[{"creatorType":"author","firstName":"Dorotea","lastName":"Salo"}],"abstractNote":"","publicationTitle":"","volume":"","issue":"","pages":"","date":"","series":"","seriesTitle":"","seriesText":"","journalAbbreviation":"","language":"","DOI":"","ISSN":"","shortTitle":"","url":"","accessDate":"","archive":"","archiveLocation":"","libraryCatalog":"","callNumber":"","rights":"","extra":"","tags":[]}</content>
+        </entry>"""
         self.item_templt = """{
           "itemType" : "book",
           "title" : "",
@@ -592,6 +612,14 @@ class ZoteroTests(unittest.TestCase):
         self.assertNotIn("TAGABC123", exc)
         self.assertNotIn("GROUPABC123", exc)
         self.assertNotIn("updated", exc)
+
+    def testEtagsParsing(self):
+        """ Tests item and item update response etag parsing
+        """
+        zot = z.Zotero('myuserID', 'myuserkey')
+        self.assertEqual(zot._etags(self.created_response), ['1ed002db69174ae2ae0e3b90499df15e'])
+        self.assertEqual(zot._etags(self.items_doc),
+                ['7252daf2495feb8ec89c61f391bcba24'])
 
     def testTooManyItems(self):
         """ Should fail because we're passing too many items
