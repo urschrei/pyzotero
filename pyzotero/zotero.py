@@ -143,7 +143,7 @@ class Zotero(object):
         atom_ns = '{http://www.w3.org/2005/Atom}'
         tree = et.fromstring(incoming)
         return [entry.attrib['{http://zotero.org/ns/api}etag'] for
-            entry in tree.findall('{0}entry/{0}content'.format(atom_ns))]
+            entry in tree.findall('.//{0}content'.format(atom_ns))]
 
     def _cache(self, template, key):
         """
@@ -786,7 +786,7 @@ class Zotero(object):
         """
         etag = payload['etag']
         ident = payload['key']
-        to_send = json.dumps(i for i in self._cleanup(payload))
+        to_send = json.dumps(*self._cleanup(payload))
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
