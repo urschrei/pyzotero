@@ -613,6 +613,23 @@ class ZoteroTests(unittest.TestCase):
         self.assertNotIn("GROUPABC123", exc)
         self.assertNotIn("updated", exc)
 
+    def testUpdateItem(self):
+        """ Test that we can update an item
+            This test is a kludge; it only tests that the mechanism for
+            internal key removal is OK, and that we haven't made any silly
+            list/dict comprehension or genexpr errors
+        """
+        # first, retrieve an item
+        zot = z.Zotero('myuserID', 'myuserkey')
+        items_data = zot.items()
+        items_data[0]['title'] = 'flibble'
+        # new opener which will return 403
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
+        z.urllib2.install_opener(my_opener)
+        with self.assertRaises(z.ze.UserNotAuthorised) as e:
+            _ = zot.update_item(items_data[0])
+
+
     def testEtagsParsing(self):
         """ Tests item and item update response etag parsing
         """
