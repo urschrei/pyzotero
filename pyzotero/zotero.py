@@ -466,7 +466,7 @@ class Zotero(object):
     def follow(self):
         """ Return the result of the call to the URL in the 'Next' link
         """
-        if self.links:
+        if self.links and self.links['next'] != self.links['last']:
             return self.links['next']
         else:
             return None
