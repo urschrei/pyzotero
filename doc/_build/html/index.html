@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Description &mdash; Pyzotero 0.9.0 documentation</title>
+    <title>Description &mdash; Pyzotero 0.9.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.0',
+        VERSION:     '0.9.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Pyzotero 0.9.0 documentation" href="#" />
+    <link rel="top" title="Pyzotero 0.9.1 documentation" href="#" />
  
 <script type="text/javascript">
   var _gaq = _gaq || [];
@@ -49,7 +49,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pyzotero 0.9.0 documentation</a> &raquo;</li> 
+        <li><a href="#">Pyzotero 0.9.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -657,9 +657,37 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <div class="highlight-python"><pre>['Authority in literature', 'Errata', … ]</pre>
 </div>
 </div>
+<div class="section" id="the-follow-method">
+<h2>The <tt class="docutils literal"><span class="pre">follow()</span></tt> method<a class="headerlink" href="#the-follow-method" title="Permalink to this headline">¶</a></h2>
+<p>This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling <tt class="docutils literal"><span class="pre">follow()</span></tt> will repeat that call, but for the next <em>x</em> number of items, where <em>x</em> is either a number set by the user for the original call, or 50 by default. Each subsequent call to <tt class="docutils literal"><span class="pre">follow()</span></tt> will extend the offset, until no items remain to be retrieved. This enables the use of a return value of <tt class="docutils literal"><span class="pre">None</span></tt> as a guard condition.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
+<span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_key</span><span class="p">)</span>
+<span class="c"># only retrieve a single item</span>
+<span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c"># this will retrieve the most recently added/modified top-level item</span>
+<span class="n">first_item</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">()</span>
+<span class="c"># now we can start retrieving subsequent items</span>
+<span class="n">next_item</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">follow</span><span class="p">()</span>
+<span class="n">third_item</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">follow</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-everything-method">
+<h2>The <tt class="docutils literal"><span class="pre">everything()</span></tt> method<a class="headerlink" href="#the-everything-method" title="Permalink to this headline">¶</a></h2>
+<p>This method (currently experimental) will retrieve <strong>all</strong> library items specified by its argument: a valid Read API call.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
+<span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_key</span><span class="p">)</span>
+<span class="c"># retrieve all top-level items</span>
+<span class="n">toplevel</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">everything</span><span class="p">(</span><span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">everything()</span></tt> method should work with all Pyzotero Read API calls, but has not yet been extensively tested. Feedback is welcomed.</p>
+</div>
 <div class="section" id="additional-parameters-for-read-api-calls">
 <h2>Additional Parameters for Read API calls<a class="headerlink" href="#additional-parameters-for-read-api-calls" title="Permalink to this headline">¶</a></h2>
-<p>Additional parameters may be set on Read API methods using the following method. All parameters are optional. <strong>You may also set a search term here, using the &#8216;itemType&#8217;, &#8216;q&#8217;, or &#8216;tag&#8217; parameters</strong>. see <a class="reference external" href="http://www.zotero.org/support/dev/server_api/read_api#search_syntax">the API documentation</a> for details of search syntax usage:</p>
+<p>Additional parameters may be set on Read API methods using the following method. All parameters are optional. <strong>You may also set a search term here, using the &#8216;itemType&#8217;, &#8216;q&#8217;, or &#8216;tag&#8217; parameters</strong>. This area of the API is under heavy development as of late 2011, and may change frequently. See <a class="reference external" href="http://www.zotero.org/support/dev/server_api/read_api#search_syntax">the API documentation</a> for the most up-to-date details of search syntax usage:</p>
 <blockquote>
 <div><dl class="method">
 <dt id="pyzotero.zotero.Zotero.add_parameters">
@@ -1045,6 +1073,8 @@ Example:</p>
 <li><a class="reference internal" href="#retrieving-collections">Retrieving Collections</a></li>
 <li><a class="reference internal" href="#retrieving-groups">Retrieving groups</a></li>
 <li><a class="reference internal" href="#retrieving-tags">Retrieving Tags</a></li>
+<li><a class="reference internal" href="#the-follow-method">The <tt class="docutils literal"><span class="pre">follow()</span></tt> method</a></li>
+<li><a class="reference internal" href="#the-everything-method">The <tt class="docutils literal"><span class="pre">everything()</span></tt> method</a></li>
 <li><a class="reference internal" href="#additional-parameters-for-read-api-calls">Additional Parameters for Read API calls</a></li>
 </ul>
 </li>
@@ -1088,7 +1118,7 @@ Example:</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pyzotero 0.9.0 documentation</a> &raquo;</li> 
+        <li><a href="#">Pyzotero 0.9.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 

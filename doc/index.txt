@@ -355,11 +355,50 @@ Example of returned data::
     ['Authority in literature', 'Errata', … ]
 
 
+=======================
+The ``follow()`` method
+=======================
+
+This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset, until no items remain to be retrieved. This enables the use of a return value of ``None`` as a guard condition.
+
+Example:
+
+::
+
+    from pyzotero import zotero
+    zot = zotero.Zotero(user_id, user_key)
+    # only retrieve a single item
+    zot.add_parameters(limit = 1)
+    # this will retrieve the most recently added/modified top-level item
+    first_item = zot.top()
+    # now we can start retrieving subsequent items
+    next_item = zot.follow()
+    third_item = zot.follow()
+
+
+===========================
+The ``everything()`` method
+===========================
+
+This method (currently experimental) will retrieve **all** library items specified by its argument: a valid Read API call.
+
+Example:
+
+::
+
+    from pyzotero import zotero
+    zot = zotero.Zotero(user_id, user_key)
+    # retrieve all top-level items
+    toplevel = zot.everything(zot.top())
+
+The ``everything()`` method should work with all Pyzotero Read API calls, but has not yet been extensively tested. Feedback is welcomed.
+
+
 ========================================
 Additional Parameters for Read API calls
 ========================================
 
-Additional parameters may be set on Read API methods using the following method. All parameters are optional. **You may also set a search term here, using the 'itemType', 'q', or 'tag' parameters**. see `the API documentation <http://www.zotero.org/support/dev/server_api/read_api#search_syntax>`_ for details of search syntax usage:
+Additional parameters may be set on Read API methods using the following method. All parameters are optional. **You may also set a search term here, using the 'itemType', 'q', or 'tag' parameters**. This area of the API is under heavy development as of late 2011, and may change frequently. See `the API documentation <http://www.zotero.org/support/dev/server_api/read_api#search_syntax>`_ for the most up-to-date details of search syntax usage:
 
     .. py:method:: Zotero.add_parameters([limit=None, start=None, order=None, sort=None, [content=None[ ,style=None]]])
 

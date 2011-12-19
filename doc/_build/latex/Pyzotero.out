@@ -9,11 +9,13 @@
 \BOOKMARK [1][-]{section.4.2}{Retrieving Collections}{chapter.4}% 9
 \BOOKMARK [1][-]{section.4.3}{Retrieving groups}{chapter.4}% 10
 \BOOKMARK [1][-]{section.4.4}{Retrieving Tags}{chapter.4}% 11
-\BOOKMARK [1][-]{section.4.5}{Additional Parameters for Read API calls}{chapter.4}% 12
-\BOOKMARK [0][-]{chapter.5}{Write API Methods}{}% 13
-\BOOKMARK [1][-]{section.5.1}{Item Methods}{chapter.5}% 14
-\BOOKMARK [1][-]{section.5.2}{Collection Methods}{chapter.5}% 15
-\BOOKMARK [0][-]{chapter.6}{Notes}{}% 16
-\BOOKMARK [0][-]{chapter.7}{License}{}% 17
-\BOOKMARK [0][-]{section*.48}{Python Module Index}{}% 18
-\BOOKMARK [0][-]{section*.49}{Index}{}% 19
+\BOOKMARK [1][-]{section.4.5}{The follow\(\) method}{chapter.4}% 12
+\BOOKMARK [1][-]{section.4.6}{The everything\(\) method}{chapter.4}% 13
+\BOOKMARK [1][-]{section.4.7}{Additional Parameters for Read API calls}{chapter.4}% 14
+\BOOKMARK [0][-]{chapter.5}{Write API Methods}{}% 15
+\BOOKMARK [1][-]{section.5.1}{Item Methods}{chapter.5}% 16
+\BOOKMARK [1][-]{section.5.2}{Collection Methods}{chapter.5}% 17
+\BOOKMARK [0][-]{chapter.6}{Notes}{}% 18
+\BOOKMARK [0][-]{chapter.7}{License}{}% 19
+\BOOKMARK [0][-]{section*.48}{Python Module Index}{}% 20
+\BOOKMARK [0][-]{section*.49}{Index}{}% 21

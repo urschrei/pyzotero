@@ -2,25 +2,25 @@
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
 
   \bigletter A
-  \item add\_parameters() (pyzotero.zotero.Zotero method), \hyperpage{13}
-  \item addto\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
+  \item add\_parameters() (pyzotero.zotero.Zotero method), \hyperpage{14}
+  \item addto\_collection() (pyzotero.zotero.Zotero method), \hyperpage{19}
 
   \indexspace
   \bigletter C
-  \item check\_items() (pyzotero.zotero.Zotero method), \hyperpage{15}
+  \item check\_items() (pyzotero.zotero.Zotero method), \hyperpage{17}
   \item children() (pyzotero.zotero.Zotero method), \hyperpage{9}
   \item collection\_items() (pyzotero.zotero.Zotero method), \hyperpage{11}
   \item collections() (pyzotero.zotero.Zotero method), \hyperpage{11}
   \item collections\_sub() (pyzotero.zotero.Zotero method), \hyperpage{12}
-  \item create\_collection() (pyzotero.zotero.Zotero method), \hyperpage{16}
-  \item create\_items() (pyzotero.zotero.Zotero method), \hyperpage{16}
-  \item creator\_fields() (pyzotero.zotero.Zotero method), \hyperpage{15}
+  \item create\_collection() (pyzotero.zotero.Zotero method), \hyperpage{18}
+  \item create\_items() (pyzotero.zotero.Zotero method), \hyperpage{18}
+  \item creator\_fields() (pyzotero.zotero.Zotero method), \hyperpage{17}
 
   \indexspace
   \bigletter D
-  \item delete\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
-  \item delete\_item() (pyzotero.zotero.Zotero method), \hyperpage{16}
-  \item deletefrom\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
+  \item delete\_collection() (pyzotero.zotero.Zotero method), \hyperpage{19}
+  \item delete\_item() (pyzotero.zotero.Zotero method), \hyperpage{18}
+  \item deletefrom\_collection() (pyzotero.zotero.Zotero method), \hyperpage{19}
 
   \indexspace
   \bigletter G
@@ -43,12 +43,12 @@
   \indexspace
   \bigletter I
   \item item() (pyzotero.zotero.Zotero method), \hyperpage{9}
-  \item item\_creator\_types() (pyzotero.zotero.Zotero method), \hyperpage{15}
-  \item item\_fields() (pyzotero.zotero.Zotero method), \hyperpage{15}
+  \item item\_creator\_types() (pyzotero.zotero.Zotero method), \hyperpage{17}
+  \item item\_fields() (pyzotero.zotero.Zotero method), \hyperpage{17}
   \item item\_tags() (pyzotero.zotero.Zotero method), \hyperpage{13}
-  \item item\_template() (pyzotero.zotero.Zotero method), \hyperpage{15}
-  \item item\_type\_fields() (pyzotero.zotero.Zotero method), \hyperpage{15}
-  \item item\_types() (pyzotero.zotero.Zotero method), \hyperpage{15}
+  \item item\_template() (pyzotero.zotero.Zotero method), \hyperpage{17}
+  \item item\_type\_fields() (pyzotero.zotero.Zotero method), \hyperpage{17}
+  \item item\_types() (pyzotero.zotero.Zotero method), \hyperpage{17}
   \item items() (pyzotero.zotero.Zotero method), \hyperpage{9}
 
   \indexspace
@@ -64,8 +64,8 @@
 
   \indexspace
   \bigletter U
-  \item update\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
-  \item update\_item() (pyzotero.zotero.Zotero method), \hyperpage{16}
+  \item update\_collection() (pyzotero.zotero.Zotero method), \hyperpage{19}
+  \item update\_item() (pyzotero.zotero.Zotero method), \hyperpage{18}
 
   \indexspace
   \bigletter Z
