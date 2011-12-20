@@ -359,7 +359,7 @@ Example of returned data::
 The ``follow()`` method
 =======================
 
-This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset, until no items remain to be retrieved. This enables the use of a return value of ``None`` as a guard condition.
+This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset.
 
 Example:
 
