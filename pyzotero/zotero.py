@@ -244,6 +244,17 @@ class Zotero(object):
         return query
 
     # The following methods are Zotero Read API calls
+    def totalitems(self):
+        """ Return the total number of top-level items in the library
+        """
+        query = self._build_query('/users/{u}/items/top')
+        self.add_parameters(limit=1)
+        data = self._retrieve_data(query)
+        self.url_params = None
+        parsed = feedparser.parse(data)
+        # extract the 'total results' figure
+        return int(parsed['feed']['zapi_totalresults'].encode('utf8'))
+
     @retrieve
     def items(self):
         """ Get user items
