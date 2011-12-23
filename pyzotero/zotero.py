@@ -255,6 +255,30 @@ class Zotero(object):
         # extract the 'total results' figure
         return int(parsed['feed']['zapi_totalresults'].encode('utf8'))
 
+    def num_collectionitems(self, collection):
+        """ Return the total number of items in the specified collection
+        """
+        query = '/users/{u}/collections/{c}/items'.format(
+            u = self.user_id, c = collection.upper().upper())
+        self.add_parameters(limit=1)
+        data = self._retrieve_data(query)
+        self.url_params = None
+        parsed = feedparser.parse(data)
+        # extract the 'total items' figure
+        return int(parsed.feed['zapi_totalresults'].encode('utf-8'))
+
+    def num_groupitems(self, group):
+        """ Return the total number of items in the specified group
+        """
+        query = '/groups/{g}/items'.format(
+            u = self.user_id, g = group.upper().upper())
+        self.add_parameters(limit=1)
+        data = self._retrieve_data(query)
+        self.url_params = None
+        parsed = feedparser.parse(data)
+        # extract the 'total items' figure
+        return int(parsed.feed['zapi_totalresults'].encode('utf8'))
+
     @retrieve
     def items(self):
         """ Get user items
