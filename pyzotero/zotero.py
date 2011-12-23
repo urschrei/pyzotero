@@ -305,7 +305,7 @@ class Zotero(object):
         """ Get a specific item
         """
         query_string = '/users/{u}/items/{i}'.format(
-        u = self.user_id, i = item)
+        u = self.user_id, i = item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -313,7 +313,7 @@ class Zotero(object):
         """ Get a specific item's child items
         """
         query_string = '/users/{u}/items/{i}/children'.format(
-        u = self.user_id, i = item)
+        u = self.user_id, i = item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -329,7 +329,7 @@ class Zotero(object):
         """ Get a specific collection's items
         """
         query_string = '/users/{u}/collections/{c}/items'.format(
-        u = self.user_id, c = collection)
+        u = self.user_id, c = collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -337,7 +337,7 @@ class Zotero(object):
         """ Get a specific group's items
         """
         query_string = '/groups/{g}/items'.format(
-        g = group)
+        g = group.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -345,7 +345,7 @@ class Zotero(object):
         """ Get a specific group's top-level items
         """
         query_string = '/groups/{g}/items/top'.format(
-        g = group)
+        g = group.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -353,8 +353,8 @@ class Zotero(object):
         """ Get a specific group item
         """
         query_string = '/groups/{g}/items/{i}'.format(
-        g = group,
-        i = item)
+        g = group.upper(),
+        i = item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -362,7 +362,7 @@ class Zotero(object):
         """ Get the items in a specific group's trash
         """
         query_string = '/groups/{g}/trash'.format(
-        g = group)
+        g = group.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -370,8 +370,8 @@ class Zotero(object):
         """ Get a specific group item's child items
         """
         query_string = '/groups/{g}/items/{i}/children'.format(
-        g = group,
-        i = item)
+        g = group.upper(),
+        i = item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -379,7 +379,7 @@ class Zotero(object):
         """ Get a specific group's items for a specific tag
         """
         query_string = '/groups/{g}/tags/{t}/items'.format(
-        g = group,
+        g = group.upper(),
         t = tag)
         return self._build_query(query_string)
 
@@ -388,8 +388,8 @@ class Zotero(object):
         """ Get a specific group's items from a specific collection
         """
         query_string = '/groups/{g}/collections/{c}/items'.format(
-        g = group,
-        c = collection)
+        g = group.upper(),
+        c = collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -397,8 +397,8 @@ class Zotero(object):
         """ Get a specific group's top-level items from a specific collection
         """
         query_string = '/groups/{g}/collections/{c}/items/top'.format(
-        g = group,
-        c = collection)
+        g = group.upper(),
+        c = collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -406,9 +406,9 @@ class Zotero(object):
         """ Get a specific collection's item from a specific group
         """
         query_string = '/groups/{g}/collections/{c}/items/{i}'.format(
-        g = group,
-        c = collection,
-        i = item)
+        g = group.upper(),
+        c = collection.upper(),
+        i = item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -423,7 +423,7 @@ class Zotero(object):
         """ Get subcollections for a specific collection
         """
         query_string = '/users/{u}/collections/{c}/collections'.format(
-        u = self.user_id, c = collection)
+        u = self.user_id, c = collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -432,7 +432,7 @@ class Zotero(object):
         """
         query_string = '/groups/{group}/collections'.format(
         u = self.user_id,
-        g = group)
+        g = group.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -440,8 +440,8 @@ class Zotero(object):
         """ Get a specific collection for a specific group
         """
         query_string = '/groups/{g}/collections/{c}'.format(
-        g = group,
-        c = collection)
+        g = group.upper(),
+        c = collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -449,8 +449,8 @@ class Zotero(object):
         """ Get collections for a specific group
         """
         query_string = '/groups/{g}/collections/{c}/collections'.format(
-        g = group,
-        c = collection)
+        g = group.upper(),
+        c = collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -472,7 +472,7 @@ class Zotero(object):
         """ Get tags for a specific item
         """
         query_string = '/users/{u}/items/{i}/tags'.format(
-        u = self.user_id, i = item)
+        u = self.user_id, i = item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -480,7 +480,7 @@ class Zotero(object):
         """ Get tags for a specific group
         """
         query_string = '/groups/{g}/tags'.format(
-        g = group)
+        g = group.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -488,8 +488,8 @@ class Zotero(object):
         """ Get tags for a specific item in a specific group
         """
         query_string = '/groups/{g}/items/{i}/tags'.format(
-        g = group,
-        i = item)
+        g = group.upper(),
+        i = item.upper())
         return self._build_query(query_string)
 
     def all_top(self):
@@ -850,7 +850,7 @@ class Zotero(object):
 
         req = urllib2.Request(
         self.endpoint + '/users/{u}/collections/{c}/items'.format(
-            u = self.user_id, c = collection) +
+            u = self.user_id, c = collection.upper()) +
             '?' + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
@@ -871,7 +871,7 @@ class Zotero(object):
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(
         self.endpoint + '/users/{u}/collections/{c}/items/'.format(
-            u = self.user_id, c = collection) + ident +
+            u = self.user_id, c = collection.upper()) + ident +
             '?' + urllib.urlencode({'key': self.user_key}))
         req.get_method = lambda: 'DELETE'
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
