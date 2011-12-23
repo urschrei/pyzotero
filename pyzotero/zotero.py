@@ -264,6 +264,13 @@ class Zotero(object):
             g = group.upper())
         return self._totals(query)
 
+    def num_tagitems(self, tag):
+        """ Return the total number of items for the specified tag
+        """
+        query = '/users/{u}/tags/{t}/items'.format(
+            u = self.user_id, t = tag)
+        return self._totals(query)
+
     def _totals(self, query):
         """ General method for returning total counts
         """
