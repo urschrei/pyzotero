@@ -142,8 +142,11 @@ class Zotero(object):
         # Parse Atom as straight XML in order to get the etags FFS
         atom_ns = '{http://www.w3.org/2005/Atom}'
         tree = et.fromstring(incoming)
-        return [entry.attrib['{http://zotero.org/ns/api}etag'] for
-            entry in tree.findall('.//{0}content'.format(atom_ns))]
+        try:
+            return [entry.attrib['{http://zotero.org/ns/api}etag'] for
+                entry in tree.findall('.//{0}content'.format(atom_ns))]
+        except KeyError:
+            pass
 
     def _cache(self, template, key):
         """
@@ -580,13 +583,13 @@ class Zotero(object):
             try:
         # add the etags
                 items[key][u'etag'] = self.etags[key]
-        # try to add the updated time in the same format the server expects it
-                items[key][u'updated'] = \
-                    time.strftime(
-                        "%a, %d %b %Y %H:%M:%S %Z",
-                        retrieved.entries[key]['updated_parsed'])
-            except KeyError:
+            except TypeError:
                 pass
+        # try to add the updated time in the same format the server expects it
+            items[key][u'updated'] = \
+                time.strftime(
+                    "%a, %d %b %Y %H:%M:%S %Z",
+                    retrieved.entries[key]['updated_parsed'])
         # Try to get a group ID, and add it to the dict
         try:
             group_id = [urlparse(g['links'][0]['href']).path.split('/')[2]

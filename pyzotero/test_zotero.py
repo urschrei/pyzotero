@@ -174,7 +174,7 @@ class ZoteroTests(unittest.TestCase):
             <link rel="self" type="application/atom+xml" href="https://api.zotero.org/groups/10248?content=json"/>
             <link rel="alternate" type="text/html" href="http://zotero.org/groups/dfw"/>
             <zapi:numItems>468</zapi:numItems>
-            <content type="application/json" zapi:etag="7252daf2495feb8ec89c61f391bcba24">{"name":"DFW","owner":436,"type":"PublicOpen","description":"%3Cp%3EA+grouped+collection+of+the+David+Foster+Wallace+bibliography%2C+adapted%2Fedited%2Fupdated+from+what%27s+available+elsewhere.%3C%2Fp%3E","url":"","hasImage":1,"libraryEnabled":1,"libraryEditing":"admins","libraryReading":"all","fileEditing":"none","members":{"2":539271}}</content>
+            <content type="application/json">{"name":"DFW","owner":436,"type":"PublicOpen","description":"%3Cp%3EA+grouped+collection+of+the+David+Foster+Wallace+bibliography%2C+adapted%2Fedited%2Fupdated+from+what%27s+available+elsewhere.%3C%2Fp%3E","url":"","hasImage":1,"libraryEnabled":1,"libraryEditing":"admins","libraryReading":"all","fileEditing":"none","members":{"2":539271}}</content>
           </entry>
         </feed>"""
         self.bib_doc = """<?xml version="1.0"?>
