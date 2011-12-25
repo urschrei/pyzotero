@@ -394,6 +394,37 @@ Example:
 The ``everything()`` method should work with all Pyzotero Read API calls, but has not yet been extensively tested. Feedback is welcomed.
 
 
+======================
+Retrieving item counts
+======================
+
+If you wish to retrieve item counts for subsets of a library, you can use the following methods:
+
+.. py:method:: Zotero.num_items()
+
+    Returns the count of top-level items in the library
+
+    :rtype: int
+
+.. py:method:: Zotero.num_collectionitems(collectionID)
+
+    Returns the count of items in the specified collection
+
+    :rtype: int
+
+.. py:method:: Zotero.num_tagitems(tag)
+
+    Returns the count of items for the specified tag
+
+    :rtype: int
+
+.. py:method:: Zotero.num_groupitems(groupID)
+
+    Returns the count of items in the specified group
+
+    :rtype: int
+
+
 ========================================
 Additional Parameters for Read API calls
 ========================================

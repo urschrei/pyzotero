@@ -12,11 +12,12 @@
 \contentsline {section}{\numberline {4.4}Retrieving Tags}{13}{section.4.4}
 \contentsline {section}{\numberline {4.5}The \texttt {follow()} method}{13}{section.4.5}
 \contentsline {section}{\numberline {4.6}The \texttt {everything()} method}{13}{section.4.6}
-\contentsline {section}{\numberline {4.7}Additional Parameters for Read API calls}{14}{section.4.7}
+\contentsline {section}{\numberline {4.7}Retrieving item counts}{14}{section.4.7}
+\contentsline {section}{\numberline {4.8}Additional Parameters for Read API calls}{14}{section.4.8}
 \contentsline {chapter}{\numberline {5}Write API Methods}{17}{chapter.5}
 \contentsline {section}{\numberline {5.1}Item Methods}{17}{section.5.1}
 \contentsline {section}{\numberline {5.2}Collection Methods}{18}{section.5.2}
 \contentsline {chapter}{\numberline {6}Notes}{21}{chapter.6}
 \contentsline {chapter}{\numberline {7}License}{23}{chapter.7}
-\contentsline {chapter}{Python Module Index}{25}{section*.48}
-\contentsline {chapter}{Index}{27}{section*.49}
+\contentsline {chapter}{Python Module Index}{25}{section*.52}
+\contentsline {chapter}{Index}{27}{section*.53}

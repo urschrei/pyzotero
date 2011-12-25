@@ -52,6 +52,13 @@
   \item items() (pyzotero.zotero.Zotero method), \hyperpage{9}
 
   \indexspace
+  \bigletter N
+  \item num\_collectionitems() (pyzotero.zotero.Zotero method), \hyperpage{14}
+  \item num\_groupitems() (pyzotero.zotero.Zotero method), \hyperpage{14}
+  \item num\_items() (pyzotero.zotero.Zotero method), \hyperpage{14}
+  \item num\_tagitems() (pyzotero.zotero.Zotero method), \hyperpage{14}
+
+  \indexspace
   \bigletter P
   \item pyzotero.zotero (module), \hyperpage{1}
 

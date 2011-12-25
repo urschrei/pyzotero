@@ -11,11 +11,12 @@
 \BOOKMARK [1][-]{section.4.4}{Retrieving Tags}{chapter.4}% 11
 \BOOKMARK [1][-]{section.4.5}{The follow\(\) method}{chapter.4}% 12
 \BOOKMARK [1][-]{section.4.6}{The everything\(\) method}{chapter.4}% 13
-\BOOKMARK [1][-]{section.4.7}{Additional Parameters for Read API calls}{chapter.4}% 14
-\BOOKMARK [0][-]{chapter.5}{Write API Methods}{}% 15
-\BOOKMARK [1][-]{section.5.1}{Item Methods}{chapter.5}% 16
-\BOOKMARK [1][-]{section.5.2}{Collection Methods}{chapter.5}% 17
-\BOOKMARK [0][-]{chapter.6}{Notes}{}% 18
-\BOOKMARK [0][-]{chapter.7}{License}{}% 19
-\BOOKMARK [0][-]{section*.48}{Python Module Index}{}% 20
-\BOOKMARK [0][-]{section*.49}{Index}{}% 21
+\BOOKMARK [1][-]{section.4.7}{Retrieving item counts}{chapter.4}% 14
+\BOOKMARK [1][-]{section.4.8}{Additional Parameters for Read API calls}{chapter.4}% 15
+\BOOKMARK [0][-]{chapter.5}{Write API Methods}{}% 16
+\BOOKMARK [1][-]{section.5.1}{Item Methods}{chapter.5}% 17
+\BOOKMARK [1][-]{section.5.2}{Collection Methods}{chapter.5}% 18
+\BOOKMARK [0][-]{chapter.6}{Notes}{}% 19
+\BOOKMARK [0][-]{chapter.7}{License}{}% 20
+\BOOKMARK [0][-]{section*.52}{Python Module Index}{}% 21
+\BOOKMARK [0][-]{section*.53}{Index}{}% 22

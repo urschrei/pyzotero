@@ -1,7 +1,7 @@
 This is makeindex, version 2.15 [TeX Live 2011] (kpathsea + Thai support).
 Scanning style file ./python.ist......done (6 attributes redefined, 0 ignored).
-Scanning input file Pyzotero.idx....done (44 entries accepted, 0 rejected).
-Sorting entries....done (246 comparisons).
-Generating output file Pyzotero.ind....done (74 lines written, 0 warnings).
+Scanning input file Pyzotero.idx....done (48 entries accepted, 0 rejected).
+Sorting entries....done (312 comparisons).
+Generating output file Pyzotero.ind....done (81 lines written, 0 warnings).
 Output written in Pyzotero.ind.
 Transcript written in Pyzotero.ilg.

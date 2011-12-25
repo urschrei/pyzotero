@@ -13,8 +13,8 @@
 
 
 \title{Pyzotero Documentation}
-\date{December 19, 2011}
-\release{0.9.1}
+\date{December 24, 2011}
+\release{0.9.2}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
 \renewcommand{\releasename}{Release}
@@ -746,7 +746,7 @@ Example of returned data:
 
 \section{The \texttt{follow()} method}
 \label{index:the-follow-method}
-This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling \code{follow()} will repeat that call, but for the next \emph{x} number of items, where \emph{x} is either a number set by the user for the original call, or 50 by default. Each subsequent call to \code{follow()} will extend the offset, until no items remain to be retrieved. This enables the use of a return value of \code{None} as a guard condition.
+This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling \code{follow()} will repeat that call, but for the next \emph{x} number of items, where \emph{x} is either a number set by the user for the original call, or 50 by default. Each subsequent call to \code{follow()} will extend the offset.
 
 Example:
 
@@ -777,6 +777,63 @@ Example:
 \end{Verbatim}
 
 The \code{everything()} method should work with all Pyzotero Read API calls, but has not yet been extensively tested. Feedback is welcomed.
+
+
+\section{Retrieving item counts}
+\label{index:retrieving-item-counts}
+If you wish to retrieve item counts for subsets of a library, you can use the following methods:
+\index{num\_items() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.num_items}\pysiglinewithargsret{\code{Zotero.}\bfcode{num\_items}}{}{}
+Returns the count of top-level items in the library
+\begin{quote}\begin{description}
+\item[{Return type}] \leavevmode
+int
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{num\_collectionitems() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.num_collectionitems}\pysiglinewithargsret{\code{Zotero.}\bfcode{num\_collectionitems}}{\emph{collectionID}}{}
+Returns the count of items in the specified collection
+\begin{quote}\begin{description}
+\item[{Return type}] \leavevmode
+int
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{num\_tagitems() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.num_tagitems}\pysiglinewithargsret{\code{Zotero.}\bfcode{num\_tagitems}}{\emph{tag}}{}
+Returns the count of items for the specified tag
+\begin{quote}\begin{description}
+\item[{Return type}] \leavevmode
+int
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{num\_groupitems() (pyzotero.zotero.Zotero method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pyzotero.zotero.Zotero.num_groupitems}\pysiglinewithargsret{\code{Zotero.}\bfcode{num\_groupitems}}{\emph{groupID}}{}
+Returns the count of items in the specified group
+\begin{quote}\begin{description}
+\item[{Return type}] \leavevmode
+int
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
 
 
 \section{Additional Parameters for Read API calls}

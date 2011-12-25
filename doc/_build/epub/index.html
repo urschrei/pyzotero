@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pyzotero 0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="#">Pyzotero 0.9.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -644,7 +644,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </div>
 <div class="section" id="the-follow-method">
 <h2>The <tt class="docutils literal"><span class="pre">follow()</span></tt> method</h2>
-<p>This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling <tt class="docutils literal"><span class="pre">follow()</span></tt> will repeat that call, but for the next <em>x</em> number of items, where <em>x</em> is either a number set by the user for the original call, or 50 by default. Each subsequent call to <tt class="docutils literal"><span class="pre">follow()</span></tt> will extend the offset, until no items remain to be retrieved. This enables the use of a return value of <tt class="docutils literal"><span class="pre">None</span></tt> as a guard condition.</p>
+<p>This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling <tt class="docutils literal"><span class="pre">follow()</span></tt> will repeat that call, but for the next <em>x</em> number of items, where <em>x</em> is either a number set by the user for the original call, or 50 by default. Each subsequent call to <tt class="docutils literal"><span class="pre">follow()</span></tt> will extend the offset.</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
 <span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_key</span><span class="p">)</span>
@@ -669,6 +669,66 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </pre></div>
 </div>
 <p>The <tt class="docutils literal"><span class="pre">everything()</span></tt> method should work with all Pyzotero Read API calls, but has not yet been extensively tested. Feedback is welcomed.</p>
+</div>
+<div class="section" id="retrieving-item-counts">
+<h2>Retrieving item counts</h2>
+<p>If you wish to retrieve item counts for subsets of a library, you can use the following methods:</p>
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.num_items">
+<tt class="descclassname">Zotero.</tt><tt class="descname">num_items</tt><big>(</big><big>)</big></dt>
+<dd><p>Returns the count of top-level items in the library</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.num_collectionitems">
+<tt class="descclassname">Zotero.</tt><tt class="descname">num_collectionitems</tt><big>(</big><em>collectionID</em><big>)</big></dt>
+<dd><p>Returns the count of items in the specified collection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.num_tagitems">
+<tt class="descclassname">Zotero.</tt><tt class="descname">num_tagitems</tt><big>(</big><em>tag</em><big>)</big></dt>
+<dd><p>Returns the count of items for the specified tag</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.num_groupitems">
+<tt class="descclassname">Zotero.</tt><tt class="descname">num_groupitems</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<dd><p>Returns the count of items in the specified group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="additional-parameters-for-read-api-calls">
 <h2>Additional Parameters for Read API calls</h2>
