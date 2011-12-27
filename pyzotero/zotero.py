@@ -95,6 +95,7 @@ def retrieve(func):
         """
         retrieved = self._retrieve_data(func(self, *args, **kwargs))
         parsed = feedparser.parse(retrieved)
+        print retrieved
         if not self.bibs.search(parsed['feed']['links'][0]['href']):
             # get etags from the response
             self.etags = self._etags(retrieved)
@@ -567,7 +568,7 @@ class Zotero(object):
         try:
             items = [json.loads(e['content'][0]['value'])
                 for e in retrieved.entries]
-        except ValueError:
+        except KeyError:
             return self._tags_data(retrieved)
 
         # try to add various namespaced values to the items

@@ -124,13 +124,13 @@ class ZoteroTests(unittest.TestCase):
         self.tags_doc = """<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Tags</title>
-          <id>http://zotero.org/users/436/tags?limit=1</id>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1"/>
-          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;start=453"/>
+          <id>http://zotero.org/users/436/tags?limit=1&amp;content=json</id>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json"/>
+          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json&amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json&amp;start=319"/>
           <link rel="alternate" type="text/html" href="http://zotero.org/users/436/tags?limit=1"/>
-          <zapi:totalResults>454</zapi:totalResults>
+          <zapi:totalResults>320</zapi:totalResults>
           <zapi:apiVersion>1</zapi:apiVersion>
           <updated>2010-03-27T13:56:08Z</updated>
           <entry xmlns:zxfer="http://zotero.org/ns/transfer">
@@ -144,10 +144,7 @@ class ZoteroTests(unittest.TestCase):
             <updated>2010-03-27T13:56:08Z</updated>
             <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/tags/Authority+in+literature"/>
             <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/tags/Authority+in+literature"/>
-            <zapi:numItems>2</zapi:numItems>
-            <content type="xhtml" zapi:etag="7252daf2495feb8ec89c61f391bcba24">
-              <div xmlns="http://www.w3.org/1999/xhtml"/>
-            </content>
+            <zapi:numItems>1</zapi:numItems>
           </entry>
         </feed>"""
         self.groups_doc = """<?xml version="1.0"?>
