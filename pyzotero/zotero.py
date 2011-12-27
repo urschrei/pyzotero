@@ -95,7 +95,6 @@ def retrieve(func):
         """
         retrieved = self._retrieve_data(func(self, *args, **kwargs))
         parsed = feedparser.parse(retrieved)
-        print retrieved
         if not self.bibs.search(parsed['feed']['links'][0]['href']):
             # get etags from the response
             self.etags = self._etags(retrieved)
