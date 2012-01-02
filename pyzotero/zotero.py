@@ -750,9 +750,9 @@ class Zotero(object):
             raise ze.TooManyItems, \
                     "You may only create up to 50 items per call"
         to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
-        req = urllib2.Request(
-        self.endpoint + '/users/{u}/items'.format(u = self.user_id) +
-            '?' + urllib.urlencode({'key': self.user_key}))
+        req = urllib2.Request(self.endpoint
+            + '/users/{u}/items'.format(u = self.user_id) + '?'
+            + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
         req.add_header('X-Zotero-Write-Token', self._token())
         req.add_header('Content-Type', 'application/json' )
