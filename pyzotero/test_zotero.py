@@ -92,6 +92,36 @@ class ZoteroTests(unittest.TestCase):
             <content type="application/json" zapi:etag="7252daf2495feb8ec89c61f391bcba24">{"itemType":"journalArticle","title":"Copyright in custom code: Who owns commissioned software?","creators":[{"creatorType":"author","firstName":"T. J.","lastName":"McIntyre"}],"abstractNote":"","publicationTitle":"Journal of Intellectual Property Law \u0026 Practice","volume":"","issue":"","pages":"","date":"2007","series":"","seriesTitle":"","seriesText":"","journalAbbreviation":"","language":"","DOI":"","ISSN":"1747-1532","shortTitle":"Copyright in custom code","url":"","accessDate":"","archive":"","archiveLocation":"","libraryCatalog":"Google Scholar","callNumber":"","rights":"","extra":"","tags":[]}</content>
           </entry>
         </feed>"""
+        self.attachments_doc = """<?xml version="1.0"?>
+        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
+          <title>Zotero / urschrei / Items</title>
+          <id>http://zotero.org/users/436/items?limit=1&amp;content=json</id>
+          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
+          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json&amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json&amp;start=1128"/>
+          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items?limit=1"/>
+          <zapi:totalResults>1129</zapi:totalResults>
+          <zapi:apiVersion>1</zapi:apiVersion>
+          <updated>2012-01-11T19:54:47Z</updated>
+          <entry>
+            <title>1641 Depositions</title>
+            <author>
+              <name>urschrei</name>
+              <uri>http://zotero.org/urschrei</uri>
+            </author>
+            <id>http://zotero.org/urschrei/items/TM8QRS36</id>
+            <published>2012-01-11T19:54:47Z</published>
+            <updated>2012-01-11T19:54:47Z</updated>
+            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/TM8QRS36?content=json"/>
+            <link rel="up" type="application/atom+xml" href="https://api.zotero.org/users/436/items/47RUN6RI?content=json"/>
+            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/TM8QRS36"/>
+            <zapi:key>TM8QRS36</zapi:key>
+            <zapi:itemType>attachment</zapi:itemType>
+            <zapi:numTags>0</zapi:numTags>
+            <content zapi:type="json" zapi:etag="1686f563f9b4cb1db3a745a920bf0afa">{"itemType":"attachment","title":"1641 Depositions","accessDate":"2012-01-11 19:54:47","url":"http://1641.tcd.ie/project-conservation.php","note":"","linkMode":1,"mimeType":"text/html","charset":"utf-8","tags":[]}</content>
+          </entry>
+        </feed>"""
         self.collections_doc = """<?xml version="1.0"?>
         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
           <title>Zotero / urschrei / Collections</title>
@@ -429,6 +459,14 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(u'McIntyre', items_data[0]['creators'][0]['lastName'])
         self.assertEqual(u'journalArticle', items_data[0]['itemType'])
         self.assertEqual(u'Mon, 14 Feb 2011 00:27:03 GMT', items_data[0]['updated'])
+
+    def testParseAttachmentsAtomDoc(self):
+        """" blah """
+        zot = z.Zotero('myuserid', 'myuserkey')
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.attachments_doc))
+        z.urllib2.install_opener(my_opener)
+        attachments_data = zot.items()
+        self.assertEqual(u'1641 Depositions', attachments_data[0]['title'])
 
     def testParseChildItems(self):
         """ Try and parse child items """
