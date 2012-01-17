@@ -96,11 +96,14 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="hello-world">
 <span id="id1"></span><h2>Hello World<a class="headerlink" href="#hello-world" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># retrieve the last five top-level items you added to your library</span>
+<span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
 <span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_key</span><span class="p">)</span>
-<span class="n">items</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">items</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">()</span>
+<span class="c"># print each item&#39;s item type and ID</span>
 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;Author: </span><span class="si">%s</span><span class="s"> | Title: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;lastName&#39;</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">])</span>
+    <span class="k">print</span> <span class="s">&#39;Item Type: </span><span class="si">%s</span><span class="s"> | Key: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s">&#39;itemType&#39;</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>

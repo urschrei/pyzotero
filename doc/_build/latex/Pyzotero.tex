@@ -13,7 +13,7 @@
 
 
 \title{Pyzotero Documentation}
-\date{January 13, 2012}
+\date{January 17, 2012}
 \release{0.9.4}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
@@ -163,11 +163,14 @@ Run \code{tests.py} in the pyzotero directory, or, using \href{http://somethinga
 \section{Hello World}
 \label{index:hello-world}\label{index:id1}
 \begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} retrieve the last five top-level items you added to your library}
 \PYG{k+kn}{from} \PYG{n+nn}{pyzotero} \PYG{k+kn}{import} \PYG{n}{zotero}
 \PYG{n}{zot} \PYG{o}{=} \PYG{n}{zotero}\PYG{o}{.}\PYG{n}{Zotero}\PYG{p}{(}\PYG{n}{user\PYGZus{}id}\PYG{p}{,} \PYG{n}{user\PYGZus{}key}\PYG{p}{)}
-\PYG{n}{items} \PYG{o}{=} \PYG{n}{zot}\PYG{o}{.}\PYG{n}{items}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{zot}\PYG{o}{.}\PYG{n}{add\PYGZus{}parameters}\PYG{p}{(}\PYG{n}{limit} \PYG{o}{=} \PYG{l+m+mi}{5}\PYG{p}{)}
+\PYG{n}{items} \PYG{o}{=} \PYG{n}{zot}\PYG{o}{.}\PYG{n}{top}\PYG{p}{(}\PYG{p}{)}
+\PYG{c}{\PYGZsh{} print each item's item type and ID}
 \PYG{k}{for} \PYG{n}{item} \PYG{o+ow}{in} \PYG{n}{items}\PYG{p}{:}
-    \PYG{k}{print} \PYG{l+s}{'}\PYG{l+s}{Author: }\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s}{ \textbar{} Title: }\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s}{'} \PYG{o}{\PYGZpc{}} \PYG{p}{(}\PYG{n}{item}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{creators}\PYG{l+s}{'}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{lastName}\PYG{l+s}{'}\PYG{p}{]}\PYG{p}{,} \PYG{n}{item}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{title}\PYG{l+s}{'}\PYG{p}{]}\PYG{p}{)}
+    \PYG{k}{print} \PYG{l+s}{'}\PYG{l+s}{Item Type: }\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s}{ \textbar{} Key: }\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s}{'} \PYG{o}{\PYGZpc{}} \PYG{p}{(}\PYG{n}{item}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{itemType}\PYG{l+s}{'}\PYG{p}{]}\PYG{p}{,} \PYG{n}{item}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{key}\PYG{l+s}{'}\PYG{p}{]}\PYG{p}{)}
 \end{Verbatim}
 
 

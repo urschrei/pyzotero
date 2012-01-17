@@ -54,11 +54,14 @@ Hello World
 
 ::
 
+    # retrieve the last five top-level items you added to your library
     from pyzotero import zotero
     zot = zotero.Zotero(user_id, user_key)
-    items = zot.items()
+    zot.add_parameters(limit = 5)
+    items = zot.top()
+    # print each item's item type and ID
     for item in items:
-        print 'Author: %s | Title: %s' % (item['creators'][0]['lastName'], item['title'])
+        print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
 
 =====================
 General Usage
