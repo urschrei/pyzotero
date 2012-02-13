@@ -94,12 +94,16 @@ def retrieve(func):
         from each entry, then to feedparser, then to _process_content
         """
         retrieved = self._retrieve_data(func(self, *args, **kwargs))
-        parsed = feedparser.parse(retrieved)
-        if not self.bibs.search(parsed['feed']['links'][0]['href']):
-            # get etags from the response
-            self.etags = self._etags(retrieved)
-        # return the parsed Atom doc
-        return self._process_content(parsed)
+        # if we're not getting an Atom doc back, don't process anything
+        if retrieved[0] == '<':
+            parsed = feedparser.parse(retrieved)
+            if not self.bibs.search(parsed['feed']['links'][0]['href']):
+                # get etags from the response
+                self.etags = self._etags(retrieved)
+            # return the parsed Atom doc
+            return self._process_content(parsed)
+        else:
+            return retrieved.split('\n')[:-1]
     return wrapped_f
 
 
