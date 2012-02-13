@@ -416,6 +416,7 @@ class ZoteroTests(unittest.TestCase):
             "localized":"Web Page"
         }
         ]"""
+        self.keys_response = """ABCDE\nFGHIJ\nKLMNO\n"""
         # Add the item file to the mock response by default
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc))
         z.urllib2.install_opener(my_opener)
@@ -467,6 +468,16 @@ class ZoteroTests(unittest.TestCase):
         z.urllib2.install_opener(my_opener)
         attachments_data = zot.items()
         self.assertEqual(u'1641 Depositions', attachments_data[0]['title'])
+
+    def testParseKeysResponse(self):
+        """ Check that parsing plain keys returned by format = keys works """
+        zot = z.Zotero('myuserid', 'myuserkey')
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.keys_response))
+        z.urllib2.install_opener(my_opener)
+        response = zot.items()
+        self.assertEqual(['ABCDE', 'FGHIJ', 'KLMNO'], response)
+
+
 
     def testParseChildItems(self):
         """ Try and parse child items """
