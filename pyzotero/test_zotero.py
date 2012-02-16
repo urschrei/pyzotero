@@ -472,10 +472,11 @@ class ZoteroTests(unittest.TestCase):
     def testParseKeysResponse(self):
         """ Check that parsing plain keys returned by format = keys works """
         zot = z.Zotero('myuserid', 'myuserkey')
+        zot.url_params = 'format=keys'
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.keys_response))
         z.urllib2.install_opener(my_opener)
         response = zot.items()
-        self.assertEqual(['ABCDE', 'FGHIJ', 'KLMNO'], response)
+        self.assertEqual('ABCDE\nFGHIJ\nKLMNO\n', response)
 
 
 

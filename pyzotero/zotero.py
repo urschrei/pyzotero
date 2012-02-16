@@ -34,7 +34,6 @@ import json
 import uuid
 import time
 import datetime
-import re
 import pytz
 from urlparse import urlparse
 import xml.etree.ElementTree as et
@@ -80,7 +79,7 @@ def cleanwrap(func):
 def retrieve(func):
     """
     Decorator for Zotero read API methods; calls _retrieve_data() and passes
-    the result to the JSON processor
+    the result to the correct processor, based on a lookup
     """
     def wrapped_f(self, *args, **kwargs):
         """
@@ -91,19 +90,33 @@ def retrieve(func):
         '/users/123/items?key=abc123'
         the atom doc returned by _retrieve_data is then
         passed to _etags in order to extract the etag attributes
-        from each entry, then to feedparser, then to _process_content
+        from each entry, then to feedparser, then to the correct processor
         """
         retrieved = self._retrieve_data(func(self, *args, **kwargs))
-        # if we're not getting an Atom doc back, don't process anything
-        if retrieved[0] == '<':
+        # determine content and format, based on url params
+        try:
+            content = [i for i in self.url_params.split('&') if
+                i.startswith('content')][0].split('=')[1]
+        except IndexError:
+            content = 'bib'
+        try:
+            fmt = [i for i in self.url_params.split('&') if
+                i.startswith('format')][0].split('=')[1]
+        except IndexError:
+            fmt = 'atom'
+        # step 1: process atom if it's atom-formatted
+        if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
-            if not self.bibs.search(parsed['feed']['links'][0]['href']):
-                # get etags from the response
+            processor = self.processors.get(content)
+            # step 2: if the content is JSON, extract its etags
+            if self.processors.get(content) == self._standard_items:
                 self.etags = self._etags(retrieved)
-            # return the parsed Atom doc
-            return self._process_content(parsed)
+            # extract next, previous, first, last links
+            self.links = self._extract_links(parsed)
+            return processor(parsed)
+        # otherwise, just return the unparsed content as is
         else:
-            return retrieved.split('\n')[:-1]
+            return retrieved
     return wrapped_f
 
 
@@ -127,11 +140,27 @@ class Zotero(object):
             'Please provide both the user ID and the user key'
         self.url_params = None
         self.etags = None
+        self.request = None
         # these aren't valid item fields, so never send them to the server
         self.temp_keys = set(['key', 'etag', 'group_id', 'updated'])
-        # matching any one of these means the item's a bibliography entry
-        bibtypes = ['bib', 'citation']
-        self.bibs = re.compile('|'.join(bib for bib in bibtypes))
+        # determine which processor to use for the parsed content
+        self.processors = {
+            'bib': self._bib_items,
+            'citation': self._bib_items,
+            'bibtex': self._bib_items,
+            'bookmarks': self._bib_items,
+            'coins': self._bib_items,
+            'csljson': self._bib_items,
+            'mods': self._bib_items,
+            'refer': self._bib_items,
+            'rdf_bibliontology': self._bib_items,
+            'rdf_dc': self._bib_items,
+            'rdf_zotero': self._bib_items,
+            'ris': self._bib_items,
+            'tei': self._bib_items,
+            'wikipedia': self._bib_items,
+            'json': self._standard_items
+            }
         self.links = None
         self.templates = {}
 
@@ -180,13 +209,13 @@ class Zotero(object):
         Returns an Atom document
         """
         full_url = '%s%s' % (self.endpoint, request)
-        req = urllib2.Request(full_url)
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        self.request = urllib2.Request(full_url)
+        self.request.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
-            response = urllib2.urlopen(req)
+            response = urllib2.urlopen(self.request)
             data = response.read()
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
+            self._error_handler(self.request, error)
         # parse the result into Python data structures
         return data
 
