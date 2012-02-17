@@ -34,6 +34,7 @@ import json
 import uuid
 import time
 import datetime
+import re
 import pytz
 from urlparse import urlparse
 import xml.etree.ElementTree as et
@@ -94,16 +95,10 @@ def retrieve(func):
         """
         retrieved = self._retrieve_data(func(self, *args, **kwargs))
         # determine content and format, based on url params
-        try:
-            content = [i for i in self.url_params.split('&') if
-                i.startswith('content')][0].split('=')[1]
-        except IndexError:
-            content = 'bib'
-        try:
-            fmt = [i for i in self.url_params.split('&') if
-                i.startswith('format')][0].split('=')[1]
-        except IndexError:
-            fmt = 'atom'
+        content = self.content.search(self.url_params).group(0) if \
+            self.content.search(self.url_params) else 'bib'
+        fmt = self.fmt.search(self.url_params).group(0) if \
+            self.fmt.search(self.url_params) else 'atom'
         # step 1: process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
@@ -144,6 +139,8 @@ class Zotero(object):
         # these aren't valid item fields, so never send them to the server
         self.temp_keys = set(['key', 'etag', 'group_id', 'updated'])
         # determine which processor to use for the parsed content
+        self.fmt = re.compile('(?<=format=)\w+')
+        self.content = re.compile('(?<=content=)\w+')
         self.processors = {
             'bib': self._bib_items,
             'citation': self._bib_items,
