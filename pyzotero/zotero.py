@@ -109,7 +109,7 @@ def retrieve(func):
             parsed = feedparser.parse(retrieved)
             processor = self.processors.get(content)
             # step 2: if the content is JSON, extract its etags
-            if self.processors.get(content) == self._standard_items:
+            if processor == self._standard_items:
                 self.etags = self._etags(retrieved)
             # extract next, previous, first, last links
             self.links = self._extract_links(parsed)
