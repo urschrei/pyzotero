@@ -443,7 +443,8 @@ Additional parameters may be set on Read API methods using the following method.
         :param int start: 1 – total number of items in your library or None
         :param str order: any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”
         :param str sort: 'asc' or 'desc'
-        :param str content: 'html' or 'bib', default: 'html'. If 'bib' is passed, you may also pass:
+        :param str format: only 'keys' is currently supported as an alternate format
+        :param str content: 'html', 'bib', or one of the export formats (see below), default: 'html'. If 'bib' is passed, you may also pass:
         :param str style: Any valid CSL style in the Zotero style repository
         :rtype: list of HTML strings or None
 
@@ -456,17 +457,22 @@ Additional parameters may be set on Read API methods using the following method.
     Any parameters you set will be valid **for the next call only**  
 
 
-The special parameters ``content`` and ``style``:
+A note on the ``content`` and ``style`` parameters:
 
     Example:: 
 
-        zot.add_parameters(content='bib', format='mla')
+        zot.add_parameters(content='bib', style='mla')
 
-    If these are set, the return value is a **list** of UTF-8 formatted HTML ``div`` elements, each containing an item:  
+    If these are set, the return value is a list of UTF-8 formatted HTML ``div`` elements, each containing an item:  
 
     ``['<div class="csl-entry">(content)</div>', … ]``.
 
     You may also set ``content='citation'`` if you wish to retrieve citations. Similar to ``bib``, the result will be a list of one or more HTML ``span`` elements.
+
+    
+    If you select one of the available `export formats <http://www.zotero.org/support/dev/server_api/read_api#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
+    
+    If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
 
 
 

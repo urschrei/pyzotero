@@ -13,7 +13,7 @@
 
 
 \title{Pyzotero Documentation}
-\date{January 17, 2012}
+\date{February 18, 2012}
 \release{0.9.4}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
@@ -870,7 +870,10 @@ Additional parameters may be set on Read API methods using the following method.
 \textbf{sort} (\emph{str}) -- `asc' or `desc'
 
 \item {} 
-\textbf{content} (\emph{str}) -- `html' or `bib', default: `html'. If `bib' is passed, you may also pass:
+\textbf{format} (\emph{str}) -- only `keys' is currently supported as an alternate format
+
+\item {} 
+\textbf{content} (\emph{str}) -- `html', `bib', or one of the export formats (see below), default: `html'. If `bib' is passed, you may also pass:
 
 \item {} 
 \textbf{style} (\emph{str}) -- Any valid CSL style in the Zotero style repository
@@ -896,20 +899,24 @@ Example:
 Any parameters you set will be valid \textbf{for the next call only}
 \end{notice}
 
-The special parameters \code{content} and \code{style}:
+A note on the \code{content} and \code{style} parameters:
 \begin{quote}
 
 Example:
 
 \begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{zot}\PYG{o}{.}\PYG{n}{add\PYGZus{}parameters}\PYG{p}{(}\PYG{n}{content}\PYG{o}{=}\PYG{l+s}{'}\PYG{l+s}{bib}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{format}\PYG{o}{=}\PYG{l+s}{'}\PYG{l+s}{mla}\PYG{l+s}{'}\PYG{p}{)}
+\PYG{n}{zot}\PYG{o}{.}\PYG{n}{add\PYGZus{}parameters}\PYG{p}{(}\PYG{n}{content}\PYG{o}{=}\PYG{l+s}{'}\PYG{l+s}{bib}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{style}\PYG{o}{=}\PYG{l+s}{'}\PYG{l+s}{mla}\PYG{l+s}{'}\PYG{p}{)}
 \end{Verbatim}
 
-If these are set, the return value is a \textbf{list} of UTF-8 formatted HTML \code{div} elements, each containing an item:
+If these are set, the return value is a list of UTF-8 formatted HTML \code{div} elements, each containing an item:
 
 \code{{[}'\textless{}div class="csl-entry"\textgreater{}(content)\textless{}/div\textgreater{}', … {]}}.
 
 You may also set \code{content='citation'} if you wish to retrieve citations. Similar to \code{bib}, the result will be a list of one or more HTML \code{span} elements.
+
+If you select one of the available \href{http://www.zotero.org/support/dev/server\_api/read\_api\#export\_formats}{export formats} as the \code{content} parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the \code{csljson} format, which is parsed into a list of dicts. Please note that you must provide a \code{limit} parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. \code{content="json,coins"} is not currently supported.
+
+If you set \code{format='keys'}, a newline-delimited string containing item keys will be returned
 \end{quote}
 
 

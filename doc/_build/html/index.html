@@ -767,7 +767,8 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <li><strong>start</strong> (<em>int</em>) &#8211; 1 – total number of items in your library or None</li>
 <li><strong>order</strong> (<em>str</em>) &#8211; any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”</li>
 <li><strong>sort</strong> (<em>str</em>) &#8211; &#8216;asc&#8217; or &#8216;desc&#8217;</li>
-<li><strong>content</strong> (<em>str</em>) &#8211; &#8216;html&#8217; or &#8216;bib&#8217;, default: &#8216;html&#8217;. If &#8216;bib&#8217; is passed, you may also pass:</li>
+<li><strong>format</strong> (<em>str</em>) &#8211; only &#8216;keys&#8217; is currently supported as an alternate format</li>
+<li><strong>content</strong> (<em>str</em>) &#8211; &#8216;html&#8217;, &#8216;bib&#8217;, or one of the export formats (see below), default: &#8216;html&#8217;. If &#8216;bib&#8217; is passed, you may also pass:</li>
 <li><strong>style</strong> (<em>str</em>) &#8211; Any valid CSL style in the Zotero style repository</li>
 </ul>
 </td>
@@ -788,15 +789,17 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <p class="first admonition-title">Note</p>
 <p class="last">Any parameters you set will be valid <strong>for the next call only</strong></p>
 </div>
-<p>The special parameters <tt class="docutils literal"><span class="pre">content</span></tt> and <tt class="docutils literal"><span class="pre">style</span></tt>:</p>
+<p>A note on the <tt class="docutils literal"><span class="pre">content</span></tt> and <tt class="docutils literal"><span class="pre">style</span></tt> parameters:</p>
 <blockquote>
 <div><p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s">&#39;bib&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;mla&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s">&#39;bib&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;mla&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>If these are set, the return value is a <strong>list</strong> of UTF-8 formatted HTML <tt class="docutils literal"><span class="pre">div</span></tt> elements, each containing an item:</p>
+<p>If these are set, the return value is a list of UTF-8 formatted HTML <tt class="docutils literal"><span class="pre">div</span></tt> elements, each containing an item:</p>
 <p><tt class="docutils literal"><span class="pre">['&lt;div</span> <span class="pre">class=&quot;csl-entry&quot;&gt;(content)&lt;/div&gt;',</span> <span class="pre">…</span> <span class="pre">]</span></tt>.</p>
 <p>You may also set <tt class="docutils literal"><span class="pre">content='citation'</span></tt> if you wish to retrieve citations. Similar to <tt class="docutils literal"><span class="pre">bib</span></tt>, the result will be a list of one or more HTML <tt class="docutils literal"><span class="pre">span</span></tt> elements.</p>
+<p>If you select one of the available <a class="reference external" href="http://www.zotero.org/support/dev/server_api/read_api#export_formats">export formats</a> as the <tt class="docutils literal"><span class="pre">content</span></tt> parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the <tt class="docutils literal"><span class="pre">csljson</span></tt> format, which is parsed into a list of dicts. Please note that you must provide a <tt class="docutils literal"><span class="pre">limit</span></tt> parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. <tt class="docutils literal"><span class="pre">content=&quot;json,coins&quot;</span></tt> is not currently supported.</p>
+<p>If you set <tt class="docutils literal"><span class="pre">format='keys'</span></tt>, a newline-delimited string containing item keys will be returned</p>
 </div></blockquote>
 </div>
 </div>
