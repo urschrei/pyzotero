@@ -572,15 +572,6 @@ class Zotero(object):
         return retr
 
     # The following methods process data returned by Read API calls
-    def _process_content(self, content):
-        """ Call either _standard_items or _bib_items, based on the URL param
-        """
-        self.links = self._extract_links(content)
-        if self.bibs.search(content['feed']['links'][0]['href']):
-            return self._bib_items(content)
-        else:
-            return self._standard_items(content)
-
     def _extract_links(self, doc):
         """ Extract self, first, next, last links from an Atom doc
         """
