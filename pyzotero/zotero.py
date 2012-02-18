@@ -104,7 +104,7 @@ def retrieve(func):
             parsed = feedparser.parse(retrieved)
             processor = self.processors.get(content)
             # step 2: if the content is JSON, extract its etags
-            if processor == self._standard_items:
+            if processor == self._json_processor:
                 self.etags = self._etags(retrieved)
             # extract next, previous, first, last links
             self.links = self._extract_links(parsed)
@@ -142,21 +142,21 @@ class Zotero(object):
         self.fmt = re.compile('(?<=format=)\w+')
         self.content = re.compile('(?<=content=)\w+')
         self.processors = {
-            'bib': self._bib_items,
-            'citation': self._bib_items,
-            'bibtex': self._bib_items,
-            'bookmarks': self._bib_items,
-            'coins': self._bib_items,
-            'csljson': self._bib_items,
-            'mods': self._bib_items,
-            'refer': self._bib_items,
-            'rdf_bibliontology': self._bib_items,
-            'rdf_dc': self._bib_items,
-            'rdf_zotero': self._bib_items,
-            'ris': self._bib_items,
-            'tei': self._bib_items,
-            'wikipedia': self._bib_items,
-            'json': self._standard_items
+            'bib': self._bib_processor,
+            'citation': self._bib_processor,
+            'bibtex': self._bib_processor,
+            'bookmarks': self._bib_processor,
+            'coins': self._bib_processor,
+            'csljson': self._bib_processor,
+            'mods': self._bib_processor,
+            'refer': self._bib_processor,
+            'rdf_bibliontology': self._bib_processor,
+            'rdf_dc': self._bib_processor,
+            'rdf_zotero': self._bib_processor,
+            'ris': self._bib_processor,
+            'tei': self._bib_processor,
+            'wikipedia': self._bib_processor,
+            'json': self._json_processor
             }
         self.links = None
         self.templates = {}
@@ -590,7 +590,7 @@ class Zotero(object):
             extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
         return extracted
 
-    def _standard_items(self, retrieved):
+    def _json_processor(self, retrieved):
         """ Format and return data from API calls which return Items
         """
         # send entries to _tags_data if there's no JSON
@@ -631,7 +631,7 @@ class Zotero(object):
         self.url_params = None
         return items
 
-    def _bib_items(self, retrieved):
+    def _bib_processor(self, retrieved):
         """ Return a list of strings formatted as HTML bibliography entries
         """
         items = []
@@ -793,7 +793,7 @@ class Zotero(object):
             self.etags = self._etags(data)
         except (urllib2.HTTPError, urllib2.URLError), error:
             self._error_handler(req, error)
-        return self._standard_items(feedparser.parse(data))
+        return self._json_processor(feedparser.parse(data))
 
     def create_collection(self, payload):
         """
@@ -872,7 +872,7 @@ class Zotero(object):
             self.etags = self._etags(data)
         except (urllib2.HTTPError, urllib2.URLError), error:
             self._error_handler(req, error)
-        return self._standard_items(feedparser.parse(data))
+        return self._json_processor(feedparser.parse(data))
 
     def addto_collection(self, collection, payload):
         """
