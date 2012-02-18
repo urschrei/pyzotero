@@ -147,7 +147,7 @@ class Zotero(object):
             'bibtex': self._bib_processor,
             'bookmarks': self._bib_processor,
             'coins': self._bib_processor,
-            'csljson': self._bib_processor,
+            'csljson': self._csljson_processor,
             'mods': self._bib_processor,
             'refer': self._bib_processor,
             'rdf_bibliontology': self._bib_processor,
@@ -619,6 +619,16 @@ class Zotero(object):
                 val[u'group_id'] = group_id[k]
         except KeyError:
             pass
+        self.url_params = None
+        return items
+
+    def _csljson_processor(self, retrieved):
+        """
+        return a list of dicts which are dumped CSL JSON
+        """
+        items = []
+        for csl in retrieved.entries:
+            items.append(json.loads(csl['content'][0]['value']))
         self.url_params = None
         return items
 
