@@ -13,8 +13,8 @@
 
 
 \title{Pyzotero Documentation}
-\date{February 18, 2012}
-\release{0.9.4}
+\date{February 19, 2012}
+\release{0.9.5}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
 \renewcommand{\releasename}{Release}
@@ -117,22 +117,8 @@
 A Python wrapper for the \href{http://www.zotero.org/support/dev/server\_api}{Zotero API}. You'll require a user ID and access key, which can be set up \href{http://www.zotero.org/settings/keys/new}{here}.
 \phantomsection\label{index:module-pyzotero.zotero}\index{pyzotero.zotero (module)}
 
-\chapter{Indices and tables}
-\label{index:indices-and-tables}\label{index:description}\begin{itemize}
-\item {} 
-\emph{genindex}
-
-\item {} 
-\emph{modindex}
-
-\item {} 
-\emph{search}
-
-\end{itemize}
-
-
 \chapter{Installation}
-\label{index:installation}
+\label{index:installation}\label{index:description}
 Using pip: \code{pip install pyzotero}
 
 From a local clone, if you wish to install Pyzotero from a specific branch:
@@ -154,7 +140,7 @@ The \href{http://feedparser.org}{feedparser} (\textgreater{}= 0.5.1) and \href{h
 
 \section{Testing}
 \label{index:testing}
-Run \code{tests.py} in the pyzotero directory, or, using \href{http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html}{Nose}, \code{nosetests} from this directory. If you wish to see coverage statistics, run \code{nosetests -{-}with-coverage -{-}cover-package=pyzotero}.
+Run \code{tests.py} in the pyzotero directory, or, using \href{http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html}{Nose}, \code{nosetests}. If you wish to see coverage statistics, run \code{nosetests -{-}with-coverage -{-}cover-package=pyzotero}.
 
 
 \chapter{Usage}
@@ -841,13 +827,16 @@ int
 
 \section{Additional Parameters for Read API calls}
 \label{index:additional-parameters-for-read-api-calls}
-Additional parameters may be set on Read API methods using the following method. All parameters are optional. \textbf{You may also set a search term here, using the `itemType', `q', or `tag' parameters}. This area of the API is under heavy development as of late 2011, and may change frequently. See \href{http://www.zotero.org/support/dev/server\_api/read\_api\#search\_syntax}{the API documentation} for the most up-to-date details of search syntax usage:
+Additional parameters may be set on Read API methods using the following method. All parameters are optional. \textbf{You may also set a search term here, using the `itemType', `q', or `tag' parameters}. This area of the Zotero Read API is under heavy development as of early 2012, and may change frequently. See \href{http://www.zotero.org/support/dev/server\_api/read\_api\#search\_syntax}{the API documentation} for the most up-to-date details of search syntax usage and export format details.
 \begin{quote}
 \index{add\_parameters() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pyzotero.zotero.Zotero.add_parameters}\pysiglinewithargsret{\code{Zotero.}\bfcode{add\_parameters}}{\optional{\emph{limit=None}, \emph{start=None}, \emph{order=None}, \emph{sort=None}\optional{, \emph{content=None}\optional{, \emph{style=None}}}}}{}~\begin{quote}\begin{description}
+\phantomsection\label{index:pyzotero.zotero.Zotero.add_parameters}\pysiglinewithargsret{\code{Zotero.}\bfcode{add\_parameters}}{\optional{\emph{format=None}, \emph{itemKey=None}, \emph{itemType=None}, \emph{q=None}, \emph{tag=None}, \emph{limit=None}, \emph{start=None}, \emph{order=None}, \emph{sort=None}\optional{, \emph{content=None}\optional{, \emph{style=None}}}}}{}~\begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\textbf{itemKey} (\emph{str}) -- A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request.
+
 \item {} 
 \textbf{itemType} (\emph{str}) -- item type search
 
@@ -873,7 +862,7 @@ Additional parameters may be set on Read API methods using the following method.
 \textbf{format} (\emph{str}) -- only `keys' is currently supported as an alternate format
 
 \item {} 
-\textbf{content} (\emph{str}) -- `html', `bib', or one of the export formats (see below), default: `html'. If `bib' is passed, you may also pass:
+\textbf{content} (\emph{str}) -- `bib', or one of the export formats (see below). If `bib' is passed, you may also pass:
 
 \item {} 
 \textbf{style} (\emph{str}) -- Any valid CSL style in the Zotero style repository

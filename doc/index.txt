@@ -13,13 +13,6 @@ A Python wrapper for the `Zotero API <http://www.zotero.org/support/dev/server_a
 .. toctree::
    :maxdepth: 2
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
 
 Installation
 ============
@@ -42,7 +35,7 @@ The `feedparser <http://feedparser.org>`_ (>= 0.5.1) and `pytz <http://pypi.pyth
 =======
 Testing
 =======
-Run ``tests.py`` in the pyzotero directory, or, using `Nose <http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html>`_, ``nosetests`` from this directory. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
+Run ``tests.py`` in the pyzotero directory, or, using `Nose <http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html>`_, ``nosetests``. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
 
 Usage
 ==========
@@ -432,10 +425,11 @@ If you wish to retrieve item counts for subsets of a library, you can use the fo
 Additional Parameters for Read API calls
 ========================================
 
-Additional parameters may be set on Read API methods using the following method. All parameters are optional. **You may also set a search term here, using the 'itemType', 'q', or 'tag' parameters**. This area of the API is under heavy development as of late 2011, and may change frequently. See `the API documentation <http://www.zotero.org/support/dev/server_api/read_api#search_syntax>`_ for the most up-to-date details of search syntax usage:
+Additional parameters may be set on Read API methods using the following method. All parameters are optional. **You may also set a search term here, using the 'itemType', 'q', or 'tag' parameters**. This area of the Zotero Read API is under heavy development as of early 2012, and may change frequently. See `the API documentation <http://www.zotero.org/support/dev/server_api/read_api#search_syntax>`_ for the most up-to-date details of search syntax usage and export format details.
 
-    .. py:method:: Zotero.add_parameters([limit=None, start=None, order=None, sort=None, [content=None[ ,style=None]]])
+    .. py:method:: Zotero.add_parameters([format=None, itemKey=None, itemType=None, q=None, tag=None, limit=None, start=None, order=None, sort=None, [content=None[ ,style=None]]])
 
+        :param str itemKey: A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request.
         :param str itemType: item type search
         :param str q: a search term, which currently matches titles and individual creator fields
         :param str tag: tag search
@@ -444,7 +438,7 @@ Additional parameters may be set on Read API methods using the following method.
         :param str order: any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”
         :param str sort: 'asc' or 'desc'
         :param str format: only 'keys' is currently supported as an alternate format
-        :param str content: 'html', 'bib', or one of the export formats (see below), default: 'html'. If 'bib' is passed, you may also pass:
+        :param str content: 'bib', or one of the export formats (see below). If 'bib' is passed, you may also pass:
         :param str style: Any valid CSL style in the Zotero style repository
         :rtype: list of HTML strings or None
 

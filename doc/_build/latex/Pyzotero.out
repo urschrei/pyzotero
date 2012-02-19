@@ -1,22 +1,21 @@
-\BOOKMARK [0][-]{chapter.1}{Indices and tables}{}% 1
-\BOOKMARK [0][-]{chapter.2}{Installation}{}% 2
-\BOOKMARK [1][-]{section.2.1}{Testing}{chapter.2}% 3
-\BOOKMARK [0][-]{chapter.3}{Usage}{}% 4
-\BOOKMARK [1][-]{section.3.1}{Hello World}{chapter.3}% 5
-\BOOKMARK [1][-]{section.3.2}{General Usage}{chapter.3}% 6
-\BOOKMARK [0][-]{chapter.4}{Read API Methods}{}% 7
-\BOOKMARK [1][-]{section.4.1}{Retrieving Items}{chapter.4}% 8
-\BOOKMARK [1][-]{section.4.2}{Retrieving Collections}{chapter.4}% 9
-\BOOKMARK [1][-]{section.4.3}{Retrieving groups}{chapter.4}% 10
-\BOOKMARK [1][-]{section.4.4}{Retrieving Tags}{chapter.4}% 11
-\BOOKMARK [1][-]{section.4.5}{The follow\(\) method}{chapter.4}% 12
-\BOOKMARK [1][-]{section.4.6}{The everything\(\) method}{chapter.4}% 13
-\BOOKMARK [1][-]{section.4.7}{Retrieving item counts}{chapter.4}% 14
-\BOOKMARK [1][-]{section.4.8}{Additional Parameters for Read API calls}{chapter.4}% 15
-\BOOKMARK [0][-]{chapter.5}{Write API Methods}{}% 16
-\BOOKMARK [1][-]{section.5.1}{Item Methods}{chapter.5}% 17
-\BOOKMARK [1][-]{section.5.2}{Collection Methods}{chapter.5}% 18
-\BOOKMARK [0][-]{chapter.6}{Notes}{}% 19
-\BOOKMARK [0][-]{chapter.7}{License}{}% 20
-\BOOKMARK [0][-]{section*.52}{Python Module Index}{}% 21
-\BOOKMARK [0][-]{section*.53}{Index}{}% 22
+\BOOKMARK [0][-]{chapter.1}{Installation}{}% 1
+\BOOKMARK [1][-]{section.1.1}{Testing}{chapter.1}% 2
+\BOOKMARK [0][-]{chapter.2}{Usage}{}% 3
+\BOOKMARK [1][-]{section.2.1}{Hello World}{chapter.2}% 4
+\BOOKMARK [1][-]{section.2.2}{General Usage}{chapter.2}% 5
+\BOOKMARK [0][-]{chapter.3}{Read API Methods}{}% 6
+\BOOKMARK [1][-]{section.3.1}{Retrieving Items}{chapter.3}% 7
+\BOOKMARK [1][-]{section.3.2}{Retrieving Collections}{chapter.3}% 8
+\BOOKMARK [1][-]{section.3.3}{Retrieving groups}{chapter.3}% 9
+\BOOKMARK [1][-]{section.3.4}{Retrieving Tags}{chapter.3}% 10
+\BOOKMARK [1][-]{section.3.5}{The follow\(\) method}{chapter.3}% 11
+\BOOKMARK [1][-]{section.3.6}{The everything\(\) method}{chapter.3}% 12
+\BOOKMARK [1][-]{section.3.7}{Retrieving item counts}{chapter.3}% 13
+\BOOKMARK [1][-]{section.3.8}{Additional Parameters for Read API calls}{chapter.3}% 14
+\BOOKMARK [0][-]{chapter.4}{Write API Methods}{}% 15
+\BOOKMARK [1][-]{section.4.1}{Item Methods}{chapter.4}% 16
+\BOOKMARK [1][-]{section.4.2}{Collection Methods}{chapter.4}% 17
+\BOOKMARK [0][-]{chapter.5}{Notes}{}% 18
+\BOOKMARK [0][-]{chapter.6}{License}{}% 19
+\BOOKMARK [0][-]{section*.52}{Python Module Index}{}% 20
+\BOOKMARK [0][-]{section*.53}{Index}{}% 21
