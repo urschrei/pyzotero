@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Description &mdash; Pyzotero 0.9.4 documentation</title>
+    <title>Description &mdash; Pyzotero 0.9.5 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.4',
+        VERSION:     '0.9.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Pyzotero 0.9.4 documentation" href="#" />
+    <link rel="top" title="Pyzotero 0.9.5 documentation" href="#" />
  
 <script type="text/javascript">
   var _gaq = _gaq || [];
@@ -49,7 +49,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pyzotero 0.9.4 documentation</a> &raquo;</li> 
+        <li><a href="#">Pyzotero 0.9.5 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -66,14 +66,6 @@
 </ul>
 </div>
 </div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
-<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
-<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
-</ul>
-</div>
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>Using pip: <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pyzotero</span></tt></p>
@@ -89,7 +81,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <p>The <a class="reference external" href="http://feedparser.org">feedparser</a> (&gt;= 0.5.1) and <a class="reference external" href="http://pypi.python.org/pypi/pytz/">pytz</a> modules are required. They will be automatically installed when installing Pyzotero using pip.</p>
 <div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
-<p>Run <tt class="docutils literal"><span class="pre">tests.py</span></tt> in the pyzotero directory, or, using <a class="reference external" href="http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html">Nose</a>, <tt class="docutils literal"><span class="pre">nosetests</span></tt> from this directory. If you wish to see coverage statistics, run <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">--with-coverage</span> <span class="pre">--cover-package=pyzotero</span></tt>.</p>
+<p>Run <tt class="docutils literal"><span class="pre">tests.py</span></tt> in the pyzotero directory, or, using <a class="reference external" href="http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html">Nose</a>, <tt class="docutils literal"><span class="pre">nosetests</span></tt>. If you wish to see coverage statistics, run <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">--with-coverage</span> <span class="pre">--cover-package=pyzotero</span></tt>.</p>
 </div>
 </div>
 <div class="section" id="usage">
@@ -750,16 +742,17 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </div>
 <div class="section" id="additional-parameters-for-read-api-calls">
 <h2>Additional Parameters for Read API calls<a class="headerlink" href="#additional-parameters-for-read-api-calls" title="Permalink to this headline">¶</a></h2>
-<p>Additional parameters may be set on Read API methods using the following method. All parameters are optional. <strong>You may also set a search term here, using the &#8216;itemType&#8217;, &#8216;q&#8217;, or &#8216;tag&#8217; parameters</strong>. This area of the API is under heavy development as of late 2011, and may change frequently. See <a class="reference external" href="http://www.zotero.org/support/dev/server_api/read_api#search_syntax">the API documentation</a> for the most up-to-date details of search syntax usage:</p>
+<p>Additional parameters may be set on Read API methods using the following method. All parameters are optional. <strong>You may also set a search term here, using the &#8216;itemType&#8217;, &#8216;q&#8217;, or &#8216;tag&#8217; parameters</strong>. This area of the Zotero Read API is under heavy development as of early 2012, and may change frequently. See <a class="reference external" href="http://www.zotero.org/support/dev/server_api/read_api#search_syntax">the API documentation</a> for the most up-to-date details of search syntax usage and export format details.</p>
 <blockquote>
 <div><dl class="method">
 <dt id="pyzotero.zotero.Zotero.add_parameters">
-<tt class="descclassname">Zotero.</tt><tt class="descname">add_parameters</tt><big>(</big><span class="optional">[</span><em>limit=None</em>, <em>start=None</em>, <em>order=None</em>, <em>sort=None</em><span class="optional">[</span>, <em>content=None</em><span class="optional">[</span>, <em>style=None</em><span class="optional">]</span><span class="optional">]</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.add_parameters" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">add_parameters</tt><big>(</big><span class="optional">[</span><em>format=None</em>, <em>itemKey=None</em>, <em>itemType=None</em>, <em>q=None</em>, <em>tag=None</em>, <em>limit=None</em>, <em>start=None</em>, <em>order=None</em>, <em>sort=None</em><span class="optional">[</span>, <em>content=None</em><span class="optional">[</span>, <em>style=None</em><span class="optional">]</span><span class="optional">]</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.add_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>itemKey</strong> (<em>str</em>) &#8211; A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request.</li>
 <li><strong>itemType</strong> (<em>str</em>) &#8211; item type search</li>
 <li><strong>q</strong> (<em>str</em>) &#8211; a search term, which currently matches titles and individual creator fields</li>
 <li><strong>tag</strong> (<em>str</em>) &#8211; tag search</li>
@@ -768,7 +761,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <li><strong>order</strong> (<em>str</em>) &#8211; any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”</li>
 <li><strong>sort</strong> (<em>str</em>) &#8211; &#8216;asc&#8217; or &#8216;desc&#8217;</li>
 <li><strong>format</strong> (<em>str</em>) &#8211; only &#8216;keys&#8217; is currently supported as an alternate format</li>
-<li><strong>content</strong> (<em>str</em>) &#8211; &#8216;html&#8217;, &#8216;bib&#8217;, or one of the export formats (see below), default: &#8216;html&#8217;. If &#8216;bib&#8217; is passed, you may also pass:</li>
+<li><strong>content</strong> (<em>str</em>) &#8211; &#8216;bib&#8217;, or one of the export formats (see below). If &#8216;bib&#8217; is passed, you may also pass:</li>
 <li><strong>style</strong> (<em>str</em>) &#8211; Any valid CSL style in the Zotero style repository</li>
 </ul>
 </td>
@@ -1124,7 +1117,6 @@ Example:</p>
 <li><a class="reference internal" href="#">Description</a><ul>
 </ul>
 </li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
@@ -1185,7 +1177,7 @@ Example:</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pyzotero 0.9.4 documentation</a> &raquo;</li> 
+        <li><a href="#">Pyzotero 0.9.5 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
