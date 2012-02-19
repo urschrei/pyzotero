@@ -65,6 +65,35 @@ def ib64_patched(self, attrsD, contentparams):
     return 0
 
 
+def token():
+    """ Return a unique 32-char write-token
+    """
+    return str(uuid.uuid4().hex)
+
+
+def extract_links(doc):
+    """ Extract self, first, next, last links from an Atom doc
+    """
+    extracted = dict()
+    for link in doc['feed']['links'][:-1]:
+        url = urlparse(link['href'])
+        extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
+    return extracted
+
+
+def etags(incoming):
+    """ Return a list of etags parsed out of the XML response
+    """
+    # Parse Atom as straight XML in order to get the etags FFS
+    atom_ns = '{http://www.w3.org/2005/Atom}'
+    tree = et.fromstring(incoming)
+    try:
+        return [entry.attrib['{http://zotero.org/ns/api}etag'] for
+            entry in tree.findall('.//{0}content'.format(atom_ns))]
+    except KeyError:
+        pass
+
+
 # Override feedparser's buggy isBase64 method until they fix it
 feedparser._FeedParserMixin._isBase64 = ib64_patched
 
@@ -106,9 +135,9 @@ def retrieve(func):
             processor = self.processors.get(content)
             # step 2: if the content is JSON, extract its etags
             if processor == self._json_processor:
-                self.etags = self._etags(retrieved)
+                self.etags = etags(retrieved)
             # extract next, previous, first, last links
-            self.links = self._extract_links(parsed)
+            self.links = extract_links(parsed)
             return processor(parsed)
         # otherwise, just return the unparsed content as is
         else:
@@ -162,23 +191,6 @@ class Zotero(object):
         self.links = None
         self.templates = {}
 
-    def _token(self):
-        """ Return a unique 32-char write-token
-        """
-        return str(uuid.uuid4().hex)
-
-    def _etags(self, incoming):
-        """ Return a list of etags parsed out of the XML response
-        """
-        # Parse Atom as straight XML in order to get the etags FFS
-        atom_ns = '{http://www.w3.org/2005/Atom}'
-        tree = et.fromstring(incoming)
-        try:
-            return [entry.attrib['{http://zotero.org/ns/api}etag'] for
-                entry in tree.findall('.//{0}content'.format(atom_ns))]
-        except KeyError:
-            pass
-
     def _cache(self, template, key):
         """
         Add a retrieved template to the cache for 304 checking
@@ -213,7 +225,7 @@ class Zotero(object):
             response = urllib2.urlopen(self.request)
             data = response.read()
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(self.request, error)
+            error_handler(self.request, error)
         # parse the result into Python data structures
         return data
 
@@ -243,7 +255,7 @@ class Zotero(object):
                 url_handle = opener.open(req)
                 _ = url_handle.info()
             except (urllib2.HTTPError, urllib2.URLError), error:
-                self._error_handler(req, error)
+                error_handler(req, error)
             return hasattr(url_handle, 'code') and url_handle.code == 304
         # Still plenty of life left in't
         return False
@@ -573,15 +585,6 @@ class Zotero(object):
         return retr
 
     # The following methods process data returned by Read API calls
-    def _extract_links(self, doc):
-        """ Extract self, first, next, last links from an Atom doc
-        """
-        extracted = dict()
-        for link in doc['feed']['links'][:-1]:
-            url = urlparse(link['href'])
-            extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
-        return extracted
-
     def _json_processor(self, retrieved):
         """ Format and return data from API calls which return Items
         """
@@ -591,7 +594,6 @@ class Zotero(object):
                 for e in retrieved.entries]
         except KeyError:
             return self._tags_data(retrieved)
-
         # try to add various namespaced values to the items
         zapi_keys = ['key']
         for zapi in zapi_keys:
@@ -786,7 +788,7 @@ class Zotero(object):
             + '/users/{u}/items'.format(u = self.user_id) + '?'
             + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
-        req.add_header('X-Zotero-Write-Token', self._token())
+        req.add_header('X-Zotero-Write-Token', token())
         req.add_header('Content-Type', 'application/json' )
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
@@ -794,7 +796,7 @@ class Zotero(object):
             data = resp.read()
             self.etags = self._etags(data)
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
+            error_handler(req, error)
         return self._json_processor(feedparser.parse(data))
 
     def create_collection(self, payload):
@@ -817,12 +819,12 @@ class Zotero(object):
         self.endpoint + '/users/{u}/collections'.format(u = self.user_id) +
             '?' + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
-        req.add_header('X-Zotero-Write-Token', self._token())
+        req.add_header('X-Zotero-Write-Token', token())
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
             urllib2.urlopen(req)
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
+            error_handler(req, error)
         return True
 
     def update_collection(self, payload):
@@ -831,7 +833,7 @@ class Zotero(object):
         Accepts one argument, a dict containing collection data retrieved
         using e.g. 'collections()'
         """
-        token = payload['etag']
+        tkn = payload['etag']
         key = payload['key']
         # remove any keys we've added
         to_send = (i for i in self._cleanup(payload))
@@ -843,12 +845,12 @@ class Zotero(object):
             '?' + urllib.urlencode({'key': self.user_key}))
         req.add_data(to_send)
         req.get_method = lambda: 'PUT'
-        req.add_header('If-Match', token)
+        req.add_header('If-Match', tkn)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
             opener.open(req)
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
+            error_handler(req, error)
         return True
 
     def update_item(self, payload):
@@ -871,9 +873,9 @@ class Zotero(object):
         try:
             resp = opener.open(req)
             data = resp.read()
-            self.etags = self._etags(data)
+            self.etags = etags(data)
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
+            error_handler(req, error)
         return self._json_processor(feedparser.parse(data))
 
     def addto_collection(self, collection, payload):
@@ -894,7 +896,7 @@ class Zotero(object):
         try:
             urllib2.urlopen(req)
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
+            error_handler(req, error)
         return True
 
     def deletefrom_collection(self, collection, payload):
@@ -915,7 +917,7 @@ class Zotero(object):
         try:
             opener.open(req)
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
+            error_handler(req, error)
         return True
 
     def delete_item(self, payload):
@@ -936,7 +938,7 @@ class Zotero(object):
         try:
             opener.open(req)
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
+            error_handler(req, error)
         return True
 
     def delete_collection(self, payload):
@@ -957,38 +959,40 @@ class Zotero(object):
         try:
             opener.open(req)
         except (urllib2.HTTPError, urllib2.URLError), error:
-            self._error_handler(req, error)
+            error_handler(req, error)
         return True
 
-    def _error_handler(self, req, error):
-        """ Error handler for HTTP requests
-        """
-        # Distinguish between URL errors and HTTP status codes of 400+
-        if hasattr(error, 'reason'):
-            raise ze.CouldNotReachURL, \
+
+
+def error_handler(req, error):
+    """ Error handler for HTTP requests
+    """
+    # Distinguish between URL errors and HTTP status codes of 400+
+    if hasattr(error, 'reason'):
+        raise ze.CouldNotReachURL, \
 "Could not reach server. Reason: %s\nURL: %s" % (error, req.get_full_url())
-        elif hasattr(error, 'code'):
-            if error.code == 401 or error.code == 403:
-                raise ze.UserNotAuthorised, \
+    elif hasattr(error, 'code'):
+        if error.code == 401 or error.code == 403:
+            raise ze.UserNotAuthorised, \
 "Not authorised: (%s)\nURL: %s\nType: %s\nData: %s" % (
-        error.code, req.get_full_url(), req.get_method(), req.get_data())
-            elif error.code == 400:
-                raise ze.UnsupportedParams, \
+    error.code, req.get_full_url(), req.get_method(), req.get_data())
+        elif error.code == 400:
+            raise ze.UnsupportedParams, \
 "Invalid request, probably due to unsupported parameters: %s\n%s\n%s" % \
-                (req.get_full_url(), req.get_method(), req.get_data())
-            elif error.code == 404:
-                raise ze.ResourceNotFound, \
+            (req.get_full_url(), req.get_method(), req.get_data())
+        elif error.code == 404:
+            raise ze.ResourceNotFound, \
 "No results for the following query:\n%s" % req.get_full_url()
-            elif error.code == 409:
-                raise ze.Conflict, \
+        elif error.code == 409:
+            raise ze.Conflict, \
 "The target library is locked"
-            elif error.code == 412:
-                raise ze.PreConditionFailed, \
+        elif error.code == 412:
+            raise ze.PreConditionFailed, \
 "The item was already submitted, or has changed since you retrieved it"
-            else:
-                raise ze.HTTPError, \
+        else:
+            raise ze.HTTPError, \
 "HTTP Error %s (%s)\nURL: %s\nData: %s" % (
-                error.msg, error.code, req.get_full_url(), req.get_data())
+            error.msg, error.code, req.get_full_url(), req.get_data())
 
 
 

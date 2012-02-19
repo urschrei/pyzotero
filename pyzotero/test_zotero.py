@@ -677,8 +677,8 @@ class ZoteroTests(unittest.TestCase):
         """ Tests item and item update response etag parsing
         """
         zot = z.Zotero('myuserID', 'myuserkey')
-        self.assertEqual(zot._etags(self.created_response), ['1ed002db69174ae2ae0e3b90499df15e'])
-        self.assertEqual(zot._etags(self.items_doc),
+        self.assertEqual(z.etags(self.created_response), ['1ed002db69174ae2ae0e3b90499df15e'])
+        self.assertEqual(z.etags(self.items_doc),
                 ['7252daf2495feb8ec89c61f391bcba24'])
 
     def testTooManyItems(self):
