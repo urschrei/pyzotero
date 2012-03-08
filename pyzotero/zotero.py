@@ -676,7 +676,7 @@ class Zotero(object):
         The retrieved fields are cached and re-used until a 304 call fails
         """
         # check for a valid cached version
-        if self.templates['item_fields'] and not \
+        if self.templates.get('item_fields') and not \
                 self._updated(
                     '/itemFields',
                     self.templates['item_fields'],
@@ -794,7 +794,7 @@ class Zotero(object):
         try:
             resp = urllib2.urlopen(req)
             data = resp.read()
-            self.etags = self._etags(data)
+            self.etags = etags(data)
         except (urllib2.HTTPError, urllib2.URLError), error:
             error_handler(req, error)
         return self._json_processor(feedparser.parse(data))
