@@ -75,10 +75,14 @@ def extract_links(doc):
     """ Extract self, first, next, last links from an Atom doc
     """
     extracted = dict()
-    for link in doc['feed']['links'][:-1]:
-        url = urlparse(link['href'])
-        extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
-    return extracted
+    try:
+        for link in doc['feed']['links'][:-1]:
+            url = urlparse(link['href'])
+            extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
+        return extracted
+    except KeyError:
+        # No links present, because it's a single item
+        return None
 
 
 def etags(incoming):
