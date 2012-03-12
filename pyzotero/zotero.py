@@ -24,7 +24,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 __author__ = 'urschrei@gmail.com'
-__version__ = '0.9.5'
+__version__ = '0.9.51'
 
 
 import urllib
@@ -125,10 +125,14 @@ def retrieve(func):
         """
         retrieved = self._retrieve_data(func(self, *args, **kwargs))
         # determine content and format, based on url params
-        content = self.content.search(self.url_params).group(0) if \
-            self.content.search(self.url_params) else 'bib'
-        fmt = self.fmt.search(self.url_params).group(0) if \
-            self.fmt.search(self.url_params) else 'atom'
+        content = self.content.search(
+                self.request.get_full_url()).group(0) if \
+            self.content.search(
+                    self.request.get_full_url()) else 'bib'
+        fmt = self.fmt.search(
+                self.request.get_full_url()).group(0) if \
+            self.fmt.search(
+                    self.request.get_full_url()) else 'atom'
         # step 1: process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
@@ -242,7 +246,7 @@ class Zotero(object):
         # If the template is more than an hour old, try a 304
         if abs(datetime.datetime.utcnow().replace(
             tzinfo = pytz.timezone('GMT')) -
-                self.templates[template]['updated']).seconds > 3600:
+            self.templates[template]['updated']).seconds > 3600:
             opener = urllib2.build_opener(NotModifiedHandler())
             query = self.endpoint + url.format(
                 u = self.user_id, **payload)
