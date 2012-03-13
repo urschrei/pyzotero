@@ -68,6 +68,10 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <h2>Testing</h2>
 <p>Run <tt class="docutils literal"><span class="pre">tests.py</span></tt> in the pyzotero directory, or, using <a class="reference external" href="http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html">Nose</a><span class="link-target"> [http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html]</span>, <tt class="docutils literal"><span class="pre">nosetests</span></tt>. If you wish to see coverage statistics, run <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">--with-coverage</span> <span class="pre">--cover-package=pyzotero</span></tt>.</p>
 </div>
+<div class="section" id="reporting-issues">
+<h2>Reporting issues</h2>
+<p>If you encounter an error while using Pyzotero, please open an issue on its <a class="reference external" href="https://github.com/urschrei/pyzotero/issues">Github issues page</a><span class="link-target"> [https://github.com/urschrei/pyzotero/issues]</span>.</p>
+</div>
 </div>
 <div class="section" id="usage">
 <h1>Usage</h1>
@@ -265,7 +269,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</li>
-<li><strong>itemID</strong> (<em>str</em>) &#8211; a zotero item ID</li>
+<li><strong>itemID</strong> (<em>str</em>) &#8211; a Zotero item ID</li>
 </ul>
 </td>
 </tr>
@@ -350,7 +354,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>groupID</strong> (<em>str</em>) &#8211; a Zotero group ID</li>
 <li><strong>collectionID</strong> (<em>str</em>) &#8211; a Zotero collection ID</li>
-<li><strong>itemID</strong> (<em>str</em>) &#8211; a zotero item ID</li>
+<li><strong>itemID</strong> (<em>str</em>) &#8211; a Zotero item ID</li>
 </ul>
 </td>
 </tr>
@@ -639,7 +643,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </div>
 <div class="section" id="the-follow-method">
 <h2>The <tt class="docutils literal"><span class="pre">follow()</span></tt> method</h2>
-<p>This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling <tt class="docutils literal"><span class="pre">follow()</span></tt> will repeat that call, but for the next <em>x</em> number of items, where <em>x</em> is either a number set by the user for the original call, or 50 by default. Each subsequent call to <tt class="docutils literal"><span class="pre">follow()</span></tt> will extend the offset.</p>
+<p>This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call which can retrieve <strong>multiple items</strong>, calling <tt class="docutils literal"><span class="pre">follow()</span></tt> will repeat that call, but for the next <em>x</em> number of items, where <em>x</em> is either a number set by the user for the original call, or 50 by default. Each subsequent call to <tt class="docutils literal"><span class="pre">follow()</span></tt> will extend the offset.</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
 <span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_key</span><span class="p">)</span>
@@ -655,7 +659,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </div>
 <div class="section" id="the-everything-method">
 <h2>The <tt class="docutils literal"><span class="pre">everything()</span></tt> method</h2>
-<p>This method (currently experimental) will retrieve <strong>all</strong> library items specified by its argument: a valid Read API call.</p>
+<p>This method (currently experimental) will retrieve <strong>all</strong> library items specified by its argument: a valid Read API call which can retrieve multiple items..</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
 <span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_key</span><span class="p">)</span>
@@ -663,7 +667,11 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <span class="n">toplevel</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">everything</span><span class="p">(</span><span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">())</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">everything()</span></tt> method should work with all Pyzotero Read API calls, but has not yet been extensively tested. Feedback is welcomed.</p>
+<p>The <tt class="docutils literal"><span class="pre">everything()</span></tt> method should work with all Pyzotero Read API calls which can return multiple items, but has not yet been extensively tested. <a class="reference external" href="https://github.com/urschrei/pyzotero/issues">Feedback is welcomed</a><span class="link-target"> [https://github.com/urschrei/pyzotero/issues]</span>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">follow()</span></tt> and <tt class="docutils literal"><span class="pre">everything()</span></tt> methods are only valid for methods which can return multiple library items. For instance, you cannot use <tt class="docutils literal"><span class="pre">follow()</span></tt> after an <tt class="docutils literal"><span class="pre">item()</span></tt> call.</p>
+</div>
 </div>
 <div class="section" id="retrieving-item-counts">
 <h2>Retrieving item counts</h2>

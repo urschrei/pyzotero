@@ -1,6 +1,7 @@
 \select@language {english}
 \contentsline {chapter}{\numberline {1}Installation}{3}{chapter.1}
 \contentsline {section}{\numberline {1.1}Testing}{3}{section.1.1}
+\contentsline {section}{\numberline {1.2}Reporting issues}{3}{section.1.2}
 \contentsline {chapter}{\numberline {2}Usage}{5}{chapter.2}
 \contentsline {section}{\numberline {2.1}Hello World}{5}{section.2.1}
 \contentsline {section}{\numberline {2.2}General Usage}{5}{section.2.2}
@@ -10,7 +11,7 @@
 \contentsline {section}{\numberline {3.3}Retrieving groups}{10}{section.3.3}
 \contentsline {section}{\numberline {3.4}Retrieving Tags}{11}{section.3.4}
 \contentsline {section}{\numberline {3.5}The \texttt {follow()} method}{11}{section.3.5}
-\contentsline {section}{\numberline {3.6}The \texttt {everything()} method}{11}{section.3.6}
+\contentsline {section}{\numberline {3.6}The \texttt {everything()} method}{12}{section.3.6}
 \contentsline {section}{\numberline {3.7}Retrieving item counts}{12}{section.3.7}
 \contentsline {section}{\numberline {3.8}Additional Parameters for Read API calls}{12}{section.3.8}
 \contentsline {chapter}{\numberline {4}Write API Methods}{15}{chapter.4}

@@ -13,7 +13,7 @@
 
 
 \title{Pyzotero Documentation}
-\date{February 19, 2012}
+\date{March 13, 2012}
 \release{0.9.5}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
@@ -141,6 +141,11 @@ The \href{http://feedparser.org}{feedparser} (\textgreater{}= 0.5.1) and \href{h
 \section{Testing}
 \label{index:testing}
 Run \code{tests.py} in the pyzotero directory, or, using \href{http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html}{Nose}, \code{nosetests}. If you wish to see coverage statistics, run \code{nosetests -{-}with-coverage -{-}cover-package=pyzotero}.
+
+
+\section{Reporting issues}
+\label{index:reporting-issues}
+If you encounter an error while using Pyzotero, please open an issue on its \href{https://github.com/urschrei/pyzotero/issues}{Github issues page}.
 
 
 \chapter{Usage}
@@ -341,7 +346,7 @@ Returns a specific item from a specific group
 \textbf{groupID} (\emph{str}) -- a Zotero group ID
 
 \item {} 
-\textbf{itemID} (\emph{str}) -- a zotero item ID
+\textbf{itemID} (\emph{str}) -- a Zotero item ID
 
 \end{itemize}
 
@@ -432,7 +437,7 @@ Returns a specific collection's item from a specific group
 \textbf{collectionID} (\emph{str}) -- a Zotero collection ID
 
 \item {} 
-\textbf{itemID} (\emph{str}) -- a zotero item ID
+\textbf{itemID} (\emph{str}) -- a Zotero item ID
 
 \end{itemize}
 
@@ -735,7 +740,7 @@ Example of returned data:
 
 \section{The \texttt{follow()} method}
 \label{index:the-follow-method}
-This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling \code{follow()} will repeat that call, but for the next \emph{x} number of items, where \emph{x} is either a number set by the user for the original call, or 50 by default. Each subsequent call to \code{follow()} will extend the offset.
+This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call which can retrieve \textbf{multiple items}, calling \code{follow()} will repeat that call, but for the next \emph{x} number of items, where \emph{x} is either a number set by the user for the original call, or 50 by default. Each subsequent call to \code{follow()} will extend the offset.
 
 Example:
 
@@ -754,7 +759,7 @@ Example:
 
 \section{The \texttt{everything()} method}
 \label{index:the-everything-method}
-This method (currently experimental) will retrieve \textbf{all} library items specified by its argument: a valid Read API call.
+This method (currently experimental) will retrieve \textbf{all} library items specified by its argument: a valid Read API call which can retrieve multiple items..
 
 Example:
 
@@ -765,7 +770,11 @@ Example:
 \PYG{n}{toplevel} \PYG{o}{=} \PYG{n}{zot}\PYG{o}{.}\PYG{n}{everything}\PYG{p}{(}\PYG{n}{zot}\PYG{o}{.}\PYG{n}{top}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
 \end{Verbatim}
 
-The \code{everything()} method should work with all Pyzotero Read API calls, but has not yet been extensively tested. Feedback is welcomed.
+The \code{everything()} method should work with all Pyzotero Read API calls which can return multiple items, but has not yet been extensively tested. \href{https://github.com/urschrei/pyzotero/issues}{Feedback is welcomed}.
+
+\begin{notice}{warning}{Warning:}
+The \code{follow()} and \code{everything()} methods are only valid for methods which can return multiple library items. For instance, you cannot use \code{follow()} after an \code{item()} call.
+\end{notice}
 
 
 \section{Retrieving item counts}

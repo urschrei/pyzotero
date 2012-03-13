@@ -37,6 +37,11 @@ Testing
 =======
 Run ``tests.py`` in the pyzotero directory, or, using `Nose <http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html>`_, ``nosetests``. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
 
+================
+Reporting issues
+================
+If you encounter an error while using Pyzotero, please open an issue on its `Github issues page <https://github.com/urschrei/pyzotero/issues>`_.
+
 Usage
 ==========
 .. _hello-world:
@@ -152,7 +157,7 @@ Retrieving Items
         Returns a specific item from a specific group
 
         :param str groupID: a Zotero group ID
-        :param str itemID: a zotero item ID
+        :param str itemID: a Zotero item ID
         :rtype: list of dicts
 
 
@@ -188,7 +193,7 @@ Retrieving Items
 
         :param str groupID: a Zotero group ID
         :param str collectionID: a Zotero collection ID
-        :param str itemID: a zotero item ID
+        :param str itemID: a Zotero item ID
         :rtype: list of dicts
 
 
@@ -355,7 +360,7 @@ Example of returned data::
 The ``follow()`` method
 =======================
 
-This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset.
+This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call which can retrieve **multiple items**, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset.
 
 Example:
 
@@ -376,7 +381,7 @@ Example:
 The ``everything()`` method
 ===========================
 
-This method (currently experimental) will retrieve **all** library items specified by its argument: a valid Read API call.
+This method (currently experimental) will retrieve **all** library items specified by its argument: a valid Read API call which can retrieve multiple items..
 
 Example:
 
@@ -387,8 +392,9 @@ Example:
     # retrieve all top-level items
     toplevel = zot.everything(zot.top())
 
-The ``everything()`` method should work with all Pyzotero Read API calls, but has not yet been extensively tested. Feedback is welcomed.
+The ``everything()`` method should work with all Pyzotero Read API calls which can return multiple items, but has not yet been extensively tested. `Feedback is welcomed <https://github.com/urschrei/pyzotero/issues>`_.
 
+.. warning:: The ``follow()`` and ``everything()`` methods are only valid for methods which can return multiple library items. For instance, you cannot use ``follow()`` after an ``item()`` call.
 
 ======================
 Retrieving item counts
