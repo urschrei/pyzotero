@@ -24,7 +24,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 __author__ = 'urschrei@gmail.com'
-__version__ = '0.9.51'
+__version__ = '0.9.6'
 
 
 import urllib

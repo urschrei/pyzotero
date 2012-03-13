@@ -579,7 +579,7 @@ Item Methods
             for d in to_delete:
                 zot.delete_item(d)
 
-    .. py:method:: Zotero.add_tags(item, tag[, tag])
+    .. py:method:: Zotero.add_tags(item, tag[, tag …])
 
         Add one or more tags to an item, and update it on the server
         
@@ -590,7 +590,7 @@ Item Methods
         Example::
             
             zot.add_parameters(limit=1)
-            z = zot.items()
+            z = zot.top()
             # we've now retrieved the most recent top-level item
             updated = zot.add_tags(z[0], 'tag1', 'tag2', 'tag3')
             # updated now contains a representation of the updated server item

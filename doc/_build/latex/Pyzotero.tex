@@ -14,7 +14,7 @@
 
 \title{Pyzotero Documentation}
 \date{March 13, 2012}
-\release{0.9.5}
+\release{0.9.6}
 \author{Stephan Hügel}
 \newcommand{\sphinxlogo}{}
 \renewcommand{\releasename}{Release}
@@ -1112,7 +1112,7 @@ Example:
 \index{add\_tags() (pyzotero.zotero.Zotero method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pyzotero.zotero.Zotero.add_tags}\pysiglinewithargsret{\code{Zotero.}\bfcode{add\_tags}}{\emph{item}, \emph{tag}\optional{, \emph{tag}}}{}
+\phantomsection\label{index:pyzotero.zotero.Zotero.add_tags}\pysiglinewithargsret{\code{Zotero.}\bfcode{add\_tags}}{\emph{item}, \emph{tag}\optional{, \emph{tag …}}}{}
 Add one or more tags to an item, and update it on the server
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
@@ -1133,7 +1133,7 @@ Example:
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{n}{zot}\PYG{o}{.}\PYG{n}{add\PYGZus{}parameters}\PYG{p}{(}\PYG{n}{limit}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
-\PYG{n}{z} \PYG{o}{=} \PYG{n}{zot}\PYG{o}{.}\PYG{n}{items}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{z} \PYG{o}{=} \PYG{n}{zot}\PYG{o}{.}\PYG{n}{top}\PYG{p}{(}\PYG{p}{)}
 \PYG{c}{\PYGZsh{} we've now retrieved the most recent top-level item}
 \PYG{n}{updated} \PYG{o}{=} \PYG{n}{zot}\PYG{o}{.}\PYG{n}{add\PYGZus{}tags}\PYG{p}{(}\PYG{n}{z}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,} \PYG{l+s}{'}\PYG{l+s}{tag1}\PYG{l+s}{'}\PYG{p}{,} \PYG{l+s}{'}\PYG{l+s}{tag2}\PYG{l+s}{'}\PYG{p}{,} \PYG{l+s}{'}\PYG{l+s}{tag3}\PYG{l+s}{'}\PYG{p}{)}
 \PYG{c}{\PYGZsh{} updated now contains a representation of the updated server item}

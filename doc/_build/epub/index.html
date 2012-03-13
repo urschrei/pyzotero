@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pyzotero 0.9.5 documentation</a> &raquo;</li> 
+        <li><a href="#">Pyzotero 0.9.6 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -978,7 +978,7 @@ Example:</p>
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.add_tags">
-<tt class="descclassname">Zotero.</tt><tt class="descname">add_tags</tt><big>(</big><em>item</em>, <em>tag</em><span class="optional">[</span>, <em>tag</em><span class="optional">]</span><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">add_tags</tt><big>(</big><em>item</em>, <em>tag</em><span class="optional">[</span>, <em>tag …</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Add one or more tags to an item, and update it on the server</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -997,7 +997,7 @@ Example:</p>
 </table>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">z</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">()</span>
 <span class="c"># we&#39;ve now retrieved the most recent top-level item</span>
 <span class="n">updated</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">add_tags</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;tag1&#39;</span><span class="p">,</span> <span class="s">&#39;tag2&#39;</span><span class="p">,</span> <span class="s">&#39;tag3&#39;</span><span class="p">)</span>
 <span class="c"># updated now contains a representation of the updated server item</span>
