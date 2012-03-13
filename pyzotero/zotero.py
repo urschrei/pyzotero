@@ -707,9 +707,11 @@ class Zotero(object):
                     '/itemFields',
                     self.templates['item_fields'],
                     'item_fields'):
-            template = set(t for t in self.templates['item_fields']['tmplt'])
+            template = set(
+                    t['field'] for t in self.templates['item_fields']['tmplt'])
         else:
-            template = set(t['field'] for t in self.item_fields())
+            template = set(
+                    t['field'] for t in self.item_fields())
         # add fields we know to be OK
         template = template | set(['tags', 'notes', 'itemType', 'creators'])
         template = template | set(self.temp_keys)
