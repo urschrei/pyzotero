@@ -11,7 +11,7 @@
   \item check\_items() (pyzotero.zotero.Zotero method), \hyperpage{15}
   \item children() (pyzotero.zotero.Zotero method), \hyperpage{7}
   \item collection\_items() (pyzotero.zotero.Zotero method), \hyperpage{9}
-  \item collections() (pyzotero.zotero.Zotero method), \hyperpage{9}
+  \item collections() (pyzotero.zotero.Zotero method), \hyperpage{10}
   \item collections\_sub() (pyzotero.zotero.Zotero method), \hyperpage{10}
   \item create\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
   \item create\_items() (pyzotero.zotero.Zotero method), \hyperpage{16}

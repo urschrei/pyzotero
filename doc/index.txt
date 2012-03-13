@@ -55,8 +55,7 @@ Hello World
     # retrieve the last five top-level items you added to your library
     from pyzotero import zotero
     zot = zotero.Zotero(user_id, user_key)
-    zot.add_parameters(limit = 5)
-    items = zot.top()
+    items = zot.top(limit=5)
     # print each item's item type and ID
     for item in items:
         print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
@@ -81,39 +80,39 @@ First, create a new Zotero instance:
 Read API Methods
 ====================
 
+**Note:** :ref:`search/request parameters <parameters>` inside square brackets are optional. Methods such as :py:meth:`Zotero.top()`, :py:meth:`Zotero.items()` etc. can be called with no additional parameters if you wish.
+
 ====================
 Retrieving Items
 ====================
 
 
-
-
-    .. py:method:: Zotero.items()
+    .. py:method:: Zotero.items([search/request parameters])
 
         Returns Zotero library items
 
         :rtype: list of dicts
 
-    .. py:method:: Zotero.top()
+    .. py:method:: Zotero.top([search/request parameters])
 
         Returns top-level Zotero library items
 
         :rtype: list of dicts
 
-    .. py:method:: Zotero.trash()
+    .. py:method:: Zotero.trash([search/request parameters])
 
         Returns library items from the user's trash
 
         :rtype: list of dicts
 
-    .. py:method:: Zotero.item(itemID)
+    .. py:method:: Zotero.item(itemID[, search/request parameters])
 
         Returns a specific item
 
         :param str itemID: a zotero item ID
         :rtype: list of dicts
 
-    .. py:method:: Zotero.children(itemID)
+    .. py:method:: Zotero.children(itemID[, search/request parameters])
 
         Returns the child items of a specific item
 
@@ -121,7 +120,7 @@ Retrieving Items
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.tag_items(itemID)
+    .. py:method:: Zotero.tag_items(itemID[, search/request parameters])
 
         Returns items for a specific tag
 
@@ -129,7 +128,7 @@ Retrieving Items
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.group_items(groupID)
+    .. py:method:: Zotero.group_items(groupID[, search/request parameters])
 
         Returns items from a specific group
 
@@ -137,7 +136,7 @@ Retrieving Items
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.group_trash(groupID)
+    .. py:method:: Zotero.group_trash(groupID[, search/request parameters])
 
         Returns items from a specific group's trash
 
@@ -145,14 +144,14 @@ Retrieving Items
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.group_top(groupID)
+    .. py:method:: Zotero.group_top(groupID[, search/request parameters])
 
         Returns top-level items from a specific group
 
         :param str groupID: a Zotero group ID
         :rtype: list of dicts
 
-    .. py:method:: Zotero.group_item(groupID, itemID)
+    .. py:method:: Zotero.group_item(groupID, itemID[, search/request parameters])
 
         Returns a specific item from a specific group
 
@@ -161,7 +160,7 @@ Retrieving Items
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.group_item_children(groupID, itemID)
+    .. py:method:: Zotero.group_item_children(groupID, itemID[, search/request parameters])
 
         Returns the child items of a specific item from a specific group
 
@@ -170,7 +169,7 @@ Retrieving Items
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.group_items_tag(groupID, tag)
+    .. py:method:: Zotero.group_items_tag(groupID, tag[, search/request parameters])
 
         Returns a specific group's items for a specific tag
 
@@ -178,7 +177,7 @@ Retrieving Items
         :param str tag: a tag whose items you wish to return
         :rtype: list of dicts
 
-    .. py:method:: Zotero.group_collection_items(groupID, collection ID)
+    .. py:method:: Zotero.group_collection_items(groupID, collection ID[, search/request parameters])
 
         Returns a specific collection's items from a specific group
 
@@ -187,7 +186,7 @@ Retrieving Items
 
         :rtype: list of dicts
 
-    .. py:method:: Zotero.group_collection_item(groupID, collectionID, itemID)
+    .. py:method:: Zotero.group_collection_item(groupID, collectionID, itemID[, search/request parameters])
 
         Returns a specific collection's item from a specific group
 
@@ -197,7 +196,7 @@ Retrieving Items
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.group_collection_top(groupID, collectionID)
+    .. py:method:: Zotero.group_collection_top(groupID, collectionID[, search/request parameters])
 
         Returns a specific collection's top-level items from a specific group
 
@@ -205,7 +204,7 @@ Retrieving Items
         :param str groupID: a Zotero collection ID
         :rtype: list of dicts
 
-    .. py:method:: Zotero.collection_items(collectionID)
+    .. py:method:: Zotero.collection_items(collectionID[, search/request parameters])
 
         Returns items from the specified collection
 
@@ -213,7 +212,7 @@ Retrieving Items
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.get_subset(itemIDs)
+    .. py:method:: Zotero.get_subset(itemIDs[, search/request parameters])
 
         Retrieve an arbitrary set of non-adjacent items. Limited to 50 items per call.
 
@@ -259,27 +258,27 @@ Retrieving Items
 =======================
 Retrieving Collections
 =======================
-    .. py:method:: Zotero.collections()
+    .. py:method:: Zotero.collections([search/request parameters])
 
         Returns a user's collections
     
         :rtype: list of dicts
 
-    .. py:method:: Zotero.collections_sub(collectionID)
+    .. py:method:: Zotero.collections_sub(collectionID[, search/request parameters])
 
         Returns a sub-collection from a specific collection
     
         :param str collectionID: a Zotero library collection ID
         :rtype: list of dicts
 
-    .. py:method:: Zotero.group_collections(groupID)
+    .. py:method:: Zotero.group_collections(groupID[, search/request parameters])
 
         Returns collections for a specific group
     
         :param str groupID: a Zotero group ID
         :rtype: list of dicts
 
-    .. py:method:: Zotero.group_collection(groupID, collectionID)
+    .. py:method:: Zotero.group_collection(groupID, collectionID[, search/request parameters])
 
         Returns a specific collection from a specific group
     
@@ -294,7 +293,7 @@ Retrieving Collections
 ==========================
 Retrieving groups
 ==========================
-    .. py:method:: Zotero.groups()
+    .. py:method:: Zotero.groups([search/request parameters])
 
         Retrieve the Zotero group data to which the current user key has access
     
@@ -323,27 +322,27 @@ Retrieving groups
 Retrieving Tags
 ===================
 
-    .. py:method:: Zotero.tags()
+    .. py:method:: Zotero.tags([search/request parameters])
 
         Returns a user's tags
     
         :rtype: list of strings
     
-    .. py:method:: Zotero.item_tags(itemID)
+    .. py:method:: Zotero.item_tags(itemID[, search/request parameters])
 
         Returns tags from a specific item
     
         :param str itemID: a valid Zotero library Item ID
         :rtype: list of strings
 
-    .. py:method:: Zotero.group_tags(groupID)
+    .. py:method:: Zotero.group_tags(groupID[, search/request parameters])
 
         Returns tags from a specific group
     
         :param str groupID: a valid Zotero library group ID
         :rtype: list of strings
 
-    .. py:method:: Zotero.group_item_tags(groupID, itemID)
+    .. py:method:: Zotero.group_item_tags(groupID, itemID[, search/request parameters])
 
         Returns tags from a specific item from a specific group
     
@@ -369,9 +368,8 @@ Example:
     from pyzotero import zotero
     zot = zotero.Zotero(user_id, user_key)
     # only retrieve a single item
-    zot.add_parameters(limit = 1)
     # this will retrieve the most recently added/modified top-level item
-    first_item = zot.top()
+    first_item = zot.top(limit=1)
     # now we can start retrieving subsequent items
     next_item = zot.follow()
     third_item = zot.follow()
@@ -426,15 +424,21 @@ If you wish to retrieve item counts for subsets of a library, you can use the fo
 
     :rtype: int
 
+.. _parameters:
 
-========================================
-Additional Parameters for Read API calls
-========================================
+==============================================
+Search / Request Parameters for Read API calls
+==============================================
 
-Additional parameters may be set on Read API methods using the following method. All parameters are optional. **You may also set a search term here, using the 'itemType', 'q', or 'tag' parameters**. This area of the Zotero Read API is under heavy development as of early 2012, and may change frequently. See `the API documentation <http://www.zotero.org/support/dev/server_api/read_api#search_syntax>`_ for the most up-to-date details of search syntax usage and export format details.
+Additional parameters may be set on Read API methods **following any required parameters**, or set using the :py:meth:`Zotero.add_parameters()` method detailed below.
+
+All parameters are optional. **You may also set a search term here, using the 'itemType', 'q', or 'tag' parameters**.
+
+This area of the Zotero Read API is under heavy development as of early 2012, and may change frequently. See `the API documentation <http://www.zotero.org/support/dev/server_api/read_api#search_syntax>`_ for the most up-to-date details of search syntax usage and export format details.
 
     .. py:method:: Zotero.add_parameters([format=None, itemKey=None, itemType=None, q=None, tag=None, limit=None, start=None, order=None, sort=None, [content=None[ ,style=None]]])
 
+        :param str format: only 'keys' is currently supported as an alternate format
         :param str itemKey: A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request.
         :param str itemType: item type search
         :param str q: a search term, which currently matches titles and individual creator fields
@@ -443,18 +447,23 @@ Additional parameters may be set on Read API methods using the following method.
         :param int start: 1 – total number of items in your library or None
         :param str order: any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”
         :param str sort: 'asc' or 'desc'
-        :param str format: only 'keys' is currently supported as an alternate format
         :param str content: 'bib', or one of the export formats (see below). If 'bib' is passed, you may also pass:
         :param str style: Any valid CSL style in the Zotero style repository
         :rtype: list of HTML strings or None
 
-        Example::
+        The following two examples produce the same result::
 
-            zot.add_parameters(limit=7,start=3)
+            # set parameters on the call itself
+            z = zot.top(limit=7, start=3)
+
+            # set parameters using explicit method
+            zot.add_parameters(limit=7, start=3)
+            z = zot.top()
+
 
 .. note::
 
-    Any parameters you set will be valid **for the next call only**  
+    Any parameters you set will be valid **for the next call only**. Any parameters set using ``add_parameters()`` will be overridden by parameters you pass in the call itself.
 
 
 A note on the ``content`` and ``style`` parameters:

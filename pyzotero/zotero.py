@@ -127,7 +127,9 @@ def retrieve(func):
         passed to _etags in order to extract the etag attributes
         from each entry, then to feedparser, then to the correct processor
         """
-        retrieved = self._retrieve_data(func(self, *args, **kwargs))
+        if kwargs:
+            self.add_parameters(**kwargs)
+        retrieved = self._retrieve_data(func(self, *args))
         # determine content and format, based on url params
         content = self.content.search(
                 self.request.get_full_url()).group(0) if \
@@ -336,28 +338,28 @@ class Zotero(object):
         return int(parsed.feed['zapi_totalresults'].encode('utf8'))
 
     @retrieve
-    def items(self):
+    def items(self, **kwargs):
         """ Get user items
         """
         query_string = '/users/{u}/items'
         return self._build_query(query_string)
 
     @retrieve
-    def top(self):
+    def top(self, **kwargs):
         """ Get user top-level items
         """
         query_string = '/users/{u}/items/top'
         return self._build_query(query_string)
 
     @retrieve
-    def trash(self):
+    def trash(self, **kwargs):
         """ Get all items in the trash
         """
         query_string = '/users/{u}/items/trash'
         return self._build_query(query_string)
 
     @retrieve
-    def item(self, item):
+    def item(self, item, **kwargs):
         """ Get a specific item
         """
         query_string = '/users/{u}/items/{i}'.format(
@@ -365,7 +367,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def children(self, item):
+    def children(self, item, **kwargs):
         """ Get a specific item's child items
         """
         query_string = '/users/{u}/items/{i}/children'.format(
@@ -373,7 +375,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def tag_items(self, tag):
+    def tag_items(self, tag, **kwargs):
         """ Get items for a specific tag
         """
         query_string = '/users/{u}/tags/{t}/items'.format(
@@ -381,7 +383,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def collection_items(self, collection):
+    def collection_items(self, collection, **kwargs):
         """ Get a specific collection's items
         """
         query_string = '/users/{u}/collections/{c}/items'.format(
@@ -389,7 +391,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_items(self, group):
+    def group_items(self, group, **kwargs):
         """ Get a specific group's items
         """
         query_string = '/groups/{g}/items'.format(
@@ -397,7 +399,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_top(self, group):
+    def group_top(self, group, **kwargs):
         """ Get a specific group's top-level items
         """
         query_string = '/groups/{g}/items/top'.format(
@@ -405,7 +407,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_item(self, group, item):
+    def group_item(self, group, item, **kwargs):
         """ Get a specific group item
         """
         query_string = '/groups/{g}/items/{i}'.format(
@@ -414,7 +416,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_trash(self, group):
+    def group_trash(self, group, **kwargs):
         """ Get the items in a specific group's trash
         """
         query_string = '/groups/{g}/trash'.format(
@@ -422,7 +424,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_item_children(self, group, item):
+    def group_item_children(self, group, item, **kwargs):
         """ Get a specific group item's child items
         """
         query_string = '/groups/{g}/items/{i}/children'.format(
@@ -431,7 +433,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_items_tag(self, group, tag):
+    def group_items_tag(self, group, tag, **kwargs):
         """ Get a specific group's items for a specific tag
         """
         query_string = '/groups/{g}/tags/{t}/items'.format(
@@ -440,7 +442,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_collection_items(self, group, collection):
+    def group_collection_items(self, group, collection, **kwargs):
         """ Get a specific group's items from a specific collection
         """
         query_string = '/groups/{g}/collections/{c}/items'.format(
@@ -449,7 +451,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_collection_top(self, group, collection):
+    def group_collection_top(self, group, collection, **kwargs):
         """ Get a specific group's top-level items from a specific collection
         """
         query_string = '/groups/{g}/collections/{c}/items/top'.format(
@@ -458,7 +460,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_collection_item(self, group, collection, item):
+    def group_collection_item(self, group, collection, item, **kwargs):
         """ Get a specific collection's item from a specific group
         """
         query_string = '/groups/{g}/collections/{c}/items/{i}'.format(
@@ -468,14 +470,14 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def collections(self):
+    def collections(self, **kwargs):
         """ Get user collections
         """
         query_string = '/users/{u}/collections'
         return self._build_query(query_string)
 
     @retrieve
-    def collections_sub(self, collection):
+    def collections_sub(self, collection, **kwargs):
         """ Get subcollections for a specific collection
         """
         query_string = '/users/{u}/collections/{c}/collections'.format(
@@ -483,7 +485,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_collections(self, group):
+    def group_collections(self, group, **kwargs):
         """ Get collections for a specific group
         """
         query_string = '/groups/{group}/collections'.format(
@@ -492,7 +494,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_collection(self, group, collection):
+    def group_collection(self, group, collection, **kwargs):
         """ Get a specific collection for a specific group
         """
         query_string = '/groups/{g}/collections/{c}'.format(
@@ -501,7 +503,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_collection_sub(self, group, collection):
+    def group_collection_sub(self, group, collection, **kwargs):
         """ Get collections for a specific group
         """
         query_string = '/groups/{g}/collections/{c}/collections'.format(
@@ -510,21 +512,21 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def groups(self):
+    def groups(self, **kwargs):
         """ Get user groups
         """
         query_string = '/users/{u}/groups'
         return self._build_query(query_string)
 
     @retrieve
-    def tags(self):
+    def tags(self, **kwargs):
         """ Get tags for a specific item
         """
         query_string = '/users/{u}/tags'
         return self._build_query(query_string)
 
     @retrieve
-    def item_tags(self, item):
+    def item_tags(self, item, **kwargs):
         """ Get tags for a specific item
         """
         query_string = '/users/{u}/items/{i}/tags'.format(
@@ -532,7 +534,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_tags(self, group):
+    def group_tags(self, group, **kwargs):
         """ Get tags for a specific group
         """
         query_string = '/groups/{g}/tags'.format(
@@ -540,7 +542,7 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def group_item_tags(self, group, item):
+    def group_item_tags(self, group, item, **kwargs):
         """ Get tags for a specific item in a specific group
         """
         query_string = '/groups/{g}/items/{i}/tags'.format(
@@ -548,10 +550,10 @@ class Zotero(object):
         i = item.upper())
         return self._build_query(query_string)
 
-    def all_top(self):
+    def all_top(self, **kwargs):
         """ Retrieve all top-level items
         """
-        return self.everything(self.top())
+        return self.everything(self.top(kwargs))
 
     @retrieve
     def follow(self):

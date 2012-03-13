@@ -80,8 +80,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># retrieve the last five top-level items you added to your library</span>
 <span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
 <span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_key</span><span class="p">)</span>
-<span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
-<span class="n">items</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">()</span>
+<span class="n">items</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="c"># print each item&#39;s item type and ID</span>
 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
     <span class="k">print</span> <span class="s">&#39;Item Type: </span><span class="si">%s</span><span class="s"> | Key: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s">&#39;itemType&#39;</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">])</span>
@@ -121,9 +120,10 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <div class="section" id="retrieving-items">
 <h2>Retrieving Items</h2>
 <blockquote>
-<div><dl class="method">
+<div><p><strong>Note:</strong> <a class="reference internal" href="#parameters"><em>search/request parameters</em></a> inside square brackets are optional</p>
+<dl class="method">
 <dt id="pyzotero.zotero.Zotero.items">
-<tt class="descclassname">Zotero.</tt><tt class="descname">items</tt><big>(</big><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">items</tt><big>(</big><span class="optional">[</span><em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns Zotero library items</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -137,7 +137,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.top">
-<tt class="descclassname">Zotero.</tt><tt class="descname">top</tt><big>(</big><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">top</tt><big>(</big><span class="optional">[</span><em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns top-level Zotero library items</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -165,7 +165,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.item">
-<tt class="descclassname">Zotero.</tt><tt class="descname">item</tt><big>(</big><em>itemID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">item</tt><big>(</big><em>itemID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a specific item</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -181,7 +181,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.children">
-<tt class="descclassname">Zotero.</tt><tt class="descname">children</tt><big>(</big><em>itemID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">children</tt><big>(</big><em>itemID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns the child items of a specific item</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -197,7 +197,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.tag_items">
-<tt class="descclassname">Zotero.</tt><tt class="descname">tag_items</tt><big>(</big><em>itemID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">tag_items</tt><big>(</big><em>itemID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns items for a specific tag</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -213,7 +213,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_items">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_items</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_items</tt><big>(</big><em>groupID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns items from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -229,7 +229,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_trash">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_trash</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_trash</tt><big>(</big><em>groupID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns items from a specific group&#8217;s trash</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -245,7 +245,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_top">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_top</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_top</tt><big>(</big><em>groupID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns top-level items from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -261,7 +261,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_item">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_item</tt><big>(</big><em>groupID</em>, <em>itemID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_item</tt><big>(</big><em>groupID</em>, <em>itemID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a specific item from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -282,7 +282,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_item_children">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_item_children</tt><big>(</big><em>groupID</em>, <em>itemID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_item_children</tt><big>(</big><em>groupID</em>, <em>itemID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns the child items of a specific item from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -303,7 +303,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_items_tag">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_items_tag</tt><big>(</big><em>groupID</em>, <em>tag</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_items_tag</tt><big>(</big><em>groupID</em>, <em>tag</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a specific group&#8217;s items for a specific tag</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -324,7 +324,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_collection_items">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection_items</tt><big>(</big><em>groupID</em>, <em>collection ID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection_items</tt><big>(</big><em>groupID</em>, <em>collection ID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a specific collection&#8217;s items from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -345,7 +345,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_collection_item">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection_item</tt><big>(</big><em>groupID</em>, <em>collectionID</em>, <em>itemID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection_item</tt><big>(</big><em>groupID</em>, <em>collectionID</em>, <em>itemID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a specific collection&#8217;s item from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -367,7 +367,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_collection_top">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection_top</tt><big>(</big><em>groupID</em>, <em>collectionID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection_top</tt><big>(</big><em>groupID</em>, <em>collectionID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a specific collection&#8217;s top-level items from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -388,7 +388,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.collection_items">
-<tt class="descclassname">Zotero.</tt><tt class="descname">collection_items</tt><big>(</big><em>collectionID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">collection_items</tt><big>(</big><em>collectionID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns items from the specified collection</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -404,7 +404,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.get_subset">
-<tt class="descclassname">Zotero.</tt><tt class="descname">get_subset</tt><big>(</big><em>itemIDs</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">get_subset</tt><big>(</big><em>itemIDs</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Retrieve an arbitrary set of non-adjacent items. Limited to 50 items per call.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -459,7 +459,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <blockquote>
 <div><dl class="method">
 <dt id="pyzotero.zotero.Zotero.collections">
-<tt class="descclassname">Zotero.</tt><tt class="descname">collections</tt><big>(</big><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">collections</tt><big>(</big><span class="optional">[</span><em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a user&#8217;s collections</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -473,7 +473,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.collections_sub">
-<tt class="descclassname">Zotero.</tt><tt class="descname">collections_sub</tt><big>(</big><em>collectionID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">collections_sub</tt><big>(</big><em>collectionID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a sub-collection from a specific collection</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -489,7 +489,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_collections">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_collections</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collections</tt><big>(</big><em>groupID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns collections for a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -505,7 +505,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_collection">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection</tt><big>(</big><em>groupID</em>, <em>collectionID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_collection</tt><big>(</big><em>groupID</em>, <em>collectionID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a specific collection from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -534,7 +534,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <blockquote>
 <div><dl class="method">
 <dt id="pyzotero.zotero.Zotero.groups">
-<tt class="descclassname">Zotero.</tt><tt class="descname">groups</tt><big>(</big><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">groups</tt><big>(</big><span class="optional">[</span><em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Retrieve the Zotero group data to which the current user key has access</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -571,7 +571,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <blockquote>
 <div><dl class="method">
 <dt id="pyzotero.zotero.Zotero.tags">
-<tt class="descclassname">Zotero.</tt><tt class="descname">tags</tt><big>(</big><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">tags</tt><big>(</big><span class="optional">[</span><em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns a user&#8217;s tags</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -585,7 +585,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.item_tags">
-<tt class="descclassname">Zotero.</tt><tt class="descname">item_tags</tt><big>(</big><em>itemID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">item_tags</tt><big>(</big><em>itemID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns tags from a specific item</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -601,7 +601,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_tags">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_tags</tt><big>(</big><em>groupID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_tags</tt><big>(</big><em>groupID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns tags from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -617,7 +617,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.group_item_tags">
-<tt class="descclassname">Zotero.</tt><tt class="descname">group_item_tags</tt><big>(</big><em>groupID</em>, <em>itemID</em><big>)</big></dt>
+<tt class="descclassname">Zotero.</tt><tt class="descname">group_item_tags</tt><big>(</big><em>groupID</em>, <em>itemID</em><span class="optional">[</span>, <em>search/request parameters</em><span class="optional">]</span><big>)</big></dt>
 <dd><p>Returns tags from a specific item from a specific group</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -648,9 +648,8 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyzotero</span> <span class="kn">import</span> <span class="n">zotero</span>
 <span class="n">zot</span> <span class="o">=</span> <span class="n">zotero</span><span class="o">.</span><span class="n">Zotero</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_key</span><span class="p">)</span>
 <span class="c"># only retrieve a single item</span>
-<span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
 <span class="c"># this will retrieve the most recently added/modified top-level item</span>
-<span class="n">first_item</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">()</span>
+<span class="n">first_item</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="c"># now we can start retrieving subsequent items</span>
 <span class="n">next_item</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">follow</span><span class="p">()</span>
 <span class="n">third_item</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">follow</span><span class="p">()</span>
@@ -733,9 +732,9 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </dd></dl>
 
 </div>
-<div class="section" id="additional-parameters-for-read-api-calls">
-<h2>Additional Parameters for Read API calls</h2>
-<p>Additional parameters may be set on Read API methods using the following method. All parameters are optional. <strong>You may also set a search term here, using the &#8216;itemType&#8217;, &#8216;q&#8217;, or &#8216;tag&#8217; parameters</strong>. This area of the Zotero Read API is under heavy development as of early 2012, and may change frequently. See <a class="reference external" href="http://www.zotero.org/support/dev/server_api/read_api#search_syntax">the API documentation</a><span class="link-target"> [http://www.zotero.org/support/dev/server_api/read_api#search_syntax]</span> for the most up-to-date details of search syntax usage and export format details.</p>
+<div class="section" id="search-request-parameters-for-read-api-calls">
+<span id="parameters"></span><h2>Search / Request Parameters for Read API calls</h2>
+<p>Additional parameters may be set on Read API methods using the following method, or passed as part of the call itself, <strong>following any required parameters</strong>  All parameters are optional. <strong>You may also set a search term here, using the &#8216;itemType&#8217;, &#8216;q&#8217;, or &#8216;tag&#8217; parameters</strong>. This area of the Zotero Read API is under heavy development as of early 2012, and may change frequently. See <a class="reference external" href="http://www.zotero.org/support/dev/server_api/read_api#search_syntax">the API documentation</a><span class="link-target"> [http://www.zotero.org/support/dev/server_api/read_api#search_syntax]</span> for the most up-to-date details of search syntax usage and export format details.</p>
 <blockquote>
 <div><dl class="method">
 <dt id="pyzotero.zotero.Zotero.add_parameters">
@@ -764,8 +763,12 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </tr>
 </tbody>
 </table>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">start</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># set parameters on the call itself</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="c"># set parameters using explicit method</span>
+<span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">start</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">top</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -773,7 +776,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </div></blockquote>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Any parameters you set will be valid <strong>for the next call only</strong></p>
+<p class="last">Any parameters you set will be valid <strong>for the next call only</strong>. Any parameters set using <tt class="docutils literal"><span class="pre">add_parameters()</span></tt> will be overridden by parameters you pass in the call itself.</p>
 </div>
 <p>A note on the <tt class="docutils literal"><span class="pre">content</span></tt> and <tt class="docutils literal"><span class="pre">style</span></tt> parameters:</p>
 <blockquote>

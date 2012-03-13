@@ -17,7 +17,7 @@
 \indexentry{group\_collection\_top() (pyzotero.zotero.Zotero method)|hyperpage}{8}
 \indexentry{collection\_items() (pyzotero.zotero.Zotero method)|hyperpage}{9}
 \indexentry{get\_subset() (pyzotero.zotero.Zotero method)|hyperpage}{9}
-\indexentry{collections() (pyzotero.zotero.Zotero method)|hyperpage}{9}
+\indexentry{collections() (pyzotero.zotero.Zotero method)|hyperpage}{10}
 \indexentry{collections\_sub() (pyzotero.zotero.Zotero method)|hyperpage}{10}
 \indexentry{group\_collections() (pyzotero.zotero.Zotero method)|hyperpage}{10}
 \indexentry{group\_collection() (pyzotero.zotero.Zotero method)|hyperpage}{10}

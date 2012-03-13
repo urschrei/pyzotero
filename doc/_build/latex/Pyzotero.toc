@@ -7,13 +7,13 @@
 \contentsline {section}{\numberline {2.2}General Usage}{5}{section.2.2}
 \contentsline {chapter}{\numberline {3}Read API Methods}{7}{chapter.3}
 \contentsline {section}{\numberline {3.1}Retrieving Items}{7}{section.3.1}
-\contentsline {section}{\numberline {3.2}Retrieving Collections}{9}{section.3.2}
+\contentsline {section}{\numberline {3.2}Retrieving Collections}{10}{section.3.2}
 \contentsline {section}{\numberline {3.3}Retrieving groups}{10}{section.3.3}
 \contentsline {section}{\numberline {3.4}Retrieving Tags}{11}{section.3.4}
 \contentsline {section}{\numberline {3.5}The \texttt {follow()} method}{11}{section.3.5}
 \contentsline {section}{\numberline {3.6}The \texttt {everything()} method}{12}{section.3.6}
 \contentsline {section}{\numberline {3.7}Retrieving item counts}{12}{section.3.7}
-\contentsline {section}{\numberline {3.8}Additional Parameters for Read API calls}{12}{section.3.8}
+\contentsline {section}{\numberline {3.8}Search / Request Parameters for Read API calls}{12}{section.3.8}
 \contentsline {chapter}{\numberline {4}Write API Methods}{15}{chapter.4}
 \contentsline {section}{\numberline {4.1}Item Methods}{15}{section.4.1}
 \contentsline {section}{\numberline {4.2}Collection Methods}{17}{section.4.2}
