@@ -693,6 +693,8 @@ class Zotero(object):
             item['tags'] = list()
         for tag in tags:
             item['tags'].append({u'tag': u'%s' % tag})
+        # make sure everything's OK
+        assert(self.check_items([item]))
         return self.update_item(item)
 
     def check_items(self, items):
