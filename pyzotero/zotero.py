@@ -877,6 +877,7 @@ class Zotero(object):
         req.get_method = lambda: 'PUT'
         req.add_data(to_send)
         req.add_header('If-Match', etag)
+        req.add_header('Content-Type', 'application/json')
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
             resp = opener.open(req)
