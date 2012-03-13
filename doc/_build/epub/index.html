@@ -976,6 +976,35 @@ Example:</p>
 </div>
 </dd></dl>
 
+<dl class="method">
+<dt id="pyzotero.zotero.Zotero.add_tags">
+<tt class="descclassname">Zotero.</tt><tt class="descname">add_tags</tt><big>(</big><em>item</em>, <em>tag</em><span class="optional">[</span>, <em>tag</em><span class="optional">]</span><big>)</big></dt>
+<dd><p>Add one or more tags to an item, and update it on the server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>item</strong> (<em>dict</em>) &#8211; a dict containing item data</li>
+<li><strong>tag</strong> (<em>string</em>) &#8211; the tag you&#8217;d like to add to the item</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of dicts</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zot</span><span class="o">.</span><span class="n">add_parameters</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="c"># we&#39;ve now retrieved the most recent top-level item</span>
+<span class="n">updated</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">add_tags</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;tag1&#39;</span><span class="p">,</span> <span class="s">&#39;tag2&#39;</span><span class="p">,</span> <span class="s">&#39;tag3&#39;</span><span class="p">)</span>
+<span class="c"># updated now contains a representation of the updated server item</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </div></blockquote>
 </div>
 <div class="section" id="collection-methods">

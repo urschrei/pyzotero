@@ -677,6 +677,22 @@ class Zotero(object):
         retrieved = self._retrieve_data(query_string)
         return self._cache(json.loads(retrieved), template_name)
 
+    def add_tags(self, item, *tags):
+        """
+        Add one or more tags to a retrieved item,
+        then update it on the server
+        Accepts a dict, and one or more tags to add to it
+        Returns the updated item from the server
+        """
+        # Make sure there's a tags field, or add one
+        try:
+            assert(item['tags'])
+        except AssertionError:
+            item['tags'] = list()
+        for tag in tags:
+            item['tags'].append({u'tag': u'%s' % tag})
+        return self.update_item(item)
+
     def check_items(self, items):
         """
         Check that items to be created contain no invalid dict keys

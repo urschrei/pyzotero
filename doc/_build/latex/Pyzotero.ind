@@ -3,6 +3,7 @@
 
   \bigletter A
   \item add\_parameters() (pyzotero.zotero.Zotero method), \hyperpage{12}
+  \item add\_tags() (pyzotero.zotero.Zotero method), \hyperpage{16}
   \item addto\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
 
   \indexspace
@@ -12,13 +13,13 @@
   \item collection\_items() (pyzotero.zotero.Zotero method), \hyperpage{9}
   \item collections() (pyzotero.zotero.Zotero method), \hyperpage{9}
   \item collections\_sub() (pyzotero.zotero.Zotero method), \hyperpage{10}
-  \item create\_collection() (pyzotero.zotero.Zotero method), \hyperpage{16}
+  \item create\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
   \item create\_items() (pyzotero.zotero.Zotero method), \hyperpage{16}
   \item creator\_fields() (pyzotero.zotero.Zotero method), \hyperpage{15}
 
   \indexspace
   \bigletter D
-  \item delete\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
+  \item delete\_collection() (pyzotero.zotero.Zotero method), \hyperpage{18}
   \item delete\_item() (pyzotero.zotero.Zotero method), \hyperpage{16}
   \item deletefrom\_collection() (pyzotero.zotero.Zotero method), \hyperpage{17}
 
