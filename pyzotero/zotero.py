@@ -553,7 +553,7 @@ class Zotero(object):
     def all_top(self, **kwargs):
         """ Retrieve all top-level items
         """
-        return self.everything(self.top(kwargs))
+        return self.everything(self.top(**kwargs))
 
     @retrieve
     def follow(self):
@@ -569,7 +569,6 @@ class Zotero(object):
         Retrieve all items in the library for a particular query
         This method will override the 'limit' parameter if it's been set
         """
-        self.add_parameters(limit = 99)
         items = []
         items.extend(query)
         while not self.links['self'] == self.links['last']:
