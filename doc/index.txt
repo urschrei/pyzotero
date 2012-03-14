@@ -14,6 +14,30 @@ A Python wrapper for the `Zotero API <http://www.zotero.org/support/dev/server_a
    :maxdepth: 2
 
 
+Getting started (short version)
+===============================
+1. In a shell / prompt: ``pip install pyzotero``. Then:
+
+
+.. _hello-world:
+
+    ::
+
+        from pyzotero import zotero
+        zot = zotero.Zotero(user_id, user_key)
+        items = zot.top(limit = 5)
+        # we have now retrieved the last five top-level items in our library
+        # we can print each item's item type and ID
+        for item in items:
+            print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
+
+2. Refer to the :ref:`read` and :ref:`write`.
+
+
+Installation, testing, usage (longer version)
+=============================================
+
+============
 Installation
 ============
 Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
@@ -60,23 +84,6 @@ Reporting issues
 ================
 If you encounter an error while using Pyzotero, please open an issue on its `Github issues page <https://github.com/urschrei/pyzotero/issues>`_.
 
-Usage
-==========
-.. _hello-world:
-
-============
-Hello World
-============
-
-::
-
-    # retrieve the last five top-level items you added to your library
-    from pyzotero import zotero
-    zot = zotero.Zotero(user_id, user_key)
-    items = zot.top(limit=5)
-    # print each item's item type and ID
-    for item in items:
-        print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
 
 =====================
 General Usage
@@ -90,10 +97,19 @@ First, create a new Zotero instance:
         :param str userID: a valid Zotero API user ID
         :param str userKey: a valid Zotero API user key
         
-        Example::
-        
-            zot = zotero.Zotero(123, ABC1234XYZ)
 
+Example:
+
+.. code-block:: python
+
+    from pyzotero import zotero
+    zot = zotero.Zotero(123, ABC1234XYZ)
+    # we now have a Zotero object, zot, and access to all its methods
+    first_ten = zot.items(limit = 10)
+    # a list containing dicts of the ten most recently modified library items
+
+
+.. _read:
 
 Read API Methods
 ====================
@@ -502,6 +518,7 @@ A note on the ``content`` and ``style`` parameters:
     If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
 
 
+.. _write:
 
 Write API Methods
 =================
