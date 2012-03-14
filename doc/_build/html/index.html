@@ -83,6 +83,11 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p>Run <tt class="docutils literal"><span class="pre">tests.py</span></tt> in the pyzotero directory, or, using <a class="reference external" href="http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html">Nose</a>, <tt class="docutils literal"><span class="pre">nosetests</span></tt>. If you wish to see coverage statistics, run <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">--with-coverage</span> <span class="pre">--cover-package=pyzotero</span></tt>.</p>
 </div>
+<div class="section" id="building-documentation">
+<h2>Building Documentation<a class="headerlink" href="#building-documentation" title="Permalink to this headline">¶</a></h2>
+<p>If you wish to build Pyzotero&#8217;s documentation for offline use, it can be built from the <tt class="docutils literal"><span class="pre">doc</span></tt> directory by running <tt class="docutils literal"><span class="pre">make</span></tt> followed by the desired output format(s) (<tt class="docutils literal"><span class="pre">html</span></tt>, <tt class="docutils literal"><span class="pre">epub</span></tt>, <tt class="docutils literal"><span class="pre">latexpdf</span></tt> etc.)</p>
+<p>See the <a class="reference external" href="http://sphinx.pocoo.org/tutorial.html#running-the-build">Sphinx documentation</a> for full details.</p>
+</div>
 <div class="section" id="reporting-issues">
 <h2>Reporting issues<a class="headerlink" href="#reporting-issues" title="Permalink to this headline">¶</a></h2>
 <p>If you encounter an error while using Pyzotero, please open an issue on its <a class="reference external" href="https://github.com/urschrei/pyzotero/issues">Github issues page</a>.</p>
@@ -908,7 +913,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 <dl class="method">
 <dt id="pyzotero.zotero.Zotero.check_items">
 <tt class="descclassname">Zotero.</tt><tt class="descname">check_items</tt><big>(</big><em>items</em><big>)</big><a class="headerlink" href="#pyzotero.zotero.Zotero.check_items" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling <a class="reference internal" href="#pyzotero.zotero.Zotero.item_fields" title="pyzotero.zotero.Zotero.item_fields"><tt class="xref py py-meth docutils literal"><span class="pre">item_fields()</span></tt></a>, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a <tt class="docutils literal"><span class="pre">KeyError</span></tt> exception is raised.</p>
+<dd><p>Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling <a class="reference internal" href="#pyzotero.zotero.Zotero.item_fields" title="pyzotero.zotero.Zotero.item_fields"><tt class="xref py py-meth docutils literal"><span class="pre">item_fields()</span></tt></a>, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a <tt class="docutils literal"><span class="pre">KeyError</span></tt> exception is raised, detailing the invalid fields.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -935,8 +940,9 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </tr>
 </tbody>
 </table>
-<p>Returns a copy of the created item(s), if successful. The use of <a class="reference internal" href="#pyzotero.zotero.Zotero.item_template" title="pyzotero.zotero.Zotero.item_template"><tt class="xref py py-meth docutils literal"><span class="pre">item_template()</span></tt></a> is recommended in order to first obtain a dict with a structure which the API will accept.
-Example:</p>
+<p>Returns a copy of the created item(s), if successful. Use of <a class="reference internal" href="#pyzotero.zotero.Zotero.item_template" title="pyzotero.zotero.Zotero.item_template"><tt class="xref py py-meth docutils literal"><span class="pre">item_template()</span></tt></a> is recommended in order to first obtain a dict with a structure which is known to be valid.</p>
+<p>Before calling this method, the use of <a class="reference internal" href="#pyzotero.zotero.Zotero.check_items" title="pyzotero.zotero.Zotero.check_items"><tt class="xref py py-meth docutils literal"><span class="pre">check_items()</span></tt></a> is encouraged, in order to confirm that the item to be created contains only valid fields.</p>
+<p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">template</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">item_template</span><span class="p">(</span><span class="s">&#39;book&#39;</span><span class="p">)</span>
 <span class="n">template</span><span class="p">[</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;firstName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Monty&#39;</span>
 <span class="n">template</span><span class="p">[</span><span class="s">&#39;creators&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;lastName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Cantsin&#39;</span>
@@ -961,6 +967,7 @@ Example:</p>
 </tr>
 </tbody>
 </table>
+<p>Returns a copy of the updated item, if successful. Before calling this method, the use of <a class="reference internal" href="#pyzotero.zotero.Zotero.check_items" title="pyzotero.zotero.Zotero.check_items"><tt class="xref py py-meth docutils literal"><span class="pre">check_items()</span></tt></a> is encouraged, in order to confirm that the item to be created contains only valid fields.</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">i</span> <span class="o">=</span> <span class="n">zot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
 <span class="c"># see above for example of returned item structure</span>
@@ -1162,6 +1169,7 @@ Example:</p>
 </li>
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#building-documentation">Building Documentation</a></li>
 <li><a class="reference internal" href="#reporting-issues">Reporting issues</a></li>
 </ul>
 </li>

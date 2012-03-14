@@ -37,6 +37,15 @@ Testing
 =======
 Run ``tests.py`` in the pyzotero directory, or, using `Nose <http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html>`_, ``nosetests``. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
 
+
+======================
+Building Documentation
+======================
+If you wish to build Pyzotero's documentation for offline use, it can be built from the ``doc`` directory by running ``make`` followed by the desired output format(s) (``html``, ``epub``, ``latexpdf`` etc.)
+
+See the `Sphinx documentation <http://sphinx.pocoo.org/tutorial.html#running-the-build>`_ for full details.
+
+
 ================
 Reporting issues
 ================
@@ -533,7 +542,7 @@ Item Methods
 
     .. py:method:: Zotero.check_items(items)
     
-        Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised.
+        Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised, detailing the invalid fields.
         
         :param list items: one or more dicts containing item data
         :rtype: Boolean
@@ -545,7 +554,10 @@ Item Methods
         :param list items: one or more dicts containing item data
         :rtype: list of dicts
     
-        Returns a copy of the created item(s), if successful. The use of :py:meth:`item_template` is recommended in order to first obtain a dict with a structure which the API will accept.
+        Returns a copy of the created item(s), if successful. Use of :py:meth:`item_template` is recommended in order to first obtain a dict with a structure which is known to be valid.
+        
+        Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
+
         Example::
     
             template = zot.item_template('book')
@@ -562,7 +574,9 @@ Item Methods
     
         :param dict item: a dict containing item data
         :rtype: Boolean
-    
+
+        Returns a copy of the updated item, if successful. Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
+        
         Example::
     
             i = zot.items()
