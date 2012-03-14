@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Description &mdash; Pyzotero 0.9.6 documentation</title>
+    <title>Description &mdash; Pyzotero 0.9.7 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.6',
+        VERSION:     '0.9.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Pyzotero 0.9.6 documentation" href="#" />
+    <link rel="top" title="Pyzotero 0.9.7 documentation" href="#" />
  
 <script type="text/javascript">
   var _gaq = _gaq || [];
@@ -49,7 +49,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pyzotero 0.9.6 documentation</a> &raquo;</li> 
+        <li><a href="#">Pyzotero 0.9.7 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -68,24 +68,29 @@
 </div>
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>Using pip: <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pyzotero</span></tt></p>
+<p>Using <a class="reference external" href="http://www.pip-installer.org/en/latest/index.html">pip</a>: <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pyzotero</span></tt></p>
 <p>From a local clone, if you wish to install Pyzotero from a specific branch:</p>
 <div class="highlight-python"><pre>git clone git://github.com/urschrei/pyzotero.git
 cd pyzotero
 git checkout dev
 pip install .</pre>
 </div>
-<p>Alternatively, download the latest version from <a class="reference external" href="https://github.com/urschrei/pyzotero/tags">https://github.com/urschrei/pyzotero/tags</a>, and point pip at the zip file.
+<p>Alternatively, download the latest stable version from <a class="reference external" href="https://github.com/urschrei/pyzotero/tags">https://github.com/urschrei/pyzotero/tags</a>, and point pip at the zip file.
 Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip</span></tt></p>
-<p>I assume that running setup.py will also work using <tt class="docutils literal"><span class="pre">easy_install</span></tt>, but I haven&#8217;t tested it.</p>
+<p>The Pyzotero source tarball is also available from <a class="reference external" href="http://pypi.python.org/pypi/Pyzotero">PyPI</a></p>
 <p>The <a class="reference external" href="http://feedparser.org">feedparser</a> (&gt;= 0.5.1) and <a class="reference external" href="http://pypi.python.org/pypi/pytz/">pytz</a> modules are required. They will be automatically installed when installing Pyzotero using pip.</p>
+<p>Installation using <tt class="docutils literal"><span class="pre">easy_install</span></tt> may be successful, but is neither tested nor officially supported – pip is the preferred method.</p>
+<div class="section" id="installing-development-versions">
+<h2>Installing development versions<a class="headerlink" href="#installing-development-versions" title="Permalink to this headline">¶</a></h2>
+<p>Pyzotero remains in development as of March 2012. Unstable development versions can be found on the <a class="reference external" href="https://github.com/urschrei/pyzotero/tree/dev">Github dev branch</a>, and installed directly from there using pip: <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">git+https://github.com/urschrei/pyzotero.git&#64;dev#egg=pyzotero</span></tt>, or from the checked-out <tt class="docutils literal"><span class="pre">dev</span></tt> branch on a local clone, as in the example above.</p>
+</div>
 <div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
-<p>Run <tt class="docutils literal"><span class="pre">tests.py</span></tt> in the pyzotero directory, or, using <a class="reference external" href="http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html">Nose</a>, <tt class="docutils literal"><span class="pre">nosetests</span></tt>. If you wish to see coverage statistics, run <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">--with-coverage</span> <span class="pre">--cover-package=pyzotero</span></tt>.</p>
+<p>Run <tt class="docutils literal"><span class="pre">tests.py</span></tt> in the pyzotero directory, or, using <a class="reference external" href="http://readthedocs.org/docs/nose/en/latest/">Nose</a>, <tt class="docutils literal"><span class="pre">nosetests</span></tt>. If you wish to see coverage statistics, run <tt class="docutils literal"><span class="pre">nosetests</span> <span class="pre">--with-coverage</span> <span class="pre">--cover-package=pyzotero</span></tt>.</p>
 </div>
 <div class="section" id="building-documentation">
 <h2>Building Documentation<a class="headerlink" href="#building-documentation" title="Permalink to this headline">¶</a></h2>
-<p>If you wish to build Pyzotero&#8217;s documentation for offline use, it can be built from the <tt class="docutils literal"><span class="pre">doc</span></tt> directory by running <tt class="docutils literal"><span class="pre">make</span></tt> followed by the desired output format(s) (<tt class="docutils literal"><span class="pre">html</span></tt>, <tt class="docutils literal"><span class="pre">epub</span></tt>, <tt class="docutils literal"><span class="pre">latexpdf</span></tt> etc.)</p>
+<p>If you wish to build Pyzotero&#8217;s documentation for offline use, it can be built from the <tt class="docutils literal"><span class="pre">doc</span></tt> directory of a local git repo by running <tt class="docutils literal"><span class="pre">make</span></tt> followed by the desired output format(s) (<tt class="docutils literal"><span class="pre">html</span></tt>, <tt class="docutils literal"><span class="pre">epub</span></tt>, <tt class="docutils literal"><span class="pre">latexpdf</span></tt> etc.)</p>
 <p>See the <a class="reference external" href="http://sphinx.pocoo.org/tutorial.html#running-the-build">Sphinx documentation</a> for full details.</p>
 </div>
 <div class="section" id="reporting-issues">
@@ -1168,6 +1173,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
 </ul>
 </li>
 <li><a class="reference internal" href="#installation">Installation</a><ul>
+<li><a class="reference internal" href="#installing-development-versions">Installing development versions</a></li>
 <li><a class="reference internal" href="#testing">Testing</a></li>
 <li><a class="reference internal" href="#building-documentation">Building Documentation</a></li>
 <li><a class="reference internal" href="#reporting-issues">Reporting issues</a></li>
@@ -1229,7 +1235,7 @@ Example: <tt class="docutils literal"><span class="pre">pip</span> <span class="
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="#">Pyzotero 0.9.6 documentation</a> &raquo;</li> 
+        <li><a href="#">Pyzotero 0.9.7 documentation</a> &raquo;</li> 
       </ul>
     </div>
 

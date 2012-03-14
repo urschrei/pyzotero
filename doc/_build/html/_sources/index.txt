@@ -16,7 +16,7 @@ A Python wrapper for the `Zotero API <http://www.zotero.org/support/dev/server_a
 
 Installation
 ============
-Using pip: ``pip install pyzotero``
+Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
 
 From a local clone, if you wish to install Pyzotero from a specific branch::
 
@@ -25,23 +25,32 @@ From a local clone, if you wish to install Pyzotero from a specific branch::
     git checkout dev
     pip install .
     
-Alternatively, download the latest version from https://github.com/urschrei/pyzotero/tags, and point pip at the zip file.
+Alternatively, download the latest stable version from https://github.com/urschrei/pyzotero/tags, and point pip at the zip file.
 Example: ``pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip``
 
-I assume that running setup.py will also work using ``easy_install``, but I haven't tested it.
+The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org/pypi/Pyzotero>`_
 
 The `feedparser <http://feedparser.org>`_ (>= 0.5.1) and `pytz <http://pypi.python.org/pypi/pytz/>`_ modules are required. They will be automatically installed when installing Pyzotero using pip.
+
+Installation using ``easy_install`` may be successful, but is neither tested nor officially supported – pip is the preferred method.
+
+
+===============================
+Installing development versions
+===============================
+Pyzotero remains in development as of March 2012. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
+
 
 =======
 Testing
 =======
-Run ``tests.py`` in the pyzotero directory, or, using `Nose <http://somethingaboutorange.com/mrl/projects/nose/1.0.0/index.html>`_, ``nosetests``. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
+Run ``tests.py`` in the pyzotero directory, or, using `Nose <http://readthedocs.org/docs/nose/en/latest/>`_, ``nosetests``. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
 
 
 ======================
 Building Documentation
 ======================
-If you wish to build Pyzotero's documentation for offline use, it can be built from the ``doc`` directory by running ``make`` followed by the desired output format(s) (``html``, ``epub``, ``latexpdf`` etc.)
+If you wish to build Pyzotero's documentation for offline use, it can be built from the ``doc`` directory of a local git repo by running ``make`` followed by the desired output format(s) (``html``, ``epub``, ``latexpdf`` etc.)
 
 See the `Sphinx documentation <http://sphinx.pocoo.org/tutorial.html#running-the-build>`_ for full details.
 
