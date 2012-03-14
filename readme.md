@@ -1,12 +1,12 @@
 # Description #
 
-A Python wrapper for the [Zotero API][1]. You'll require a user ID and access key, which can be set up [here][2].
+Pyzotero is a Python wrapper for the [Zotero read and write APIs][1]. You'll require a user ID and access key in order to use them. These credentials may be obtained [here][2].
 
-See [Read The Docs][3] or [packages.python.org][4] for full documentation of available methods. The package itself also includes complete documentation in HTML, PDF and ePub formats.
+See [Read The Docs][3] or [packages.python.org][4] for full documentation of available Pyzotero methods, code examples, and sample output.
 
 # Installation #
 
-* using pip: `pip install pyzotero` 
+* using [pip][10]: `pip install pyzotero` 
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
 Example:
@@ -22,13 +22,15 @@ pip install .
 * Alternatively, download the latest version from <https://github.com/urschrei/pyzotero/downloads>, and point pip at the zip file:  
 Example: `pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip`
 
-I assume that running setup.py will also work using `easy_install`, but I haven't tested it.
-
-The [feedparser][5] (>= v5.0.1) and [pytz][9] modules are required. They will be automatically installed when installing pyzotero using [pip][6].
+Installation using `easy_install` may be successful, but is neither tested nor officially supported – pip is the preferred method.
 
 ## Testing ##
 
 Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` from the top-level directory.
+
+## Issues ##
+
+Pyzotero remains in development as of March 2012. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
 
 ## Pull Requests ##
 
@@ -47,4 +49,5 @@ Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See
 [6]: http://pypi.python.org/pypi/pip
 [7]: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/
 [8]: http://www.gnu.org/copyleft/gpl.html
-[9]: http://pypi.python.org/pypi/pytz/
+[9]: https://github.com/urschrei/pyzotero/tree/dev
+[10]: http://www.pip-installer.org/en/latest/index.html
