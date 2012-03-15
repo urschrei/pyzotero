@@ -715,7 +715,9 @@ Pyzotero is licensed under the `GNU GPL Version 3 <http://www.gnu.org/licenses/g
 
 Cat Picture
 ===========
-This is The Grinch. He is an Orangecat.
+This is The Grinch.
 
-.. image:: cat.png
+.. figure:: cat.png
+
+    *Orangecat*
 
