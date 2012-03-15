@@ -21,7 +21,8 @@ Getting started (short version)
 
 .. _hello-world:
 
-    ::
+.. code-block:: python
+    :emphasize-lines: 1,2,3
 
         from pyzotero import zotero
         zot = zotero.Zotero(user_id, user_key)
@@ -42,13 +43,17 @@ Installation
 ============
 Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
 
-From a local clone, if you wish to install Pyzotero from a specific branch::
+From a local clone, if you wish to install Pyzotero from a specific branch:
+
+.. code-block:: bash
+
 
     git clone git://github.com/urschrei/pyzotero.git
     cd pyzotero
     git checkout dev
     pip install .
-    
+
+
 Alternatively, download the latest stable version from https://github.com/urschrei/pyzotero/tags, and point pip at the zip file.
 Example: ``pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip``
 
@@ -98,9 +103,10 @@ First, create a new Zotero instance:
         :param str userKey: a valid Zotero API user key
         
 
-Example:
+    Example:
 
 .. code-block:: python
+    :emphasize-lines: 4
 
     from pyzotero import zotero
     zot = zotero.Zotero(123, ABC1234XYZ)
@@ -255,39 +261,45 @@ Retrieving Items
 
 .. _returned:
 
-    Example of returned data::
+    Example of returned data:
 
-        [{'DOI': '',
-         'ISSN': '1747-1532',
-         'abstractNote': '',
-         'accessDate': '',
-         'archive': '',
-         'archiveLocation': '',
-         'callNumber': '',
-         'creators': [{'creatorType': 'author',
-                       'firstName': 'T. J.',
-                       'lastName': 'McIntyre'}],
-         'date': '2007',
-         'extra': '',
-         'issue': '',
-         'itemType': 'journalArticle',
-         'journalAbbreviation': '',
-         'language': '',
-         'libraryCatalog': 'Google Scholar',
-         'pages': '',
-         'publicationTitle': 'Journal of Intellectual Property Law & Practice',
-         'rights': '',
-         'series': '',
-         'seriesText': '',
-         'seriesTitle': '',
-         'shortTitle': 'Copyright in custom code',
-         'tags': [],
-         'title': 'Copyright in custom code: Who owns commissioned software?',
-         'updated': 'Mon, 14 Mar 2011 22:30:17 GMT',
-         'url': '',
-         'volume': ''} … ]
 
-    See :ref:`'Hello World' <hello-world>` example, above
+.. code-block:: python
+
+
+    [{'DOI': '',
+     'ISSN': '1747-1532',
+     'abstractNote': '',
+     'accessDate': '',
+     'archive': '',
+     'archiveLocation': '',
+     'callNumber': '',
+     'creators': [{'creatorType': 'author',
+                   'firstName': 'T. J.',
+                   'lastName': 'McIntyre'}],
+     'date': '2007',
+     'extra': '',
+     'issue': '',
+     'itemType': 'journalArticle',
+     'journalAbbreviation': '',
+     'language': '',
+     'libraryCatalog': 'Google Scholar',
+     'pages': '',
+     'publicationTitle': 'Journal of Intellectual Property Law & Practice',
+     'rights': '',
+     'series': '',
+     'seriesText': '',
+     'seriesTitle': '',
+     'shortTitle': 'Copyright in custom code',
+     'tags': [],
+     'title': 'Copyright in custom code: Who owns commissioned software?',
+     'updated': 'Mon, 14 Mar 2011 22:30:17 GMT',
+     'url': '',
+     'volume': ''}]
+
+
+
+See :ref:`'Hello World' <hello-world>` example, above
 
 =======================
 Retrieving Collections
@@ -320,9 +332,12 @@ Retrieving Collections
         :param str collectionID: a Zotero collection ID
         :rtype: list of dicts
 
-    Example of returned data::
+    Example of returned data:
 
-        [{'key': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"} … ]
+.. code-block:: python
+
+    [{'key': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"}]
+
 
 ==========================
 Retrieving groups
@@ -333,24 +348,26 @@ Retrieving groups
     
         :rtype: list of dicts
         
-        Example of returned data::
+    Example of returned data:
 
-            [{u'description': u'%3Cp%3EBGerman+Cinema+and+related+literature.%3C%2Fp%3E',
-                u'fileEditing': u'none',
-                u'group_id': u'153',
-                u'hasImage': 1,
-                u'libraryEditing': u'admins',
-                u'libraryEnabled': 1,
-                u'libraryReading': u'all',
-                u'members': {u'0': 436,
-                   u'1': 6972,
-                   u'15': 499956,
-                   u'16': 521307,
-                   u'17': 619180},
-                u'name': u'German Cinema',
-                u'owner': 10421,
-                u'type': u'PublicOpen',
-                u'url': u''} … ]
+.. code-block:: python
+
+    [{u'description': u'%3Cp%3EBGerman+Cinema+and+related+literature.%3C%2Fp%3E',
+        u'fileEditing': u'none',
+        u'group_id': u'153',
+        u'hasImage': 1,
+        u'libraryEditing': u'admins',
+        u'libraryEnabled': 1,
+        u'libraryReading': u'all',
+        u'members': {u'0': 436,
+           u'1': 6972,
+           u'15': 499956,
+           u'16': 521307,
+           u'17': 619180},
+        u'name': u'German Cinema',
+        u'owner': 10421,
+        u'type': u'PublicOpen',
+        u'url': u''}]
 
 ===================
 Retrieving Tags
@@ -384,9 +401,11 @@ Retrieving Tags
         :param str itemID: a valid Zotero library Item ID
         :rtype: list of strings
 
-Example of returned data::
+    Example of returned data:
 
-    ['Authority in literature', 'Errata', … ]
+::
+
+    ['Authority in literature', 'Errata']
 
 
 =======================
@@ -584,15 +603,18 @@ Item Methods
         
         Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
 
-        Example::
-    
-            template = zot.item_template('book')
-            template['creators'][0]['firstName'] = 'Monty'
-            template['creators'][0]['lastName'] = 'Cantsin'
-            template['title'] = 'Maris Kundzins: A Life'
-            resp = zot.create_items([template])
-    
-        If successful, ``resp`` will have the same structure as items retrieved with an :py:meth:`items()` call, e.g. a list of one or more dicts (see :ref:`Item Data <returned>`, above).
+    Example:
+
+.. code-block:: python
+
+    template = zot.item_template('book')
+    template['creators'][0]['firstName'] = 'Monty'
+    template['creators'][0]['lastName'] = 'Cantsin'
+    template['title'] = 'Maris Kundzins: A Life'
+    resp = zot.create_items([template])
+
+
+If successful, ``resp`` will have the same structure as items retrieved with an :py:meth:`items()` call, e.g. a list of one or more dicts (see :ref:`Item Data <returned>`, above).
     
     .. py:method:: Zotero.update_item(item)
     
@@ -603,30 +625,39 @@ Item Methods
 
         Returns a copy of the updated item, if successful. Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
         
-        Example::
-    
-            i = zot.items()
-            # see above for example of returned item structure
-            # modify the latest item which was added to your library
-            i[0]['title'] = 'The Sheltering Sky'
-            i[0]['creators'][0]['firstName'] = 'Paul'
-            i[0]['creators'][0]['lastName'] = 'Bowles'
-            zot.update_item(i[0])
+        Example:
+
+.. code-block:: python
+
+    i = zot.items()
+    # see above for example of returned item structure
+    # modify the latest item which was added to your library
+    i[0]['title'] = 'The Sheltering Sky'
+    i[0]['creators'][0]['firstName'] = 'Paul'
+    i[0]['creators'][0]['lastName'] = 'Bowles'
+    zot.update_item(i[0])
+
+Deleting items:
 
     .. py:method:: Zotero.delete_item(item)
 
         Delete an item from your library
-    
+
         :param dict item: a dict containing item data. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a ``for`` loop.
         :rtype: Boolean
     
-        Example::
-    
-            i = zot.items()
-            # only delete the last five items we added
-            to_delete = i[:5]
-            for d in to_delete:
-                zot.delete_item(d)
+    Example:
+
+.. code-block:: python
+    :emphasize-lines: 5
+
+    i = zot.items()
+    # only delete the last five items we added
+    to_delete = i[:5]
+    for d in to_delete:
+        zot.delete_item(d)
+
+Adding tags:
 
     .. py:method:: Zotero.add_tags(item, tag[, tag …])
 
@@ -636,13 +667,15 @@ Item Methods
         :param string tag: the tag you'd like to add to the item
         :rtype: list of dicts
         
-        Example::
-            
-            zot.add_parameters(limit=1)
-            z = zot.top()
-            # we've now retrieved the most recent top-level item
-            updated = zot.add_tags(z[0], 'tag1', 'tag2', 'tag3')
-            # updated now contains a representation of the updated server item
+    Example:
+
+.. code-block:: python
+
+    zot.add_parameters(limit=1)
+    z = zot.top()
+    # we've now retrieved the most recent top-level item
+    updated = zot.add_tags(z[0], 'tag1', 'tag2', 'tag3')
+    # updated now contains a representation of the updated server item
 
 
 ====================
