@@ -711,3 +711,11 @@ All Read API methods return **lists** of **dicts** or, in the case of tag method
 License
 =======
 Pyzotero is licensed under the `GNU GPL Version 3 <http://www.gnu.org/licenses/gpl.html>`_  license, in line with Zotero's own license. Details can be found in the file ``license.txt``.
+
+
+Cat Picture
+===========
+This is The Grinch. He is an Orangecat.
+
+.. image:: cat.png
+
