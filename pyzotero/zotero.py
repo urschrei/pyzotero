@@ -571,6 +571,14 @@ class Zotero(object):
         while self.links.get('next'):
             yield self.follow()
 
+    def makeiter(self, func):
+        """ Return a generator of func's results
+        """
+        _ = func
+        # reset the link. This results in an extra API call, yes
+        self.links['next'] = self.links['self']
+        return self.iterfollow()
+
     def everything(self, query):
         """
         Retrieve all items in the library for a particular query
