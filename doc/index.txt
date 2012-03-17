@@ -408,11 +408,13 @@ Retrieving Tags
     ['Authority in literature', 'Errata']
 
 
-=======================
-The ``follow()`` method
-=======================
+==============================================
+The ``follow()``, and ``everything()`` methods
+==============================================
 
-This method (currently experimental) aims to make Pyzotero a little more RESTful. Following any Read API call which can retrieve **multiple items**, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset.
+These methods (currently experimental) aim to make Pyzotero a little more RESTful, and to exploit the natural affinity between Python generators and REST interfaces. Following any Read API call which can retrieve **multiple items**, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset.
+
+.. py:method:: Zotero.follow()
 
 Example:
 
@@ -428,11 +430,7 @@ Example:
     third_item = zot.follow()
 
 
-===========================
-The ``everything()`` method
-===========================
-
-This method (currently experimental) will retrieve **all** library items specified by its argument: a valid Read API call which can retrieve multiple items..
+.. py:method:: Zotero.everything()
 
 Example:
 
@@ -445,7 +443,40 @@ Example:
 
 The ``everything()`` method should work with all Pyzotero Read API calls which can return multiple items, but has not yet been extensively tested. `Feedback is welcomed <https://github.com/urschrei/pyzotero/issues>`_.
 
-.. warning:: The ``follow()`` and ``everything()`` methods are only valid for methods which can return multiple library items. For instance, you cannot use ``follow()`` after an ``item()`` call.
+Related generator methods
+-------------------------
+
+The :py:meth:`Zotero.iterfollow()` and :py:meth:`Zotero.makeiter()` methods are available for users who prefer to work directly with generators:
+
+
+.. py:method:: Zotero.iterfollow()
+
+    :rtype: a generator over the :py:meth:`follow()` method.
+
+Example:
+
+::
+
+    z = zot.top(limit = 5)
+    lazy = zot.iterfollow()
+    lazy.next() # the next() call has returned the next five items
+
+.. py:method:: Zotero.makeiter(API call)
+
+    Returns a generator over a Read API method
+
+    :param function API call: a Pyzotero Read API method capable of returning multiple items
+    :rtype: generator
+    
+Example::
+    
+    gen = zot.makeiter(zot.top(limit = 5))
+    gen.next() # this will return the first five items
+    gen.next() # this will return the next five items
+
+
+
+.. warning:: The ``follow()``, ``everything()`` and ``makeiter()`` methods are only valid for methods which can return multiple library items. For instance, you cannot use ``follow()`` after an ``item()`` call. The generator methods will raise a ``StopIteration`` error when all available items retrievable by your chosen API call have been exhausted.
 
 ======================
 Retrieving item counts
