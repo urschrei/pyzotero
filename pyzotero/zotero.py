@@ -560,9 +560,16 @@ class Zotero(object):
         """ Return the result of the call to the URL in the 'Next' link
         """
         if self.links:
-            return self.links['next']
+            return self.links.get('next')
         else:
             return None
+
+    def iterfollow(self):
+        """ Generator for self.follow()
+        """
+        # use same criterion as self.follow()
+        while self.links.get('next'):
+            yield self.follow()
 
     def everything(self, query):
         """
