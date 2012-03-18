@@ -8,7 +8,7 @@ A Python wrapper for the `Zotero API <http://www.zotero.org/support/dev/server_a
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. py:module:: pyzotero.zotero
+.. py:module:: pyzotero
 
 .. toctree::
    :maxdepth: 2
@@ -98,10 +98,10 @@ First, create a new Zotero instance:
 
 
     .. py:class:: Zotero(userID, userKey)
-    
+
         :param str userID: a valid Zotero API user ID
         :param str userKey: a valid Zotero API user key
-        
+
 
     Example:
 
@@ -160,11 +160,11 @@ Retrieving Items
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.tag_items(itemID[, search/request parameters])
+    .. py:method:: Zotero.tag_items(tag[, search/request parameters])
 
         Returns items for a specific tag
 
-        :param str itemID: a zotero item ID
+        :param str tag: the tag whose items you wish to return
         :rtype: list of dicts
 
 
@@ -307,27 +307,27 @@ Retrieving Collections
     .. py:method:: Zotero.collections([search/request parameters])
 
         Returns a user's collections
-    
+
         :rtype: list of dicts
 
     .. py:method:: Zotero.collections_sub(collectionID[, search/request parameters])
 
         Returns a sub-collection from a specific collection
-    
+
         :param str collectionID: a Zotero library collection ID
         :rtype: list of dicts
 
     .. py:method:: Zotero.group_collections(groupID[, search/request parameters])
 
         Returns collections for a specific group
-    
+
         :param str groupID: a Zotero group ID
         :rtype: list of dicts
 
     .. py:method:: Zotero.group_collection(groupID, collectionID[, search/request parameters])
 
         Returns a specific collection from a specific group
-    
+
         :param str groupID: a Zotero group ID
         :param str collectionID: a Zotero collection ID
         :rtype: list of dicts
@@ -345,9 +345,9 @@ Retrieving groups
     .. py:method:: Zotero.groups([search/request parameters])
 
         Retrieve the Zotero group data to which the current user key has access
-    
+
         :rtype: list of dicts
-        
+
     Example of returned data:
 
 .. code-block:: python
@@ -376,27 +376,27 @@ Retrieving Tags
     .. py:method:: Zotero.tags([search/request parameters])
 
         Returns a user's tags
-    
+
         :rtype: list of strings
-    
+
     .. py:method:: Zotero.item_tags(itemID[, search/request parameters])
 
         Returns tags from a specific item
-    
+
         :param str itemID: a valid Zotero library Item ID
         :rtype: list of strings
 
     .. py:method:: Zotero.group_tags(groupID[, search/request parameters])
 
         Returns tags from a specific group
-    
+
         :param str groupID: a valid Zotero library group ID
         :rtype: list of strings
 
     .. py:method:: Zotero.group_item_tags(groupID, itemID[, search/request parameters])
 
         Returns tags from a specific item from a specific group
-    
+
         :param str groupID: a valid Zotero library group ID
         :param str itemID: a valid Zotero library Item ID
         :rtype: list of strings
@@ -467,9 +467,9 @@ Example:
 
     :param function API call: a Pyzotero Read API method capable of returning multiple items
     :rtype: generator
-    
+
 Example::
-    
+
     gen = zot.makeiter(zot.top(limit = 5))
     gen.next() # this will return the first five items
     gen.next() # this will return the next five items
@@ -552,17 +552,17 @@ This area of the Zotero Read API is under heavy development as of early 2012, an
 
 A note on the ``content`` and ``style`` parameters:
 
-    Example:: 
+    Example::
 
         zot.add_parameters(content='bib', style='mla')
 
     If these are set, the return value is a list of UTF-8 formatted HTML ``div`` elements, each containing an item:  
 
-    ``['<div class="csl-entry">(content)</div>', … ]``.
+    ``['<div class="csl-entry">(content)</div>']``.
 
     You may also set ``content='citation'`` if you wish to retrieve citations. Similar to ``bib``, the result will be a list of one or more HTML ``span`` elements.
 
-    
+
     If you select one of the available `export formats <http://www.zotero.org/support/dev/server_api/read_api#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
     
     If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
@@ -580,19 +580,19 @@ Item Methods
     .. py:method:: Zotero.item_types()
 
         Returns a dict containing all available item types
-    
+
         :rtype: dict
-    
+
     .. py:method:: Zotero.item_fields()
 
         Returns a dict of all available item fields
-    
+
         :rtype: dict
 
     .. py:method:: Zotero.item_creator_types(itemtype)
 
         Returns a dict of all valid creator types for the specified item type
-    
+
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
         :rtype: dict
 
@@ -603,7 +603,7 @@ Item Methods
         :rtype: dict
 
     .. py:method:: Zotero.item_type_fields(itemtype)
-    
+
         Returns all valid fields for the specified item type
 
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
@@ -612,26 +612,26 @@ Item Methods
     .. py:method:: Zotero.item_template(itemtype)
 
         Returns an item creation template for the specified item type
-    
+
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
         :rtype: dict
 
     .. py:method:: Zotero.check_items(items)
-    
+
         Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised, detailing the invalid fields.
-        
+
         :param list items: one or more dicts containing item data
         :rtype: Boolean
 
     .. py:method:: Zotero.create_items(items)
 
         Create Zotero library items
-    
+
         :param list items: one or more dicts containing item data
         :rtype: list of dicts
-    
+
         Returns a copy of the created item(s), if successful. Use of :py:meth:`item_template` is recommended in order to first obtain a dict with a structure which is known to be valid.
-        
+
         Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
 
     Example:
@@ -646,16 +646,16 @@ Item Methods
 
 
 If successful, ``resp`` will have the same structure as items retrieved with an :py:meth:`items()` call, e.g. a list of one or more dicts (see :ref:`Item Data <returned>`, above).
-    
+
     .. py:method:: Zotero.update_item(item)
-    
+
         Update an item in your library
-    
+
         :param dict item: a dict containing item data
         :rtype: Boolean
 
         Returns a copy of the updated item, if successful. Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
-        
+
         Example:
 
 .. code-block:: python
@@ -676,7 +676,7 @@ Deleting items:
 
         :param dict item: a dict containing item data. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a ``for`` loop.
         :rtype: Boolean
-    
+
     Example:
 
 .. code-block:: python
@@ -693,11 +693,11 @@ Adding tags:
     .. py:method:: Zotero.add_tags(item, tag[, tag …])
 
         Add one or more tags to an item, and update it on the server
-        
+
         :param dict item: a dict containing item data
         :param string tag: the tag you'd like to add to the item
         :rtype: list of dicts
-        
+
     Example:
 
 .. code-block:: python
@@ -716,18 +716,18 @@ Collection Methods
     .. py:method:: Zotero.create_collection(name)
 
         Create a new collection in the Zotero library
-    
+
         :param dict name: dict containing the key ``name`` and the value of the new collection name you wish to create. May optionally contain a ``parent`` key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.
         :rtype: Boolean
 
     .. py:method:: Zotero.addto_collection(collection, items)
 
         Add the specified item(s) to the specified collection
-    
+
         :param str collection: a collection key
         :param list items: list of one or more item dicts
         :rtype: Boolean
-    
+
         Collection keys can be obtained by a call to :py:meth:`collections()` (see details above).
 
     .. py:method:: Zotero.deletefrom_collection(collection, item)
@@ -737,18 +737,18 @@ Collection Methods
         :param str collection: a collection key
         :param dict item: dict containing item data
         :rtype: Boolean
-    
+
         See the :py:meth:`delete_item()` example for multiple-item removal.
 
     .. py:method:: Zotero.update_collection(collection)
 
         Update an existing collection name
-    
+
         :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`)
         :rtype: Boolean
-    
+
         Example::
-    
+
             # get existing collections, which will return a list of dicts
             c = zot.collections()
             # rename the last collection created in the library
@@ -759,10 +759,10 @@ Collection Methods
     .. py:method:: Zotero.delete_collection(collection)
 
         Delete a collection from the Zotero library
-    
+
         :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`)
         :rtype: Boolean
-    
+
         See the :py:meth:`delete_item()` example for ways to delete multiple collections.
 
 
@@ -770,7 +770,7 @@ Notes
 =====
 All Read API methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. Most Write API methods return either ``True`` if successful, or raise an error. See ``zotero_errors.py`` for a full listing of these.
 
-.. warning:: URL parameters will supersede API calls which should return e.g. a single item: ``https://api.zotero.org/users/436/items/ABC?start=50&limit=10`` will return 10 items beginning at position 50, even though ``ABC`` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method. This is a limitation/foible of the Zotero API, and there's nothing I can do about it.
+.. warning:: URL parameters will supersede API calls which should return e.g. a single item: ``https://api.zotero.org/users/436/items/ABC?start=50&limit=10`` will return 10 items beginning at position 50, even though ``ABC`` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.
 
 License
 =======
