@@ -729,7 +729,15 @@ class Zotero(object):
             template = set(
                     t['field'] for t in self.item_fields())
         # add fields we know to be OK
-        template = template | set(['tags', 'notes', 'itemType', 'creators'])
+        template = template | set([
+            'tags',
+            'notes',
+            'itemType',
+            'creators',
+            'mimeType',
+            'linkMode',
+            'note',
+            'charset'])
         template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
             to_check = set(i for i in item.iterkeys())
