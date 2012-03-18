@@ -743,7 +743,7 @@ class Zotero(object):
             to_check = set(i for i in item.iterkeys())
             difference = to_check.difference(template)
             if difference:
-                raise KeyError, \
+                raise ze.InvalidItemFields, \
 "Invalid keys present in item %s: %s" % (pos + 1,
         ' '.join(i for i in difference))
         return True

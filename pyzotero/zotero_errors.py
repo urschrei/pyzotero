@@ -68,8 +68,16 @@ class TooManyItems(PyZoteroError):
 
 
 class MissingCredentials(PyZoteroError):
-    """ Raised when an attempt is made to create a Zotero instance
-        without providing both the user ID and the user key
+    """
+    Raised when an attempt is made to create a Zotero instance
+    without providing both the user ID and the user key
+    """
+    pass
+
+
+
+class InvalidItemFields(PyZoteroError):
+    """ Raised when an attempt is made to create/update items w/invalid fields
     """
     pass
 
@@ -104,8 +112,9 @@ class Conflict(PyZoteroError):
 
 
 class PreConditionFailed(PyZoteroError):
-    """ 412 - Raised when the provided X-Zotero-Write-Token has already been
-        submitted
+    """
+    412 - Raised when the provided X-Zotero-Write-Token has already been
+    submitted
     """
     pass
 
