@@ -1,5 +1,12 @@
-# Description #
+``` python
+from pyzotero import zotero
+zot = zotero.zotero(user_id, access_key)
+items = zot.top(limit=5)
+for item in items:
+    print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
+```
 
+# Description #
 Pyzotero is a Python wrapper for the [Zotero read and write APIs][1]. You'll require a user ID and access key in order to use them. These credentials may be obtained [here][2].
 
 See [Read The Docs][3] or [packages.python.org][4] for full documentation of available Pyzotero methods, code examples, and sample output.
