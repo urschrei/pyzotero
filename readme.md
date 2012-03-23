@@ -1,6 +1,6 @@
 ``` python
 from pyzotero import zotero
-zot = zotero.zotero(user_id, access_key)
+zot = zotero.Zotero(user_id, access_key)
 items = zot.top(limit=5)
 for item in items:
     print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
