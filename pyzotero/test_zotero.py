@@ -432,7 +432,7 @@ class ZoteroTests(unittest.TestCase):
     def testRequestBuilder(self):
         """ Should add the user key, then url-encode all other added parameters
         """
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         zot.add_parameters(limit = 0, start = 7)
         self.assertEqual('content=json&start=7&limit=0&key=myuserkey', zot.url_params)
 
@@ -440,7 +440,7 @@ class ZoteroTests(unittest.TestCase):
         """ Check that spaces etc. are being correctly URL-encoded and added
             to the URL parameters
         """
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         zot.add_parameters(start = 10)
         query_string = '/users/{u}/tags/hi there/items'
         query = zot._build_query(query_string)
@@ -453,7 +453,7 @@ class ZoteroTests(unittest.TestCase):
             input doc's zapi:key value, and author should have been correctly
             parsed out of the XHTML payload
         """
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         items_data = zot.items()
         self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
         self.assertEqual(u'7252daf2495feb8ec89c61f391bcba24', items_data[0]['etag'])
@@ -463,7 +463,7 @@ class ZoteroTests(unittest.TestCase):
 
     def testParseAttachmentsAtomDoc(self):
         """" blah """
-        zot = z.Zotero('myuserid', 'myuserkey')
+        zot = z.Zotero('myuserid', 'users', 'myuserkey')
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.attachments_doc))
         z.urllib2.install_opener(my_opener)
         attachments_data = zot.items()
@@ -471,7 +471,7 @@ class ZoteroTests(unittest.TestCase):
 
     def testParseKeysResponse(self):
         """ Check that parsing plain keys returned by format = keys works """
-        zot = z.Zotero('myuserid', 'myuserkey')
+        zot = z.Zotero('myuserid', 'users', 'myuserkey')
         zot.url_params = 'format=keys'
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.keys_response))
         z.urllib2.install_opener(my_opener)
@@ -482,7 +482,7 @@ class ZoteroTests(unittest.TestCase):
 
     def testParseChildItems(self):
         """ Try and parse child items """
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         items_data = zot.children('ABC123')
         self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
 
@@ -490,7 +490,7 @@ class ZoteroTests(unittest.TestCase):
         """ Should be able to print unicode strings to stdout, and convert
             them to UTF-8 before printing them
         """
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         items_data = zot.items()
         try:
             print items_data[0]['title']
@@ -507,7 +507,7 @@ class ZoteroTests(unittest.TestCase):
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.bib_doc))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         zot.url_params = 'content=bib'
         items_data = zot.items()
         dec = items_data[0]
@@ -520,7 +520,7 @@ class ZoteroTests(unittest.TestCase):
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.collections_doc))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         collections_data = zot.collections()
         self.assertEqual(u'HTUHVPE5', collections_data[0]['key'])
         self.assertEqual("A Midsummer Night's Dream",
@@ -531,7 +531,7 @@ class ZoteroTests(unittest.TestCase):
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.tags_doc))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         tags_data = zot.tags()
         self.assertEqual('Authority in literature', tags_data[0])
 
@@ -542,7 +542,7 @@ class ZoteroTests(unittest.TestCase):
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         groups_data = zot.groups()
         self.assertEqual('DFW', groups_data[0]['name'])
         self.assertEqual('10248', groups_data[0]['group_id'])
@@ -551,7 +551,7 @@ class ZoteroTests(unittest.TestCase):
         """ Should successfully reset URL parameters after a query string
             is built
         """
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         zot.add_parameters(start = 5, limit = 10)
         zot._build_query('/whatever')
         zot.add_parameters(start = 2)
@@ -560,7 +560,7 @@ class ZoteroTests(unittest.TestCase):
     def testParamsBlankAfterCall(self):
         """ self.url_params should be blank after an API call
         """
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         _ = zot.items()
         self.assertEqual(None, zot.url_params)
 
@@ -569,7 +569,7 @@ class ZoteroTests(unittest.TestCase):
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 403))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         with self.assertRaises(z.ze.UserNotAuthorised):
             zot.items()
 
@@ -578,7 +578,7 @@ class ZoteroTests(unittest.TestCase):
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 400))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         with self.assertRaises(z.ze.UnsupportedParams):
             zot.items()
 
@@ -587,7 +587,7 @@ class ZoteroTests(unittest.TestCase):
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 404))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         with self.assertRaises(z.ze.ResourceNotFound):
             zot.items()
 
@@ -596,7 +596,7 @@ class ZoteroTests(unittest.TestCase):
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 500))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         with self.assertRaises(z.ze.HTTPError):
             zot.items()
 
@@ -604,7 +604,7 @@ class ZoteroTests(unittest.TestCase):
         """ Ensure that we can retrieve a list of all items """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_types, 200))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         t = zot.item_types()
         self.assertEqual(t[0]['itemType'], 'artwork')
         self.assertEqual(t[-1]['itemType'], 'webpage')
@@ -614,14 +614,14 @@ class ZoteroTests(unittest.TestCase):
         """
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_templt, 200))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         t = zot.item_template('book')
         self.assertEqual('book', t['itemType'])
 
     def testCreateCollectionError(self):
         """ Ensure that collection creation fails with the wrong dict
         """
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         t = {'foo': 'bar'}
         with self.assertRaises(z.ze.ParamNotPassed):
             t = zot.create_collection(t)
@@ -632,7 +632,7 @@ class ZoteroTests(unittest.TestCase):
         # first, retrieve an item template
         my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_templt, 200))
         z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         t = zot.item_template('book')
         # Update the item type
         t['itemType'] = 'journalArticle'
@@ -668,7 +668,7 @@ class ZoteroTests(unittest.TestCase):
         """
         import json
         # first, retrieve an item
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         items_data = zot.items()
         items_data[0]['title'] = 'flibble'
         json.dumps(*zot._cleanup(items_data[0]))
@@ -676,7 +676,7 @@ class ZoteroTests(unittest.TestCase):
     def testEtagsParsing(self):
         """ Tests item and item update response etag parsing
         """
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         self.assertEqual(z.etags(self.created_response), ['1ed002db69174ae2ae0e3b90499df15e'])
         self.assertEqual(z.etags(self.items_doc),
                 ['7252daf2495feb8ec89c61f391bcba24'])
@@ -685,7 +685,7 @@ class ZoteroTests(unittest.TestCase):
         """ Should fail because we're passing too many items
         """
         itms = [i for i in xrange(51)]
-        zot = z.Zotero('myuserID', 'myuserkey')
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
         with self.assertRaises(z.ze.TooManyItems):
             zot.create_items(itms)
 

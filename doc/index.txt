@@ -1,6 +1,6 @@
 Description
 ===========
-A Python wrapper for the `Zotero API <http://www.zotero.org/support/dev/server_api>`_. You'll require a user ID and access key, which can be set up `here <http://www.zotero.org/settings/keys/new>`_.
+A Python wrapper for the `Zotero API <http://www.zotero.org/support/dev/server_api>`_. You'll require a library ID and access key, which can be set up `here <http://www.zotero.org/settings/keys/new>`_.
 
 
 .. Pyzotero documentation master file, created by
@@ -25,7 +25,7 @@ Getting started (short version)
     :emphasize-lines: 1,2,3
 
         from pyzotero import zotero
-        zot = zotero.Zotero(user_id, user_key)
+        zot = zotero.Zotero(library_id, library_type, api_key)
         items = zot.top(limit = 5)
         # we have now retrieved the last five top-level items in our library
         # we can print each item's item type and ID
@@ -97,11 +97,12 @@ General Usage
 First, create a new Zotero instance:
 
 
-    .. py:class:: Zotero(userID, userKey)
-
-        :param str userID: a valid Zotero API user ID
-        :param str userKey: a valid Zotero API user key
-
+    .. py:class:: Zotero(library_id, library_type, api_key)
+    
+        :param str library_id: a valid Zotero API user ID
+        :param str library_type: a valid Zotero API library type
+        :param str api_key: a valid Zotero API user key
+        
 
     Example:
 
@@ -109,7 +110,7 @@ First, create a new Zotero instance:
     :emphasize-lines: 4
 
     from pyzotero import zotero
-    zot = zotero.Zotero(123, ABC1234XYZ)
+    zot = zotero.Zotero('123', 'user', 'ABC1234XYZ')
     # we now have a Zotero object, zot, and access to all its methods
     first_ten = zot.items(limit = 10)
     # a list containing dicts of the ten most recently modified library items
@@ -141,7 +142,7 @@ Retrieving Items
 
     .. py:method:: Zotero.trash([search/request parameters])
 
-        Returns library items from the user's trash
+        Returns library items from the library's trash
 
         :rtype: list of dicts
 
@@ -167,82 +168,6 @@ Retrieving Items
         :param str tag: the tag whose items you wish to return
         :rtype: list of dicts
 
-
-    .. py:method:: Zotero.group_items(groupID[, search/request parameters])
-
-        Returns items from a specific group
-
-        :param str groupID: a Zotero group ID
-        :rtype: list of dicts
-
-
-    .. py:method:: Zotero.group_trash(groupID[, search/request parameters])
-
-        Returns items from a specific group's trash
-
-        :param str groupID: a Zotero group ID
-        :rtype: list of dicts
-
-
-    .. py:method:: Zotero.group_top(groupID[, search/request parameters])
-
-        Returns top-level items from a specific group
-
-        :param str groupID: a Zotero group ID
-        :rtype: list of dicts
-
-    .. py:method:: Zotero.group_item(groupID, itemID[, search/request parameters])
-
-        Returns a specific item from a specific group
-
-        :param str groupID: a Zotero group ID
-        :param str itemID: a Zotero item ID
-        :rtype: list of dicts
-
-
-    .. py:method:: Zotero.group_item_children(groupID, itemID[, search/request parameters])
-
-        Returns the child items of a specific item from a specific group
-
-        :param str groupID: a Zotero group ID
-        :param str itemID: a Zotero item ID
-        :rtype: list of dicts
-
-
-    .. py:method:: Zotero.group_items_tag(groupID, tag[, search/request parameters])
-
-        Returns a specific group's items for a specific tag
-
-        :param str groupID: a Zotero group ID
-        :param str tag: a tag whose items you wish to return
-        :rtype: list of dicts
-
-    .. py:method:: Zotero.group_collection_items(groupID, collection ID[, search/request parameters])
-
-        Returns a specific collection's items from a specific group
-
-        :param str groupID: a Zotero group ID
-        :param str collectionID: a Zotero collection ID
-
-        :rtype: list of dicts
-
-    .. py:method:: Zotero.group_collection_item(groupID, collectionID, itemID[, search/request parameters])
-
-        Returns a specific collection's item from a specific group
-
-        :param str groupID: a Zotero group ID
-        :param str collectionID: a Zotero collection ID
-        :param str itemID: a Zotero item ID
-        :rtype: list of dicts
-
-
-    .. py:method:: Zotero.group_collection_top(groupID, collectionID[, search/request parameters])
-
-        Returns a specific collection's top-level items from a specific group
-
-        :param str groupID: a Zotero group ID
-        :param str groupID: a Zotero collection ID
-        :rtype: list of dicts
 
     .. py:method:: Zotero.collection_items(collectionID[, search/request parameters])
 
@@ -306,19 +231,37 @@ Retrieving Collections
 =======================
     .. py:method:: Zotero.collections([search/request parameters])
 
+<<<<<<< HEAD
         Returns a user's collections
 
+||||||| merged common ancestors
+        Returns a user's collections
+    
+=======
+        Returns a library's collections
+
+>>>>>>> Support for unauthenticated library access
         :rtype: list of dicts
 
     .. py:method:: Zotero.collections_sub(collectionID[, search/request parameters])
 
         Returns a sub-collection from a specific collection
+<<<<<<< HEAD
 
         :param str collectionID: a Zotero library collection ID
         :rtype: list of dicts
 
     .. py:method:: Zotero.group_collections(groupID[, search/request parameters])
+||||||| merged common ancestors
+    
+        :param str collectionID: a Zotero library collection ID
+        :rtype: list of dicts
 
+    .. py:method:: Zotero.group_collections(groupID[, search/request parameters])
+=======
+>>>>>>> Support for unauthenticated library access
+
+<<<<<<< HEAD
         Returns collections for a specific group
 
         :param str groupID: a Zotero group ID
@@ -330,6 +273,21 @@ Retrieving Collections
 
         :param str groupID: a Zotero group ID
         :param str collectionID: a Zotero collection ID
+||||||| merged common ancestors
+        Returns collections for a specific group
+    
+        :param str groupID: a Zotero group ID
+        :rtype: list of dicts
+
+    .. py:method:: Zotero.group_collection(groupID, collectionID[, search/request parameters])
+
+        Returns a specific collection from a specific group
+    
+        :param str groupID: a Zotero group ID
+        :param str collectionID: a Zotero collection ID
+=======
+        :param str collectionID: a Zotero library collection ID
+>>>>>>> Support for unauthenticated library access
         :rtype: list of dicts
 
     Example of returned data:
@@ -344,8 +302,16 @@ Retrieving groups
 ==========================
     .. py:method:: Zotero.groups([search/request parameters])
 
+<<<<<<< HEAD
         Retrieve the Zotero group data to which the current user key has access
 
+||||||| merged common ancestors
+        Retrieve the Zotero group data to which the current user key has access
+    
+=======
+        Retrieve the Zotero group data to which the current library_id and api_key has access
+
+>>>>>>> Support for unauthenticated library access
         :rtype: list of dicts
 
     Example of returned data:
@@ -375,29 +341,64 @@ Retrieving Tags
 
     .. py:method:: Zotero.tags([search/request parameters])
 
+<<<<<<< HEAD
         Returns a user's tags
 
         :rtype: list of strings
 
     .. py:method:: Zotero.item_tags(itemID[, search/request parameters])
+||||||| merged common ancestors
+        Returns a user's tags
+    
+        :rtype: list of strings
+    
+    .. py:method:: Zotero.item_tags(itemID[, search/request parameters])
+=======
+        Returns a library's tags
+>>>>>>> Support for unauthenticated library access
 
+<<<<<<< HEAD
         Returns tags from a specific item
 
         :param str itemID: a valid Zotero library Item ID
+||||||| merged common ancestors
+        Returns tags from a specific item
+    
+        :param str itemID: a valid Zotero library Item ID
+=======
+>>>>>>> Support for unauthenticated library access
         :rtype: list of strings
 
+<<<<<<< HEAD
     .. py:method:: Zotero.group_tags(groupID[, search/request parameters])
 
         Returns tags from a specific group
 
         :param str groupID: a valid Zotero library group ID
         :rtype: list of strings
+||||||| merged common ancestors
+    .. py:method:: Zotero.group_tags(groupID[, search/request parameters])
 
-    .. py:method:: Zotero.group_item_tags(groupID, itemID[, search/request parameters])
+        Returns tags from a specific group
+    
+        :param str groupID: a valid Zotero library group ID
+        :rtype: list of strings
+=======
+    .. py:method:: Zotero.item_tags(itemID[, search/request parameters])
+>>>>>>> Support for unauthenticated library access
 
+        Returns tags from a specific item
+
+<<<<<<< HEAD
         Returns tags from a specific item from a specific group
 
         :param str groupID: a valid Zotero library group ID
+||||||| merged common ancestors
+        Returns tags from a specific item from a specific group
+    
+        :param str groupID: a valid Zotero library group ID
+=======
+>>>>>>> Support for unauthenticated library access
         :param str itemID: a valid Zotero library Item ID
         :rtype: list of strings
 
@@ -421,7 +422,7 @@ Example:
 ::
 
     from pyzotero import zotero
-    zot = zotero.Zotero(user_id, user_key)
+    zot = zotero.Zotero(library_id, library_type, api_key)
     # only retrieve a single item
     # this will retrieve the most recently added/modified top-level item
     first_item = zot.top(limit=1)
@@ -437,7 +438,7 @@ Example:
 ::
 
     from pyzotero import zotero
-    zot = zotero.Zotero(user_id, user_key)
+    zot = zotero.Zotero(library_id, library_type, api_key)
     # retrieve all top-level items
     toplevel = zot.everything(zot.top())
 
@@ -502,12 +503,6 @@ If you wish to retrieve item counts for subsets of a library, you can use the fo
 
     :rtype: int
 
-.. py:method:: Zotero.num_groupitems(groupID)
-
-    Returns the count of items in the specified group
-
-    :rtype: int
-
 .. _parameters:
 
 ==============================================
@@ -564,7 +559,7 @@ A note on the ``content`` and ``style`` parameters:
 
 
     If you select one of the available `export formats <http://www.zotero.org/support/dev/server_api/read_api#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
-    
+
     If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
 
 
@@ -617,9 +612,19 @@ Item Methods
         :rtype: dict
 
     .. py:method:: Zotero.check_items(items)
+<<<<<<< HEAD
 
         Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, an ``InvalidItemFields`` exception is raised, detailing the invalid fields.
 
+||||||| merged common ancestors
+    
+        Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised, detailing the invalid fields.
+        
+=======
+
+        Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised, detailing the invalid fields.
+
+>>>>>>> Support for unauthenticated library access
         :param list items: one or more dicts containing item data
         :rtype: Boolean
 
@@ -733,7 +738,7 @@ Collection Methods
     .. py:method:: Zotero.deletefrom_collection(collection, item)
 
         Remove the specified item from the specified collection
-    
+
         :param str collection: a collection key
         :param dict item: dict containing item data
         :rtype: Boolean

@@ -163,16 +163,20 @@ class Zotero(object):
     http://www.zotero.org/support/dev/server_api
     """
 
-    def __init__(self, user_id = None, user_key = None):
+    def __init__(self, library_id = None, library_type = None, api_key = None):
         """ Store Zotero credentials
         """
         self.endpoint = 'https://api.zotero.org'
-        if user_id and user_key:
-            self.user_id = user_id
-            self.user_key = user_key
+        if library_id and library_type:
+            self.library_id = library_id
+            # library_type determines whether query begins with /users or /groups
+            self.library_type = library_type + 's'
         else:
             raise ze.MissingCredentials, \
-            'Please provide both the user ID and the user key'
+            'Please provide both the library ID and the library type'
+        # api_key is not required for public individual or group libraries
+        if api_key:
+            self.api_key = api_key
         self.url_params = None
         self.etags = None
         self.request = None
@@ -255,7 +259,7 @@ class Zotero(object):
             self.templates[template]['updated']).seconds > 3600:
             opener = urllib2.build_opener(NotModifiedHandler())
             query = self.endpoint + url.format(
-                u = self.user_id, **payload)
+                u = self.library_id, t = self.library_type, **payload)
             req = urllib2.Request(query)
             req.add_header(
                 'If-Modified-Since',
@@ -271,13 +275,13 @@ class Zotero(object):
         return False
 
     def add_parameters(self, **params):
-        """ Add URL parameters. Will always add the user key
+        """ Add URL parameters. Will always add the api key if it exists
         """
         self.url_params = None
-        if params:
-            params['key'] = self.user_key
-        else:
-            params = {'key': self.user_key}
+        if hasattr(self, 'api_key') and params:
+            params['key'] = self.api_key
+        elif hasattr(self, 'api_key'):
+            params = {'key': self.api_key}
         # always return json, unless different format is specified
         if 'content' not in params and 'format' not in params:
             params['content'] = 'json'
@@ -289,7 +293,7 @@ class Zotero(object):
         been specifically set by an API method
         """
         try:
-            query = urllib.quote(query_string.format(u = self.user_id))
+            query = urllib.quote(query_string.format(u = self.library_id, t = self.library_type))
         except KeyError, err:
             raise ze.ParamNotPassed, \
             'There\'s a request parameter missing: %s' % err
@@ -303,14 +307,14 @@ class Zotero(object):
     def num_items(self):
         """ Return the total number of top-level items in the library
         """
-        query = self._build_query('/users/{u}/items/top')
+        query = self._build_query('/{t}/{u}/items/top')
         return self._totals(query)
 
     def num_collectionitems(self, collection):
         """ Return the total number of items in the specified collection
         """
-        query = '/users/{u}/collections/{c}/items'.format(
-            u = self.user_id, c = collection.upper())
+        query = '/{t}/{u}/collections/{c}/items'.format(
+            u = self.library_id, t = self.library_type, c = collection.upper())
         return self._totals(query)
 
     def num_groupitems(self, group):
@@ -323,8 +327,8 @@ class Zotero(object):
     def num_tagitems(self, tag):
         """ Return the total number of items for the specified tag
         """
-        query = '/users/{u}/tags/{t}/items'.format(
-            u = self.user_id, t = tag)
+        query = '/{t}/{u}/tags/{ta}/items'.format(
+            u = self.library_id, t = self.library_type, ta = tag)
         return self._totals(query)
 
     def _totals(self, query):
@@ -341,174 +345,68 @@ class Zotero(object):
     def items(self, **kwargs):
         """ Get user items
         """
-        query_string = '/users/{u}/items'
+        query_string = '/{t}/{u}/items'
         return self._build_query(query_string)
 
     @retrieve
     def top(self, **kwargs):
         """ Get user top-level items
         """
-        query_string = '/users/{u}/items/top'
+        query_string = '/{t}/{u}/items/top'
         return self._build_query(query_string)
 
     @retrieve
     def trash(self, **kwargs):
         """ Get all items in the trash
         """
-        query_string = '/users/{u}/items/trash'
+        query_string = '/{t}/{u}/items/trash'
         return self._build_query(query_string)
 
     @retrieve
     def item(self, item, **kwargs):
         """ Get a specific item
         """
-        query_string = '/users/{u}/items/{i}'.format(
-        u = self.user_id, i = item.upper())
+        query_string = '/{t}/{u}/items/{i}'.format(
+        u = self.library_id, t = self.library_type, i = item.upper())
         return self._build_query(query_string)
 
     @retrieve
     def children(self, item, **kwargs):
         """ Get a specific item's child items
         """
-        query_string = '/users/{u}/items/{i}/children'.format(
-        u = self.user_id, i = item.upper())
+        query_string = '/{t}/{u}/items/{i}/children'.format(
+        u = self.library_id, t = self.library_type, i = item.upper())
         return self._build_query(query_string)
 
     @retrieve
     def tag_items(self, tag, **kwargs):
         """ Get items for a specific tag
         """
-        query_string = '/users/{u}/tags/{t}/items'.format(
-        u = self.user_id, t = tag)
+        query_string = '/{t}/{u}/tags/{ta}/items'.format(
+        u = self.library_id, t = self.library_type, ta = tag)
         return self._build_query(query_string)
 
     @retrieve
     def collection_items(self, collection, **kwargs):
         """ Get a specific collection's items
         """
-        query_string = '/users/{u}/collections/{c}/items'.format(
-        u = self.user_id, c = collection.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_items(self, group, **kwargs):
-        """ Get a specific group's items
-        """
-        query_string = '/groups/{g}/items'.format(
-        g = group.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_top(self, group, **kwargs):
-        """ Get a specific group's top-level items
-        """
-        query_string = '/groups/{g}/items/top'.format(
-        g = group.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_item(self, group, item, **kwargs):
-        """ Get a specific group item
-        """
-        query_string = '/groups/{g}/items/{i}'.format(
-        g = group.upper(),
-        i = item.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_trash(self, group, **kwargs):
-        """ Get the items in a specific group's trash
-        """
-        query_string = '/groups/{g}/trash'.format(
-        g = group.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_item_children(self, group, item, **kwargs):
-        """ Get a specific group item's child items
-        """
-        query_string = '/groups/{g}/items/{i}/children'.format(
-        g = group.upper(),
-        i = item.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_items_tag(self, group, tag, **kwargs):
-        """ Get a specific group's items for a specific tag
-        """
-        query_string = '/groups/{g}/tags/{t}/items'.format(
-        g = group.upper(),
-        t = tag)
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_collection_items(self, group, collection, **kwargs):
-        """ Get a specific group's items from a specific collection
-        """
-        query_string = '/groups/{g}/collections/{c}/items'.format(
-        g = group.upper(),
-        c = collection.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_collection_top(self, group, collection, **kwargs):
-        """ Get a specific group's top-level items from a specific collection
-        """
-        query_string = '/groups/{g}/collections/{c}/items/top'.format(
-        g = group.upper(),
-        c = collection.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_collection_item(self, group, collection, item, **kwargs):
-        """ Get a specific collection's item from a specific group
-        """
-        query_string = '/groups/{g}/collections/{c}/items/{i}'.format(
-        g = group.upper(),
-        c = collection.upper(),
-        i = item.upper())
+        query_string = '/{t}/{u}/collections/{c}/items'.format(
+        u = self.library_id, t = self.library_type, c = collection.upper())
         return self._build_query(query_string)
 
     @retrieve
     def collections(self, **kwargs):
         """ Get user collections
         """
-        query_string = '/users/{u}/collections'
+        query_string = '/{t}/{u}/collections'
         return self._build_query(query_string)
 
     @retrieve
     def collections_sub(self, collection, **kwargs):
         """ Get subcollections for a specific collection
         """
-        query_string = '/users/{u}/collections/{c}/collections'.format(
-        u = self.user_id, c = collection.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_collections(self, group, **kwargs):
-        """ Get collections for a specific group
-        """
-        query_string = '/groups/{group}/collections'.format(
-        u = self.user_id,
-        g = group.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_collection(self, group, collection, **kwargs):
-        """ Get a specific collection for a specific group
-        """
-        query_string = '/groups/{g}/collections/{c}'.format(
-        g = group.upper(),
-        c = collection.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_collection_sub(self, group, collection, **kwargs):
-        """ Get collections for a specific group
-        """
-        query_string = '/groups/{g}/collections/{c}/collections'.format(
-        g = group.upper(),
-        c = collection.upper())
+        query_string = '/{t}/{u}/collections/{c}/collections'.format(
+        u = self.library_id, t = self.library_type, c = collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -522,32 +420,15 @@ class Zotero(object):
     def tags(self, **kwargs):
         """ Get tags for a specific item
         """
-        query_string = '/users/{u}/tags'
+        query_string = '/{t}/{u}/tags'
         return self._build_query(query_string)
 
     @retrieve
     def item_tags(self, item, **kwargs):
         """ Get tags for a specific item
         """
-        query_string = '/users/{u}/items/{i}/tags'.format(
-        u = self.user_id, i = item.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_tags(self, group, **kwargs):
-        """ Get tags for a specific group
-        """
-        query_string = '/groups/{g}/tags'.format(
-        g = group.upper())
-        return self._build_query(query_string)
-
-    @retrieve
-    def group_item_tags(self, group, item, **kwargs):
-        """ Get tags for a specific item in a specific group
-        """
-        query_string = '/groups/{g}/items/{i}/tags'.format(
-        g = group.upper(),
-        i = item.upper())
+        query_string = '/{t}/{u}/items/{i}/tags'.format(
+        u = self.library_id, t = self.library_type, i = item.upper())
         return self._build_query(query_string)
 
     def all_top(self, **kwargs):
@@ -837,8 +718,8 @@ class Zotero(object):
                     "You may only create up to 50 items per call"
         to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
         req = urllib2.Request(self.endpoint
-            + '/users/{u}/items'.format(u = self.user_id) + '?'
-            + urllib.urlencode({'key': self.user_key}))
+            + '/{t}/{u}/items'.format(t = self.library_type, u = self.library_id) + '?'
+            + urllib.urlencode({'key': self.api_key}))
         req.add_data(to_send)
         req.add_header('X-Zotero-Write-Token', token())
         req.add_header('Content-Type', 'application/json' )
@@ -868,8 +749,8 @@ class Zotero(object):
             payload['parent'] = ''
         to_send = json.dumps(payload)
         req = urllib2.Request(
-        self.endpoint + '/users/{u}/collections'.format(u = self.user_id) +
-            '?' + urllib.urlencode({'key': self.user_key}))
+        self.endpoint + '/{t}/{u}/collections'.format(t = self.library_type, u = self.library_id) +
+            '?' + urllib.urlencode({'key': self.api_key}))
         req.add_data(to_send)
         req.add_header('X-Zotero-Write-Token', token())
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
@@ -892,9 +773,9 @@ class Zotero(object):
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(
-        self.endpoint + '/users/{u}/collections/{c}'.format(
-            u = self.user_id, c = key) +
-            '?' + urllib.urlencode({'key': self.user_key}))
+        self.endpoint + '/{t}/{u}/collections/{c}'.format(
+            t = self.library_type, u = self.library_id, c = key) +
+            '?' + urllib.urlencode({'key': self.api_key}))
         req.add_data(to_send)
         req.get_method = lambda: 'PUT'
         req.add_header('If-Match', tkn)
@@ -915,9 +796,9 @@ class Zotero(object):
         to_send = json.dumps(*self._cleanup(payload))
         # Override urllib2 to give it a PUT verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
-        req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
-            u = self.user_id) + ident +
-            '?' + urllib.urlencode({'key': self.user_key}))
+        req = urllib2.Request(self.endpoint + '/{t}/{u}/items/'.format(
+            t = self.library_type, u = self.library_id) + ident +
+            '?' + urllib.urlencode({'key': self.api_key}))
         req.get_method = lambda: 'PUT'
         req.add_data(to_send)
         req.add_header('If-Match', etag)
@@ -941,9 +822,9 @@ class Zotero(object):
         to_send = ' '.join([p['key'].encode('utf8') for p in payload])
 
         req = urllib2.Request(
-        self.endpoint + '/users/{u}/collections/{c}/items'.format(
-            u = self.user_id, c = collection.upper()) +
-            '?' + urllib.urlencode({'key': self.user_key}))
+        self.endpoint + '/{t}/{u}/collections/{c}/items'.format(
+            t = self.library_type, u = self.library_id, c = collection.upper()) +
+            '?' + urllib.urlencode({'key': self.api_key}))
         req.add_data(to_send)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
@@ -962,9 +843,9 @@ class Zotero(object):
         # Override urllib2 to give it a DELETE verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(
-        self.endpoint + '/users/{u}/collections/{c}/items/'.format(
-            u = self.user_id, c = collection.upper()) + ident +
-            '?' + urllib.urlencode({'key': self.user_key}))
+        self.endpoint + '/{t}/{u}/collections/{c}/items/'.format(
+            t = self.library_type, u = self.library_id, c = collection.upper()) + ident +
+            '?' + urllib.urlencode({'key': self.api_key}))
         req.get_method = lambda: 'DELETE'
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
@@ -982,9 +863,9 @@ class Zotero(object):
         ident = payload['key']
         # Override urllib2 to give it a DELETE verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
-        req = urllib2.Request(self.endpoint + '/users/{u}/items/'.format(
-            u = self.user_id) + ident +
-            '?' + urllib.urlencode({'key': self.user_key}))
+        req = urllib2.Request(self.endpoint + '/{t}/{u}/items/'.format(
+            t = self.library_type, u = self.library_id) + ident +
+            '?' + urllib.urlencode({'key': self.api_key}))
         req.get_method = lambda: 'DELETE'
         req.add_header('If-Match', etag)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
@@ -1003,9 +884,9 @@ class Zotero(object):
         ident = payload['key']
         # Override urllib2 to give it a DELETE verb
         opener = urllib2.build_opener(urllib2.HTTPHandler)
-        req = urllib2.Request(self.endpoint + '/users/{u}/collections/{c}'
-            .format(u = self.user_id, c = ident) +
-            '?' + urllib.urlencode({'key': self.user_key}))
+        req = urllib2.Request(self.endpoint + '/{t}/{u}/collections/{c}'
+            .format(t = self.library_type, u = self.library_id, c = ident) +
+            '?' + urllib.urlencode({'key': self.api_key}))
         req.get_method = lambda: 'DELETE'
         req.add_header('If-Match', etag)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
@@ -1061,4 +942,3 @@ class NotModifiedHandler(urllib2.BaseHandler):
         addinfourl = urllib2.addinfourl(f_p, headers, req.get_full_url())
         addinfourl.code = code
         return addinfourl
-
