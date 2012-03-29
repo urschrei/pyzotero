@@ -169,7 +169,7 @@ class Zotero(object):
         self.endpoint = 'https://api.zotero.org'
         if library_id and library_type:
             self.library_id = library_id
-            # library_type determines whether query begins with /users or /groups
+            # library_type determines whether query begins w. /users or /groups
             self.library_type = library_type + 's'
         else:
             raise ze.MissingCredentials, \
@@ -293,7 +293,9 @@ class Zotero(object):
         been specifically set by an API method
         """
         try:
-            query = urllib.quote(query_string.format(u = self.library_id, t = self.library_type))
+            query = urllib.quote(query_string.format(
+                u = self.library_id,
+                t = self.library_type))
         except KeyError, err:
             raise ze.ParamNotPassed, \
             'There\'s a request parameter missing: %s' % err
