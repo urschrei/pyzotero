@@ -71,20 +71,6 @@ def token():
     return str(uuid.uuid4().hex)
 
 
-def extract_links(doc):
-    """ Extract self, first, next, last links from an Atom doc
-    """
-    extracted = dict()
-    try:
-        for link in doc['feed']['links'][:-1]:
-            url = urlparse(link['href'])
-            extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
-        return extracted
-    except KeyError:
-        # No links present, because it's a single item
-        return None
-
-
 def etags(incoming):
     """ Return a list of etags parsed out of the XML response
     """
@@ -147,7 +133,7 @@ def retrieve(func):
             if processor == self._json_processor:
                 self.etags = etags(retrieved)
             # extract next, previous, first, last links
-            self.links = extract_links(parsed)
+            self.links = self._extract_links(parsed)
             return processor(parsed)
         # otherwise, just return the unparsed content as is
         else:
@@ -242,6 +228,27 @@ class Zotero(object):
             error_handler(self.request, error)
         # parse the result into Python data structures
         return data
+
+    def _extract_links(self, doc):
+        """ Extract self, first, next, last links from an Atom doc, and add
+            an instance's API key to the links if it exists
+        """
+        extracted = dict()
+        try:
+            for link in doc['feed']['links'][:-1]:
+                url = urlparse(link['href'])
+                try:
+                    extracted[link['rel']] = '{0}?{1}&key={2}'.format(
+                            url[2],
+                            url[4],
+                            self.api_key)
+                except AttributeError:
+                    # no API key present
+                    extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
+            return extracted
+        except KeyError:
+            # No links present, because it's a single item
+            return None
 
     def _updated(self, url, payload, template = None):
         """
