@@ -326,13 +326,6 @@ class Zotero(object):
             u = self.library_id, t = self.library_type, c = collection.upper())
         return self._totals(query)
 
-    def num_groupitems(self, group):
-        """ Return the total number of items in the specified group
-        """
-        query = '/groups/{g}/items'.format(
-            g = group.upper())
-        return self._totals(query)
-
     def num_tagitems(self, tag):
         """ Return the total number of items for the specified tag
         """

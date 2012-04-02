@@ -322,7 +322,7 @@ Example:
 ::
 
     from pyzotero import zotero
-    zot = zotero.Zotero(user_id, user_key)
+    zot = zotero.Zotero(library_id, library_type, api_key)
     # only retrieve a single item
     # this will retrieve the most recently added/modified top-level item
     first_item = zot.top(limit=1)
@@ -338,7 +338,7 @@ Example:
 ::
 
     from pyzotero import zotero
-    zot = zotero.Zotero(user_id, library_type, user_key)
+    zot = zotero.Zotero(library_id, library_type, api_key)
     # retrieve all top-level items
     toplevel = zot.everything(zot.top())
 
