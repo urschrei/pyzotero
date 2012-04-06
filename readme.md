@@ -1,15 +1,17 @@
 ``` python
 from pyzotero import zotero
-zot = zotero.Zotero(user_id, access_key)
-items = zot.top(limit=5)
+zot = zotero.Zotero(library_id, library_type, api_key)
+items = zot.top(limit = 5)
+# we have now retrieved the last five top-level items in our library
+# we can print each item's item type and ID
 for item in items:
     print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
 ```
 
 # Description #
-Pyzotero is a Python wrapper for the [Zotero read and write APIs][1]. You'll require a user ID and access key in order to use them. These credentials may be obtained [here][2].
+Pyzotero is a Python wrapper for the [Zotero read and write APIs][1]. You'll require a library ID and access key, which can be set up [here][2].
 
-See [Read The Docs][3] or [packages.python.org][4] for full documentation of available Pyzotero methods, code examples, and sample output.
+See [Read The Docs][3] for full documentation of available Pyzotero methods, code examples, and sample output.
 
 # Installation #
 
