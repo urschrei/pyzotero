@@ -576,6 +576,16 @@ class Zotero(object):
         retrieved = self._retrieve_data(query_string)
         return self._cache(json.loads(retrieved), template_name)
 
+    def attachment_template(self, template_type):
+        """
+        Return a new attachment template of the required type:
+        imported_file
+        imported_url
+        linked_file
+        linked_url
+        """
+        return self.item_template('attachment&linkMode=' + template_type)
+
     def add_tags(self, item, *tags):
         """
         Add one or more tags to a retrieved item,
