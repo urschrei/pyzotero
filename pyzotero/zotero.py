@@ -34,9 +34,14 @@ import feedparser
 import json
 import uuid
 import time
+import os
+import hashlib
 import datetime
 import re
 import pytz
+from poster.encode import multipart_encode
+from poster.streaminghttp import register_openers as reg_open
+import mimetypes
 from urlparse import urlparse
 import xml.etree.ElementTree as et
 
@@ -47,6 +52,8 @@ import zotero_errors as ze
 # Avoid hanging the application if there's no server response
 timeout = 30
 socket.setdefaulttimeout(timeout)
+# register streaming HTTP opener for file uploads
+reg_open()
 
 
 def ib64_patched(self, attrsD, contentparams):
@@ -585,6 +592,105 @@ class Zotero(object):
         linked_url
         """
         return self.item_template('attachment&linkMode=' + template_type)
+
+    def child_attachment(self, itemkey, payload):
+        """
+        Create child attachments under the specified item key
+        accepts an item key (the parent item), and a list of one or
+        more attachment template dicts
+        """
+        # Create one or more new attachments
+        to_send = json.dumps({'items': payload})
+        req = urllib2.Request(self.endpoint +
+            '/users/{u}/items/{i}/children?key={k}'.format(
+                u = self.library_id,
+                i = itemkey,
+                k = self.api_key))
+        req.add_data(to_send)
+        req.add_header('X-Zotero-Write-Token', token())
+        req.add_header('Content-Type', 'application/json')
+        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        try:
+            resp = urllib2.urlopen(req)
+            data = resp.read()
+        except (urllib2.HTTPError, urllib2.URLError), error:
+            error_handler(req, error)
+        created = self._json_processor(feedparser.parse(data))
+        for idx, content in enumerate(payload):
+            attach = content.get('filename')
+            if attach:
+                # begin the upload auth dance
+                # Step 1: get upload authorisation for the file
+                authreq = urllib2.Request(self.endpoint
+                    + '/users/{u}/items/{i}/file?key={k}&params=1'.format(
+                        u = self.library_id,
+                        i = created[idx]['key'],
+                        k = self.api_key))
+                # add required attributes to the request
+                mtypes = mimetypes.guess_type(attach)
+                digest = hashlib.md5()
+                with open(attach, 'r') as f:
+                    digest.update(f.read())
+                authreq.add_data(urllib.urlencode({
+                    'md5': digest.hexdigest(),
+                    'filename': os.path.basename(attach),
+                    'filesize': os.path.getsize(attach),
+                    'mtime': str(int(os.path.getmtime(attach) * 1000)),
+                    'contentType': mtypes[0],
+                    'charset': mtypes[1]}))
+                # add headers
+                authreq.add_header(
+                        'Content-Type',
+                        'application/x-www-form-urlencoded')
+                authreq.add_header('If-None-Match', '*')
+                try:
+                    authresp = urllib2.urlopen(authreq)
+                    authdata = json.loads(authresp.read())
+                except (urllib2.HTTPError, urllib2.URLError), error:
+                    error_handler(authreq, error)
+                if not authdata.get('exists'):
+                    # Step 2: Auth step successful, file does not exist
+                    encoded, headers = multipart_encode([
+                        (u'AWSAccessKeyId',
+                            authdata['params'][u'AWSAccessKeyId']),
+                        (u'success_action_status',
+                            authdata['params'][u'success_action_status']),
+                        (u'acl', authdata['params'][u'acl']),
+                        (u'key', authdata['params'][u'key']),
+                        (u'signature', authdata['params'][u'signature']),
+                        (u'policy', authdata['params'][u'policy']),
+                        (u'Content-MD5', authdata['params'][u'Content-MD5']),
+                        (u'Content-Type', authdata['params'][u'Content-Type']),
+                        ('file', open(attach, 'r'))])
+                    upload = urllib2.Request(
+                        authdata['url'],
+                        encoded, headers)
+                    try:
+                        urllib2.urlopen(upload).read()
+                    except (urllib2.HTTPError, urllib2.URLError), error:
+                        error_handler(upload, error)
+                    # Step 3: upload successful, so register it
+                    reg = urllib2.Request(self.endpoint +
+                        '/users/{u}/items/{i}/file?key={k}'.format(
+                            u = self.library_id,
+                            i = created[idx]['key'],
+                            k = self.api_key))
+                    reg.add_data(urllib.urlencode(
+                        {'upload': authdata.get('uploadKey')}))
+                    reg.add_header(
+                        'Content-Type',
+                        'application/x-www-form-urlencoded')
+                    reg.add_header('If-None-Match', '*')
+                    req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+                    try:
+                        urllib2.urlopen(reg).read()
+                    except (urllib2.HTTPError, urllib2.URLError), regerror:
+                        error_handler(reg, regerror)
+                else:
+                    # item exists
+                    continue
+        return True
+
 
     def add_tags(self, item, *tags):
         """
