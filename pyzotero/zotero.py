@@ -636,7 +636,7 @@ class Zotero(object):
                     'filename': os.path.basename(attach),
                     'filesize': os.path.getsize(attach),
                     'mtime': str(int(os.path.getmtime(attach) * 1000)),
-                    'contentType': mtypes[0],
+                    'contentType': mtypes[0] or 'application/octet-stream',
                     'charset': mtypes[1]}))
                 # add headers
                 authreq.add_header(
@@ -690,7 +690,6 @@ class Zotero(object):
                     # item exists
                     continue
         return True
-
 
     def add_tags(self, item, *tags):
         """
