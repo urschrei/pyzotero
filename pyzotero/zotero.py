@@ -629,8 +629,9 @@ class Zotero(object):
                 # add required attributes to the request
                 mtypes = mimetypes.guess_type(attach)
                 digest = hashlib.md5()
-                with open(attach, 'r') as f:
-                    digest.update(f.read())
+                with open(attach,'rb') as f:
+                    for chunk in iter(lambda: f.read(8192), b''):
+                     digest.update(chunk)
                 authreq.add_data(urllib.urlencode({
                     'md5': digest.hexdigest(),
                     'filename': os.path.basename(attach),
