@@ -1027,34 +1027,36 @@ class Zotero(object):
 def error_handler(req, error):
     """ Error handler for HTTP requests
     """
-    # Distinguish between URL errors and HTTP status codes of 400+
-    if hasattr(error, 'code'):
-        if error.code == 401 or error.code == 403:
-            raise ze.UserNotAuthorised, \
-"\nNot authorised: (%s)\nURL: %s\nType: %s\nResponse: %s" % (
-    error.code, req.get_full_url(), req.get_method(), error.read())
-        elif error.code == 400:
-            raise ze.UnsupportedParams, \
-"\n400: Invalid request, probably due to unsupported parameters:\n\
-URL: %s\nRequest Type: %s\nResponse: %s" % \
-            (req.get_full_url(), req.get_method(), error.read())
-        elif error.code == 404:
-            raise ze.ResourceNotFound, \
-"\nNo results for the following query:\n%s" % req.get_full_url()
-        elif error.code == 409:
-            raise ze.Conflict, \
-"\nThe target library is locked"
-        elif error.code == 412:
-            raise ze.PreConditionFailed, \
-"\nThe item was already submitted, or has changed since you retrieved it"
-        elif error.code == 413:
-            raise ze.RequestEntityTooLarge, \
-"\nThe upload would exceed the storage quota of this library"
-        else:
-            raise ze.HTTPError, \
-"\nHTTP Error %s (%s)\nURL: %s\nData: %s\nInfo: %s" % (
-            error.msg, error.code, req.get_full_url(), req.get_data(),
-            error.read())
+    error_codes = {
+        400: ze.UnsupportedParams,
+        401: ze.UserNotAuthorised,
+        403: ze.UserNotAuthorised,
+        404: ze.ResourceNotFound,
+        409: ze.Conflict,
+        412: ze.PreConditionFailed,
+        413: ze.RequestEntityTooLarge,
+        428: ze.PreConditionRequired,
+        429: ze.TooManyRequests,
+    }
+
+    def err_msg(req, error):
+        """ Return a nicely-formatted error message
+        """
+        return "\nCode: %s (%s)\nURL: %s\nMethod: %s\nResponse: %s" % (
+                error.code,
+                error.msg,
+                req.get_full_url(),
+                req.get_method(),
+                error.read())
+
+    if hasattr(error, 'code') and error_codes.get(error.code):
+        raise error_codes.get(error.code), err_msg(req, error)
+    elif hasattr(error, 'code'):
+        raise ze.HTTPError, err_msg(req, error)
+    else:
+        raise ze.HTTPError, \
+"\nCouldn't reach the host.\nReason: %s" % error.reason
+
 
 
 class NotModifiedHandler(urllib2.BaseHandler):
