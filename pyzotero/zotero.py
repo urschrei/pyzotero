@@ -923,32 +923,33 @@ def error_handler(req, error):
     """ Error handler for HTTP requests
     """
     # Distinguish between URL errors and HTTP status codes of 400+
-    if hasattr(error, 'reason'):
-        raise ze.CouldNotReachURL, \
-"Could not reach server. Reason: %s\nURL: %s" % (error, req.get_full_url())
-    elif hasattr(error, 'code'):
+    if hasattr(error, 'code'):
         if error.code == 401 or error.code == 403:
             raise ze.UserNotAuthorised, \
-"Not authorised: (%s)\nURL: %s\nType: %s\nData: %s" % (
-    error.code, req.get_full_url(), req.get_method(), req.get_data())
+"\nNot authorised: (%s)\nURL: %s\nType: %s\nResponse: %s" % (
+    error.code, req.get_full_url(), req.get_method(), error.read())
         elif error.code == 400:
             raise ze.UnsupportedParams, \
-"Invalid request, probably due to unsupported parameters: %s\n%s\n%s" % \
-            (req.get_full_url(), req.get_method(), req.get_data())
+"\n400: Invalid request, probably due to unsupported parameters:\n\
+URL: %s\nRequest Type: %s\nResponse: %s" % \
+            (req.get_full_url(), req.get_method(), error.read())
         elif error.code == 404:
             raise ze.ResourceNotFound, \
-"No results for the following query:\n%s" % req.get_full_url()
+"\nNo results for the following query:\n%s" % req.get_full_url()
         elif error.code == 409:
             raise ze.Conflict, \
-"The target library is locked"
+"\nThe target library is locked"
         elif error.code == 412:
             raise ze.PreConditionFailed, \
-"The item was already submitted, or has changed since you retrieved it"
+"\nThe item was already submitted, or has changed since you retrieved it"
+        elif error.code == 413:
+            raise ze.RequestEntityTooLarge, \
+"\nThe upload would exceed the storage quota of this library"
         else:
             raise ze.HTTPError, \
-"HTTP Error %s (%s)\nURL: %s\nData: %s" % (
-            error.msg, error.code, req.get_full_url(), req.get_data())
-
+"\nHTTP Error %s (%s)\nURL: %s\nData: %s\nInfo: %s" % (
+            error.msg, error.code, req.get_full_url(), req.get_data(),
+            error.read())
 
 
 class NotModifiedHandler(urllib2.BaseHandler):
