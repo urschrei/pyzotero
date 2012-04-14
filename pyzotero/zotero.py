@@ -730,8 +730,10 @@ class Zotero(object):
                     "You may only create up to 50 items per call"
         to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
         req = urllib2.Request(self.endpoint
-            + '/{t}/{u}/items'.format(t = self.library_type, u = self.library_id) + '?'
-            + urllib.urlencode({'key': self.api_key}))
+            + '/{t}/{u}/items?key={k}'.format(
+                t = self.library_type,
+                u = self.library_id,
+                k = self.api_key))
         req.add_data(to_send)
         req.add_header('X-Zotero-Write-Token', token())
         req.add_header('Content-Type', 'application/json' )
@@ -761,8 +763,10 @@ class Zotero(object):
             payload['parent'] = ''
         to_send = json.dumps(payload)
         req = urllib2.Request(
-        self.endpoint + '/{t}/{u}/collections'.format(t = self.library_type, u = self.library_id) +
-            '?' + urllib.urlencode({'key': self.api_key}))
+        self.endpoint + '/{t}/{u}/collections?key={k}'.format(
+            t = self.library_type,
+            u = self.library_id,
+            k = self.api_key))
         req.add_data(to_send)
         req.add_header('X-Zotero-Write-Token', token())
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
@@ -834,9 +838,11 @@ class Zotero(object):
         to_send = ' '.join([p['key'].encode('utf8') for p in payload])
 
         req = urllib2.Request(
-        self.endpoint + '/{t}/{u}/collections/{c}/items'.format(
-            t = self.library_type, u = self.library_id, c = collection.upper()) +
-            '?' + urllib.urlencode({'key': self.api_key}))
+        self.endpoint + '/{t}/{u}/collections/{c}/items?key={k}'.format(
+            t = self.library_type,
+            u = self.library_id,
+            c = collection.upper(),
+            k = self.api_key))
         req.add_data(to_send)
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
         try:
@@ -856,7 +862,10 @@ class Zotero(object):
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         req = urllib2.Request(
         self.endpoint + '/{t}/{u}/collections/{c}/items/'.format(
-            t = self.library_type, u = self.library_id, c = collection.upper()) + ident +
+            t = self.library_type,
+            u = self.library_id,
+            c = collection.upper())
+            + ident +
             '?' + urllib.urlencode({'key': self.api_key}))
         req.get_method = lambda: 'DELETE'
         req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
