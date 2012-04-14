@@ -118,3 +118,28 @@ class PreConditionFailed(PyZoteroError):
     """
     pass
 
+
+
+class RequestEntityTooLarge(PyZoteroError):
+    """
+    413 – The upload would exceed the storage quota of the library owner.
+    """
+    pass
+
+
+
+class PreConditionRequired(PyZoteroError):
+    """
+    428 - Raised when If-Match or If-None-Match was not provided.
+    """
+    pass
+
+
+
+class TooManyRequests(PyZoteroError):
+    """
+    429 - Raised when Too many unfinished uploads.
+    Try again after the number of seconds specified in the Retry-After header.
+    """
+    pass
+
