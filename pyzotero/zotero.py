@@ -125,13 +125,13 @@ def retrieve(func):
         retrieved = self._retrieve_data(func(self, *args))
         # determine content and format, based on url params
         content = self.content.search(
-                self.request.get_full_url()).group(0) if \
+                self.request.get_full_url()) and \
             self.content.search(
-                    self.request.get_full_url()) else 'bib'
+                    self.request.get_full_url()).group(0) or 'bib'
         fmt = self.fmt.search(
-                self.request.get_full_url()).group(0) if \
+                self.request.get_full_url()) and \
             self.fmt.search(
-                    self.request.get_full_url()) else 'atom'
+                    self.request.get_full_url()).group(0) or 'atom'
         # step 1: process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
