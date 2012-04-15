@@ -593,18 +593,23 @@ class Zotero(object):
         """
         return self.item_template('attachment&linkMode=' + attachment_type)
 
-    def child_attachment(self, itemkey, payload):
+    def attachment(self, payload, parentid=None):
         """
-        Create child attachments under the specified item key
-        accepts an item key (the parent item), and a list of one or
-        more attachment template dicts
+        Create attachments
+        accepts a list of one or more attachment template dicts
+        and an optional parent Item ID. If This is specified,
+        attachments are created under this ID
         """
+        if not parentid:
+            liblevel = '/users/{u}/items?key={k}'
+        else:
+            liblevel = '/users/{u}/items/{i}/children?key={k}'
         # Create one or more new attachments
         to_send = json.dumps({'items': payload})
         req = urllib2.Request(self.endpoint +
-            '/users/{u}/items/{i}/children?key={k}'.format(
+            liblevel.format(
                 u = self.library_id,
-                i = itemkey,
+                i = parentid,
                 k = self.api_key))
         req.add_data(to_send)
         req.add_header('X-Zotero-Write-Token', token())
@@ -631,7 +636,7 @@ class Zotero(object):
                 digest = hashlib.md5()
                 with open(attach,'rb') as f:
                     for chunk in iter(lambda: f.read(8192), b''):
-                     digest.update(chunk)
+                        digest.update(chunk)
                 authreq.add_data(urllib.urlencode({
                     'md5': digest.hexdigest(),
                     'filename': os.path.basename(attach),
@@ -641,8 +646,8 @@ class Zotero(object):
                     'charset': mtypes[1]}))
                 # add headers
                 authreq.add_header(
-                        'Content-Type',
-                        'application/x-www-form-urlencoded')
+                    'Content-Type',
+                    'application/x-www-form-urlencoded')
                 authreq.add_header('If-None-Match', '*')
                 try:
                     authresp = urllib2.urlopen(authreq)
@@ -663,9 +668,7 @@ class Zotero(object):
                         (u'Content-MD5', authdata['params'][u'Content-MD5']),
                         (u'Content-Type', authdata['params'][u'Content-Type']),
                         ('file', open(attach, 'r'))])
-                    upload = urllib2.Request(
-                        authdata['url'],
-                        encoded, headers)
+                    upload = urllib2.Request(authdata['url'], encoded, headers)
                     try:
                         urllib2.urlopen(upload).read()
                     except (urllib2.HTTPError, urllib2.URLError), error:
@@ -908,33 +911,39 @@ class Zotero(object):
             error_handler(req, error)
         return True
 
-    def child_attachment_filename(self, parentid, *args):
+    def attachment_simple(self, files, parentid=None):
         """
-        Add child attachments using filenames as title
+        Add attachments using filenames as title
         Arguments:
-        An Item ID
         One or more file paths to add as attachments:
+        An optional Item ID, which will create child attachments
         """
         orig = self.attachment_template('imported_file')
-        to_add = [orig.copy() for arg in args]
+        to_add = [orig.copy() for f in files]
         for idx, tmplt in enumerate(to_add):
-            tmplt['title'] = os.path.basename(args[idx])
-            tmplt['filename'] = args[idx]
-        return self.child_attachment(parentid, to_add)
+            tmplt['title'] = os.path.basename(files[idx])
+            tmplt['filename'] = files[idx]
+        if parentid:
+            return self.attachment(to_add, parentid)
+        else:
+            return self.attachment(to_add)
 
-    def child_attachment_both(self, parentid, *args):
+    def attachment_both(self, files, parentid=None):
         """
         Add child attachments using title, filename
         Arguments:
-        An Item ID
         One or more lists or tuples containing title, file path
+        An optional Item ID, which will create child attachments
         """
         orig = self.attachment_template('imported_file')
-        to_add = [orig.copy() for arg in args]
+        to_add = [orig.copy() for f in files]
         for idx, tmplt in enumerate(to_add):
-            tmplt['title'] = args[idx][0]
-            tmplt['filename'] = args[idx][1]
-        return self.child_attachment(parentid, to_add)
+            tmplt['title'] = files[idx][0]
+            tmplt['filename'] = files[idx][1]
+        if parentid:
+            return self.attachment(to_add, parentid)
+        else:
+            return self.attachment(to_add)
 
     def update_item(self, payload):
         """
