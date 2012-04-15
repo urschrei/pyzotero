@@ -626,39 +626,37 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.ParamNotPassed):
             t = zot.create_collection(t)
 
-    #def testCreateItem(self):
-        #""" Ensure that items can be created
-        #"""
-        ## first, retrieve an item template
-        #my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_templt, 200))
-        #z.urllib2.install_opener(my_opener)
-        #zot = z.Zotero('myuserID', 'users', 'myuserkey')
-        #t = zot.item_template('book')
-        ## Update the item type
-        #t['itemType'] = 'journalArticle'
-        ## Add keys which should be removed before the data is sent
-        #t['key'] = 'KEYABC123'
-        #t['etag'] = 'TAGABC123'
-        #t['group_id'] = 'GROUPABC123'
-        #t['updated'] = '14 March, 2011'
-        #tn = dict(t)
-        #tn['key'] = 'KEYABC124'
-        #ls = []
-        #ls.append(t)
-        #ls.append(tn)
-        ## new opener which will return 403
-        #my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
-        #z.urllib2.install_opener(my_opener)
-        #with self.assertRaises(z.ze.UserNotAuthorised) as e:
-            #_ = zot.create_items(ls)
-        #exc = str(e.exception)
-        ## this test is a kludge; we're checking the POST data in the 403 response
-        #self.assertIn("\"items\":", exc)
-        #self.assertIn("journalArticle", exc)
-        #self.assertNotIn("KEYABC123", exc)
-        #self.assertNotIn("TAGABC123", exc)
-        #self.assertNotIn("GROUPABC123", exc)
-        #self.assertNotIn("updated", exc)
+    def testCreateItem(self):
+        """ Ensure that items can be created
+        """
+        # first, retrieve an item template
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_templt, 200))
+        z.urllib2.install_opener(my_opener)
+        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        t = zot.item_template('book')
+        # Update the item type
+        t['itemType'] = 'journalArticle'
+        # Add keys which should be removed before the data is sent
+        t['key'] = 'KEYABC123'
+        t['etag'] = 'TAGABC123'
+        t['group_id'] = 'GROUPABC123'
+        t['updated'] = '14 March, 2011'
+        tn = dict(t)
+        tn['key'] = 'KEYABC124'
+        ls = []
+        ls.append(t)
+        ls.append(tn)
+        # new opener which will return 403
+        my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
+        z.urllib2.install_opener(my_opener)
+        with self.assertRaises(z.ze.UserNotAuthorised) as e:
+            _ = zot.create_items(ls)
+        exc = str(e.exception)
+        # this test is a kludge; we're checking the POST data in the 403 response
+        self.assertIn("journalArticle", exc)
+        self.assertNotIn("KEYABC123", exc)
+        self.assertNotIn("TAGABC123", exc)
+        self.assertNotIn("GROUPABC123", exc)
 
     def testUpdateItem(self):
         """ Test that we can update an item
