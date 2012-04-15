@@ -583,7 +583,7 @@ class Zotero(object):
         retrieved = self._retrieve_data(query_string)
         return self._cache(json.loads(retrieved), template_name)
 
-    def attachment_template(self, template_type):
+    def attachment_template(self, attachment_type):
         """
         Return a new attachment template of the required type:
         imported_file
@@ -591,7 +591,7 @@ class Zotero(object):
         linked_file
         linked_url
         """
-        return self.item_template('attachment&linkMode=' + template_type)
+        return self.item_template('attachment&linkMode=' + attachment_type)
 
     def child_attachment(self, itemkey, payload):
         """
@@ -907,6 +907,34 @@ class Zotero(object):
         except (urllib2.HTTPError, urllib2.URLError), error:
             error_handler(req, error)
         return True
+
+    def child_attachment_filename(self, parentid, *args):
+        """
+        Add child attachments using filenames as title
+        Arguments:
+        An Item ID
+        One or more file paths to add as attachments:
+        """
+        orig = self.attachment_template('imported_file')
+        to_add = [orig.copy() for arg in args]
+        for idx, tmplt in enumerate(to_add):
+            tmplt['title'] = os.path.basename(args[idx])
+            tmplt['filename'] = args[idx]
+        return self.child_attachment(parentid, to_add)
+
+    def child_attachment_both(self, parentid, *args):
+        """
+        Add child attachments using title, filename
+        Arguments:
+        An Item ID
+        One or more lists or tuples containing title, file path
+        """
+        orig = self.attachment_template('imported_file')
+        to_add = [orig.copy() for arg in args]
+        for idx, tmplt in enumerate(to_add):
+            tmplt['title'] = args[idx][0]
+            tmplt['filename'] = args[idx][1]
+        return self.child_attachment(parentid, to_add)
 
     def update_item(self, payload):
         """
