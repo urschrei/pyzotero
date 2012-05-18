@@ -563,6 +563,25 @@ If successful, ``resp`` will have the same structure as items retrieved with an 
     i[0]['creators'][0]['lastName'] = 'Bowles'
     zot.update_item(i[0])
 
+ 
+**Note:** Attachment methods are in beta.
+
+
+    .. py:method:: Zotero.attachment_simple(files[, parentid])
+
+        Create one or more file attachment items.
+
+        :param list files: a list containing one or more file paths: ``['/path/to/file/file.pdf', … ]``
+        :param string parentid: a library Item ID. If this is specified, attachments will be created as child items of this ID.
+
+    .. py:method:: Zotero.attachment_both(files[, parentid])
+
+        Create one or more file attachment items, specifying names for uploaded files
+
+        :param list files: a list containing one or more lists or tuples in the following format: ``(file name, file path)``
+        :param string parentid: a library Item ID. If this is specified, attachments will be created as child items of this ID.
+
+
 Deleting items:
 
     .. py:method:: Zotero.delete_item(item)
