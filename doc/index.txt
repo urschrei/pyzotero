@@ -21,16 +21,16 @@ Getting started (short version)
 
 .. _hello-world:
 
-.. code-block:: python
-    :emphasize-lines: 1,2,3
+    .. code-block:: python
+        :emphasize-lines: 1,2,3
 
-        from pyzotero import zotero
-        zot = zotero.Zotero(library_id, library_type, api_key)
-        items = zot.top(limit = 5)
-        # we have now retrieved the last five top-level items in our library
-        # we can print each item's item type and ID
-        for item in items:
-            print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
+            from pyzotero import zotero
+            zot = zotero.Zotero(library_id, library_type, api_key)
+            items = zot.top(limit = 5)
+            # we have now retrieved the last five top-level items in our library
+            # we can print each item's item type and ID
+            for item in items:
+                print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
 
 2. Refer to the :ref:`read` and :ref:`write`.
 
@@ -45,17 +45,17 @@ Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install 
 
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
-.. code-block:: bash
+    .. code-block:: bash
 
 
-    git clone git://github.com/urschrei/pyzotero.git
-    cd pyzotero
-    git checkout dev
-    pip install .
+        git clone git://github.com/urschrei/pyzotero.git
+        cd pyzotero
+        git checkout dev
+        pip install .
 
 
 Alternatively, download the latest stable version from https://github.com/urschrei/pyzotero/tags, and point pip at the zip file.
-Example: ``pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip``
+**Example:** ``pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip``
 
 The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org/pypi/Pyzotero>`_
 
@@ -108,16 +108,16 @@ First, create a new Zotero instance:
         :param str api_key: a valid Zotero API user key
 
 
-    Example:
+Example:
 
-.. code-block:: python
-    :emphasize-lines: 4
+    .. code-block:: python
+        :emphasize-lines: 4
 
-    from pyzotero import zotero
-    zot = zotero.Zotero('123', 'user', 'ABC1234XYZ')
-    # we now have a Zotero object, zot, and access to all its methods
-    first_ten = zot.items(limit = 10)
-    # a list containing dicts of the ten most recently modified library items
+        from pyzotero import zotero
+        zot = zotero.Zotero('123', 'user', 'ABC1234XYZ')
+        # we now have a Zotero object, zot, and access to all its methods
+        first_ten = zot.items(limit = 10)
+        # a list containing dicts of the ten most recently modified library items
 
 
 .. _read:
@@ -192,41 +192,41 @@ The following methods will retrieve either user or group items, depending on the
 
 .. _returned:
 
-    Example of returned data:
+Example of returned data:
 
 
-.. code-block:: python
+    .. code-block:: python
 
 
-    [{'DOI': '',
-     'ISSN': '1747-1532',
-     'abstractNote': '',
-     'accessDate': '',
-     'archive': '',
-     'archiveLocation': '',
-     'callNumber': '',
-     'creators': [{'creatorType': 'author',
-                   'firstName': 'T. J.',
-                   'lastName': 'McIntyre'}],
-     'date': '2007',
-     'extra': '',
-     'issue': '',
-     'itemType': 'journalArticle',
-     'journalAbbreviation': '',
-     'language': '',
-     'libraryCatalog': 'Google Scholar',
-     'pages': '',
-     'publicationTitle': 'Journal of Intellectual Property Law & Practice',
-     'rights': '',
-     'series': '',
-     'seriesText': '',
-     'seriesTitle': '',
-     'shortTitle': 'Copyright in custom code',
-     'tags': [],
-     'title': 'Copyright in custom code: Who owns commissioned software?',
-     'updated': 'Mon, 14 Mar 2011 22:30:17 GMT',
-     'url': '',
-     'volume': ''}]
+        [{'DOI': '',
+         'ISSN': '1747-1532',
+         'abstractNote': '',
+         'accessDate': '',
+         'archive': '',
+         'archiveLocation': '',
+         'callNumber': '',
+         'creators': [{'creatorType': 'author',
+                       'firstName': 'T. J.',
+                       'lastName': 'McIntyre'}],
+         'date': '2007',
+         'extra': '',
+         'issue': '',
+         'itemType': 'journalArticle',
+         'journalAbbreviation': '',
+         'language': '',
+         'libraryCatalog': 'Google Scholar',
+         'pages': '',
+         'publicationTitle': 'Journal of Intellectual Property Law & Practice',
+         'rights': '',
+         'series': '',
+         'seriesText': '',
+         'seriesTitle': '',
+         'shortTitle': 'Copyright in custom code',
+         'tags': [],
+         'title': 'Copyright in custom code: Who owns commissioned software?',
+         'updated': 'Mon, 14 Mar 2011 22:30:17 GMT',
+         'url': '',
+         'volume': ''}]
 
 
 
@@ -248,11 +248,11 @@ Retrieving Collections
         :param str collectionID: a Zotero library collection ID
         :rtype: list of dicts
 
-    Example of returned data:
+Example of returned data:
 
-.. code-block:: python
+    .. code-block:: python
 
-    [{'key': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"}]
+        [{'key': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"}]
 
 
 ==========================
@@ -264,26 +264,26 @@ Retrieving groups
 
         :rtype: list of dicts
 
-    Example of returned data:
+Example of returned data:
 
-.. code-block:: python
+    .. code-block:: python
 
-    [{u'description': u'%3Cp%3EBGerman+Cinema+and+related+literature.%3C%2Fp%3E',
-        u'fileEditing': u'none',
-        u'group_id': u'153',
-        u'hasImage': 1,
-        u'libraryEditing': u'admins',
-        u'libraryEnabled': 1,
-        u'libraryReading': u'all',
-        u'members': {u'0': 436,
-           u'1': 6972,
-           u'15': 499956,
-           u'16': 521307,
-           u'17': 619180},
-        u'name': u'German Cinema',
-        u'owner': 10421,
-        u'type': u'PublicOpen',
-        u'url': u''}]
+        [{u'description': u'%3Cp%3EBGerman+Cinema+and+related+literature.%3C%2Fp%3E',
+            u'fileEditing': u'none',
+            u'group_id': u'153',
+            u'hasImage': 1,
+            u'libraryEditing': u'admins',
+            u'libraryEnabled': 1,
+            u'libraryReading': u'all',
+            u'members': {u'0': 436,
+               u'1': 6972,
+               u'15': 499956,
+               u'16': 521307,
+               u'17': 619180},
+            u'name': u'German Cinema',
+            u'owner': 10421,
+            u'type': u'PublicOpen',
+            u'url': u''}]
 
 ===================
 Retrieving Tags
@@ -302,11 +302,11 @@ Retrieving Tags
         :param str itemID: a valid Zotero library Item ID
         :rtype: list of strings
 
-    Example of returned data:
+Example of returned data:
 
-::
+    .. code-block:: python
 
-    ['Authority in literature', 'Errata']
+        ['Authority in literature', 'Errata']
 
 
 ==============================================
@@ -319,28 +319,28 @@ These methods (currently experimental) aim to make Pyzotero a little more RESTfu
 
 Example:
 
-::
+    .. code-block:: python
 
-    from pyzotero import zotero
-    zot = zotero.Zotero(library_id, library_type, api_key)
-    # only retrieve a single item
-    # this will retrieve the most recently added/modified top-level item
-    first_item = zot.top(limit=1)
-    # now we can start retrieving subsequent items
-    next_item = zot.follow()
-    third_item = zot.follow()
+        from pyzotero import zotero
+        zot = zotero.Zotero(library_id, library_type, api_key)
+        # only retrieve a single item
+        # this will retrieve the most recently added/modified top-level item
+        first_item = zot.top(limit=1)
+        # now we can start retrieving subsequent items
+        next_item = zot.follow()
+        third_item = zot.follow()
 
 
 .. py:method:: Zotero.everything()
 
 Example:
 
-::
+    .. code-block:: python
 
-    from pyzotero import zotero
-    zot = zotero.Zotero(library_id, library_type, api_key)
-    # retrieve all top-level items
-    toplevel = zot.everything(zot.top())
+        from pyzotero import zotero
+        zot = zotero.Zotero(library_id, library_type, api_key)
+        # retrieve all top-level items
+        toplevel = zot.everything(zot.top())
 
 The ``everything()`` method should work with all Pyzotero Read API calls which can return multiple items, but has not yet been extensively tested. `Feedback is welcomed <https://github.com/urschrei/pyzotero/issues>`_.
 
@@ -356,11 +356,11 @@ The :py:meth:`Zotero.iterfollow()` and :py:meth:`Zotero.makeiter()` methods are 
 
 Example:
 
-::
+    .. code-block:: python
 
-    z = zot.top(limit = 5)
-    lazy = zot.iterfollow()
-    lazy.next() # the next() call has returned the next five items
+        z = zot.top(limit = 5)
+        lazy = zot.iterfollow()
+        lazy.next() # the next() call has returned the next five items
 
 .. py:method:: Zotero.makeiter(API call)
 
@@ -369,11 +369,13 @@ Example:
     :param function API call: a Pyzotero Read API method capable of returning multiple items
     :rtype: generator
 
-Example::
+Example:
 
-    gen = zot.makeiter(zot.top(limit = 5))
-    gen.next() # this will return the first five items
-    gen.next() # this will return the next five items
+    .. code-block:: python
+
+        gen = zot.makeiter(zot.top(limit = 5))
+        gen.next() # this will return the first five items
+        gen.next() # this will return the next five items
 
 
 
@@ -430,14 +432,16 @@ This area of the Zotero Read API is under heavy development as of early 2012, an
         :param str style: Any valid CSL style in the Zotero style repository
         :rtype: list of HTML strings or None
 
-        The following two examples produce the same result::
+The following two examples produce the same result:
 
-            # set parameters on the call itself
-            z = zot.top(limit=7, start=3)
+    .. code-block:: python
 
-            # set parameters using explicit method
-            zot.add_parameters(limit=7, start=3)
-            z = zot.top()
+        # set parameters on the call itself
+        z = zot.top(limit=7, start=3)
+
+        # set parameters using explicit method
+        zot.add_parameters(limit=7, start=3)
+        z = zot.top()
 
 
 .. note::
@@ -447,20 +451,23 @@ This area of the Zotero Read API is under heavy development as of early 2012, an
 
 A note on the ``content`` and ``style`` parameters:
 
-    Example::
+Example:
+    
+    .. code-block:: python
 
         zot.add_parameters(content='bib', style='mla')
 
-    If these are set, the return value is a list of UTF-8 formatted HTML ``div`` elements, each containing an item:  
+    
+If these are set, the return value is a list of UTF-8 formatted HTML ``div`` elements, each containing an item:  
 
-    ``['<div class="csl-entry">(content)</div>']``.
+``['<div class="csl-entry">(content)</div>']``.
 
-    You may also set ``content='citation'`` if you wish to retrieve citations. Similar to ``bib``, the result will be a list of one or more HTML ``span`` elements.
+You may also set ``content='citation'`` if you wish to retrieve citations. Similar to ``bib``, the result will be a list of one or more HTML ``span`` elements.
 
 
-    If you select one of the available `export formats <http://www.zotero.org/support/dev/server_api/read_api#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
+If you select one of the available `export formats <http://www.zotero.org/support/dev/server_api/read_api#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
 
-    If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
+If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
 
 
 .. _write:
@@ -511,12 +518,8 @@ Item Methods
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
         :rtype: dict
 
-    .. py:method:: Zotero.check_items(items)
-
-        Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised, detailing the invalid fields.
-
-        :param list items: one or more dicts containing item data
-        :rtype: Boolean
+Creating items
+--------------
 
     .. py:method:: Zotero.create_items(items)
 
@@ -529,15 +532,15 @@ Item Methods
 
         Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
 
-    Example:
+Example:
 
-.. code-block:: python
+    .. code-block:: python
 
-    template = zot.item_template('book')
-    template['creators'][0]['firstName'] = 'Monty'
-    template['creators'][0]['lastName'] = 'Cantsin'
-    template['title'] = 'Maris Kundzins: A Life'
-    resp = zot.create_items([template])
+        template = zot.item_template('book')
+        template['creators'][0]['firstName'] = 'Monty'
+        template['creators'][0]['lastName'] = 'Cantsin'
+        template['title'] = 'Maris Kundzins: A Life'
+        resp = zot.create_items([template])
 
 
 If successful, ``resp`` will have the same structure as items retrieved with an :py:meth:`items()` call, e.g. a list of one or more dicts (see :ref:`Item Data <returned>`, above).
@@ -551,21 +554,30 @@ If successful, ``resp`` will have the same structure as items retrieved with an 
 
         Returns a copy of the updated item, if successful. Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
 
-        Example:
+Example:
 
-.. code-block:: python
+    .. code-block:: python
 
-    i = zot.items()
-    # see above for example of returned item structure
-    # modify the latest item which was added to your library
-    i[0]['title'] = 'The Sheltering Sky'
-    i[0]['creators'][0]['firstName'] = 'Paul'
-    i[0]['creators'][0]['lastName'] = 'Bowles'
-    zot.update_item(i[0])
+        i = zot.items()
+        # see above for example of returned item structure
+        # modify the latest item which was added to your library
+        i[0]['title'] = 'The Sheltering Sky'
+        i[0]['creators'][0]['firstName'] = 'Paul'
+        i[0]['creators'][0]['lastName'] = 'Bowles'
+        zot.update_item(i[0])
 
+   .. py:method:: Zotero.check_items(items)
+
+        Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised, detailing the invalid fields.
+
+        :param list items: one or more dicts containing item data
+        :rtype: Boolean
  
-**Note:** Attachment methods are in beta.
 
+Uploading files
+---------------
+
+    .. warning:: Attachment methods are in beta.
 
     .. py:method:: Zotero.attachment_simple(files[, parentid])
 
@@ -581,28 +593,30 @@ If successful, ``resp`` will have the same structure as items retrieved with an 
         :param list files: a list containing one or more lists or tuples in the following format: ``(file name, file path)``
         :param string parentid: a library Item ID. If this is specified, attachments will be created as child items of this ID.
 
-
-Deleting items:
+Deleting items
+--------------
 
     .. py:method:: Zotero.delete_item(item)
 
         Delete an item from your library
 
-        :param dict item: a dict containing item data. As in the previous example, you must first retrieve the item(s) you wish to delete, and pass it/them to the method one by one. Deletion of multiple items is most easily accomplished using e.g. a ``for`` loop.
+        :param dict item: a dict containing item data. You must first retrieve the item(s) you wish to delete, as the item's ``etag`` data is required for successful deletion. Deletion of multiple items is most easily accomplished using e.g. a ``for`` loop.
         :rtype: Boolean
 
-    Example:
+Example:
 
-.. code-block:: python
-    :emphasize-lines: 5
+    .. code-block:: python
+        :emphasize-lines: 5
 
-    i = zot.items()
-    # only delete the last five items we added
-    to_delete = i[:5]
-    for d in to_delete:
-        zot.delete_item(d)
+        i = zot.items()
+        # only delete the last five items we added
+        to_delete = i[:5]
+        for d in to_delete:
+            zot.delete_item(d)
 
-Adding tags:
+===========
+Adding tags
+===========
 
     .. py:method:: Zotero.add_tags(item, tag[, tag …])
 
@@ -612,15 +626,15 @@ Adding tags:
         :param string tag: the tag you'd like to add to the item
         :rtype: list of dicts
 
-    Example:
+Example:
 
-.. code-block:: python
+    .. code-block:: python
 
-    zot.add_parameters(limit=1)
-    z = zot.top()
-    # we've now retrieved the most recent top-level item
-    updated = zot.add_tags(z[0], 'tag1', 'tag2', 'tag3')
-    # updated now contains a representation of the updated server item
+        zot.add_parameters(limit=1)
+        z = zot.top()
+        # we've now retrieved the most recent top-level item
+        updated = zot.add_tags(z[0], 'tag1', 'tag2', 'tag3')
+        # updated now contains a representation of the updated server item
 
 
 ====================
@@ -661,7 +675,9 @@ Collection Methods
         :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`)
         :rtype: Boolean
 
-        Example::
+Example:
+    
+    .. code-block:: python
 
             # get existing collections, which will return a list of dicts
             c = zot.collections()
@@ -669,6 +685,7 @@ Collection Methods
             c[0]['name'] = 'Whither Digital Humanities?'
             # update collection name on the server
             zot.update_collection(c[0])
+
 
     .. py:method:: Zotero.delete_collection(collection)
 
