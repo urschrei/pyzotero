@@ -643,9 +643,9 @@ class Zotero(object):
                     'charset': mtypes[1]}))
                 # add headers
                 authreq.add_header(
-                    'Content-Type',
-                    'application/x-www-form-urlencoded')
-                authreq.add_header('If-None-Match', '*')
+                    'Content-Type', 'application/x-www-form-urlencoded')
+                authreq.add_header(
+                    'If-None-Match', '*')
                 try:
                     authresp = urllib2.urlopen(authreq)
                     authdata = json.loads(authresp.read())
