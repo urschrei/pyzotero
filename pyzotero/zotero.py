@@ -623,6 +623,8 @@ class Zotero(object):
             if attach:
                 # begin the upload auth dance
                 # Step 1: get upload authorisation for the file
+                # params=1 gives us a form "params" dict:
+                # groups.google.com/d/msg/zotero-dev/WqoA_mbn67g/4vKU7mldLgEJ
                 authreq = urllib2.Request(self.endpoint
                     + '/users/{u}/items/{i}/file?key={k}&params=1'.format(
                         u=self.library_id,
@@ -652,19 +654,12 @@ class Zotero(object):
                 except (urllib2.HTTPError, urllib2.URLError), error:
                     error_handler(authreq, error)
                 if not authdata.get('exists'):
-                    # Step 2: auth step successful, file does not exist
-                    encoded, headers = multipart_encode([
-                        (u'AWSAccessKeyId',
-                            authdata['params'][u'AWSAccessKeyId']),
-                        (u'success_action_status',
-                            authdata['params'][u'success_action_status']),
-                        (u'acl', authdata['params'][u'acl']),
-                        (u'key', authdata['params'][u'key']),
-                        (u'signature', authdata['params'][u'signature']),
-                        (u'policy', authdata['params'][u'policy']),
-                        (u'Content-MD5', authdata['params'][u'Content-MD5']),
-                        (u'Content-Type', authdata['params'][u'Content-Type']),
-                        ('file', open(attach, 'r'))])
+                # Step 2: auth step successful, file does not exist
+                # zotero.org/support/dev/server_api/file_upload#a_full_upload
+                # we're working directly with the form parameters here
+                    formdata = list(authdata.items())
+                    formdata.append(('file', open(attach, 'r')))
+                    encoded, headers = multipart_encode(formdata)
                     upload = urllib2.Request(authdata['url'], encoded, headers)
                     try:
                         urllib2.urlopen(upload).read()
