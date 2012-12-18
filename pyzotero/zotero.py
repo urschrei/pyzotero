@@ -125,13 +125,13 @@ def retrieve(func):
         retrieved = self._retrieve_data(func(self, *args))
         # determine content and format, based on url params
         content = self.content.search(
-                self.request.get_full_url()) and \
+            self.request.get_full_url()) and \
             self.content.search(
-                    self.request.get_full_url()).group(0) or 'bib'
+                self.request.get_full_url()).group(0) or 'bib'
         fmt = self.fmt.search(
-                self.request.get_full_url()) and \
+            self.request.get_full_url()) and \
             self.fmt.search(
-                    self.request.get_full_url()).group(0) or 'atom'
+                self.request.get_full_url()).group(0) or 'atom'
         # step 1: process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
@@ -215,7 +215,7 @@ class Zotero(object):
         """ Remove keys we added for internal use
         """
         return dict([[k, v] for k, v in to_clean.items()
-                    if k not in self.temp_keys])
+            if k not in self.temp_keys])
 
     def _retrieve_data(self, request=None):
         """
@@ -235,8 +235,9 @@ class Zotero(object):
         return data
 
     def _extract_links(self, doc):
-        """ Extract self, first, next, last links from an Atom doc, and add
-            an instance's API key to the links if it exists
+        """
+        Extract self, first, next, last links from an Atom doc, and add
+        an instance's API key to the links if it exists
         """
         extracted = dict()
         try:
@@ -244,9 +245,9 @@ class Zotero(object):
                 url = urlparse(link['href'])
                 try:
                     extracted[link['rel']] = '{0}?{1}&key={2}'.format(
-                            url[2],
-                            url[4],
-                            self.api_key)
+                        url[2],
+                        url[4],
+                        self.api_key)
                 except AttributeError:
                     # no API key present
                     extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
@@ -537,8 +538,7 @@ class Zotero(object):
         return items
 
     def _csljson_processor(self, retrieved):
-        """
-        return a list of dicts which are dumped CSL JSON
+        """ Return a list of dicts which are dumped CSL JSON
         """
         items = []
         for csl in retrieved.entries:
