@@ -26,7 +26,7 @@ Getting started (short version)
 
             from pyzotero import zotero
             zot = zotero.Zotero(library_id, library_type, api_key)
-            items = zot.top(limit = 5)
+            items = zot.top(limit=5)
             # we have now retrieved the last five top-level items in our library
             # we can print each item's item type and ID
             for item in items:
@@ -116,7 +116,7 @@ Example:
         from pyzotero import zotero
         zot = zotero.Zotero('123', 'user', 'ABC1234XYZ')
         # we now have a Zotero object, zot, and access to all its methods
-        first_ten = zot.items(limit = 10)
+        first_ten = zot.items(limit=10)
         # a list containing dicts of the ten most recently modified library items
 
 
