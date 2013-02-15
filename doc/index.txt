@@ -59,7 +59,7 @@ Alternatively, download the latest stable version from https://github.com/urschr
 
 The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org/pypi/Pyzotero>`_
 
-The `feedparser <http://feedparser.org>`_ (>= 0.5.1) and `pytz <http://pypi.python.org/pypi/pytz/>`_ modules are required. They will be automatically installed when installing Pyzotero using pip.
+The `feedparser <http://feedparser.org>`_ (>= 0.5.1) and `pytz <http://pypi.python.org/pypi/pytz/>`_ modules are required. They will be automatically installed when installing Pyzotero using pip. For versions of Python below 2.7, the `ordereddict <http://pypi.python.org/pypi/ordereddict>`_ module is also required. This optional dependency can be included with Pyzotero with the command ``pip install pyzotero[ordereddict]``.
 
 Installation using ``easy_install`` may be successful, but is neither tested nor officially supported – pip is the preferred method.
 
@@ -101,11 +101,12 @@ General Usage
 First, create a new Zotero instance:
 
 
-    .. py:class:: Zotero(library_id, library_type, api_key)
+    .. py:class:: Zotero(library_id, library_type, api_key, preserve_json_order)
 
         :param str library_id: a valid Zotero API user ID
         :param str library_type: a valid Zotero API library type: **user** or **group**
         :param str api_key: a valid Zotero API user key
+        :param bool preserve_json_order: Load JSON returns with OrderedDict to preserve their order
 
 
 Example:
