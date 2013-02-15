@@ -45,6 +45,10 @@ import mimetypes
 from urlparse import urlparse
 import xml.etree.ElementTree as et
 
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 import zotero_errors as ze
 
@@ -154,7 +158,8 @@ class Zotero(object):
     A full list of methods can be found here:
     http://www.zotero.org/support/dev/server_api
     """
-    def __init__(self, library_id=None, library_type=None, api_key=None):
+    def __init__(self, library_id=None, library_type=None, api_key=None,
+                 preserve_json_order=False):
         """ Store Zotero credentials
         """
         self.endpoint = 'https://api.zotero.org'
@@ -168,6 +173,7 @@ class Zotero(object):
         # api_key is not required for public individual or group libraries
         if api_key:
             self.api_key = api_key
+        self.preserve_json_order = preserve_json_order
         self.url_params = None
         self.etags = None
         self.request = None
@@ -500,10 +506,13 @@ class Zotero(object):
     def _json_processor(self, retrieved):
         """ Format and return data from API calls which return Items
         """
+        json_kwargs = {}
+        if self.preserve_json_order:
+            json_kwargs['object_pairs_hook'] = OrderedDict
         # send entries to _tags_data if there's no JSON
         try:
-            items = [json.loads(e['content'][0]['value'])
-                for e in retrieved.entries]
+            items = [json.loads(e['content'][0]['value'], **json_kwargs)
+                     for e in retrieved.entries]
         except KeyError:
             return self._tags_data(retrieved)
         # try to add various namespaced values to the items
@@ -541,8 +550,11 @@ class Zotero(object):
         """ Return a list of dicts which are dumped CSL JSON
         """
         items = []
+        json_kwargs = {}
+        if self.preserve_json_order:
+            json_kwargs['object_pairs_hook'] = OrderedDict
         for csl in retrieved.entries:
-            items.append(json.loads(csl['content'][0]['value']))
+            items.append(json.loads(csl['content'][0]['value'], **json_kwargs))
         self.url_params = None
         return items
 

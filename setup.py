@@ -30,6 +30,9 @@ setup(
         ],
     packages = find_packages(),
     install_requires = ['feedparser >= 5.0.1', 'pytz', 'poster >= 0.8.1'],
+    extras_require = {
+        'ordereddict': ['ordereddict==1.1']
+    },
     long_description = """\
 A Python wrapper for the Zotero Server API
 ------------------------------------------
