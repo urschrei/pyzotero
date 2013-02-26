@@ -11,13 +11,13 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'Pyzotero',
-    version = '0.9.9',
+    version = '0.9.9.1',
     description = 'Python wrapper for the Zotero API',
     author = 'Stephan Hügel',
     author_email = 'urschrei@gmail.com',
     license = 'GNU GPL Version 3',
     url = 'https://github.com/urschrei/pyzotero',
-    download_url = 'https://github.com/urschrei/pyzotero/tarball/v0.9.9',
+    download_url = 'https://github.com/urschrei/pyzotero/tarball/v0.9.9.1',
     keywords = ['zotero'],
     classifiers = [
         'Programming Language :: Python',
@@ -37,7 +37,7 @@ setup(
 A Python wrapper for the Zotero Server API
 ------------------------------------------
 
-Provides methods for accessing all Zotero Server API calls currently provided.
+Provides methods for accessing all Zotero Server API v1 calls currently provided.
 A full list is available here: http://www.zotero.org/support/dev/server_api
 
 This version requires Python 2.7.x
