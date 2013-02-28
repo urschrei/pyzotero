@@ -43,7 +43,7 @@ Pyzotero remains in development as of March 2012. The latest commits can be foun
 
 ## Pull Requests ##
 
-Pull requests are welcomed. Please ensure that you base your changes on the most recent commit in the `dev` branch, rebasing against it prior to opening the request if necessary.
+Pull requests are welcomed. Please read the [contribution guidelines](contributing.md). 
 
 # License #
 
