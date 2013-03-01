@@ -22,9 +22,9 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
-import zotero as z
 import urllib2
 from mocker import Mocker, MockerTestCase
+import zotero as z
 
 
 class ZoteroMockerTests(MockerTestCase):
@@ -65,11 +65,12 @@ class ZoteroMockerTests(MockerTestCase):
         result.text
         self.mocker.result(self.items_doc)
         myget = self.mocker.replace("requests.get")
-        myget('https://api.github.com', auth=('user', 'pass'))
+        myget('http://foo.org/users/myuserID/items?content=json&key=myuserkey')
         self.mocker.result(result)
         self.mocker.replay()
 
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        zot.endpoint = "http://foo.org"
         items_data = zot.items()
         self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
         self.assertEqual(u'7252daf2495feb8ec89c61f391bcba24', items_data[0]['etag'])
