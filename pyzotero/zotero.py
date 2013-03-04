@@ -857,7 +857,7 @@ class Zotero(object):
         if len(payload) > 50:
             raise ze.TooManyItems, \
                 "You may only create up to 50 items per call"
-        to_send = {'items': [i for i in self._cleanup(*payload)]}
+        to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
         headers = {
             'X-Zotero-Write-Token': token(),
             'Content-Type': 'application/json',
@@ -979,6 +979,7 @@ class Zotero(object):
         """
         etag = payload['etag']
         ident = payload['key']
+        to_send = json.dumps(*self._cleanup(payload))
         headers = {
             'If-Match': etag,
             'Content-Type': 'application/json',
@@ -991,8 +992,7 @@ class Zotero(object):
             + ident
             + '?' + urllib.urlencode({'key': self.api_key}),
             headers=headers,
-            # FIXME: payload needs to be splatted
-            data=self._cleanup(payload))
+            data=to_send)
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
