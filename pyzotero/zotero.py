@@ -904,7 +904,7 @@ class Zotero(object):
                 u=self.library_id,
                 k=self.api_key),
             headers=headers,
-            data=payload)
+            data=json.dumps(payload))
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
