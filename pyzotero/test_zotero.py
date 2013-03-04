@@ -444,11 +444,11 @@ class ZoteroTests(unittest.TestCase):
 
     @httprettified
     def testParseAttachmentsAtomDoc(self):
-        """" blah """
+        """" Ensure that attachments are being correctly parsed """
         zot = z.Zotero('myuserid', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserid/items?content=json&key=myuserkey',
             body=self.attachments_doc)
         attachments_data = zot.items()
         self.assertEqual(u'1641 Depositions', attachments_data[0]['title'])
@@ -460,7 +460,7 @@ class ZoteroTests(unittest.TestCase):
         zot.url_params = 'format=keys'
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserid/items?format=keys',
             body=self.keys_response)
         response = zot.items()
         self.assertEqual('ABCDE\nFGHIJ\nKLMNO\n', response)
@@ -471,7 +471,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items/ABC123/children?content=json&key=myuserkey',
             body=self.items_doc)
         items_data = zot.children('ABC123')
         self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
@@ -520,7 +520,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/collections?content=json&key=myuserkey',
             body=self.collections_doc)
         collections_data = zot.collections()
         self.assertEqual(u'HTUHVPE5', collections_data[0]['key'])
@@ -533,6 +533,11 @@ class ZoteroTests(unittest.TestCase):
         """ Should successfully return a list of tags
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/tags?content=json&key=myuserkey',
+            body=self.tags_doc)
+        # /users/myuserID/tags?content=json&key=myuserkey
         tags_data = zot.tags()
         self.assertEqual('Authority in literature', tags_data[0])
 
@@ -543,6 +548,10 @@ class ZoteroTests(unittest.TestCase):
             input doc's zapi:numItems value
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/groups?content=json&key=myuserkey',
+            body=self.groups_doc)
         groups_data = zot.groups()
         self.assertEqual('DFW', groups_data[0]['name'])
         self.assertEqual('10248', groups_data[0]['group_id'])
@@ -586,11 +595,12 @@ class ZoteroTests(unittest.TestCase):
     def testResponseUnsupported(self):
         """ Ensure that an error is properly raised for 400
         """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
             'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
-            body=self.items_doc)
+            body=self.items_doc,
+            status=400)
         with self.assertRaises(z.ze.UnsupportedParams):
             zot.items()
 
@@ -626,8 +636,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
-            body=self.items_types)
+            'https://api.zotero.org/itemTypes',
+            body=self.item_types)
         t = zot.item_types()
         self.assertEqual(t[0]['itemType'], 'artwork')
         self.assertEqual(t[-1]['itemType'], 'webpage')
@@ -639,7 +649,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/items/new?itemType=book',
             body=self.item_templt)
         t = zot.item_template('book')
         self.assertEqual('book', t['itemType'])
@@ -652,13 +662,16 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.ParamNotPassed):
             t = zot.create_collection(t)
 
+    @httprettified
     def testCreateItem(self):
         """ Ensure that items can be created
         """
         # first, retrieve an item template
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_templt, 200))
-        z.urllib2.install_opener(my_opener)
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/items/new?itemType=book',
+            body=self.item_templt)
         t = zot.item_template('book')
         # Update the item type
         t['itemType'] = 'journalArticle'
@@ -672,9 +685,12 @@ class ZoteroTests(unittest.TestCase):
         ls = []
         ls.append(t)
         ls.append(tn)
-        # new opener which will return 403
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
-        z.urllib2.install_opener(my_opener)
+        # register a 403 response
+        HTTPretty.register_uri(
+            HTTPretty.POST,
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            body=self.items_doc,
+            status=403)
         with self.assertRaises(z.ze.UserNotAuthorised) as e:
             _ = zot.create_items(ls)
         exc = str(e.exception)
