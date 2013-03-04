@@ -28,7 +28,6 @@ __version__ = '0.10b'
 
 
 import urllib
-import urllib2
 import requests
 import socket
 import feedparser
@@ -40,8 +39,6 @@ import hashlib
 import datetime
 import re
 import pytz
-from poster.encode import multipart_encode
-from poster.streaminghttp import register_openers as reg_open
 import mimetypes
 from urlparse import urlparse
 import xml.etree.ElementTree as et
@@ -57,8 +54,6 @@ import zotero_errors as ze
 # Avoid hanging the application if there's no server response
 timeout = 30
 socket.setdefaulttimeout(timeout)
-# register streaming HTTP opener for file uploads
-reg_open()
 
 
 def ib64_patched(self, attrsD, contentparams):
@@ -640,7 +635,6 @@ class Zotero(object):
             if attach:
                 # begin the upload auth dance
                 # Step 1: get upload authorisation for the file
-                # params=1 gives us a form "params" dict:
                 # groups.google.com/d/msg/zotero-dev/WqoA_mbn67g/4vKU7mldLgEJ
                 # add required attributes to the request
                 mtypes = mimetypes.guess_type(attach)
@@ -648,13 +642,11 @@ class Zotero(object):
                 with open(attach, 'rb') as f:
                     for chunk in iter(lambda: f.read(8192), b''):
                         digest.update(chunk)
-                # add headers
                 auth_headers = {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'If-None-Match': '*',
                     'User-Agent': 'Pyzotero/%s' % __version__
                 }
-                # add data
                 data = {
                     'md5': digest.hexdigest(),
                     'filename': os.path.basename(attach),
@@ -663,7 +655,7 @@ class Zotero(object):
                     'contentType': mtypes[0] or 'application/octet-stream',
                     'charset': mtypes[1]
                 }
-                authreq = requests.post(
+                auth_req = requests.post(
                     url=self.endpoint
                     + '/users/{u}/items/{i}/file?key={k}'.format(
                         u=self.library_id,
@@ -672,10 +664,10 @@ class Zotero(object):
                     data=data,
                     headers=auth_headers)
                 try:
-                    authreq.raise_for_status()
+                    auth_req.raise_for_status()
                 except requests.exceptions.HTTPError:
-                    error_handler(authreq)
-                authdata = json.loads(authreq.text)
+                    error_handler(auth_req)
+                authdata = json.loads(auth_req.text)
                 if not authdata.get('exists'):
                 # Step 2: auth step successful, file does not exist
                 # zotero.org/support/dev/server_api/file_upload#a_full_upload
@@ -692,9 +684,7 @@ class Zotero(object):
                         files=upload_dict,
                         headers={
                             "Content-Type": authdata['contentType'],
-                            'User-Agent': 'Pyzotero/%s' % __version__
-                        }
-                    )
+                            'User-Agent': 'Pyzotero/%s' % __version__})
                     try:
                         upload.raise_for_status()
                     except requests.exceptions.HTTPError:
@@ -1054,8 +1044,8 @@ class Zotero(object):
             headers={'User-Agent': 'Pyzotero/%s' % __version__})
         try:
             req.raise_for_status()
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            error_handler(req, error)
+        except requests.exceptions.HTTPError:
+            error_handler(req)
         return True
 
     def delete_item(self, payload):
@@ -1078,8 +1068,8 @@ class Zotero(object):
         )
         try:
             req.raise_for_status()
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            error_handler(req, error)
+        except requests.exceptions.HTTPError:
+            error_handler(req)
         return True
 
     def delete_collection(self, payload):
@@ -1103,8 +1093,8 @@ class Zotero(object):
             headers=headers)
         try:
             req.raise_for_status()
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            error_handler(req, error)
+        except requests.exceptions.HTTPError:
+            error_handler(req)
         return True
 
 
