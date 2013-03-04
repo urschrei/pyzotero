@@ -1125,3 +1125,5 @@ def error_handler(req):
 
     if error_codes.get(req.status_code):
         raise error_codes.get(req.status_code), err_msg(req)
+    else:
+        raise ze.HTTPError, err_msg(req)
