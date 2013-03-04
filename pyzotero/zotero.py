@@ -24,7 +24,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 __author__ = 'urschrei@gmail.com'
-__version__ = '0.9.9.1'
+__version__ = '0.10b'
 
 
 import urllib
@@ -91,7 +91,7 @@ def etags(incoming):
     tree = et.fromstring(incoming)
     try:
         return [entry.attrib['{http://zotero.org/ns/api}etag'] for
-            entry in tree.findall('.//{0}content'.format(atom_ns))]
+                entry in tree.findall('.//{0}content'.format(atom_ns))]
     except KeyError:
         pass
 
@@ -539,7 +539,7 @@ class Zotero(object):
         # Try to get a group ID, and add it to the dict
         try:
             group_id = [urlparse(g['links'][0]['href']).path.split('/')[2]
-                for g in retrieved.entries]
+                        for g in retrieved.entries]
             for k, val in enumerate(items):
                 val[u'group_id'] = group_id[k]
         except KeyError:
@@ -615,21 +615,25 @@ class Zotero(object):
         else:
             liblevel = '/users/{u}/items/{i}/children?key={k}'
         # Create one or more new attachments
+        headers = {
+            'X-Zotero-Write-Token': token(),
+            'Content-Type': 'application/json',
+            'User-Agent': 'Pyzotero/%s' % __version__
+        }
         to_send = json.dumps({'items': payload})
-        req = urllib2.Request(self.endpoint +
-            liblevel.format(
+        req = requests.post(
+            url=self.endpoint
+            + liblevel.format(
                 u=self.library_id,
                 i=parentid,
-                k=self.api_key))
-        req.add_data(to_send)
-        req.add_header('X-Zotero-Write-Token', token())
-        req.add_header('Content-Type', 'application/json')
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+                k=self.api_key),
+            data=to_send,
+            headers=headers)
         try:
-            resp = urllib2.urlopen(req)
-            data = resp.read()
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            error_handler(req, error)
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
+        data = req.text
         created = self._json_processor(feedparser.parse(data))
         for idx, content in enumerate(payload):
             attach = content.get('filename')
@@ -638,63 +642,84 @@ class Zotero(object):
                 # Step 1: get upload authorisation for the file
                 # params=1 gives us a form "params" dict:
                 # groups.google.com/d/msg/zotero-dev/WqoA_mbn67g/4vKU7mldLgEJ
-                authreq = urllib2.Request(self.endpoint
-                    + '/users/{u}/items/{i}/file?key={k}&params=1'.format(
-                        u=self.library_id,
-                        i=created[idx]['key'],
-                        k=self.api_key))
                 # add required attributes to the request
                 mtypes = mimetypes.guess_type(attach)
                 digest = hashlib.md5()
                 with open(attach, 'rb') as f:
                     for chunk in iter(lambda: f.read(8192), b''):
                         digest.update(chunk)
-                authreq.add_data(urllib.urlencode({
+                # add headers
+                auth_headers = {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'If-None-Match': '*',
+                    'User-Agent': 'Pyzotero/%s' % __version__
+                }
+                # add data
+                data = {
                     'md5': digest.hexdigest(),
                     'filename': os.path.basename(attach),
                     'filesize': os.path.getsize(attach),
                     'mtime': str(int(os.path.getmtime(attach) * 1000)),
                     'contentType': mtypes[0] or 'application/octet-stream',
-                    'charset': mtypes[1]}))
-                # add headers
-                authreq.add_header(
-                    'Content-Type', 'application/x-www-form-urlencoded')
-                authreq.add_header(
-                    'If-None-Match', '*')
+                    'charset': mtypes[1]
+                }
+                authreq = requests.post(
+                    url=self.endpoint
+                    + '/users/{u}/items/{i}/file?key={k}'.format(
+                        u=self.library_id,
+                        i=created[idx]['key'],
+                        k=self.api_key),
+                    data=data,
+                    headers=auth_headers)
                 try:
-                    authresp = urllib2.urlopen(authreq)
-                    authdata = json.loads(authresp.read())
-                except (urllib2.HTTPError, urllib2.URLError), error:
-                    error_handler(authreq, error)
+                    authreq.raise_for_status()
+                except requests.exceptions.HTTPError:
+                    error_handler(authreq)
+                authdata = json.loads(authreq.text)
                 if not authdata.get('exists'):
                 # Step 2: auth step successful, file does not exist
                 # zotero.org/support/dev/server_api/file_upload#a_full_upload
-                # we're working directly with the form parameters here
-                    formdata = list(authdata.items())
-                    formdata.append(('file', open(attach, 'r')))
-                    encoded, headers = multipart_encode(formdata)
-                    upload = urllib2.Request(authdata['url'], encoded, headers)
+                    upload_file = bytearray(authdata['prefix'].encode())
+                    upload_file.extend(open(attach, 'r').read()),
+                    upload_file.extend(authdata['suffix'].encode())
+                    # Requests chokes on bytearrays, so convert to str
+                    upload_dict = {
+                        'file': (
+                            os.path.basename(attach),
+                            str(upload_file))}
+                    upload = requests.post(
+                        url=authdata['url'],
+                        files=upload_dict,
+                        headers={
+                            "Content-Type": authdata['contentType'],
+                            'User-Agent': 'Pyzotero/%s' % __version__
+                        }
+                    )
                     try:
-                        urllib2.urlopen(upload).read()
-                    except (urllib2.HTTPError, urllib2.URLError), error:
-                        error_handler(upload, error)
+                        upload.raise_for_status()
+                    except requests.exceptions.HTTPError:
+                        error_handler(upload)
                     # Step 3: upload successful, so register it
-                    reg = urllib2.Request(self.endpoint +
-                        '/users/{u}/items/{i}/file?key={k}'.format(
+                    reg_headers = {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'If-None-Match': '*',
+                        'User-Agent': 'Pyzotero/%s' % __version__
+                    }
+                    reg_data = {
+                        'upload': authdata.get('uploadKey')
+                    }
+                    upload_reg = requests.post(
+                        url=self.endpoint
+                        + '/users/{u}/items/{i}/file?key={k}'.format(
                             u=self.library_id,
                             i=created[idx]['key'],
-                            k=self.api_key))
-                    reg.add_data(urllib.urlencode(
-                        {'upload': authdata.get('uploadKey')}))
-                    reg.add_header(
-                        'Content-Type',
-                        'application/x-www-form-urlencoded')
-                    reg.add_header('If-None-Match', '*')
-                    req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+                            k=self.api_key),
+                        data=reg_data,
+                        headers=reg_headers)
                     try:
-                        urllib2.urlopen(reg).read()
-                    except (urllib2.HTTPError, urllib2.URLError), regerror:
-                        error_handler(reg, regerror)
+                        upload_reg.raise_for_status()
+                    except requests.exceptions.HTTPError:
+                        error_handler(upload_reg)
                 else:
                     # item exists
                     continue
@@ -842,22 +867,25 @@ class Zotero(object):
         if len(payload) > 50:
             raise ze.TooManyItems, \
                 "You may only create up to 50 items per call"
-        to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
-        req = urllib2.Request(self.endpoint
-        + '/{t}/{u}/items?key={k}'.format(
-            t=self.library_type,
-            u=self.library_id,
-            k=self.api_key))
-        req.add_data(to_send)
-        req.add_header('X-Zotero-Write-Token', token())
-        req.add_header('Content-Type', 'application/json')
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        to_send = {'items': [i for i in self._cleanup(*payload)]}
+        headers = {
+            'X-Zotero-Write-Token': token(),
+            'Content-Type': 'application/json',
+            'User-Agent': 'Pyzotero/%s' % __version__
+        }
+        req = requests.post(
+            url=self.endpoint
+            + '/{t}/{u}/items?key={k}'.format(
+                t=self.library_type,
+                u=self.library_id,
+                k=self.api_key),
+            data=to_send,
+            headers=headers)
+        data = req.text
         try:
-            resp = urllib2.urlopen(req)
-            data = resp.read()
-            self.etags = etags(data)
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            error_handler(req, error)
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
         return self._json_processor(feedparser.parse(data))
 
     def create_collection(self, payload):
@@ -875,19 +903,22 @@ class Zotero(object):
         # add a blank 'parent' key if it hasn't been passed
         if not 'parent' in payload:
             payload['parent'] = ''
-        to_send = json.dumps(payload)
-        req = urllib2.Request(
-            self.endpoint + '/{t}/{u}/collections?key={k}'.format(
+        headers = {
+            'X-Zotero-Write-Token': token(),
+            'User-Agent': 'Pyzotero/%s' % __version__
+        }
+        req = requests.post(
+            url=self.endpoint
+            + '/{t}/{u}/collections?key={k}'.format(
                 t=self.library_type,
                 u=self.library_id,
-                k=self.api_key))
-        req.add_data(to_send)
-        req.add_header('X-Zotero-Write-Token', token())
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+                k=self.api_key),
+            headers=headers,
+            data=payload)
         try:
-            urllib2.urlopen(req)
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            error_handler(req, error)
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
         return True
 
     def update_collection(self, payload):
@@ -900,20 +931,21 @@ class Zotero(object):
         key = payload['key']
         # remove any keys we've added
         to_send = (i for i in self._cleanup(payload))
-        # Override urllib2 to give it a PUT verb
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
-        req = urllib2.Request(
-            self.endpoint + '/{t}/{u}/collections/{c}'.format(
-                t=self.library_type, u=self.library_id, c=key) +
-            '?' + urllib.urlencode({'key': self.api_key}))
-        req.add_data(to_send)
-        req.get_method = lambda: 'PUT'
-        req.add_header('If-Match', tkn)
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        headers = {
+            'If-Match': tkn,
+            'User-Agent': 'Pyzotero/%s' % __version__
+        }
+        req = requests.put(
+            url=self.endpoint
+            + '/{t}/{u}/collections/{c}'.format(
+                t=self.library_type, u=self.library_id, c=key)
+            + '?' + urllib.urlencode({'key': self.api_key}),
+            headers=headers,
+            payload=to_send)
         try:
-            opener.open(req)
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            error_handler(req, error)
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
         return True
 
     def attachment_simple(self, files, parentid=None):
@@ -957,23 +989,26 @@ class Zotero(object):
         """
         etag = payload['etag']
         ident = payload['key']
-        to_send = json.dumps(*self._cleanup(payload))
-        # Override urllib2 to give it a PUT verb
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
-        req = urllib2.Request(self.endpoint + '/{t}/{u}/items/'.format(
-            t=self.library_type, u=self.library_id) + ident +
-            '?' + urllib.urlencode({'key': self.api_key}))
-        req.get_method = lambda: 'PUT'
-        req.add_data(to_send)
-        req.add_header('If-Match', etag)
-        req.add_header('Content-Type', 'application/json')
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        headers = {
+            'If-Match': etag,
+            'Content-Type': 'application/json',
+            'User-Agent': 'Pyzotero/%s' % __version__,
+        }
+        req = requests.put(
+            url=self.endpoint
+            + '/{t}/{u}/items/'.format(
+                t=self.library_type, u=self.library_id)
+            + ident
+            + '?' + urllib.urlencode({'key': self.api_key}),
+            headers=headers,
+            # FIXME: payload needs to be splatted
+            data=self._cleanup(payload))
         try:
-            resp = opener.open(req)
-            data = resp.read()
-            self.etags = etags(data)
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            error_handler(req, error)
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
+        data = req.text
+        self.etags = etags(data)
         return self._json_processor(feedparser.parse(data))
 
     def addto_collection(self, collection, payload):
@@ -984,19 +1019,22 @@ class Zotero(object):
         """
         # create a string containing item IDs
         to_send = ' '.join([p['key'].encode('utf8') for p in payload])
-
-        req = urllib2.Request(
-            self.endpoint + '/{t}/{u}/collections/{c}/items?key={k}'.format(
+        headers = {
+            'User-Agent': 'Pyzotero/%s' % __version__
+        }
+        req = requests.post(
+            url=self.endpoint
+            + '/{t}/{u}/collections/{c}/items?key={k}'.format(
                 t=self.library_type,
                 u=self.library_id,
                 c=collection.upper(),
-                k=self.api_key))
-        req.add_data(to_send)
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+                k=self.api_key),
+            data=to_send,
+            headers=headers)
         try:
-            urllib2.urlopen(req)
-        except (urllib2.HTTPError, urllib2.URLError), error:
-            error_handler(req, error)
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
         return True
 
     def deletefrom_collection(self, collection, payload):
@@ -1006,19 +1044,16 @@ class Zotero(object):
         The collection ID, and a dict containing one or more item dicts
         """
         ident = payload['key']
-        # Override urllib2 to give it a DELETE verb
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
-        req = urllib2.Request(
-            self.endpoint + '/{t}/{u}/collections/{c}/items/'.format(
+        req = requests.delete(
+            url=self.endpoint
+            + '/{t}/{u}/collections/{c}/items/'.format(
                 t=self.library_type,
                 u=self.library_id,
                 c=collection.upper())
-            + ident +
-            '?' + urllib.urlencode({'key': self.api_key}))
-        req.get_method = lambda: 'DELETE'
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+            + ident + '?' + urllib.urlencode({'key': self.api_key}),
+            headers={'User-Agent': 'Pyzotero/%s' % __version__})
         try:
-            opener.open(req)
+            req.raise_for_status()
         except (urllib2.HTTPError, urllib2.URLError), error:
             error_handler(req, error)
         return True
@@ -1030,16 +1065,19 @@ class Zotero(object):
         """
         etag = payload['etag']
         ident = payload['key']
-        # Override urllib2 to give it a DELETE verb
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
-        req = urllib2.Request(self.endpoint + '/{t}/{u}/items/'.format(
-            t=self.library_type, u=self.library_id) + ident +
-            '?' + urllib.urlencode({'key': self.api_key}))
-        req.get_method = lambda: 'DELETE'
-        req.add_header('If-Match', etag)
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        headers = {
+            'If-Match': etag,
+            'User-Agent': 'Pyzotero/%s' % __version__,
+        }
+        req = requests.delete(
+            url=self.endpoint
+            + '/{t}/{u}/items/'.format(
+                t=self.library_type, u=self.library_id)
+            + ident + '?' + urllib.urlencode({'key': self.api_key}),
+            headers=headers
+        )
         try:
-            opener.open(req)
+            req.raise_for_status()
         except (urllib2.HTTPError, urllib2.URLError), error:
             error_handler(req, error)
         return True
@@ -1051,16 +1089,20 @@ class Zotero(object):
         """
         etag = payload['etag']
         ident = payload['key']
-        # Override urllib2 to give it a DELETE verb
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
-        req = urllib2.Request(self.endpoint + '/{t}/{u}/collections/{c}'
-            .format(t=self.library_type, u=self.library_id, c=ident) +
-            '?' + urllib.urlencode({'key': self.api_key}))
-        req.get_method = lambda: 'DELETE'
-        req.add_header('If-Match', etag)
-        req.add_header('User-Agent', 'Pyzotero/%s' % __version__)
+        headers = {
+            'If-Match': etag,
+            'User-Agent': 'Pyzotero/%s' % __version__,
+        }
+        req = requests.delete(
+            url=self.endpoint
+            + '/{t}/{u}/collections/{c}'.format(
+                t=self.library_type,
+                u=self.library_id,
+                c=ident) +
+            '?' + urllib.urlencode({'key': self.api_key}),
+            headers=headers)
         try:
-            opener.open(req)
+            req.raise_for_status()
         except (urllib2.HTTPError, urllib2.URLError), error:
             error_handler(req, error)
         return True
@@ -1088,7 +1130,7 @@ def error_handler(req):
             req.status_code,
             # error.msg,
             req.url,
-            req.request,
+            req.request.method,
             req.text)
 
     if error_codes.get(req.status_code):
