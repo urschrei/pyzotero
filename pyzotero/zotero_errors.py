@@ -143,3 +143,9 @@ class TooManyRequests(PyZoteroError):
     """
     pass
 
+
+class FileDoesNotExist(PyZoteroError):
+    """
+    Raised when a file path to be attached can't be opened (or doesn't exist)
+    """
+    pass

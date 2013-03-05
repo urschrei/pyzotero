@@ -605,6 +605,23 @@ class Zotero(object):
         and an optional parent Item ID. If this is specified,
         attachments are created under this ID
         """
+        # ensure that all files to be attached exist
+        # open()'s better than os.path.exists(), cos it avoids a race condition
+        for templt in payload:
+            if os.path.isfile(templt[u'filename']):
+                try:
+                    # if it *is* a file, try to open it, and catch the error
+                    with open(templt[u'filename']) as f:
+                        pass
+                except IOError:
+                    raise ze.FileDoesNotExist(
+                        "The file at %s couldn't be opened or found." %
+                        templt[u'filename'])
+            # no point in continuing if the file isn't a file
+            else:
+                raise ze.FileDoesNotExist(
+                    "The file at %s couldn't be opened or found." %
+                    templt[u'filename'])
         if not parentid:
             liblevel = '/users/{u}/items?key={k}'
         else:
