@@ -29,7 +29,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     packages=find_packages(),
-    install_requires=['feedparser >= 5.0.1', 'pytz'],
+    install_requires=['feedparser == 5.1.3', 'pytz'],
     extras_require={
         'ordereddict': ['ordereddict==1.1']
     },
