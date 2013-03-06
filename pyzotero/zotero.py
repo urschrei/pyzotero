@@ -588,7 +588,7 @@ class Zotero(object):
         retrieved = self._retrieve_data(query_string)
         return self._cache(json.loads(retrieved), template_name)
 
-    def attachment_template(self, attachment_type):
+    def _attachment_template(self, attachment_type):
         """
         Return a new attachment template of the required type:
         imported_file
@@ -598,7 +598,7 @@ class Zotero(object):
         """
         return self.item_template('attachment&linkMode=' + attachment_type)
 
-    def attachment(self, payload, parentid=None):
+    def _attachment(self, payload, parentid=None):
         """
         Create attachments
         accepts a list of one or more attachment template dicts
@@ -986,15 +986,15 @@ class Zotero(object):
         One or more file paths to add as attachments:
         An optional Item ID, which will create child attachments
         """
-        orig = self.attachment_template('imported_file')
+        orig = self._attachment_template('imported_file')
         to_add = [orig.copy() for f in files]
         for idx, tmplt in enumerate(to_add):
             tmplt['title'] = os.path.basename(files[idx])
             tmplt['filename'] = files[idx]
         if parentid:
-            return self.attachment(to_add, parentid)
+            return self._attachment(to_add, parentid)
         else:
-            return self.attachment(to_add)
+            return self._attachment(to_add)
 
     def attachment_both(self, files, parentid=None):
         """
@@ -1003,15 +1003,15 @@ class Zotero(object):
         One or more lists or tuples containing title, file path
         An optional Item ID, which will create child attachments
         """
-        orig = self.attachment_template('imported_file')
+        orig = self._attachment_template('imported_file')
         to_add = [orig.copy() for f in files]
         for idx, tmplt in enumerate(to_add):
             tmplt['title'] = files[idx][0]
             tmplt['filename'] = files[idx][1]
         if parentid:
-            return self.attachment(to_add, parentid)
+            return self._attachment(to_add, parentid)
         else:
-            return self.attachment(to_add)
+            return self._attachment(to_add)
 
     def update_item(self, payload):
         """
