@@ -605,128 +605,152 @@ class Zotero(object):
         and an optional parent Item ID. If this is specified,
         attachments are created under this ID
         """
-        # ensure that all files to be attached exist
-        # open()'s better than os.path.exists(), cos it avoids a race condition
-        for templt in payload:
-            if os.path.isfile(templt[u'filename']):
-                try:
-                    # if it *is* a file, try to open it, and catch the error
-                    with open(templt[u'filename']) as f:
-                        pass
-                except IOError:
+        def verify(files):
+            """
+            ensure that all files to be attached exist
+            open()'s better than exists(), cos it avoids a race condition
+            """
+            for templt in files:
+                if os.path.isfile(templt[u'filename']):
+                    try:
+                        # if it is a file, try to open it, and catch the error
+                        with open(templt[u'filename']) as _:
+                            pass
+                    except IOError:
+                        raise ze.FileDoesNotExist(
+                            "The file at %s couldn't be opened or found." %
+                            templt[u'filename'])
+                # no point in continuing if the file isn't a file
+                else:
                     raise ze.FileDoesNotExist(
                         "The file at %s couldn't be opened or found." %
                         templt[u'filename'])
-            # no point in continuing if the file isn't a file
+
+        def create_prelim(payload):
+            """
+            Step 0: Register intent to upload files
+            """
+            verify(payload)
+            if not parentid:
+                liblevel = '/users/{u}/items?key={k}'
             else:
-                raise ze.FileDoesNotExist(
-                    "The file at %s couldn't be opened or found." %
-                    templt[u'filename'])
-        if not parentid:
-            liblevel = '/users/{u}/items?key={k}'
-        else:
-            liblevel = '/users/{u}/items/{i}/children?key={k}'
-        # Create one or more new attachments
-        headers = {
-            'X-Zotero-Write-Token': token(),
-            'Content-Type': 'application/json',
-            'User-Agent': 'Pyzotero/%s' % __version__
-        }
-        to_send = json.dumps({'items': payload})
-        req = requests.post(
-            url=self.endpoint
-            + liblevel.format(
-                u=self.library_id,
-                i=parentid,
-                k=self.api_key),
-            data=to_send,
-            headers=headers)
-        try:
-            req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(req)
-        data = req.text
-        created = self._json_processor(feedparser.parse(data))
-        for idx, content in enumerate(payload):
+                liblevel = '/users/{u}/items/{i}/children?key={k}'
+            # Create one or more new attachments
+            headers = {
+                'X-Zotero-Write-Token': token(),
+                'Content-Type': 'application/json',
+                'User-Agent': 'Pyzotero/%s' % __version__
+            }
+            to_send = json.dumps({'items': payload})
+            req = requests.post(
+                url=self.endpoint
+                + liblevel.format(
+                    u=self.library_id,
+                    i=parentid,
+                    k=self.api_key),
+                data=to_send,
+                headers=headers)
+            try:
+                req.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(req)
+            data = req.text
+            return self._json_processor(feedparser.parse(data))
+
+        def register_upload(authdata):
+            """
+            Step 3: upload successful, so register it
+            """
+            reg_headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'If-None-Match': '*',
+                'User-Agent': 'Pyzotero/%s' % __version__
+            }
+            reg_data = {
+                'upload': authdata.get('uploadKey')
+            }
+            upload_reg = requests.post(
+                url=self.endpoint
+                + '/users/{u}/items/{i}/file?key={k}'.format(
+                    u=self.library_id,
+                    i=created[idx]['key'],
+                    k=self.api_key),
+                data=reg_data,
+                headers=reg_headers)
+            try:
+                upload_reg.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(upload_reg)
+
+        def uploadfile(authdata):
+            """
+            Step 2: auth successful, and file not on server
+            zotero.org/support/dev/server_api/file_upload#a_full_upload
+            """
+            upload_file = bytearray(authdata['prefix'].encode())
+            upload_file.extend(open(attach, 'r').read()),
+            upload_file.extend(authdata['suffix'].encode())
+            # Requests chokes on bytearrays, so convert to str
+            upload_dict = {
+                'file': (
+                    os.path.basename(attach),
+                    str(upload_file))}
+            upload = requests.post(
+                url=authdata['url'],
+                files=upload_dict,
+                headers={
+                    "Content-Type": authdata['contentType'],
+                    'User-Agent': 'Pyzotero/%s' % __version__})
+            try:
+                upload.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(upload)
+            return register_upload(authdata)
+
+        def get_auth(attachment):
+            """
+            Step 1: get upload authorisation for a file
+            """
+            mtypes = mimetypes.guess_type(attachment)
+            digest = hashlib.md5()
+            with open(attachment, 'rb') as f:
+                for chunk in iter(lambda: f.read(8192), b''):
+                    digest.update(chunk)
+            auth_headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'If-None-Match': '*',
+                'User-Agent': 'Pyzotero/%s' % __version__
+            }
+            data = {
+                'md5': digest.hexdigest(),
+                'filename': os.path.basename(attachment),
+                'filesize': os.path.getsize(attachment),
+                'mtime': str(int(os.path.getmtime(attachment) * 1000)),
+                'contentType': mtypes[0] or 'application/octet-stream',
+                'charset': mtypes[1]
+            }
+            auth_req = requests.post(
+                url=self.endpoint
+                + '/users/{u}/items/{i}/file?key={k}'.format(
+                    u=self.library_id,
+                    i=created[idx]['key'],
+                    k=self.api_key),
+                data=data,
+                headers=auth_headers)
+            try:
+                auth_req.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(auth_req)
+            return json.loads(auth_req.text)
+
+        created = create_prelim(payload)
+        for idx, content in enumerate(created):
             attach = content.get('filename')
             if attach:
-                # begin the upload auth dance
-                # Step 1: get upload authorisation for the file
-                # groups.google.com/d/msg/zotero-dev/WqoA_mbn67g/4vKU7mldLgEJ
-                # add required attributes to the request
-                mtypes = mimetypes.guess_type(attach)
-                digest = hashlib.md5()
-                with open(attach, 'rb') as f:
-                    for chunk in iter(lambda: f.read(8192), b''):
-                        digest.update(chunk)
-                auth_headers = {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'If-None-Match': '*',
-                    'User-Agent': 'Pyzotero/%s' % __version__
-                }
-                data = {
-                    'md5': digest.hexdigest(),
-                    'filename': os.path.basename(attach),
-                    'filesize': os.path.getsize(attach),
-                    'mtime': str(int(os.path.getmtime(attach) * 1000)),
-                    'contentType': mtypes[0] or 'application/octet-stream',
-                    'charset': mtypes[1]
-                }
-                auth_req = requests.post(
-                    url=self.endpoint
-                    + '/users/{u}/items/{i}/file?key={k}'.format(
-                        u=self.library_id,
-                        i=created[idx]['key'],
-                        k=self.api_key),
-                    data=data,
-                    headers=auth_headers)
-                try:
-                    auth_req.raise_for_status()
-                except requests.exceptions.HTTPError:
-                    error_handler(auth_req)
-                authdata = json.loads(auth_req.text)
+                authdata = get_auth(attach)
+                # only upload files that don't exist
                 if not authdata.get('exists'):
-                # Step 2: auth step successful, file does not exist
-                # zotero.org/support/dev/server_api/file_upload#a_full_upload
-                    upload_file = bytearray(authdata['prefix'].encode())
-                    upload_file.extend(open(attach, 'r').read()),
-                    upload_file.extend(authdata['suffix'].encode())
-                    # Requests chokes on bytearrays, so convert to str
-                    upload_dict = {
-                        'file': (
-                            os.path.basename(attach),
-                            str(upload_file))}
-                    upload = requests.post(
-                        url=authdata['url'],
-                        files=upload_dict,
-                        headers={
-                            "Content-Type": authdata['contentType'],
-                            'User-Agent': 'Pyzotero/%s' % __version__})
-                    try:
-                        upload.raise_for_status()
-                    except requests.exceptions.HTTPError:
-                        error_handler(upload)
-                    # Step 3: upload successful, so register it
-                    reg_headers = {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'If-None-Match': '*',
-                        'User-Agent': 'Pyzotero/%s' % __version__
-                    }
-                    reg_data = {
-                        'upload': authdata.get('uploadKey')
-                    }
-                    upload_reg = requests.post(
-                        url=self.endpoint
-                        + '/users/{u}/items/{i}/file?key={k}'.format(
-                            u=self.library_id,
-                            i=created[idx]['key'],
-                            k=self.api_key),
-                        data=reg_data,
-                        headers=reg_headers)
-                    try:
-                        upload_reg.raise_for_status()
-                    except requests.exceptions.HTTPError:
-                        error_handler(upload_reg)
+                    uploadfile(authdata)
                 else:
                     # item exists
                     continue
