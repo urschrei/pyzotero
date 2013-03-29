@@ -359,7 +359,7 @@ Example:
 
     .. code-block:: python
 
-        z = zot.top(limit = 5)
+        z = zot.top(limit=5)
         lazy = zot.iterfollow()
         lazy.next() # the next() call has returned the next five items
 
@@ -374,7 +374,7 @@ Example:
 
     .. code-block:: python
 
-        gen = zot.makeiter(zot.top(limit = 5))
+        gen = zot.makeiter(zot.top(limit=5))
         gen.next() # this will return the first five items
         gen.next() # this will return the next five items
 
