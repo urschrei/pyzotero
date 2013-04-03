@@ -36,6 +36,7 @@ import uuid
 import time
 import os
 import hashlib
+import time
 import datetime
 import re
 import pytz
@@ -1139,6 +1140,23 @@ class Zotero(object):
         return True
 
 
+class Backoff():
+    """ a simple backoff timer for HTTP 429 responses """
+    def __init__(self, delay=1):
+        self.wait = delay
+
+    @property
+    def delay(self):
+        self.wait = self.wait * 2
+        return self.wait
+
+    def reset(self):
+        self.wait = 1
+
+
+backoff = Backoff()
+
+
 def error_handler(req):
     """ Error handler for HTTP requests
     """
@@ -1165,6 +1183,23 @@ def error_handler(req):
             req.text)
 
     if error_codes.get(req.status_code):
-        raise error_codes.get(req.status_code), err_msg(req)
+        # check to see whether its 429
+        if req.status_code == 429:
+            # call our back-off function
+            delay = backoff.delay
+            if delay > 32:
+                # we've waited a total of 62 seconds (2 + 4 … + 32), so give up
+                backoff.reset()
+                raise ze.TooManyRetries("Continuing to receive HTTP 429 \
+responses after 62 seconds. You are being rate-limited, try again later")
+            time.sleep(delay)
+            s = requests.Session()
+            new_req = s.send(req.request)
+            try:
+                new_req.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(new_req)
+        else:
+            raise error_codes.get(req.status_code), err_msg(req)
     else:
         raise ze.HTTPError, err_msg(req)

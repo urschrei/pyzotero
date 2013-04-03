@@ -706,7 +706,7 @@ class ZoteroTests(unittest.TestCase):
             This test is a kludge; it only tests that the mechanism for
             internal key removal is OK, and that we haven't made any silly
             list/dict comprehension or genexpr errors
-        H"""
+        """
         import json
         # first, retrieve an item
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
@@ -734,6 +734,22 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         with self.assertRaises(z.ze.TooManyItems):
             zot.create_items(itms)
+
+    # @httprettified
+    # def testRateLimit(self):
+    #     """ Test 429 response handling (e.g. wait, wait a bit longer etc.)
+    #     """
+    #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
+    #     HTTPretty.register_uri(
+    #         HTTPretty.GET,
+    #         'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+    #         responses=[
+    #             HTTPretty.Response(body=self.items_doc, status=429),
+    #             HTTPretty.Response(body=self.items_doc, status=429),
+    #             HTTPretty.Response(body=self.items_doc, status=200)])
+    #     zot.items()
+    #     with self.assertEqual(z.backoff.delay, 8):
+    #         zot.items()
 
     def tearDown(self):
         """ Tear stuff down

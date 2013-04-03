@@ -23,13 +23,11 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-
 # Define some exceptions
 class PyZoteroError(Exception):
     """ Generic parent exception
     """
     pass
-
 
 
 class ParamNotPassed(PyZoteroError):
@@ -38,12 +36,10 @@ class ParamNotPassed(PyZoteroError):
     pass
 
 
-
 class CallDoesNotExist(PyZoteroError):
     """ Raised if the specified API call doesn't exist
     """
     pass
-
 
 
 class UnsupportedParams(PyZoteroError):
@@ -52,19 +48,16 @@ class UnsupportedParams(PyZoteroError):
     pass
 
 
-
 class UserNotAuthorised(PyZoteroError):
     """ Raised when the user is not allowed to retrieve the resource
     """
     pass
 
 
-
 class TooManyItems(PyZoteroError):
     """ Raised when too many items are passed to a Write API method
     """
     pass
-
 
 
 class MissingCredentials(PyZoteroError):
@@ -75,12 +68,10 @@ class MissingCredentials(PyZoteroError):
     pass
 
 
-
 class InvalidItemFields(PyZoteroError):
     """ Raised when an attempt is made to create/update items w/invalid fields
     """
     pass
-
 
 
 class ResourceNotFound(PyZoteroError):
@@ -89,12 +80,10 @@ class ResourceNotFound(PyZoteroError):
     pass
 
 
-
 class HTTPError(PyZoteroError):
     """ Raised for miscellaneous URLLib errors
     """
     pass
-
 
 
 class CouldNotReachURL(PyZoteroError):
@@ -103,12 +92,10 @@ class CouldNotReachURL(PyZoteroError):
     pass
 
 
-
 class Conflict(PyZoteroError):
     """ 409 - Raised when the target library is locked
     """
     pass
-
 
 
 class PreConditionFailed(PyZoteroError):
@@ -119,7 +106,6 @@ class PreConditionFailed(PyZoteroError):
     pass
 
 
-
 class RequestEntityTooLarge(PyZoteroError):
     """
     413 – The upload would exceed the storage quota of the library owner.
@@ -127,13 +113,11 @@ class RequestEntityTooLarge(PyZoteroError):
     pass
 
 
-
 class PreConditionRequired(PyZoteroError):
     """
     428 - Raised when If-Match or If-None-Match was not provided.
     """
     pass
-
 
 
 class TooManyRequests(PyZoteroError):
@@ -147,5 +131,12 @@ class TooManyRequests(PyZoteroError):
 class FileDoesNotExist(PyZoteroError):
     """
     Raised when a file path to be attached can't be opened (or doesn't exist)
+    """
+    pass
+
+
+class TooManyRetries(PyZoteroError):
+    """
+    Raise after the backoff period for new requests exceeds 32s
     """
     pass
