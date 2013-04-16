@@ -5,7 +5,7 @@
 zotero.py
 
 Created by Stephan Hügel on 2011-02-28
-Copyright Stephan Hügel, 2011
+Copyright Stephan Hügel
 
 This file is part of Pyzotero.
 
@@ -36,7 +36,6 @@ import uuid
 import time
 import os
 import hashlib
-import time
 import datetime
 import re
 import pytz
