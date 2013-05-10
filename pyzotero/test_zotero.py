@@ -22,37 +22,8 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 import unittest
+from httpretty import HTTPretty, httprettified
 import zotero as z
-import urllib2
-from StringIO import StringIO
-
-
-
-def mock_response(req, resp_obj, resp_code):
-    """ Mock response for MyHTTPSHandler
-    """
-    resp = urllib2.addinfourl(StringIO(resp_obj),
-    'This is a mocked URI!',
-    req.get_full_url())
-    resp.code = resp_code
-    resp.msg = "OK"
-    return resp
-
-
-class MyHTTPSHandler(urllib2.HTTPSHandler):
-    """ Mock response for urllib2
-        takes 2 arguments: a string or a reference to a file, and response code
-        this is what's returned by .read()
-    """
-    def __init__(self, resp_obj, resp_code = None):
-        self.resp_obj = resp_obj
-        if not resp_code:
-            self.resp_code = 200
-        else: self.resp_code = resp_code
-    # Change HTTPSHandler and https_open to http for non-https calls
-    def https_open(self, req):
-        return mock_response(req, self.resp_obj, self.resp_code)
-
 
 
 class ZoteroTests(unittest.TestCase):
@@ -418,10 +389,13 @@ class ZoteroTests(unittest.TestCase):
         ]"""
         self.keys_response = """ABCDE\nFGHIJ\nKLMNO\n"""
         # Add the item file to the mock response by default
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc))
-        z.urllib2.install_opener(my_opener)
+        HTTPretty.enable()
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.items_doc)
 
-
+    @httprettified
     def testFailWithoutCredentials(self):
         """ Instance creation should fail, because we're leaving out a
             credential
@@ -429,31 +403,38 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.MissingCredentials):
             zf = z.Zotero('myuserID')
 
+    @httprettified
     def testRequestBuilder(self):
         """ Should add the user key, then url-encode all other added parameters
         """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
-        zot.add_parameters(limit = 0, start = 7)
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        zot.add_parameters(limit=0, start=7)
         self.assertEqual('content=json&start=7&limit=0&key=myuserkey', zot.url_params)
 
+    @httprettified
     def testBuildQuery(self):
         """ Check that spaces etc. are being correctly URL-encoded and added
             to the URL parameters
         """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
-        zot.add_parameters(start = 10)
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        zot.add_parameters(start=10)
         query_string = '/users/{u}/tags/hi there/items'
         query = zot._build_query(query_string)
         self.assertEqual(
-        '/users/myuserID/tags/hi%20there/items?content=json&start=10&key=myuserkey',
-        query)
+            '/users/myuserID/tags/hi%20there/items?content=json&start=10&key=myuserkey',
+            query)
 
+    @httprettified
     def testParseItemAtomDoc(self):
         """ Should successfully return a list of item dicts, key should match
             input doc's zapi:key value, and author should have been correctly
             parsed out of the XHTML payload
         """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.items_doc)
         items_data = zot.items()
         self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
         self.assertEqual(u'7252daf2495feb8ec89c61f391bcba24', items_data[0]['etag'])
@@ -461,36 +442,50 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(u'journalArticle', items_data[0]['itemType'])
         self.assertEqual(u'Mon, 14 Feb 2011 00:27:03 GMT', items_data[0]['updated'])
 
+    @httprettified
     def testParseAttachmentsAtomDoc(self):
-        """" blah """
-        zot = z.Zotero('myuserid', 'users', 'myuserkey')
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.attachments_doc))
-        z.urllib2.install_opener(my_opener)
+        """" Ensure that attachments are being correctly parsed """
+        zot = z.Zotero('myuserid', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserid/items?content=json&key=myuserkey',
+            body=self.attachments_doc)
         attachments_data = zot.items()
         self.assertEqual(u'1641 Depositions', attachments_data[0]['title'])
 
+    @httprettified
     def testParseKeysResponse(self):
         """ Check that parsing plain keys returned by format = keys works """
-        zot = z.Zotero('myuserid', 'users', 'myuserkey')
+        zot = z.Zotero('myuserid', 'user', 'myuserkey')
         zot.url_params = 'format=keys'
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.keys_response))
-        z.urllib2.install_opener(my_opener)
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserid/items?format=keys',
+            body=self.keys_response)
         response = zot.items()
         self.assertEqual('ABCDE\nFGHIJ\nKLMNO\n', response)
 
-
-
+    @httprettified
     def testParseChildItems(self):
         """ Try and parse child items """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items/ABC123/children?content=json&key=myuserkey',
+            body=self.items_doc)
         items_data = zot.children('ABC123')
         self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
 
+    @httprettified
     def testEncodings(self):
         """ Should be able to print unicode strings to stdout, and convert
             them to UTF-8 before printing them
         """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.items_doc)
         items_data = zot.items()
         try:
             print items_data[0]['title']
@@ -500,49 +495,63 @@ class ZoteroTests(unittest.TestCase):
             print items_data[0]['title'].encode('utf-8')
         except UnicodeError:
             self.fail(
-'Your Python install appears to dislike encoding unicode strings as UTF-8')
+                'Your Python install appears to dislike encoding unicode strings as UTF-8')
 
+    @httprettified
     def testParseItemAtomBibDoc(self):
         """ Should match a DIV with class = csl-entry
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.bib_doc))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
         zot.url_params = 'content=bib'
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.bib_doc)
         items_data = zot.items()
         dec = items_data[0]
         self.assertTrue(dec.startswith("""<div class="csl-entry">"""))
 
+    @httprettified
     def testParseCollectionsAtomDoc(self):
         """ Should successfully return a list of collection dicts, key should
             match input doc's zapi:key value, and 'title' value should match
             input doc's title value
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.collections_doc))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/collections?content=json&key=myuserkey',
+            body=self.collections_doc)
         collections_data = zot.collections()
         self.assertEqual(u'HTUHVPE5', collections_data[0]['key'])
-        self.assertEqual("A Midsummer Night's Dream",
-        collections_data[0]['name'])
+        self.assertEqual(
+            "A Midsummer Night's Dream",
+            collections_data[0]['name'])
 
+    @httprettified
     def testParseTagsAtomDoc(self):
         """ Should successfully return a list of tags
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.tags_doc))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/tags?content=json&key=myuserkey',
+            body=self.tags_doc)
+        # /users/myuserID/tags?content=json&key=myuserkey
         tags_data = zot.tags()
         self.assertEqual('Authority in literature', tags_data[0])
 
+    @httprettified
     def testParseGroupsAtomDoc(self):
         """ Should successfully return a list of group dicts, ID should match
             input doc's zapi:key value, and 'total_items' value should match
             input doc's zapi:numItems value
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/groups?content=json&key=myuserkey',
+            body=self.groups_doc)
         groups_data = zot.groups()
         self.assertEqual('DFW', groups_data[0]['name'])
         self.assertEqual('10248', groups_data[0]['group_id'])
@@ -551,88 +560,118 @@ class ZoteroTests(unittest.TestCase):
         """ Should successfully reset URL parameters after a query string
             is built
         """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
-        zot.add_parameters(start = 5, limit = 10)
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        zot.add_parameters(start=5, limit=10)
         zot._build_query('/whatever')
-        zot.add_parameters(start = 2)
+        zot.add_parameters(start=2)
         self.assertEqual('content=json&start=2&key=myuserkey', zot.url_params)
 
+    @httprettified
     def testParamsBlankAfterCall(self):
         """ self.url_params should be blank after an API call
         """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.items_doc)
         _ = zot.items()
         self.assertEqual(None, zot.url_params)
 
+    @httprettified
     def testResponseForbidden(self):
         """ Ensure that an error is properly raised for 403
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 403))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.items_doc,
+            status=403)
         with self.assertRaises(z.ze.UserNotAuthorised):
             zot.items()
 
+    @httprettified
     def testResponseUnsupported(self):
         """ Ensure that an error is properly raised for 400
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 400))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.items_doc,
+            status=400)
         with self.assertRaises(z.ze.UnsupportedParams):
             zot.items()
 
+    @httprettified
     def testResponseNotFound(self):
         """ Ensure that an error is properly raised for 404
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 404))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.items_doc,
+            status=404)
         with self.assertRaises(z.ze.ResourceNotFound):
             zot.items()
 
+    @httprettified
     def testResponseMiscError(self):
         """ Ensure that an error is properly raised for unspecified errors
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.groups_doc, 500))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.items_doc,
+            status=500)
         with self.assertRaises(z.ze.HTTPError):
             zot.items()
 
+    @httprettified
     def testGetItems(self):
         """ Ensure that we can retrieve a list of all items """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_types, 200))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/itemTypes',
+            body=self.item_types)
         t = zot.item_types()
         self.assertEqual(t[0]['itemType'], 'artwork')
         self.assertEqual(t[-1]['itemType'], 'webpage')
 
+    @httprettified
     def testGetTemplate(self):
         """ Ensure that item templates are retrieved and converted into dicts
         """
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_templt, 200))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/items/new?itemType=book',
+            body=self.item_templt)
         t = zot.item_template('book')
         self.assertEqual('book', t['itemType'])
 
     def testCreateCollectionError(self):
         """ Ensure that collection creation fails with the wrong dict
         """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
         t = {'foo': 'bar'}
         with self.assertRaises(z.ze.ParamNotPassed):
             t = zot.create_collection(t)
 
+    @httprettified
     def testCreateItem(self):
         """ Ensure that items can be created
         """
         # first, retrieve an item template
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.item_templt, 200))
-        z.urllib2.install_opener(my_opener)
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/items/new?itemType=book',
+            body=self.item_templt)
         t = zot.item_template('book')
         # Update the item type
         t['itemType'] = 'journalArticle'
@@ -646,9 +685,12 @@ class ZoteroTests(unittest.TestCase):
         ls = []
         ls.append(t)
         ls.append(tn)
-        # new opener which will return 403
-        my_opener = urllib2.build_opener(MyHTTPSHandler(self.items_doc, 403))
-        z.urllib2.install_opener(my_opener)
+        # register a 403 response
+        HTTPretty.register_uri(
+            HTTPretty.POST,
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            body=self.items_doc,
+            status=403)
         with self.assertRaises(z.ze.UserNotAuthorised) as e:
             _ = zot.create_items(ls)
         exc = str(e.exception)
@@ -658,6 +700,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertNotIn("TAGABC123", exc)
         self.assertNotIn("GROUPABC123", exc)
 
+    @httprettified
     def testUpdateItem(self):
         """ Test that we can update an item
             This test is a kludge; it only tests that the mechanism for
@@ -666,7 +709,11 @@ class ZoteroTests(unittest.TestCase):
         """
         import json
         # first, retrieve an item
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            body=self.items_doc)
         items_data = zot.items()
         items_data[0]['title'] = 'flibble'
         json.dumps(*zot._cleanup(items_data[0]))
@@ -674,23 +721,40 @@ class ZoteroTests(unittest.TestCase):
     def testEtagsParsing(self):
         """ Tests item and item update response etag parsing
         """
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
         self.assertEqual(z.etags(self.created_response), ['1ed002db69174ae2ae0e3b90499df15e'])
-        self.assertEqual(z.etags(self.items_doc),
-                ['7252daf2495feb8ec89c61f391bcba24'])
+        self.assertEqual(
+            z.etags(self.items_doc),
+            ['7252daf2495feb8ec89c61f391bcba24'])
 
     def testTooManyItems(self):
         """ Should fail because we're passing too many items
         """
         itms = [i for i in xrange(51)]
-        zot = z.Zotero('myuserID', 'users', 'myuserkey')
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
         with self.assertRaises(z.ze.TooManyItems):
             zot.create_items(itms)
+
+    # @httprettified
+    # def testRateLimit(self):
+    #     """ Test 429 response handling (e.g. wait, wait a bit longer etc.)
+    #     """
+    #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
+    #     HTTPretty.register_uri(
+    #         HTTPretty.GET,
+    #         'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+    #         responses=[
+    #             HTTPretty.Response(body=self.items_doc, status=429),
+    #             HTTPretty.Response(body=self.items_doc, status=429),
+    #             HTTPretty.Response(body=self.items_doc, status=200)])
+    #     zot.items()
+    #     with self.assertEqual(z.backoff.delay, 8):
+    #         zot.items()
 
     def tearDown(self):
         """ Tear stuff down
         """
-
+        HTTPretty.disable()
 
 
 if __name__ == "__main__":
