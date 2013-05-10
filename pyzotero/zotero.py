@@ -324,7 +324,7 @@ class Zotero(object):
     def num_items(self):
         """ Return the total number of top-level items in the library
         """
-        query = self._build_query('/{t}/{u}/items/top')
+        query = '/{t}/{u}/items/top'
         return self._totals(query)
 
     def num_collectionitems(self, collection):
@@ -345,6 +345,7 @@ class Zotero(object):
         """ General method for returning total counts
         """
         self.add_parameters(limit=1)
+        query = self._build_query(query)
         data = self._retrieve_data(query)
         self.url_params = None
         parsed = feedparser.parse(data)
