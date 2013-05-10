@@ -674,56 +674,6 @@ class Zotero(object):
             data = req.text
             return self._json_processor(feedparser.parse(data))
 
-        def register_upload(authdata):
-            """
-            Step 3: upload successful, so register it
-            """
-            reg_headers = {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'If-None-Match': '*',
-                'User-Agent': 'Pyzotero/%s' % __version__
-            }
-            reg_data = {
-                'upload': authdata.get('uploadKey')
-            }
-            upload_reg = requests.post(
-                url=self.endpoint
-                + '/users/{u}/items/{i}/file?key={k}'.format(
-                    u=self.library_id,
-                    i=created[idx]['key'],
-                    k=self.api_key),
-                data=reg_data,
-                headers=reg_headers)
-            try:
-                upload_reg.raise_for_status()
-            except requests.exceptions.HTTPError:
-                error_handler(upload_reg)
-
-        def uploadfile(authdata):
-            """
-            Step 2: auth successful, and file not on server
-            zotero.org/support/dev/server_api/file_upload#a_full_upload
-            """
-            upload_file = bytearray(authdata['prefix'].encode())
-            upload_file.extend(open(attach, 'r').read()),
-            upload_file.extend(authdata['suffix'].encode())
-            # Requests chokes on bytearrays, so convert to str
-            upload_dict = {
-                'file': (
-                    os.path.basename(attach),
-                    str(upload_file))}
-            upload = requests.post(
-                url=authdata['url'],
-                files=upload_dict,
-                headers={
-                    "Content-Type": authdata['contentType'],
-                    'User-Agent': 'Pyzotero/%s' % __version__})
-            try:
-                upload.raise_for_status()
-            except requests.exceptions.HTTPError:
-                error_handler(upload)
-            return register_upload(authdata)
-
         def get_auth(attachment):
             """
             Step 1: get upload authorisation for a file
@@ -759,6 +709,56 @@ class Zotero(object):
             except requests.exceptions.HTTPError:
                 error_handler(auth_req)
             return json.loads(auth_req.text)
+
+        def uploadfile(authdata):
+            """
+            Step 2: auth successful, and file not on server
+            zotero.org/support/dev/server_api/file_upload#a_full_upload
+            """
+            upload_file = bytearray(authdata['prefix'].encode())
+            upload_file.extend(open(attach, 'r').read()),
+            upload_file.extend(authdata['suffix'].encode())
+            # Requests chokes on bytearrays, so convert to str
+            upload_dict = {
+                'file': (
+                    os.path.basename(attach),
+                    str(upload_file))}
+            upload = requests.post(
+                url=authdata['url'],
+                files=upload_dict,
+                headers={
+                    "Content-Type": authdata['contentType'],
+                    'User-Agent': 'Pyzotero/%s' % __version__})
+            try:
+                upload.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(upload)
+            return register_upload(authdata)
+
+        def register_upload(authdata):
+            """
+            Step 3: upload successful, so register it
+            """
+            reg_headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'If-None-Match': '*',
+                'User-Agent': 'Pyzotero/%s' % __version__
+            }
+            reg_data = {
+                'upload': authdata.get('uploadKey')
+            }
+            upload_reg = requests.post(
+                url=self.endpoint
+                + '/users/{u}/items/{i}/file?key={k}'.format(
+                    u=self.library_id,
+                    i=created[idx]['key'],
+                    k=self.api_key),
+                data=reg_data,
+                headers=reg_headers)
+            try:
+                upload_reg.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(upload_reg)
 
         created = create_prelim(payload)
         for idx, content in enumerate(created):
