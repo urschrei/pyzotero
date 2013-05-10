@@ -1,12 +1,8 @@
-Hello! Pyzotero now uses `Requests` in place of the detestable `urllib2`. If you'd like to help me to test it, install HEAD from the `dev` branch:  
-`pip install -e git://github.com/urschrei/pyzotero.git@dev#egg=pyzotero`
-**Disclaimer:** this may break everything. Only install from the `dev` branch if you're comfortable with mild instability. The use of a `virtualenv` is encouraged.
-
 ``` python
 from pyzotero import zotero
 zot = zotero.Zotero(library_id, library_type, api_key)
 items = zot.top(limit=5)
-# we have now retrieved the last five top-level items in our library
+# we've retrieved the latest five top-level items in our library
 # we can print each item's item type and ID
 for item in items:
     print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
@@ -43,7 +39,7 @@ Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` fro
 
 ## Issues ##
 
-Pyzotero remains in development as of March 2013. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
+Pyzotero remains in development as of May 2013. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
 
 ## Pull Requests ##
 
