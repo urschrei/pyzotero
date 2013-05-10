@@ -267,17 +267,17 @@ class Zotero(object):
         assumed to be fresh, and will immediately return False if found
         """
         # If the template is more than an hour old, try a 304
-        if abs(datetime.datetime.utcnow().replace(
-            tzinfo=pytz.timezone('GMT')) -
-            self.templates[template]['updated']).seconds > 3600:
+        if abs(datetime.datetime.utcnow().replace(tzinfo=pytz.timezone('GMT'))
+                - self.templates[template]['updated']).seconds > 3600:
             query = self.endpoint + url.format(
-                u=self.library_id, t=self.library_type, **payload)
+                u=self.library_id,
+                t=self.library_type,
+                **payload)
             headers = {
                 'If-Modified-Since':
                 payload['updated'].strftime("%a, %d %b %Y %H:%M:%S %Z"),
                 'User-Agent':
-                'Pyzotero/%s' % __version__
-            }
+                'Pyzotero/%s' % __version__}
             # perform the request, and check whether the response returns 304
             r = requests.get(query, headers=headers)
             try:
