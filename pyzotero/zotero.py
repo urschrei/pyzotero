@@ -330,14 +330,18 @@ class Zotero(object):
         """ Return the total number of items in the specified collection
         """
         query = '/{t}/{u}/collections/{c}/items'.format(
-            u=self.library_id, t=self.library_type, c=collection.upper())
+            u=self.library_id,
+            t=self.library_type,
+            c=collection.upper())
         return self._totals(query)
 
     def num_tagitems(self, tag):
         """ Return the total number of items for the specified tag
         """
         query = '/{t}/{u}/tags/{ta}/items'.format(
-            u=self.library_id, t=self.library_type, ta=tag)
+            u=self.library_id,
+            t=self.library_type,
+            ta=tag)
         return self._totals(query)
 
     def _totals(self, query):
@@ -377,7 +381,9 @@ class Zotero(object):
         """ Get a specific item
         """
         query_string = '/{t}/{u}/items/{i}'.format(
-            u=self.library_id, t=self.library_type, i=item.upper())
+            u=self.library_id,
+            t=self.library_type,
+            i=item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -385,7 +391,9 @@ class Zotero(object):
         """ Get a specific item's child items
         """
         query_string = '/{t}/{u}/items/{i}/children'.format(
-            u=self.library_id, t=self.library_type, i=item.upper())
+            u=self.library_id,
+            t=self.library_type,
+            i=item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -393,7 +401,9 @@ class Zotero(object):
         """ Get items for a specific tag
         """
         query_string = '/{t}/{u}/tags/{ta}/items'.format(
-            u=self.library_id, t=self.library_type, ta=tag)
+            u=self.library_id,
+            t=self.library_type,
+            ta=tag)
         return self._build_query(query_string)
 
     @retrieve
@@ -401,7 +411,9 @@ class Zotero(object):
         """ Get a specific collection's items
         """
         query_string = '/{t}/{u}/collections/{c}/items'.format(
-            u=self.library_id, t=self.library_type, c=collection.upper())
+            u=self.library_id,
+            t=self.library_type,
+            c=collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -416,7 +428,9 @@ class Zotero(object):
         """ Get subcollections for a specific collection
         """
         query_string = '/{t}/{u}/collections/{c}/collections'.format(
-            u=self.library_id, t=self.library_type, c=collection.upper())
+            u=self.library_id,
+            t=self.library_type,
+            c=collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -438,7 +452,9 @@ class Zotero(object):
         """ Get tags for a specific item
         """
         query_string = '/{t}/{u}/items/{i}/tags'.format(
-            u=self.library_id, t=self.library_type, i=item.upper())
+            u=self.library_id,
+            t=self.library_type,
+            i=item.upper())
         return self._build_query(query_string)
 
     def all_top(self, **kwargs):
