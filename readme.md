@@ -26,10 +26,6 @@ cd pyzotero
 git checkout dev
 pip install .
 ```
-    
-
-* Alternatively, download the latest version from <https://github.com/urschrei/pyzotero/downloads>, and point pip at the zip file:  
-Example: `pip install ~/Downloads/urschrei-pyzotero-v0.3-0-g04ff544.zip`
 
 Installation using `easy_install` may be successful, but is neither tested nor officially supported – pip is the preferred method.
 
