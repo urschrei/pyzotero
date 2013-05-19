@@ -4,4 +4,4 @@ python:
 install:
 - pip install httpretty
 - pip install . --use-mirrors
-script: nosetests
+script: nosetests -v
