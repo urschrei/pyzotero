@@ -43,7 +43,9 @@ Pull requests are welcomed. Please read the [contribution guidelines](CONTRIBUTI
 
 # License #
 
-Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See `license.txt` for details.
+Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See `license.txt` for details.  
+
+[![Build Status](https://travis-ci.org/urschrei/pyzotero.png?branch=dev)](https://travis-ci.org/urschrei/pyzotero)
 
 
 [1]: http://www.zotero.org/support/dev/server_api
