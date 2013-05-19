@@ -444,7 +444,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httprettified
     def testParseAttachmentsAtomDoc(self):
-        """" Ensure that attachments are being correctly parsed """
+        """ Ensure that attachments are being correctly parsed """
         zot = z.Zotero('myuserid', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
