@@ -5,3 +5,6 @@ install:
 - pip install httpretty
 - pip install . --use-mirrors
 script: nosetests -v
+branches:
+    only:
+        - dev
