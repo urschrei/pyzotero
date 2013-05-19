@@ -2,5 +2,6 @@ language: python
 python:
   - "2.7"
 install:
+- pip install httpretty
 - pip install . --use-mirrors
 script: nosetests
