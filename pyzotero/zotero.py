@@ -24,7 +24,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 __author__ = 'urschrei@gmail.com'
-__version__ = '0.10'
+__version__ = '0.10.1'
 
 
 import urllib
@@ -83,7 +83,7 @@ def etags(incoming):
     """
     # Parse Atom as straight XML in order to get the etags FFS
     atom_ns = '{http://www.w3.org/2005/Atom}'
-    tree = et.fromstring(incoming)
+    tree = et.fromstring(incoming.encode("utf8"))
     try:
         return [entry.attrib['{http://zotero.org/ns/api}etag'] for
                 entry in tree.findall('.//{0}content'.format(atom_ns))]
