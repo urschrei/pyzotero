@@ -216,7 +216,7 @@ class Zotero(object):
     def _cleanup(self, to_clean):
         """ Remove keys we added for internal use
         """
-        return dict([[k, v] for k, v in to_clean.items()
+        return dict([[k, v] for k, v in list(to_clean.items())
                     if k not in self.temp_keys])
 
     def _retrieve_data(self, request=None):
@@ -820,7 +820,7 @@ class Zotero(object):
             'charset'])
         template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
-            to_check = set(i for i in item.keys())
+            to_check = set(i for i in list(item.keys()))
             difference = to_check.difference(template)
             if difference:
                 raise ze.InvalidItemFields(
