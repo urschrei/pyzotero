@@ -496,11 +496,11 @@ class ZoteroTests(unittest.TestCase):
             body=self.items_doc)
         items_data = zot.items()
         try:
-            print items_data[0]['title']
+            print(items_data[0]['title'])
         except UnicodeError:
             self.fail('Your Python install appears unable to print unicode')
         try:
-            print items_data[0]['title'].encode('utf-8')
+            print(items_data[0]['title'].encode('utf-8'))
         except UnicodeError:
             self.fail(
                 'Your Python install appears to dislike encoding unicode strings as UTF-8')

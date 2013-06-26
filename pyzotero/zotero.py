@@ -164,8 +164,8 @@ class Zotero(object):
             # library_type determines whether query begins w. /users or /groups
             self.library_type = library_type + 's'
         else:
-            raise ze.MissingCredentials, \
-                'Please provide both the library ID and the library type'
+            raise ze.MissingCredentials(
+                'Please provide both the library ID and the library type')
         # api_key is not required for public individual or group libraries
         if api_key:
             self.api_key = api_key
@@ -310,9 +310,9 @@ class Zotero(object):
             query = urllib.quote(query_string.format(
                 u=self.library_id,
                 t=self.library_type))
-        except KeyError, err:
-            raise ze.ParamNotPassed, \
-                'There\'s a request parameter missing: %s' % err
+        except KeyErrorm as err:
+            raise ze.ParamNotPassed(
+                'There\'s a request parameter missing: %s' % err)
         # Add the URL parameters and the user key, if necessary
         if not self.url_params:
             self.add_parameters()
@@ -503,8 +503,8 @@ class Zotero(object):
         Accepts a single argument: a list of item IDs
         """
         if len(subset) > 50:
-            raise ze.TooManyItems, \
-                "You may only retrieve 50 items per call"
+            raise ze.TooManyItems(
+                "You may only retrieve 50 items per call")
         # remember any url parameters that have been set
         params = self.url_params
         retr = []
@@ -823,9 +823,9 @@ class Zotero(object):
             to_check = set(i for i in item.keys())
             difference = to_check.difference(template)
             if difference:
-                raise ze.InvalidItemFields, \
+                raise ze.InvalidItemFields(
                     "Invalid keys present in item %s: %s" % (pos + 1,
-                    ' '.join(i for i in difference))
+                    ' '.join(i for i in difference)))
         return True
 
     def item_types(self):
@@ -913,8 +913,8 @@ class Zotero(object):
         Accepts one argument, a list containing one or more item dicts
         """
         if len(payload) > 50:
-            raise ze.TooManyItems, \
-                "You may only create up to 50 items per call"
+            raise ze.TooManyItems(
+                "You may only create up to 50 items per call")
         to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
         headers = {
             'X-Zotero-Write-Token': token(),
@@ -946,8 +946,8 @@ class Zotero(object):
         """
         # no point in proceeding if there's no 'name' key
         if 'name' not in payload:
-            raise ze.ParamNotPassed, \
-                "The dict you pass must include a 'name' key"
+            raise ze.ParamNotPassed(
+                "The dict you pass must include a 'name' key")
         # add a blank 'parent' key if it hasn't been passed
         if not 'parent' in payload:
             payload['parent'] = ''
@@ -1216,6 +1216,6 @@ responses after 62 seconds. You are being rate-limited, try again later")
             except requests.exceptions.HTTPError:
                 error_handler(new_req)
         else:
-            raise error_codes.get(req.status_code), err_msg(req)
+            raise error_codes.get(req.status_code)(err_msg(req))
     else:
-        raise ze.HTTPError, err_msg(req)
+        raise ze.HTTPError(err_msg(req))
