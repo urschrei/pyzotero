@@ -29,6 +29,10 @@ pip install .
 
 Installation using `easy_install` may be successful, but is neither tested nor officially supported – pip is the preferred method.
 
+# Python 3 #
+
+Python 3.3 is currently experimentally supported: install the `python3` branch to try it.
+
 ## Testing ##
 
 Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` from the top-level directory.
