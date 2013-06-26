@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # pylint: disable=R0904
 """
@@ -21,13 +20,26 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
+
 """
 
+from __future__ import unicode_literals
 __author__ = 'urschrei@gmail.com'
 __version__ = '0.10.1'
 
+# Python 3 compatibility faffing
+try:
+    from urllib import urlencode
+    from urllib import quote
+except ImportError:
+    from urllib.parse import urlencode
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
+    from urllib.parse import quote
 
-import urllib
+import xml.etree.ElementTree as et
 import requests
 import socket
 import feedparser
@@ -40,11 +52,6 @@ import datetime
 import re
 import pytz
 import mimetypes
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
-import xml.etree.ElementTree as et
 
 try:
     from collections import OrderedDict
@@ -302,7 +309,7 @@ class Zotero(object):
         # always return json, unless different format is specified
         if 'content' not in params and 'format' not in params:
             params['content'] = 'json'
-        self.url_params = urllib.urlencode(params)
+        self.url_params = urlencode(params)
 
     def _build_query(self, query_string):
         """
@@ -310,10 +317,10 @@ class Zotero(object):
         been specifically set by an API method
         """
         try:
-            query = urllib.quote(query_string.format(
+            query = quote(query_string.format(
                 u=self.library_id,
                 t=self.library_type))
-        except KeyErrorm as err:
+        except KeyError as err:
             raise ze.ParamNotPassed(
                 'There\'s a request parameter missing: %s' % err)
         # Add the URL parameters and the user key, if necessary
@@ -536,8 +543,8 @@ class Zotero(object):
         for zapi in zapi_keys:
             try:
                 for key, _ in enumerate(items):
-                    items[key][unicode(zapi)] = \
-                        retrieved.entries[key][unicode('zapi_%s' % zapi)]
+                    items[key][zapi] = \
+                        retrieved.entries[key]['zapi_%s' % zapi]
             except KeyError:
                 pass
         for key, _ in enumerate(items):
@@ -990,7 +997,7 @@ class Zotero(object):
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
                 t=self.library_type, u=self.library_id, c=key)
-            + '?' + urllib.urlencode({'key': self.api_key}),
+            + '?' + urlencode({'key': self.api_key}),
             headers=headers,
             payload=to_send)
         try:
@@ -1051,7 +1058,7 @@ class Zotero(object):
             + '/{t}/{u}/items/'.format(
                 t=self.library_type, u=self.library_id)
             + ident
-            + '?' + urllib.urlencode({'key': self.api_key}),
+            + '?' + urlencode({'key': self.api_key}),
             headers=headers,
             data=to_send)
         try:
@@ -1101,7 +1108,7 @@ class Zotero(object):
                 t=self.library_type,
                 u=self.library_id,
                 c=collection.upper())
-            + ident + '?' + urllib.urlencode({'key': self.api_key}),
+            + ident + '?' + urlencode({'key': self.api_key}),
             headers={'User-Agent': 'Pyzotero/%s' % __version__})
         try:
             req.raise_for_status()
@@ -1124,7 +1131,7 @@ class Zotero(object):
             url=self.endpoint
             + '/{t}/{u}/items/'.format(
                 t=self.library_type, u=self.library_id)
-            + ident + '?' + urllib.urlencode({'key': self.api_key}),
+            + ident + '?' + urlencode({'key': self.api_key}),
             headers=headers
         )
         try:
@@ -1150,7 +1157,7 @@ class Zotero(object):
                 t=self.library_type,
                 u=self.library_id,
                 c=ident) +
-            '?' + urllib.urlencode({'key': self.api_key}),
+            '?' + urlencode({'key': self.api_key}),
             headers=headers)
         try:
             req.raise_for_status()
