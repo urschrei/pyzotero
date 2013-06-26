@@ -40,7 +40,10 @@ import datetime
 import re
 import pytz
 import mimetypes
-from urlparse import urlparse
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 import xml.etree.ElementTree as et
 
 try:
@@ -48,7 +51,7 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-import zotero_errors as ze
+from . import zotero_errors as ze
 
 
 # Avoid hanging the application if there's no server response
