@@ -24,6 +24,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
 from __future__ import unicode_literals
+
 __author__ = 'urschrei@gmail.com'
 __version__ = '0.10.1'
 
@@ -31,11 +32,9 @@ __version__ = '0.10.1'
 try:
     from urllib import urlencode
     from urllib import quote
-except ImportError:
-    from urllib.parse import urlencode
-try:
     from urlparse import urlparse
 except ImportError:
+    from urllib.parse import urlencode
     from urllib.parse import urlparse
     from urllib.parse import quote
 
