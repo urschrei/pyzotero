@@ -17,11 +17,12 @@ setup(
     author_email='urschrei@gmail.com',
     license='GNU GPL Version 3',
     url='https://github.com/urschrei/pyzotero',
-    download_url='https://github.com/urschrei/pyzotero/tarball/v0.10',
+    download_url='https://github.com/urschrei/pyzotero/tarball/v0.10.1',
     keywords=['zotero'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License (GPL)',

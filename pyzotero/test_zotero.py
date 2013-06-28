@@ -24,6 +24,8 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 import unittest
 from httpretty import HTTPretty, httprettified
 import zotero as z
+from datetime import datetime
+import pytz
 
 
 class ZoteroTests(unittest.TestCase):
@@ -440,11 +442,17 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(u'7252daf2495feb8ec89c61f391bcba24', items_data[0]['etag'])
         self.assertEqual(u'McIntyre', items_data[0]['creators'][0]['lastName'])
         self.assertEqual(u'journalArticle', items_data[0]['itemType'])
-        self.assertEqual(u'Mon, 14 Feb 2011 00:27:03 GMT', items_data[0]['updated'])
+        test_dt = datetime.strptime(
+            u'Mon, 14 Feb 2011 00:27:03 UTC',
+            "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=pytz.timezone('GMT'))
+        incoming_dt = datetime.strptime(
+            items_data[0]['updated'],
+            "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=pytz.timezone('GMT'))
+        self.assertEqual(test_dt, incoming_dt)
 
     @httprettified
     def testParseAttachmentsAtomDoc(self):
-        """" Ensure that attachments are being correctly parsed """
+        """ Ensure that attachments are being correctly parsed """
         zot = z.Zotero('myuserid', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -488,11 +496,11 @@ class ZoteroTests(unittest.TestCase):
             body=self.items_doc)
         items_data = zot.items()
         try:
-            print items_data[0]['title']
+            print(items_data[0]['title'])
         except UnicodeError:
             self.fail('Your Python install appears unable to print unicode')
         try:
-            print items_data[0]['title'].encode('utf-8')
+            print(items_data[0]['title'].encode('utf-8'))
         except UnicodeError:
             self.fail(
                 'Your Python install appears to dislike encoding unicode strings as UTF-8')

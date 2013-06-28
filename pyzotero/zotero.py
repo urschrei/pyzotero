@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # pylint: disable=R0904
 """
@@ -21,13 +20,25 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
+
 """
+
+from __future__ import unicode_literals
 
 __author__ = 'urschrei@gmail.com'
 __version__ = '0.10.1'
 
+# Python 3 compatibility faffing
+try:
+    from urllib import urlencode
+    from urllib import quote
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlencode
+    from urllib.parse import urlparse
+    from urllib.parse import quote
 
-import urllib
+import xml.etree.ElementTree as et
 import requests
 import socket
 import feedparser
@@ -40,15 +51,13 @@ import datetime
 import re
 import pytz
 import mimetypes
-from urlparse import urlparse
-import xml.etree.ElementTree as et
 
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
 
-import zotero_errors as ze
+from . import zotero_errors as ze
 
 
 # Avoid hanging the application if there's no server response
@@ -164,8 +173,8 @@ class Zotero(object):
             # library_type determines whether query begins w. /users or /groups
             self.library_type = library_type + 's'
         else:
-            raise ze.MissingCredentials, \
-                'Please provide both the library ID and the library type'
+            raise ze.MissingCredentials(
+                'Please provide both the library ID and the library type')
         # api_key is not required for public individual or group libraries
         if api_key:
             self.api_key = api_key
@@ -216,7 +225,7 @@ class Zotero(object):
     def _cleanup(self, to_clean):
         """ Remove keys we added for internal use
         """
-        return dict([[k, v] for k, v in to_clean.items()
+        return dict([[k, v] for k, v in list(to_clean.items())
                     if k not in self.temp_keys])
 
     def _retrieve_data(self, request=None):
@@ -267,17 +276,17 @@ class Zotero(object):
         assumed to be fresh, and will immediately return False if found
         """
         # If the template is more than an hour old, try a 304
-        if abs(datetime.datetime.utcnow().replace(
-            tzinfo=pytz.timezone('GMT')) -
-            self.templates[template]['updated']).seconds > 3600:
+        if abs(datetime.datetime.utcnow().replace(tzinfo=pytz.timezone('GMT'))
+                - self.templates[template]['updated']).seconds > 3600:
             query = self.endpoint + url.format(
-                u=self.library_id, t=self.library_type, **payload)
+                u=self.library_id,
+                t=self.library_type,
+                **payload)
             headers = {
                 'If-Modified-Since':
                 payload['updated'].strftime("%a, %d %b %Y %H:%M:%S %Z"),
                 'User-Agent':
-                'Pyzotero/%s' % __version__
-            }
+                'Pyzotero/%s' % __version__}
             # perform the request, and check whether the response returns 304
             r = requests.get(query, headers=headers)
             try:
@@ -299,7 +308,7 @@ class Zotero(object):
         # always return json, unless different format is specified
         if 'content' not in params and 'format' not in params:
             params['content'] = 'json'
-        self.url_params = urllib.urlencode(params)
+        self.url_params = urlencode(params)
 
     def _build_query(self, query_string):
         """
@@ -307,12 +316,12 @@ class Zotero(object):
         been specifically set by an API method
         """
         try:
-            query = urllib.quote(query_string.format(
+            query = quote(query_string.format(
                 u=self.library_id,
                 t=self.library_type))
-        except KeyError, err:
-            raise ze.ParamNotPassed, \
-                'There\'s a request parameter missing: %s' % err
+        except KeyError as err:
+            raise ze.ParamNotPassed(
+                'There\'s a request parameter missing: %s' % err)
         # Add the URL parameters and the user key, if necessary
         if not self.url_params:
             self.add_parameters()
@@ -330,14 +339,18 @@ class Zotero(object):
         """ Return the total number of items in the specified collection
         """
         query = '/{t}/{u}/collections/{c}/items'.format(
-            u=self.library_id, t=self.library_type, c=collection.upper())
+            u=self.library_id,
+            t=self.library_type,
+            c=collection.upper())
         return self._totals(query)
 
     def num_tagitems(self, tag):
         """ Return the total number of items for the specified tag
         """
         query = '/{t}/{u}/tags/{ta}/items'.format(
-            u=self.library_id, t=self.library_type, ta=tag)
+            u=self.library_id,
+            t=self.library_type,
+            ta=tag)
         return self._totals(query)
 
     def _totals(self, query):
@@ -377,7 +390,9 @@ class Zotero(object):
         """ Get a specific item
         """
         query_string = '/{t}/{u}/items/{i}'.format(
-            u=self.library_id, t=self.library_type, i=item.upper())
+            u=self.library_id,
+            t=self.library_type,
+            i=item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -385,7 +400,9 @@ class Zotero(object):
         """ Get a specific item's child items
         """
         query_string = '/{t}/{u}/items/{i}/children'.format(
-            u=self.library_id, t=self.library_type, i=item.upper())
+            u=self.library_id,
+            t=self.library_type,
+            i=item.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -393,7 +410,9 @@ class Zotero(object):
         """ Get items for a specific tag
         """
         query_string = '/{t}/{u}/tags/{ta}/items'.format(
-            u=self.library_id, t=self.library_type, ta=tag)
+            u=self.library_id,
+            t=self.library_type,
+            ta=tag)
         return self._build_query(query_string)
 
     @retrieve
@@ -401,7 +420,9 @@ class Zotero(object):
         """ Get a specific collection's items
         """
         query_string = '/{t}/{u}/collections/{c}/items'.format(
-            u=self.library_id, t=self.library_type, c=collection.upper())
+            u=self.library_id,
+            t=self.library_type,
+            c=collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -416,7 +437,9 @@ class Zotero(object):
         """ Get subcollections for a specific collection
         """
         query_string = '/{t}/{u}/collections/{c}/collections'.format(
-            u=self.library_id, t=self.library_type, c=collection.upper())
+            u=self.library_id,
+            t=self.library_type,
+            c=collection.upper())
         return self._build_query(query_string)
 
     @retrieve
@@ -438,7 +461,9 @@ class Zotero(object):
         """ Get tags for a specific item
         """
         query_string = '/{t}/{u}/items/{i}/tags'.format(
-            u=self.library_id, t=self.library_type, i=item.upper())
+            u=self.library_id,
+            t=self.library_type,
+            i=item.upper())
         return self._build_query(query_string)
 
     def all_top(self, **kwargs):
@@ -487,8 +512,8 @@ class Zotero(object):
         Accepts a single argument: a list of item IDs
         """
         if len(subset) > 50:
-            raise ze.TooManyItems, \
-                "You may only retrieve 50 items per call"
+            raise ze.TooManyItems(
+                "You may only retrieve 50 items per call")
         # remember any url parameters that have been set
         params = self.url_params
         retr = []
@@ -517,8 +542,8 @@ class Zotero(object):
         for zapi in zapi_keys:
             try:
                 for key, _ in enumerate(items):
-                    items[key][unicode(zapi)] = \
-                        retrieved.entries[key][unicode('zapi_%s' % zapi)]
+                    items[key][zapi] = \
+                        retrieved.entries[key]['zapi_%s' % zapi]
             except KeyError:
                 pass
         for key, _ in enumerate(items):
@@ -658,56 +683,6 @@ class Zotero(object):
             data = req.text
             return self._json_processor(feedparser.parse(data))
 
-        def register_upload(authdata):
-            """
-            Step 3: upload successful, so register it
-            """
-            reg_headers = {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'If-None-Match': '*',
-                'User-Agent': 'Pyzotero/%s' % __version__
-            }
-            reg_data = {
-                'upload': authdata.get('uploadKey')
-            }
-            upload_reg = requests.post(
-                url=self.endpoint
-                + '/users/{u}/items/{i}/file?key={k}'.format(
-                    u=self.library_id,
-                    i=created[idx]['key'],
-                    k=self.api_key),
-                data=reg_data,
-                headers=reg_headers)
-            try:
-                upload_reg.raise_for_status()
-            except requests.exceptions.HTTPError:
-                error_handler(upload_reg)
-
-        def uploadfile(authdata):
-            """
-            Step 2: auth successful, and file not on server
-            zotero.org/support/dev/server_api/file_upload#a_full_upload
-            """
-            upload_file = bytearray(authdata['prefix'].encode())
-            upload_file.extend(open(attach, 'r').read()),
-            upload_file.extend(authdata['suffix'].encode())
-            # Requests chokes on bytearrays, so convert to str
-            upload_dict = {
-                'file': (
-                    os.path.basename(attach),
-                    str(upload_file))}
-            upload = requests.post(
-                url=authdata['url'],
-                files=upload_dict,
-                headers={
-                    "Content-Type": authdata['contentType'],
-                    'User-Agent': 'Pyzotero/%s' % __version__})
-            try:
-                upload.raise_for_status()
-            except requests.exceptions.HTTPError:
-                error_handler(upload)
-            return register_upload(authdata)
-
         def get_auth(attachment):
             """
             Step 1: get upload authorisation for a file
@@ -743,6 +718,56 @@ class Zotero(object):
             except requests.exceptions.HTTPError:
                 error_handler(auth_req)
             return json.loads(auth_req.text)
+
+        def uploadfile(authdata):
+            """
+            Step 2: auth successful, and file not on server
+            zotero.org/support/dev/server_api/file_upload#a_full_upload
+            """
+            upload_file = bytearray(authdata['prefix'].encode())
+            upload_file.extend(open(attach, 'r').read()),
+            upload_file.extend(authdata['suffix'].encode())
+            # Requests chokes on bytearrays, so convert to str
+            upload_dict = {
+                'file': (
+                    os.path.basename(attach),
+                    str(upload_file))}
+            upload = requests.post(
+                url=authdata['url'],
+                files=upload_dict,
+                headers={
+                    "Content-Type": authdata['contentType'],
+                    'User-Agent': 'Pyzotero/%s' % __version__})
+            try:
+                upload.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(upload)
+            return register_upload(authdata)
+
+        def register_upload(authdata):
+            """
+            Step 3: upload successful, so register it
+            """
+            reg_headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'If-None-Match': '*',
+                'User-Agent': 'Pyzotero/%s' % __version__
+            }
+            reg_data = {
+                'upload': authdata.get('uploadKey')
+            }
+            upload_reg = requests.post(
+                url=self.endpoint
+                + '/users/{u}/items/{i}/file?key={k}'.format(
+                    u=self.library_id,
+                    i=created[idx]['key'],
+                    k=self.api_key),
+                data=reg_data,
+                headers=reg_headers)
+            try:
+                upload_reg.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(upload_reg)
 
         created = create_prelim(payload)
         for idx, content in enumerate(created):
@@ -804,12 +829,12 @@ class Zotero(object):
             'charset'])
         template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
-            to_check = set(i for i in item.keys())
+            to_check = set(i for i in list(item.keys()))
             difference = to_check.difference(template)
             if difference:
-                raise ze.InvalidItemFields, \
+                raise ze.InvalidItemFields(
                     "Invalid keys present in item %s: %s" % (pos + 1,
-                    ' '.join(i for i in difference))
+                    ' '.join(i for i in difference)))
         return True
 
     def item_types(self):
@@ -897,8 +922,8 @@ class Zotero(object):
         Accepts one argument, a list containing one or more item dicts
         """
         if len(payload) > 50:
-            raise ze.TooManyItems, \
-                "You may only create up to 50 items per call"
+            raise ze.TooManyItems(
+                "You may only create up to 50 items per call")
         to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
         headers = {
             'X-Zotero-Write-Token': token(),
@@ -930,8 +955,8 @@ class Zotero(object):
         """
         # no point in proceeding if there's no 'name' key
         if 'name' not in payload:
-            raise ze.ParamNotPassed, \
-                "The dict you pass must include a 'name' key"
+            raise ze.ParamNotPassed(
+                "The dict you pass must include a 'name' key")
         # add a blank 'parent' key if it hasn't been passed
         if not 'parent' in payload:
             payload['parent'] = ''
@@ -971,7 +996,7 @@ class Zotero(object):
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
                 t=self.library_type, u=self.library_id, c=key)
-            + '?' + urllib.urlencode({'key': self.api_key}),
+            + '?' + urlencode({'key': self.api_key}),
             headers=headers,
             payload=to_send)
         try:
@@ -1032,7 +1057,7 @@ class Zotero(object):
             + '/{t}/{u}/items/'.format(
                 t=self.library_type, u=self.library_id)
             + ident
-            + '?' + urllib.urlencode({'key': self.api_key}),
+            + '?' + urlencode({'key': self.api_key}),
             headers=headers,
             data=to_send)
         try:
@@ -1082,7 +1107,7 @@ class Zotero(object):
                 t=self.library_type,
                 u=self.library_id,
                 c=collection.upper())
-            + ident + '?' + urllib.urlencode({'key': self.api_key}),
+            + ident + '?' + urlencode({'key': self.api_key}),
             headers={'User-Agent': 'Pyzotero/%s' % __version__})
         try:
             req.raise_for_status()
@@ -1105,7 +1130,7 @@ class Zotero(object):
             url=self.endpoint
             + '/{t}/{u}/items/'.format(
                 t=self.library_type, u=self.library_id)
-            + ident + '?' + urllib.urlencode({'key': self.api_key}),
+            + ident + '?' + urlencode({'key': self.api_key}),
             headers=headers
         )
         try:
@@ -1131,7 +1156,7 @@ class Zotero(object):
                 t=self.library_type,
                 u=self.library_id,
                 c=ident) +
-            '?' + urllib.urlencode({'key': self.api_key}),
+            '?' + urlencode({'key': self.api_key}),
             headers=headers)
         try:
             req.raise_for_status()
@@ -1200,6 +1225,6 @@ responses after 62 seconds. You are being rate-limited, try again later")
             except requests.exceptions.HTTPError:
                 error_handler(new_req)
         else:
-            raise error_codes.get(req.status_code), err_msg(req)
+            raise error_codes.get(req.status_code)(err_msg(req))
     else:
-        raise ze.HTTPError, err_msg(req)
+        raise ze.HTTPError(err_msg(req))

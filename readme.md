@@ -5,7 +5,7 @@ items = zot.top(limit=5)
 # we've retrieved the latest five top-level items in our library
 # we can print each item's item type and ID
 for item in items:
-    print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
+    print('Item Type: %s | Key: %s') % (item['itemType'], item['key'])
 ```
 
 # Description #

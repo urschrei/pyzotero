@@ -30,7 +30,7 @@ Getting started (short version)
             # we've retrieved the latest five top-level items in our library
             # we can print each item's item type and ID
             for item in items:
-                print 'Item Type: %s | Key: %s' % (item['itemType'], item['key'])
+                print('Item Type: %s | Key: %s') % (item['itemType'], item['key'])
 
 2. Refer to the :ref:`read` and :ref:`write`.
 
@@ -310,7 +310,7 @@ Example of returned data:
 The ``follow()``, and ``everything()`` methods
 ==============================================
 
-These methods (currently experimental) aim to make Pyzotero a little more RESTful, and to exploit the natural affinity between Python generators and REST interfaces. Following any Read API call which can retrieve **multiple items**, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset.
+These methods (currently experimental) aim to make Pyzotero a little more RESTful. Following any Read API call which can retrieve **multiple items**, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset.
 
 .. py:method:: Zotero.follow()
 
