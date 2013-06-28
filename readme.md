@@ -31,7 +31,7 @@ Installation using `easy_install` may be successful, but is neither tested nor o
 
 # Python 3 #
 
-Python 3.3 is currently experimentally supported: install the `python3` branch to try it.
+Python 3.3 is currently experimentally supported on the `dev` branch.
 
 ## Testing ##
 
