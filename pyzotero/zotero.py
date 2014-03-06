@@ -145,11 +145,12 @@ def retrieve(func):
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
             processor = self.processors.get(content)
-            # step 2: if the content is JSON, extract its etags
+            # optional step 2: if the content is JSON, extract its etags
             if processor == self._json_processor:
                 self.etags = etags(retrieved)
             # extract next, previous, first, last links
             self.links = self._extract_links(parsed)
+            # process the content correctly with a custom rule
             return processor(parsed)
         # otherwise, just return the unparsed content as is
         else:
@@ -189,7 +190,7 @@ class Zotero(object):
         self.content = re.compile('(?<=content=)\w+')
         self.processors = {
             'bib': self._bib_processor,
-            'citation': self._bib_processor,
+            'citation': self._citation_processor,
             'bibtex': self._bib_processor,
             'bookmarks': self._bib_processor,
             'coins': self._bib_processor,
@@ -586,6 +587,17 @@ class Zotero(object):
         items = []
         for bib in retrieved.entries:
             items.append(bib['content'][0]['value'])
+        self.url_params = None
+        return items
+
+    def _citation_processor(self, retrieved):
+        """ Return a list of strings formatted as HTML citation entries
+        """
+        # in this case, we want to process self.response.content, not .text
+        retrieved = feedparser.parse(self.request.content)
+        items = []
+        for cit in retrieved.entries:
+            items.append(cit['content'][0]['value'].encode('utf8'))
         self.url_params = None
         return items
 
