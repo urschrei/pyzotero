@@ -9,7 +9,7 @@ for item in items:
 ```
 
 # Description #
-Pyzotero is a Python wrapper for the [Zotero read and write APIs][1]. You'll require a library ID and access key, which can be set up [here][2].
+Pyzotero is a Python wrapper for the [Zotero read and write APIs (currently API v1)][1]. You'll require a library ID and access key, which can be set up [here][2].
 
 See [Read The Docs][3] for full documentation of available Pyzotero methods, code examples, and sample output.
 
@@ -31,7 +31,7 @@ Installation using `easy_install` may be successful, but is neither tested nor o
 
 # Python 3 #
 
-Python 3.3 is currently experimentally supported on the `dev` branch.
+Python 3.3 is currently experimentally supported.
 
 ## Testing ##
 
@@ -39,7 +39,7 @@ Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` fro
 
 ## Issues ##
 
-Pyzotero remains in development as of May 2013. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
+Pyzotero remains in development as of March 2014. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
 
 ## Pull Requests ##
 
