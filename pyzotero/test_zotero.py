@@ -533,7 +533,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httprettified
     def testCitUTF8(self):
-        """ ensure that we always output utf-8-encoded bib strings
+        """ ensure that unicode citations are correctly processed by Pyzotero
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
@@ -541,8 +541,7 @@ class ZoteroTests(unittest.TestCase):
             'https://api.zotero.org/users/myuserID/items/GW8V2CK7?content=citation&style=chicago-author-date&key=myuserkey',
             body=self.citation_doc)
         cit = zot.item('GW8V2CK7', content='citation', style='chicago-author-date')
-        if cit != ['<span>(Robert Ä. Caro 1974)</span>']:
-            self.fail("UTF8 incorrectly decoded for citation content")
+        self.assertEqual(cit[0], u'<span>(Robert Ä. Caro 1974)</span>')
 
     @httprettified
     def testParseItemAtomBibDoc(self):

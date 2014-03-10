@@ -242,7 +242,7 @@ class Zotero(object):
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.request)
-        return self.request.text
+        return self.request.content.decode('utf8')
 
     def _extract_links(self, doc):
         """
@@ -363,7 +363,7 @@ class Zotero(object):
         self.url_params = None
         parsed = feedparser.parse(data)
         # extract the 'total items' figure
-        return int(parsed.feed['zapi_totalresults'].encode('utf8'))
+        return int(parsed.feed['zapi_totalresults'])
 
     @retrieve
     def items(self, **kwargs):
@@ -593,11 +593,9 @@ class Zotero(object):
     def _citation_processor(self, retrieved):
         """ Return a list of strings formatted as HTML citation entries
         """
-        # in this case, we want to process self.response.content, not .text
-        retrieved = feedparser.parse(self.request.content)
         items = []
         for cit in retrieved.entries:
-            items.append(cit['content'][0]['value'].encode('utf8'))
+            items.append(cit['content'][0]['value'])
         self.url_params = None
         return items
 
