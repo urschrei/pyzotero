@@ -5,19 +5,18 @@ setup.py
 
 Created by Stephan Hügel on 2011-03-04
 """
-#!/usr/bin/env python
 
 from setuptools import setup, find_packages
 
 setup(
     name='Pyzotero',
-    version='0.10.1',
+    version='0.10.2',
     description='Python wrapper for the Zotero API',
     author='Stephan Hügel',
     author_email='urschrei@gmail.com',
     license='GNU GPL Version 3',
     url='https://github.com/urschrei/pyzotero',
-    download_url='https://github.com/urschrei/pyzotero/tarball/v0.10.1',
+    download_url='https://github.com/urschrei/pyzotero/tarball/v0.10.2',
     keywords=['zotero'],
     classifiers=[
         'Programming Language :: Python',
@@ -41,6 +40,5 @@ A Python wrapper for the Zotero Server API
 Provides methods for accessing all Zotero Server API v1 calls currently provided.
 A full list is available here: http://www.zotero.org/support/dev/server_api
 
-This version requires Python 2.7.x
-            """
+This version requires Python 2.7.x / 3.3.x"""
 )
