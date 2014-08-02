@@ -10,8 +10,6 @@ A Python wrapper for the `Zotero API <http://www.zotero.org/support/dev/server_a
 
 .. py:module:: zotero
 
-.. toctree::
-   :maxdepth: 2
 
 
 Getting started (short version)
