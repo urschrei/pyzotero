@@ -43,6 +43,7 @@ import requests
 import socket
 import feedparser
 import json
+import copy
 import uuid
 import time
 import os
@@ -220,7 +221,7 @@ class Zotero(object):
         self.templates[key] = {
             'tmplt': template,
             'updated': thetime}
-        return template
+        return copy.deepcopy(template)
 
     @cleanwrap
     def _cleanup(self, to_clean):
@@ -619,7 +620,7 @@ class Zotero(object):
                     query_string,
                     self.templates[template_name],
                     template_name):
-            return self.templates[template_name]['tmplt']
+            return copy.deepcopy(self.templates[template_name]['tmplt'])
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
         return self._cache(json.loads(retrieved), template_name)
