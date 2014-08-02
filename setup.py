@@ -16,6 +16,7 @@ setup(
     author_email='urschrei@gmail.com',
     license='GNU GPL Version 3',
     url='https://github.com/urschrei/pyzotero',
+    include_package_data=True,
     download_url='https://github.com/urschrei/pyzotero/tarball/v0.10.3',
     keywords=['zotero'],
     classifiers=[
