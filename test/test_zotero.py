@@ -23,7 +23,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 from httpretty import HTTPretty, httprettified
-import zotero as z
+from pyzotero.pyzotero import zotero as z
 from datetime import datetime
 import pytz
 
