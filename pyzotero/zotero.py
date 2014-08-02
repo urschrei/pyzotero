@@ -669,9 +669,9 @@ class Zotero(object):
             """
             verify(payload)
             if not parentid:
-                liblevel = '/users/{u}/items?key={k}'
+                liblevel = '/{t}/{u}/items?key={k}'
             else:
-                liblevel = '/users/{u}/items/{i}/children?key={k}'
+                liblevel = '/{t}/{u}/items/{i}/children?key={k}'
             # Create one or more new attachments
             headers = {
                 'X-Zotero-Write-Token': token(),
@@ -682,6 +682,7 @@ class Zotero(object):
             req = requests.post(
                 url=self.endpoint
                 + liblevel.format(
+                    t=self.library_type,
                     u=self.library_id,
                     i=parentid,
                     k=self.api_key),
