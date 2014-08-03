@@ -180,6 +180,7 @@ class Zotero(object):
         # api_key is not required for public individual or group libraries
         if api_key:
             self.api_key = api_key
+        self.api_version = 3
         self.preserve_json_order = preserve_json_order
         self.url_params = None
         self.etags = None
@@ -209,6 +210,18 @@ class Zotero(object):
         self.links = None
         self.templates = {}
 
+    def default_headers(self):
+        """
+        It's always OK to include these headers
+        """
+        return {
+            "User-Agent": "Pyzotero/%s",
+            "Authorization": "Bearer %s",
+            "Zotero-Api-Version": "%s" % (
+                __version__),
+                self.api_key,
+                self.api_version)}
+
     def _cache(self, template, key):
         """
         Add a retrieved template to the cache for 304 checking
@@ -237,8 +250,9 @@ class Zotero(object):
         Returns an Atom document
         """
         full_url = '%s%s' % (self.endpoint, request)
-        headers = {"User-Agent": "Pyzotero/%s" % __version__}
-        self.request = requests.get(url=full_url, headers=headers)
+        self.request = requests.get(
+            url=full_url,
+            headers=self.default_headers())
         try:
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -302,15 +316,9 @@ class Zotero(object):
     def add_parameters(self, **params):
         """ Add URL parameters. Will always add the api key if it exists
         """
+        # we don't really need this anymore
         self.url_params = None
-        if hasattr(self, 'api_key') and params:
-            params['key'] = self.api_key
-        elif hasattr(self, 'api_key'):
-            params = {'key': self.api_key}
-        # always return json, unless different format is specified
-        if 'content' not in params and 'format' not in params:
-            params['content'] = 'json'
-        self.url_params = urlencode(params)
+        pass
 
     def _build_query(self, query_string):
         """
