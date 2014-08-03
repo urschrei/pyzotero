@@ -26,7 +26,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 __author__ = 'urschrei@gmail.com'
-__version__ = '0.10.1'
+__version__ = '0.10.3'
 
 # Python 3 compatibility faffing
 try:
