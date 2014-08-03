@@ -31,7 +31,7 @@ Installation using `easy_install` may be successful, but is neither tested nor o
 
 # Python 3 #
 
-Python 3.3 is currently experimentally supported.
+Python 3.4 is currently experimentally supported.
 
 ## Testing ##
 
