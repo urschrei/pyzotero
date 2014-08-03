@@ -1,0 +1,1690 @@
+[{
+    "key": "NM66T6EF",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/NM66T6EF",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/NM66T6EF",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "numChildren": 2
+    },
+    "data": {
+        "key": "NM66T6EF",
+        "version": 1,
+        "itemType": "webpage",
+        "title": "HowStuffWorks \"How Earthquakes Work\"",
+        "creators": [
+
+        ],
+        "abstractNote": "",
+        "websiteTitle": "",
+        "websiteType": "",
+        "date": "",
+        "shortTitle": "",
+        "url": "http://science.howstuffworks.com/nature/natural-disasters/earthquake.htm",
+        "accessDate": "2011-02-02T22:26:36Z",
+        "language": "",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-02-02T22:26:36Z",
+        "dateModified": "2011-02-02T22:26:36Z",
+        "tags": [
+
+        ],
+        "collections": [
+            "9KH9TNSJ"
+        ],
+        "relations": {
+
+        }
+    }
+}, {
+    "key": "PQKBRC33",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/PQKBRC33",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/PQKBRC33",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "R. Creighton Buck",
+        "parsedDate": "1980-05-01",
+        "numChildren": 2
+    },
+    "data": {
+        "key": "PQKBRC33",
+        "version": 1,
+        "itemType": "journalArticle",
+        "title": "Sherlock Holmes in Babylon",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "",
+            "lastName": "R. Creighton Buck"
+        }],
+        "abstractNote": "",
+        "publicationTitle": "The American Mathematical Monthly",
+        "volume": "87",
+        "issue": "5",
+        "pages": "335-345",
+        "date": "May 01, 1980",
+        "series": "",
+        "seriesTitle": "",
+        "seriesText": "",
+        "journalAbbreviation": "",
+        "language": "",
+        "DOI": "10.2307/2321200",
+        "ISSN": "00029890",
+        "shortTitle": "",
+        "url": "http://www.jstor.org/stable/2321200",
+        "accessDate": "2011-02-02T22:25:04Z",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "JSTOR",
+        "callNumber": "",
+        "rights": "",
+        "extra": "ArticleType: research-article / Full publication date: May, 1980 / Copyright © 1980 Mathematical Association of America",
+        "dateAdded": "2011-02-02T22:25:04Z",
+        "dateModified": "2011-02-02T22:25:04Z",
+        "tags": [
+
+        ],
+        "collections": [
+            "9KH9TNSJ"
+        ],
+        "relations": {
+
+        }
+    }
+}, {
+    "key": "Z8N84QAJ",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/Z8N84QAJ",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/Z8N84QAJ",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Doyle",
+        "parsedDate": "1992-00-00",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "Z8N84QAJ",
+        "version": 1,
+        "itemType": "book",
+        "title": "The Annotated Sherlock Holmes: The Four Novels and Fifty-Six Short Stories Complete",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "Arthur Conan",
+            "lastName": "Doyle"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "William Stuart",
+            "lastName": "Baring-Gould"
+        }],
+        "abstractNote": "",
+        "series": "",
+        "seriesNumber": "",
+        "volume": "",
+        "numberOfVolumes": "",
+        "edition": "",
+        "place": "New York",
+        "publisher": "Wings Books",
+        "date": "1992",
+        "numPages": "2",
+        "language": "",
+        "ISBN": "",
+        "shortTitle": "The Annotated Sherlock Holmes",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "magik.gmu.edu Library Catalog",
+        "callNumber": "PR4620.A5 B3 1992",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-02-02T22:23:59Z",
+        "dateModified": "2011-02-02T22:23:59Z",
+        "tags": [{
+            "tag": "Detective and mystery stories, English",
+            "type": 1
+        }, {
+            "tag": "Fiction",
+            "type": 1
+        }, {
+            "tag": "Holmes, Sherlock (Fictitious character)",
+            "type": 1
+        }],
+        "collections": [
+            "9KH9TNSJ"
+        ],
+        "relations": {
+
+        }
+    }
+}, {
+    "key": "PG5ZCTJT",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/PG5ZCTJT",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/PG5ZCTJT",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Blum et al.",
+        "parsedDate": "2004-00-00",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "PG5ZCTJT",
+        "version": 1,
+        "itemType": "film",
+        "title": "The Adventures of Sherlock Holmes",
+        "creators": [{
+            "creatorType": "contributor",
+            "firstName": "Edwin",
+            "lastName": "Blum"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "William A",
+            "lastName": "Drake"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "Alfred",
+            "lastName": "Werker"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "Basil",
+            "lastName": "Rathbone"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "Nigel",
+            "lastName": "Bruce"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "George",
+            "lastName": "Zucco"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "Ida",
+            "lastName": "Lupino"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "Alan",
+            "lastName": "Marshal"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "William",
+            "lastName": "Gillette"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "Arthur Conan",
+            "lastName": "Doyle"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "Richard",
+            "lastName": "Valley"
+        }, {
+            "creatorType": "contributor",
+            "name": "Twentieth Century-Fox Film Corporation"
+        }, {
+            "creatorType": "contributor",
+            "name": "King World Productions"
+        }, {
+            "creatorType": "contributor",
+            "name": "MPI Home Video (Firm)"
+        }],
+        "abstractNote": "",
+        "distributor": "MPI Home Video",
+        "date": "2004",
+        "genre": "",
+        "videoRecordingFormat": "",
+        "runningTime": "",
+        "language": "",
+        "shortTitle": "",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "magik.gmu.edu Library Catalog",
+        "callNumber": "PN1997",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-02-02T22:23:55Z",
+        "dateModified": "2011-02-02T22:23:55Z",
+        "tags": [{
+            "tag": "Detective and mystery films",
+            "type": 1
+        }, {
+            "tag": "Feature films",
+            "type": 1
+        }, {
+            "tag": "Holmes, Sherlock (Fictitious character)",
+            "type": 1
+        }, {
+            "tag": "Moriarty, Professor (Fictitious character)",
+            "type": 1
+        }, {
+            "tag": "Murder",
+            "type": 1
+        }],
+        "collections": [
+            "9KH9TNSJ"
+        ],
+        "relations": {
+
+        }
+    }
+}, {
+    "key": "B2VNV5Q7",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/B2VNV5Q7",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/B2VNV5Q7",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Higham",
+        "parsedDate": "1976-00-00",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "B2VNV5Q7",
+        "version": 1,
+        "itemType": "book",
+        "title": "The Adventures of Conan Doyle: The Life of the Creator of Sherlock Holmes",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "Charles",
+            "lastName": "Higham"
+        }],
+        "abstractNote": "",
+        "series": "",
+        "seriesNumber": "",
+        "volume": "",
+        "numberOfVolumes": "",
+        "edition": "1st ed",
+        "place": "New York",
+        "publisher": "Norton",
+        "date": "1976",
+        "numPages": "368",
+        "language": "",
+        "ISBN": "0393075079",
+        "shortTitle": "The Adventures of Conan Doyle",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "magik.gmu.edu Library Catalog",
+        "callNumber": "PR4623",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-02-02T22:23:38Z",
+        "dateModified": "2011-02-02T22:23:38Z",
+        "tags": [{
+            "tag": "Biography",
+            "type": 1
+        }, {
+            "tag": "Doyle, Arthur Conan",
+            "type": 1
+        }],
+        "collections": [
+            "9KH9TNSJ"
+        ],
+        "relations": {
+
+        }
+    }
+}, {
+    "key": "6XDC27WD",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/6XDC27WD",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/6XDC27WD",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Earnshaw",
+        "parsedDate": "2001-00-00",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "6XDC27WD",
+        "version": 1,
+        "itemType": "book",
+        "title": "An Actor, and a Rare One: Peter Cushing as Sherlock Holmes",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "Tony",
+            "lastName": "Earnshaw"
+        }],
+        "abstractNote": "",
+        "series": "",
+        "seriesNumber": "",
+        "volume": "",
+        "numberOfVolumes": "",
+        "edition": "",
+        "place": "Lanham, Md",
+        "publisher": "Scarecrow Press",
+        "date": "2001",
+        "numPages": "146",
+        "language": "",
+        "ISBN": "0810838745",
+        "shortTitle": "An Actor, and a Rare One",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "magik.gmu.edu Library Catalog",
+        "callNumber": "791.43/028/092",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-02-02T22:23:34Z",
+        "dateModified": "2011-02-02T22:23:34Z",
+        "tags": [{
+            "tag": "Cushing, Peter",
+            "type": 1
+        }, {
+            "tag": "Sherlock Holmes films",
+            "type": 1
+        }],
+        "collections": [
+            "9KH9TNSJ"
+        ],
+        "relations": {
+
+        }
+    }
+}, {
+    "key": "ICK5M93W",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/ICK5M93W",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/ICK5M93W",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Knight",
+        "parsedDate": "1980-00-00",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "ICK5M93W",
+        "version": 1,
+        "itemType": "book",
+        "title": "Form and Ideology in Crime Fiction",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "Stephen",
+            "lastName": "Knight"
+        }],
+        "abstractNote": "",
+        "series": "",
+        "seriesNumber": "",
+        "volume": "",
+        "numberOfVolumes": "",
+        "edition": "",
+        "place": "Bloomington",
+        "publisher": "Indiana University Press",
+        "date": "1980",
+        "numPages": "202",
+        "language": "",
+        "ISBN": "0253143837",
+        "shortTitle": "",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "magik.gmu.edu Library Catalog",
+        "callNumber": "PS374.D4",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-02-02T22:22:23Z",
+        "dateModified": "2011-02-02T22:22:23Z",
+        "tags": [{
+            "tag": "Crime in literature",
+            "type": 1
+        }, {
+            "tag": "Detective and mystery stories, American",
+            "type": 1
+        }, {
+            "tag": "Detective and mystery stories, English",
+            "type": 1
+        }, {
+            "tag": "History and criticism",
+            "type": 1
+        }],
+        "collections": [
+            "9KH9TNSJ"
+        ],
+        "relations": {
+
+        }
+    }
+}, {
+    "key": "Z6TE2UMT",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/Z6TE2UMT",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/Z6TE2UMT",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "numChildren": 1
+    },
+    "data": {
+        "key": "Z6TE2UMT",
+        "version": 1,
+        "itemType": "webpage",
+        "title": "CRCnetBASE - Hematopoietic Stem Cell Transplantation, Stem Cells, and Gene Therapy",
+        "creators": [
+
+        ],
+        "abstractNote": "",
+        "websiteTitle": "",
+        "websiteType": "",
+        "date": "",
+        "shortTitle": "",
+        "url": "http://www.crcnetbase.com/doi/abs/10.1201/9781420005509.ch22?prevSearch=%2528%255Bfulltext%253A%2Bcell%255D%2BAND%2B%255Btitle%253A%2Bcell%255D%2529%2BAND%2B%255BpubType%253A%2B109%255D&searchHistoryKey=",
+        "accessDate": "2011-02-02T15:21:13Z",
+        "language": "",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-02-02T15:21:13Z",
+        "dateModified": "2011-02-02T15:21:13Z",
+        "tags": [
+
+        ],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+
+        }
+    }
+}, {
+    "key": "6MCAN2NC",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/6MCAN2NC",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/6MCAN2NC",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Fanatico",
+        "parsedDate": "2008-12-14",
+        "numChildren": 1
+    },
+    "data": {
+        "key": "6MCAN2NC",
+        "version": 1,
+        "itemType": "artwork",
+        "title": "Sherlock Holmes",
+        "creators": [{
+            "creatorType": "artist",
+            "firstName": "Cine",
+            "lastName": "Fanatico"
+        }],
+        "abstractNote": "Sherlock Holmes\n\n<a href=\"http://www.mycine.com.ar/\">www.mycine.com.ar/</a>",
+        "artworkMedium": "",
+        "artworkSize": "",
+        "date": "2008-12-14",
+        "language": "",
+        "shortTitle": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "Flickr",
+        "callNumber": "",
+        "url": "http://www.flickr.com/photos/29745871@N08/3108627911/",
+        "accessDate": "2011-02-02T03:24:37Z",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-02-02T03:24:37Z",
+        "dateModified": "2011-02-02T03:24:37Z",
+        "tags": [{
+            "tag": "judelaw",
+            "type": 1
+        }, {
+            "tag": "robertdowneyjr",
+            "type": 1
+        }, {
+            "tag": "sherlockholmes",
+            "type": 1
+        }],
+        "collections": [
+            "QM6T3KHX",
+            "TVPC4XK4",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+
+        }
+    }
+}, {
+    "key": "GIFZST3I",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/GIFZST3I",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/GIFZST3I",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Goodman and Jiménez",
+        "parsedDate": "1993-00-08",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "GIFZST3I",
+        "version": 1,
+        "itemType": "book",
+        "title": "Cell recognition during neuronal development",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "C.",
+            "lastName": "Goodman"
+        }, {
+            "creatorType": "author",
+            "firstName": "F.",
+            "lastName": "Jiménez"
+        }],
+        "abstractNote": "",
+        "series": "",
+        "seriesNumber": "",
+        "volume": "",
+        "numberOfVolumes": "",
+        "edition": "",
+        "place": "",
+        "publisher": "Instituto Juan March",
+        "date": "08/1993",
+        "numPages": "",
+        "language": "",
+        "ISBN": "978-84-7919-517-5",
+        "shortTitle": "",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "Agencia del ISBN",
+        "callNumber": "",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-01-28T21:45:45Z",
+        "dateModified": "2011-01-28T21:45:45Z",
+        "tags": [
+
+        ],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/U3GSEBPW"
+        }
+    }
+}, {
+    "key": "CINTCPTB",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/CINTCPTB",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/CINTCPTB",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Liu",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "CINTCPTB",
+        "version": 1,
+        "itemType": "book",
+        "title": "2011: A Jump Start for JIPB",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "Chun-Ming",
+            "lastName": "Liu"
+        }],
+        "abstractNote": "",
+        "series": "",
+        "seriesNumber": "",
+        "volume": "",
+        "numberOfVolumes": "",
+        "edition": "",
+        "place": "",
+        "publisher": "",
+        "date": "",
+        "numPages": "2",
+        "language": "",
+        "ISBN": "",
+        "shortTitle": "2011",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "agricola.nal.usda.gov Library Catalog",
+        "callNumber": "",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-01-28T21:41:41Z",
+        "dateModified": "2011-01-28T21:41:41Z",
+        "tags": [{
+            "tag": "Internet resource",
+            "type": 1
+        }],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/927JGK4M"
+        }
+    }
+}, {
+    "key": "R39UWNFK",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/R39UWNFK",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/R39UWNFK",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Leveille et al.",
+        "numChildren": 1
+    },
+    "data": {
+        "key": "R39UWNFK",
+        "version": 1,
+        "itemType": "conferencePaper",
+        "title": "Diagnostic of vacuum subsonic and supersonic plasma flows with enthalpy probe, schlieren and high speed camera methods",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "V.",
+            "lastName": "Leveille"
+        }, {
+            "creatorType": "author",
+            "firstName": "M.I.",
+            "lastName": "Boulos"
+        }, {
+            "creatorType": "author",
+            "firstName": "D.",
+            "lastName": "Gravelle"
+        }],
+        "abstractNote": "",
+        "date": "",
+        "proceedingsTitle": "IEEE Conference Record - Abstracts. 2002 IEEE International Conference on Plasma Science (Cat. No.02CH37340)",
+        "conferenceName": "IEEE 29th International Conference on Plasma Sciences",
+        "place": "Banff, Alta., Canada",
+        "publisher": "",
+        "volume": "",
+        "pages": "286",
+        "series": "",
+        "language": "",
+        "DOI": "10.1109/PLASMA.2002.1030588",
+        "ISBN": "",
+        "shortTitle": "",
+        "url": "http://ieeexplore.ieee.org/Xplore/login.jsp?url=http%3A%2F%2Fieeexplore.ieee.org%2Fstamp%2Fstamp.jsp%3Ftp%3D%26arnumber%3D1030588&authDecision=-203",
+        "accessDate": "2011-01-18T23:28:27Z",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "CrossRef",
+        "callNumber": "",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-01-18T23:28:27Z",
+        "dateModified": "2011-01-18T23:28:27Z",
+        "tags": [
+
+        ],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": [
+                "http://zotero.org/groups/36222/items/T3T7S2PD",
+                "http://zotero.org/groups/37668/items/TZFDTTH8"
+            ]
+        }
+    }
+}, {
+    "key": "85MTWF4F",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/85MTWF4F",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/85MTWF4F",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Chung et al.",
+        "parsedDate": "2007-00-06",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "85MTWF4F",
+        "version": 1,
+        "itemType": "conferencePaper",
+        "title": "Effects of Initial Plasma Properties on Plasma Recovery in Plasma Source Ion Implantation",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "K. J.",
+            "lastName": "Chung"
+        }, {
+            "creatorType": "author",
+            "firstName": "S. W.",
+            "lastName": "Jung"
+        }, {
+            "creatorType": "author",
+            "firstName": "J. M.",
+            "lastName": "Choe"
+        }, {
+            "creatorType": "author",
+            "firstName": "G. H.",
+            "lastName": "Kim"
+        }, {
+            "creatorType": "author",
+            "firstName": "Y. S.",
+            "lastName": "Hwang"
+        }],
+        "abstractNote": "",
+        "date": "06/2007",
+        "proceedingsTitle": "2007 IEEE Pulsed Power Plasma Science Conference",
+        "conferenceName": "2007 IEEE Pulsed Power Plasma Science Conference",
+        "place": "Albuquerque, NM, USA",
+        "publisher": "",
+        "volume": "",
+        "pages": "569-569",
+        "series": "",
+        "language": "",
+        "DOI": "10.1109/PPPS.2007.4345875",
+        "ISBN": "",
+        "shortTitle": "",
+        "url": "http://ieeexplore.ieee.org/lpdocs/epic03/wrapper.htm?arnumber=4345875",
+        "accessDate": "2011-01-18T23:28:14Z",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "CrossRef",
+        "callNumber": "",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-01-18T23:28:14Z",
+        "dateModified": "2011-01-18T23:28:14Z",
+        "tags": [
+
+        ],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/DUPUCG6A"
+        }
+    }
+}, {
+    "key": "3EWF3P9V",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/3EWF3P9V",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/3EWF3P9V",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Asero and Antonicelli",
+        "parsedDate": "2011-00-00",
+        "numChildren": 1
+    },
+    "data": {
+        "key": "3EWF3P9V",
+        "version": 1,
+        "itemType": "journalArticle",
+        "title": "Does sensitization to foods in adults occur always in the gut?",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "Riccardo",
+            "lastName": "Asero"
+        }, {
+            "creatorType": "author",
+            "firstName": "Leonardo",
+            "lastName": "Antonicelli"
+        }],
+        "abstractNote": "It is widely accepted that, under normal conditions, the contact between allergens and the immune system via the gut results in immune tolerance. Thus, it is rather surprising that normal adults may become sensitized to foods that they have consumed a number of times without any consequence. However, the medical literature is crowded with reports suggesting that sensitization to food allergens may occur outside the intestinal tract in many instances. The present article reviews and discusses current data suggesting, either directly or indirectly, a possible initiation of food allergy in the respiratory tract or in the skin in the light of recent findings about mechanisms of tolerance and sensitization.",
+        "publicationTitle": "International archives of allergy and immunology",
+        "volume": "154",
+        "issue": "1",
+        "pages": "6-14",
+        "date": "2011",
+        "series": "",
+        "seriesTitle": "",
+        "seriesText": "",
+        "journalAbbreviation": "Int Arch Allergy Immunol",
+        "language": "",
+        "DOI": "",
+        "ISSN": "14230097",
+        "shortTitle": "",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "BioInfoBank",
+        "callNumber": "",
+        "rights": "",
+        "extra": "PMID: 20664272",
+        "dateAdded": "2011-01-18T20:41:02Z",
+        "dateModified": "2011-01-18T20:41:02Z",
+        "tags": [{
+            "tag": "Adult",
+            "type": 1
+        }, {
+            "tag": "Allergens",
+            "type": 1
+        }, {
+            "tag": "Food Hypersensitivity",
+            "type": 1
+        }, {
+            "tag": "Gastrointestinal Tract",
+            "type": 1
+        }, {
+            "tag": "Humans",
+            "type": 1
+        }, {
+            "tag": "Immune Tolerance",
+            "type": 1
+        }, {
+            "tag": "Plants, Edible",
+            "type": 1
+        }, {
+            "tag": "Skin",
+            "type": 1
+        }],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/A28897IC"
+        }
+    }
+}, {
+    "key": "2SS8NXZI",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/2SS8NXZI",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/2SS8NXZI",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "DeLyria",
+        "parsedDate": "2010-00-00",
+        "numChildren": 1
+    },
+    "data": {
+        "key": "2SS8NXZI",
+        "version": 1,
+        "itemType": "manuscript",
+        "title": "Acute Phase T Cell Help in Neutrophil-Mediated Clearance of Helicobacter Pylori",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "Elizabeth S",
+            "lastName": "DeLyria"
+        }],
+        "abstractNote": "",
+        "manuscriptType": "",
+        "place": "Cleveland, Ohio",
+        "date": "2010",
+        "numPages": "118",
+        "language": "",
+        "shortTitle": "",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "catalog.case.edu Library Catalog",
+        "callNumber": "Pathol",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-01-14T18:46:27Z",
+        "dateModified": "2011-01-14T18:46:27Z",
+        "tags": [{
+            "tag": "Helicobacter pylori",
+            "type": 1
+        }, {
+            "tag": "T-Lymphocytes",
+            "type": 1
+        }],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/DTC7V4F3"
+        }
+    }
+}, {
+    "key": "AGTZDBRQ",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/AGTZDBRQ",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/AGTZDBRQ",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Andrieu et al.",
+        "parsedDate": "1995-00-00",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "AGTZDBRQ",
+        "version": 1,
+        "itemType": "book",
+        "title": "Cell Activation and Apoptosis in HIV Infection: Implications for Pathogenesis and Therapy",
+        "creators": [{
+            "creatorType": "contributor",
+            "firstName": "Jean-Marie",
+            "lastName": "Andrieu"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "Wei",
+            "lastName": "Lu"
+        }, {
+            "creatorType": "contributor",
+            "name": "International Symposium on Cellular Approaches to the Control of HIV Disease"
+        }],
+        "abstractNote": "",
+        "series": "Advances in experimental medicine and biology",
+        "seriesNumber": "v. 374",
+        "volume": "",
+        "numberOfVolumes": "",
+        "edition": "",
+        "place": "New York",
+        "publisher": "Plenum Press",
+        "date": "1995",
+        "numPages": "245",
+        "language": "",
+        "ISBN": "0306450631",
+        "shortTitle": "Cell Activation and Apoptosis in HIV Infection",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "cat.cisti-icist.nrc-cnrc.gc.ca Library Catalog",
+        "callNumber": "R850.A1 A24 v. 374",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-01-14T18:45:08Z",
+        "dateModified": "2011-01-14T18:45:08Z",
+        "tags": [{
+            "tag": "Apoptosis",
+            "type": 1
+        }, {
+            "tag": "Congresses",
+            "type": 1
+        }, {
+            "tag": "HIV infections",
+            "type": 1
+        }, {
+            "tag": "Lymphocyte transformation",
+            "type": 1
+        }, {
+            "tag": "Pathophysiology",
+            "type": 1
+        }, {
+            "tag": "T-Lymphocytes",
+            "type": 1
+        }, {
+            "tag": "immunology",
+            "type": 1
+        }, {
+            "tag": "therapy",
+            "type": 1
+        }],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/7QWZUET3"
+        }
+    }
+}, {
+    "key": "9AIAUW49",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/9AIAUW49",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/9AIAUW49",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Zolman",
+        "parsedDate": "1993-00-00",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "9AIAUW49",
+        "version": 1,
+        "itemType": "book",
+        "title": "Biostatistics: Experimental Design and Statistical Inference",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "James F",
+            "lastName": "Zolman"
+        }],
+        "abstractNote": "",
+        "series": "",
+        "seriesNumber": "",
+        "volume": "",
+        "numberOfVolumes": "",
+        "edition": "",
+        "place": "New York",
+        "publisher": "Oxford University Press",
+        "date": "1993",
+        "numPages": "343",
+        "language": "",
+        "ISBN": "0195078101",
+        "shortTitle": "Biostatistics",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "cat.cisti-icist.nrc-cnrc.gc.ca Library Catalog",
+        "callNumber": "QH323.5 Z86",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-01-13T03:38:12Z",
+        "dateModified": "2011-01-13T03:38:12Z",
+        "tags": [{
+            "tag": "Biometry",
+            "type": 1
+        }, {
+            "tag": "Experimental design",
+            "type": 1
+        }],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/FK9IWEBD"
+        }
+    }
+}, {
+    "key": "X42A7DEE",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/X42A7DEE",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/X42A7DEE",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Institute of Physics (Great Britain)",
+        "parsedDate": "1993-00-00",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "X42A7DEE",
+        "version": 1,
+        "itemType": "book",
+        "title": "Electron Microscopy and Analysis 1993: Proceedings of the Institute of Physics Electron Microscopy and Analysis Group Conference, University of Liverpool, 14-17 September1993",
+        "creators": [{
+            "creatorType": "author",
+            "name": "Institute of Physics (Great Britain)"
+        }, {
+            "creatorType": "contributor",
+            "firstName": "A. J",
+            "lastName": "Craven"
+        }, {
+            "creatorType": "contributor",
+            "name": "Institute of Physics (Great Britain)"
+        }, {
+            "creatorType": "contributor",
+            "name": "Institute of Physics (Great Britain)"
+        }, {
+            "creatorType": "contributor",
+            "name": "Institute of Materials (Great Britain)"
+        }, {
+            "creatorType": "contributor",
+            "name": "Royal Microscopical Society (Great Britain)"
+        }, {
+            "creatorType": "contributor",
+            "name": "University of Liverpool"
+        }],
+        "abstractNote": "",
+        "series": "Institute of Physics conference series",
+        "seriesNumber": "no. 138",
+        "volume": "",
+        "numberOfVolumes": "",
+        "edition": "",
+        "place": "Bristol, UK",
+        "publisher": "Institute of Physics Pub",
+        "date": "1993",
+        "numPages": "546",
+        "language": "",
+        "ISBN": "0750303212",
+        "shortTitle": "Electron Microscopy and Analysis 1993",
+        "url": "",
+        "accessDate": "",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "cat.cisti-icist.nrc-cnrc.gc.ca Library Catalog",
+        "callNumber": "QC1 I584 v. 138",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-01-13T03:37:29Z",
+        "dateModified": "2011-01-13T03:37:29Z",
+        "tags": [{
+            "tag": "Analysis",
+            "type": 1
+        }, {
+            "tag": "Congresses",
+            "type": 1
+        }, {
+            "tag": "Electron microscopy",
+            "type": 1
+        }, {
+            "tag": "Materials",
+            "type": 1
+        }, {
+            "tag": "Microscopy",
+            "type": 1
+        }],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/E6IGUT5Z"
+        }
+    }
+}, {
+    "key": "33TK9NH9",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/33TK9NH9",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/33TK9NH9",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "creatorSummary": "Lima et al.",
+        "parsedDate": "2011-01-07",
+        "numChildren": 1
+    },
+    "data": {
+        "key": "33TK9NH9",
+        "version": 1,
+        "itemType": "journalArticle",
+        "title": "Biscrolling Nanotube Sheets and Functional Guests into Yarns",
+        "creators": [{
+            "creatorType": "author",
+            "firstName": "Márcio D.",
+            "lastName": "Lima"
+        }, {
+            "creatorType": "author",
+            "firstName": "Shaoli",
+            "lastName": "Fang"
+        }, {
+            "creatorType": "author",
+            "firstName": "Xavier",
+            "lastName": "Lepró"
+        }, {
+            "creatorType": "author",
+            "firstName": "Chihye",
+            "lastName": "Lewis"
+        }, {
+            "creatorType": "author",
+            "firstName": "Raquel",
+            "lastName": "Ovalle-Robles"
+        }, {
+            "creatorType": "author",
+            "firstName": "Javier",
+            "lastName": "Carretero-González"
+        }, {
+            "creatorType": "author",
+            "firstName": "Elizabeth",
+            "lastName": "Castillo-Martínez"
+        }, {
+            "creatorType": "author",
+            "firstName": "Mikhail E.",
+            "lastName": "Kozlov"
+        }, {
+            "creatorType": "author",
+            "firstName": "Jiyoung",
+            "lastName": "Oh"
+        }, {
+            "creatorType": "author",
+            "firstName": "Neema",
+            "lastName": "Rawat"
+        }, {
+            "creatorType": "author",
+            "firstName": "Carter S.",
+            "lastName": "Haines"
+        }, {
+            "creatorType": "author",
+            "firstName": "Mohammad H.",
+            "lastName": "Haque"
+        }, {
+            "creatorType": "author",
+            "firstName": "Vaishnavi",
+            "lastName": "Aare"
+        }, {
+            "creatorType": "author",
+            "firstName": "Stephanie",
+            "lastName": "Stoughton"
+        }, {
+            "creatorType": "author",
+            "firstName": "Anvar A.",
+            "lastName": "Zakhidov"
+        }, {
+            "creatorType": "author",
+            "firstName": "Ray H.",
+            "lastName": "Baughman"
+        }],
+        "abstractNote": "Multifunctional applications of textiles have been limited by the inability to spin important materials into yarns. Generically applicable methods are demonstrated for producing weavable yarns comprising up to 95 weight percent of otherwise unspinnable particulate or nanofiber powders that remain highly functional. Scrolled 50-nanometer-thick carbon nanotube sheets confine these powders in the galleries of irregular scroll sacks whose observed complex structures are related to twist-dependent extension of Archimedean spirals, Fermat spirals, or spiral pairs into scrolls. The strength and electronic connectivity of a small weight fraction of scrolled carbon nanotube sheet enables yarn weaving, sewing, knotting, braiding, and charge collection. This technology is used to make yarns of superconductors, lithium-ion battery materials, graphene ribbons, catalytic nanofibers for fuel cells, and titanium dioxide for photocatalysis.",
+        "publicationTitle": "Science",
+        "volume": "331",
+        "issue": "6013",
+        "pages": "51 -55",
+        "date": "January 07 , 2011",
+        "series": "",
+        "seriesTitle": "",
+        "seriesText": "",
+        "journalAbbreviation": "",
+        "language": "",
+        "DOI": "10.1126/science.1195912",
+        "ISSN": "",
+        "shortTitle": "",
+        "url": "http://www.sciencemag.org/content/331/6013/51.abstract",
+        "accessDate": "2011-01-13T02:50:48Z",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "Highwire 2.0",
+        "callNumber": "",
+        "rights": "",
+        "extra": "",
+        "dateAdded": "2011-01-13T02:50:48Z",
+        "dateModified": "2011-01-13T02:50:48Z",
+        "tags": [
+
+        ],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/DNDBRG8U"
+        }
+    }
+}, {
+    "key": "U52JBZ4X",
+    "version": 1,
+    "library": {
+        "type": "user",
+        "id": 475425,
+        "name": "Z public library",
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/z_public_library",
+                "type": "text/html"
+            }
+        }
+    },
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/475425/items/U52JBZ4X",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/z_public_library/items/U52JBZ4X",
+            "type": "text/html"
+        }
+    },
+    "meta": {
+        "parsedDate": "2004-12-01",
+        "numChildren": 0
+    },
+    "data": {
+        "key": "U52JBZ4X",
+        "version": 1,
+        "itemType": "journalArticle",
+        "title": "Front Matter",
+        "creators": [
+
+        ],
+        "abstractNote": "",
+        "publicationTitle": "Crustaceana",
+        "volume": "77",
+        "issue": "11",
+        "pages": "",
+        "date": "December 01, 2004",
+        "series": "",
+        "seriesTitle": "",
+        "seriesText": "",
+        "journalAbbreviation": "",
+        "language": "",
+        "DOI": "",
+        "ISSN": "0011216X",
+        "shortTitle": "",
+        "url": "http://www.jstor.org/stable/20107443",
+        "accessDate": "2011-01-13T02:32:38Z",
+        "archive": "",
+        "archiveLocation": "",
+        "libraryCatalog": "JSTOR",
+        "callNumber": "",
+        "rights": "",
+        "extra": "ArticleType: misc / Full publication date: Dec., 2004 / Copyright © 2004 BRILL",
+        "dateAdded": "2011-01-13T02:32:38Z",
+        "dateModified": "2011-01-13T02:32:38Z",
+        "tags": [
+
+        ],
+        "collections": [
+            "BX9965IJ",
+            "9KH9TNSJ"
+        ],
+        "relations": {
+            "owl:sameAs": "http://zotero.org/groups/36222/items/CSDUTFSZ"
+        }
+    }
+}]
