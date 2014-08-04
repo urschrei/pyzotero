@@ -146,10 +146,12 @@ def retrieve(func):
                 self.request.url).group(0) or 'json'
         # JSON by default
         if fmt == 'json':
-            # self.etags = no idea where these come from
-            # self.links = these come from the header now
-            ipdb.set_trace()
+            self.links = self._extract_links()
             return retrieved
+
+
+
+
         # step 1: process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
