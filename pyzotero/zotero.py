@@ -124,7 +124,6 @@ def retrieve(func):
         passed to _etags in order to extract the etag attributes
         from each entry, then to feedparser, then to the correct processor
         """
-        import ipdb
         if kwargs:
             self.add_parameters(**kwargs)
         retrieved = self._retrieve_data(func(self, *args))
