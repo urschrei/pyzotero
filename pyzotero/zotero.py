@@ -147,11 +147,6 @@ def retrieve(func):
         # JSON by default
         if fmt == 'json':
             self.links = self._extract_links()
-            return retrieved
-
-
-
-
         # step 1: process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
