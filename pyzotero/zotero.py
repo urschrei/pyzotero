@@ -131,6 +131,7 @@ def retrieve(func):
         passed to _etags in order to extract the etag attributes
         from each entry, then to feedparser, then to the correct processor
         """
+        import ipdb
         if kwargs:
             self.add_parameters(**kwargs)
         retrieved = self._retrieve_data(func(self, *args))
@@ -142,7 +143,13 @@ def retrieve(func):
         fmt = self.fmt.search(
             self.request.url) and \
             self.fmt.search(
-                self.request.url).group(0) or 'atom'
+                self.request.url).group(0) or 'json'
+        # JSON by default
+        if fmt == 'json':
+            # self.etags = no idea where these come from
+            # self.links = these come from the header now
+            ipdb.set_trace()
+            return retrieved
         # step 1: process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
@@ -244,7 +251,7 @@ class Zotero(object):
         """
         Retrieve Zotero items via the API
         Combine endpoint and request to access the specific resource
-        Returns an Atom document
+        Returns a JSON document
         """
         full_url = '%s%s' % (self.endpoint, request)
         self.request = requests.get(
@@ -254,13 +261,14 @@ class Zotero(object):
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.request)
-        return self.request.content.decode('utf8')
+        return self.request.json()
 
     def _extract_links(self, doc):
         """
         Extract self, first, next, last links from an Atom doc, and add
         an instance's API key to the links if it exists
         """
+        links = self.request.header['Link']
         extracted = dict()
         try:
             for link in doc['feed']['links'][:-1]:
@@ -276,6 +284,7 @@ class Zotero(object):
             return extracted
         except KeyError:
             # No links present, because it's a single item
+
             return None
 
     def _updated(self, url, payload, template=None):
