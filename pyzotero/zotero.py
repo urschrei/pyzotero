@@ -263,28 +263,22 @@ class Zotero(object):
             error_handler(self.request)
         return self.request.json()
 
-    def _extract_links(self, doc):
+    def _extract_links(self):
         """
         Extract self, first, next, last links from an Atom doc, and add
         an instance's API key to the links if it exists
         """
-        links = self.request.header['Link']
         extracted = dict()
         try:
-            for link in doc['feed']['links'][:-1]:
-                url = urlparse(link['href'])
-                try:
-                    extracted[link['rel']] = '{0}?{1}&key={2}'.format(
-                        url[2],
-                        url[4],
-                        self.api_key)
-                except AttributeError:
-                    # no API key present
-                    extracted[link['rel']] = '{0}?{1}'.format(url[2], url[4])
+            for key, value in self.request.links.items():
+                parsed = urlparse(value['url'])
+                fragment = "{path}?{query}".format(
+                    path=parsed[2],
+                    query=parsed[4])
+                extracted[key] = fragment
             return extracted
         except KeyError:
             # No links present, because it's a single item
-
             return None
 
     def _updated(self, url, payload, template=None):
