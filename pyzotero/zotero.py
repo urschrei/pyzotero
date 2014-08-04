@@ -26,7 +26,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 __author__ = 'urschrei@gmail.com'
-__version__ = '0.10.3'
+__version__ = '0.10.4'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -92,14 +92,7 @@ def token():
 def etags(incoming):
     """ Return a list of etags parsed out of the XML response
     """
-    # Parse Atom as straight XML in order to get the etags FFS
-    atom_ns = '{http://www.w3.org/2005/Atom}'
-    tree = et.fromstring(incoming.encode("utf8"))
-    try:
-        return [entry.attrib['{http://zotero.org/ns/api}etag'] for
-                entry in tree.findall('.//{0}content'.format(atom_ns))]
-    except KeyError:
-        pass
+    pass
 
 
 # Override feedparser's buggy isBase64 method until they fix it
@@ -135,6 +128,8 @@ def retrieve(func):
         if kwargs:
             self.add_parameters(**kwargs)
         retrieved = self._retrieve_data(func(self, *args))
+        # we now always have links in the header response
+        self.links = self._extract_links()
         # determine content and format, based on url params
         content = self.content.search(
             self.request.url) and \
@@ -144,18 +139,18 @@ def retrieve(func):
             self.request.url) and \
             self.fmt.search(
                 self.request.url).group(0) or 'json'
+        processor = self.processors.get(content)
+        # clear all query parameters
+        self.url_params = None
         # JSON by default
         if fmt == 'json':
-            self.links = self._extract_links()
-        # step 1: process atom if it's atom-formatted
+            if content == 'bib':
+                return retrieved
+            return retrieved
+        # Or process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
             processor = self.processors.get(content)
-            # optional step 2: if the content is JSON, extract its etags
-            if processor == self._json_processor:
-                self.etags = etags(retrieved)
-            # extract next, previous, first, last links
-            self.links = self._extract_links(parsed)
             # process the content correctly with a custom rule
             return processor(parsed)
         # otherwise, just return the unparsed content as is
@@ -258,12 +253,14 @@ class Zotero(object):
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.request)
-        return self.request.json()
+        if self.request.headers['Content-Type'] == 'application/json':
+            return self.request.json()
+        else:
+            return self.request.text
 
     def _extract_links(self):
         """
-        Extract self, first, next, last links from an Atom doc, and add
-        an instance's API key to the links if it exists
+        Extract self, first, next, last links from a request response
         """
         extracted = dict()
         try:
@@ -297,9 +294,7 @@ class Zotero(object):
                 **payload)
             headers = dict({
                 'If-Modified-Since':
-                payload['updated'].strftime("%a, %d %b %Y %H:%M:%S %Z"),
-                'User-Agent':
-                'Pyzotero/%s' % __version__}.items() +
+                payload['updated'].strftime("%a, %d %b %Y %H:%M:%S %Z")}.items() +
                 self.default_headers().items())
             # perform the request, and check whether the response returns 304
             r = requests.get(query, headers=headers)
@@ -314,7 +309,6 @@ class Zotero(object):
     def add_parameters(self, **params):
         """ Add URL parameters. Will always add the api key if it exists
         """
-        # we don't really need this anymore
         self.url_params = None
         self.url_params = urlencode(params)
 
@@ -368,9 +362,8 @@ class Zotero(object):
         query = self._build_query(query)
         data = self._retrieve_data(query)
         self.url_params = None
-        parsed = feedparser.parse(data)
         # extract the 'total items' figure
-        return int(parsed.feed['zapi_totalresults'])
+        return int(self.request.headers['Total-Results'])
 
     @retrieve
     def items(self, **kwargs):
@@ -417,7 +410,7 @@ class Zotero(object):
     def tag_items(self, tag, **kwargs):
         """ Get items for a specific tag
         """
-        query_string = '/{t}/{u}/tags/{ta}/items'.format(
+        query_string = '/{t}/{u}/tags/{ta}'.format(
             u=self.library_id,
             t=self.library_type,
             ta=tag)
@@ -545,35 +538,6 @@ class Zotero(object):
                      for e in retrieved.entries]
         except KeyError:
             return self._tags_data(retrieved)
-        # try to add various namespaced values to the items
-        zapi_keys = ['key']
-        for zapi in zapi_keys:
-            try:
-                for key, _ in enumerate(items):
-                    items[key][zapi] = \
-                        retrieved.entries[key]['zapi_%s' % zapi]
-            except KeyError:
-                pass
-        for key, _ in enumerate(items):
-            try:
-        # add the etags
-                items[key][u'etag'] = self.etags[key]
-            except TypeError:
-                pass
-        # try to add the updated time in the same format the server expects it
-            items[key][u'updated'] = \
-                time.strftime(
-                    "%a, %d %b %Y %H:%M:%S %Z",
-                    retrieved.entries[key]['updated_parsed'])
-        # Try to get a group ID, and add it to the dict
-        try:
-            group_id = [urlparse(g['links'][0]['href']).path.split('/')[2]
-                        for g in retrieved.entries]
-            for k, val in enumerate(items):
-                val[u'group_id'] = group_id[k]
-        except KeyError:
-            pass
-        self.url_params = None
         return items
 
     def _csljson_processor(self, retrieved):
@@ -675,23 +639,21 @@ class Zotero(object):
             """
             verify(payload)
             if not parentid:
-                liblevel = '/{t}/{u}/items?key={k}'
+                liblevel = '/{t}/{u}/items'
             else:
-                liblevel = '/{t}/{u}/items/{i}/children?key={k}'
+                liblevel = '/{t}/{u}/items/{i}/children'
             # Create one or more new attachments
-            headers = {
+            headers = dict({
                 'X-Zotero-Write-Token': token(),
                 'Content-Type': 'application/json',
-                'User-Agent': 'Pyzotero/%s' % __version__
-            }
+            }.items() + self.default_headers().items())
             to_send = json.dumps({'items': payload})
             req = requests.post(
                 url=self.endpoint
                 + liblevel.format(
                     t=self.library_type,
                     u=self.library_id,
-                    i=parentid,
-                    k=self.api_key),
+                    i=parentid),
                 data=to_send,
                 headers=headers)
             try:
@@ -710,11 +672,10 @@ class Zotero(object):
             with open(attachment, 'rb') as f:
                 for chunk in iter(lambda: f.read(8192), b''):
                     digest.update(chunk)
-            auth_headers = {
+            auth_headers = dict({
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'If-None-Match': '*',
-                'User-Agent': 'Pyzotero/%s' % __version__
-            }
+            }.items() + self.default_headers().items())
             data = {
                 'md5': digest.hexdigest(),
                 'filename': os.path.basename(attachment),
@@ -946,7 +907,6 @@ class Zotero(object):
         headers = {
             'X-Zotero-Write-Token': token(),
             'Content-Type': 'application/json',
-            'User-Agent': 'Pyzotero/%s' % __version__
         }
         req = requests.post(
             url=self.endpoint
@@ -980,14 +940,12 @@ class Zotero(object):
             payload['parent'] = ''
         headers = {
             'X-Zotero-Write-Token': token(),
-            'User-Agent': 'Pyzotero/%s' % __version__
         }
         req = requests.post(
             url=self.endpoint
-            + '/{t}/{u}/collections?key={k}'.format(
+            + '/{t}/{u}/collections'.format(
                 t=self.library_type,
-                u=self.library_id,
-                k=self.api_key),
+                u=self.library_id),
             headers=headers,
             data=json.dumps(payload))
         try:
@@ -1008,13 +966,11 @@ class Zotero(object):
         to_send = (i for i in self._cleanup(payload))
         headers = {
             'If-Match': tkn,
-            'User-Agent': 'Pyzotero/%s' % __version__
         }
         req = requests.put(
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
-                t=self.library_type, u=self.library_id, c=key)
-            + '?' + urlencode({'key': self.api_key}),
+                t=self.library_type, u=self.library_id, c=key),
             headers=headers,
             payload=to_send)
         try:
@@ -1068,14 +1024,12 @@ class Zotero(object):
         headers = {
             'If-Match': etag,
             'Content-Type': 'application/json',
-            'User-Agent': 'Pyzotero/%s' % __version__,
         }
         req = requests.put(
             url=self.endpoint
             + '/{t}/{u}/items/'.format(
                 t=self.library_type, u=self.library_id)
-            + ident
-            + '?' + urlencode({'key': self.api_key}),
+            + ident,
             headers=headers,
             data=to_send)
         try:
@@ -1083,8 +1037,7 @@ class Zotero(object):
         except requests.exceptions.HTTPError:
             error_handler(req)
         data = req.text
-        self.etags = etags(data)
-        return self._json_processor(feedparser.parse(data))
+        return data
 
     def addto_collection(self, collection, payload):
         """
@@ -1094,16 +1047,13 @@ class Zotero(object):
         """
         # create a string containing item IDs
         to_send = ' '.join([p['key'].encode('utf8') for p in payload])
-        headers = {
-            'User-Agent': 'Pyzotero/%s' % __version__
-        }
+        headers = self.default_headers()
         req = requests.post(
             url=self.endpoint
-            + '/{t}/{u}/collections/{c}/items?key={k}'.format(
+            + '/{t}/{u}/collections/{c}/itemsx'.format(
                 t=self.library_type,
                 u=self.library_id,
-                c=collection.upper(),
-                k=self.api_key),
+                c=collection.upper()),
             data=to_send,
             headers=headers)
         try:
@@ -1125,8 +1075,8 @@ class Zotero(object):
                 t=self.library_type,
                 u=self.library_id,
                 c=collection.upper())
-            + ident + '?' + urlencode({'key': self.api_key}),
-            headers={'User-Agent': 'Pyzotero/%s' % __version__})
+            + ident,
+            headers=self.default_headers())
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1140,15 +1090,14 @@ class Zotero(object):
         """
         etag = payload['etag']
         ident = payload['key']
-        headers = {
-            'If-Match': etag,
-            'User-Agent': 'Pyzotero/%s' % __version__,
-        }
+        headers = dict({
+            'If-Match': etag
+        }.items() + self.default_headers())
         req = requests.delete(
             url=self.endpoint
             + '/{t}/{u}/items/'.format(
                 t=self.library_type, u=self.library_id)
-            + ident + '?' + urlencode({'key': self.api_key}),
+            + ident,
             headers=headers
         )
         try:
@@ -1164,17 +1113,15 @@ class Zotero(object):
         """
         etag = payload['etag']
         ident = payload['key']
-        headers = {
+        headers = dict({
             'If-Match': etag,
-            'User-Agent': 'Pyzotero/%s' % __version__,
-        }
+        }.items() + self.default_headers())
         req = requests.delete(
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
                 t=self.library_type,
                 u=self.library_id,
-                c=ident) +
-            '?' + urlencode({'key': self.api_key}),
+                c=ident),
             headers=headers)
         try:
             req.raise_for_status()
