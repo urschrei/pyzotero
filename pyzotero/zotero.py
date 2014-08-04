@@ -27,6 +27,7 @@ from __future__ import unicode_literals
 
 __author__ = 'urschrei@gmail.com'
 __version__ = '0.10.3'
+__api_version__ = '3'
 
 # Python 3 compatibility faffing
 try:
@@ -180,7 +181,6 @@ class Zotero(object):
         # api_key is not required for public individual or group libraries
         if api_key:
             self.api_key = api_key
-        self.api_version = 3
         self.preserve_json_order = preserve_json_order
         self.url_params = None
         self.etags = None
@@ -215,12 +215,9 @@ class Zotero(object):
         It's always OK to include these headers
         """
         return {
-            "User-Agent": "Pyzotero/%s",
-            "Authorization": "Bearer %s",
-            "Zotero-Api-Version": "%s" % (
-                __version__,
-                self.api_key,
-                self.api_version)}
+            "User-Agent": "Pyzotero/%s" % __version__,
+            "Authorization": "Bearer %s" % self.api_key,
+            "Zotero-Api-Version": "%s" % __api_version__}
 
     def _cache(self, template, key):
         """
