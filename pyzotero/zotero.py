@@ -218,7 +218,7 @@ class Zotero(object):
             "User-Agent": "Pyzotero/%s",
             "Authorization": "Bearer %s",
             "Zotero-Api-Version": "%s" % (
-                __version__),
+                __version__,
                 self.api_key,
                 self.api_version)}
 
