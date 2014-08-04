@@ -96,8 +96,8 @@ class ZoteroTests(unittest.TestCase):
           <id>http://zotero.org/users/436/items?limit=1&amp;content=json</id>
           <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
           <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json&amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json&amp;start=1128"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;amp;start=1128"/>
           <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items?limit=1"/>
           <zapi:totalResults>1129</zapi:totalResults>
           <zapi:apiVersion>1</zapi:apiVersion>
@@ -126,8 +126,8 @@ class ZoteroTests(unittest.TestCase):
           <id>http://zotero.org/users/436/tags?limit=1&amp;content=json</id>
           <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json"/>
           <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json&amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json&amp;start=319"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;amp;start=319"/>
           <link rel="alternate" type="text/html" href="http://zotero.org/users/436/tags?limit=1"/>
           <zapi:totalResults>320</zapi:totalResults>
           <zapi:apiVersion>1</zapi:apiVersion>
@@ -152,8 +152,8 @@ class ZoteroTests(unittest.TestCase):
           <id>http://zotero.org/users/436/groups?limit=1&amp;content=json</id>
           <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json"/>
           <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json&amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json&amp;start=1"/>
+          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;amp;start=1"/>
+          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;amp;start=1"/>
           <link rel="alternate" type="text/html" href="http://zotero.org/users/436/groups?limit=1"/>
           <zapi:totalResults>2</zapi:totalResults>
           <zapi:apiVersion>1</zapi:apiVersion>
@@ -390,7 +390,7 @@ class ZoteroTests(unittest.TestCase):
         HTTPretty.enable()
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
             body=self.items_doc)
 
     @httpretty.activate
@@ -434,7 +434,6 @@ class ZoteroTests(unittest.TestCase):
             'https://api.zotero.org/users/myuserID/items',
             content_type='application/json',
             body=self.item_doc)
-
         items_data = zot.items()
         self.assertEqual(u'X42A7DEE', items_data['data']['key'])
         self.assertEqual(u'Institute of Physics (Great Britain)', items_data['data']['creators'][0]['name'])
@@ -449,7 +448,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserid', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserid/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserid/items?key=myuserkey',
+            content_type='application/json',
             body=self.attachments_doc)
         attachments_data = zot.items()
         self.assertEqual(u'1641 Depositions', attachments_data[0]['title'])
@@ -472,31 +472,33 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items/ABC123/children?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items/ABC123/children?key=myuserkey',
+            content_type='application/json',
             body=self.items_doc)
         items_data = zot.children('ABC123')
         self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
 
-    @httpretty.activate
-    def testEncodings(self):
-        """ Should be able to print unicode strings to stdout, and convert
-            them to UTF-8 before printing them
-        """
-        zot = z.Zotero('myuserID', 'user', 'myuserkey')
-        HTTPretty.register_uri(
-            HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
-            body=self.items_doc)
-        items_data = zot.items()
-        try:
-            print(items_data[0]['title'])
-        except UnicodeError:
-            self.fail('Your Python install appears unable to print unicode')
-        try:
-            print(items_data[0]['title'].encode('utf-8'))
-        except UnicodeError:
-            self.fail(
-                'Your Python install appears to dislike encoding unicode strings as UTF-8')
+    # @httpretty.activate
+    # def testEncodings(self):
+    #     """ Should be able to print unicode strings to stdout, and convert
+    #         them to UTF-8 before printing them
+    #     """
+    #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
+    #     HTTPretty.register_uri(
+    #         HTTPretty.GET,
+    #         'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+    #         content_type='application/json',
+    #         body=self.items_doc)
+    #     items_data = zot.items()
+    #     try:
+    #         print(items_data[0]['title'])
+    #     except UnicodeError:
+    #         self.fail('Your Python install appears unable to print unicode')
+    #     try:
+    #         print(items_data[0]['title'].encode('utf-8'))
+    #     except UnicodeError:
+    #         self.fail(
+    #             'Your Python install appears to dislike encoding unicode strings as UTF-8')
 
     @httpretty.activate
     def testCitUTF8(self):
@@ -518,7 +520,7 @@ class ZoteroTests(unittest.TestCase):
         zot.url_params = 'content=bib'
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
             body=self.bib_doc)
         items_data = zot.items()
         dec = items_data[0]
@@ -533,7 +535,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/collections?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/collections?key=myuserkey',
+            content_type='application/json',
             body=self.collections_doc)
         collections_data = zot.collections()
         self.assertEqual(u'HTUHVPE5', collections_data[0]['key'])
@@ -548,9 +551,10 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/tags?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/tags?key=myuserkey',
+            content_type='application/json',
             body=self.tags_doc)
-        # /users/myuserID/tags?content=json&key=myuserkey
+        # /users/myuserID/tags?key=myuserkey
         tags_data = zot.tags()
         self.assertEqual('Authority in literature', tags_data[0])
 
@@ -563,7 +567,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/groups?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/groups?key=myuserkey',
+            content_type='application/json',
             body=self.groups_doc)
         groups_data = zot.groups()
         self.assertEqual('DFW', groups_data[0]['name'])
@@ -577,7 +582,7 @@ class ZoteroTests(unittest.TestCase):
         zot.add_parameters(start=5, limit=10)
         zot._build_query('/whatever')
         zot.add_parameters(start=2)
-        self.assertEqual('content=json&start=2&key=myuserkey', zot.url_params)
+        self.assertEqual('start=2&key=myuserkey', zot.url_params)
 
     @httpretty.activate
     def testParamsBlankAfterCall(self):
@@ -586,7 +591,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            content_type='application/json',
             body=self.items_doc)
         _ = zot.items()
         self.assertEqual(None, zot.url_params)
@@ -598,7 +604,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            content_type='application/json',
             body=self.items_doc,
             status=403)
         with self.assertRaises(z.ze.UserNotAuthorised):
@@ -611,7 +618,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            content_type='application/json',
             body=self.items_doc,
             status=400)
         with self.assertRaises(z.ze.UnsupportedParams):
@@ -624,8 +632,9 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
             body=self.items_doc,
+            content_type='application/json',
             status=404)
         with self.assertRaises(z.ze.ResourceNotFound):
             zot.items()
@@ -637,7 +646,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            content_type='application/json',
             body=self.items_doc,
             status=500)
         with self.assertRaises(z.ze.HTTPError):
@@ -725,7 +735,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
             body=self.items_doc)
         items_data = zot.items()
         items_data[0]['title'] = 'flibble'
@@ -755,7 +765,7 @@ class ZoteroTests(unittest.TestCase):
     #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
     #     HTTPretty.register_uri(
     #         HTTPretty.GET,
-    #         'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
+    #         'https://api.zotero.org/users/myuserID/items?key=myuserkey',
     #         responses=[
     #             HTTPretty.Response(body=self.items_doc, status=429),
     #             HTTPretty.Response(body=self.items_doc, status=429),
