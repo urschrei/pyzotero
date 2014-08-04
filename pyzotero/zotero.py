@@ -298,11 +298,12 @@ class Zotero(object):
                 u=self.library_id,
                 t=self.library_type,
                 **payload)
-            headers = {
+            headers = dict({
                 'If-Modified-Since':
                 payload['updated'].strftime("%a, %d %b %Y %H:%M:%S %Z"),
                 'User-Agent':
-                'Pyzotero/%s' % __version__}
+                'Pyzotero/%s' % __version__}.items() +
+                self.default_headers().items())
             # perform the request, and check whether the response returns 304
             r = requests.get(query, headers=headers)
             try:
