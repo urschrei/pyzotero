@@ -325,7 +325,7 @@ class Zotero(object):
         """
         # we don't really need this anymore
         self.url_params = None
-        pass
+        self.url_params = urlencode(params)
 
     def _build_query(self, query_string):
         """
