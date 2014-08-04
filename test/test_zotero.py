@@ -21,11 +21,14 @@ You should have received a copy of the GNU General Public License
 along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import unittest
+import httpretty
 from httpretty import HTTPretty, httprettified
 from pyzotero.pyzotero import zotero as z
 from datetime import datetime
 import pytz
+from dateutil import parser
 import json
 
 
@@ -35,37 +38,13 @@ class ZoteroTests(unittest.TestCase):
     def setUp(self):
         """ Set stuff up
         """
-        self.items_doc = """<?xml version="1.0"?>
-        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-          <title>Zotero / urschrei / Items</title>
-          <id>http://zotero.org/users/436/items?limit=3&amp;content=json</id>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
-          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json&amp;start=3"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json&amp;start=1086"/>
-          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items?limit=1"/>
-          <zapi:totalResults>1087</zapi:totalResults>
-          <zapi:apiVersion>1</zapi:apiVersion>
-          <updated>2011-05-28T11:07:58Z</updated>
-          <entry>
-            <title>Copyright in custom code: Who owns commissioned software?</title>
-            <author>
-              <name>urschrei</name>
-              <uri>http://zotero.org/urschrei</uri>
-            </author>
-            <id>http://zotero.org/urschrei/items/T4AH4RZA</id>
-            <published>2011-02-14T00:27:03Z</published>
-            <updated>2011-02-14T00:27:03Z</updated>
-            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/T4AH4RZA?content=json"/>
-            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/T4AH4RZA"/>
-            <zapi:key>T4AH4RZA</zapi:key>
-            <zapi:itemType>journalArticle</zapi:itemType>
-            <zapi:creatorSummary>McIntyre</zapi:creatorSummary>
-            <zapi:numChildren>1</zapi:numChildren>
-            <zapi:numTags>0</zapi:numTags>
-            <content type="application/json" zapi:etag="7252daf2495feb8ec89c61f391bcba24">{"itemType":"journalArticle","title":"Copyright in custom code: Who owns commissioned software?","creators":[{"creatorType":"author","firstName":"T. J.","lastName":"McIntyre"}],"abstractNote":"","publicationTitle":"Journal of Intellectual Property Law \u0026 Practice","volume":"","issue":"","pages":"","date":"2007","series":"","seriesTitle":"","seriesText":"","journalAbbreviation":"","language":"","DOI":"","ISSN":"1747-1532","shortTitle":"Copyright in custom code","url":"","accessDate":"","archive":"","archiveLocation":"","libraryCatalog":"Google Scholar","callNumber":"","rights":"","extra":"","tags":[]}</content>
-          </entry>
-        </feed>"""
+        cwd = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(cwd, 'api_responses/item.json'), 'r') as f:
+            self.item_doc = f.read()
+        with open(os.path.join(cwd, 'api_responses/items.json'), 'r') as f:
+            self.items_doc = f.read()
+        with open(os.path.join(cwd, 'api_responses/collections.json'), 'r') as c:
+            self.collections_doc = c.read()
         self.citation_doc = """<?xml version="1.0" encoding="UTF-8"?>
             <entry xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
             <title>The power broker : Robert Moses and the fall of New York</title>
@@ -139,35 +118,6 @@ class ZoteroTests(unittest.TestCase):
             <zapi:itemType>attachment</zapi:itemType>
             <zapi:numTags>0</zapi:numTags>
             <content zapi:type="json" zapi:etag="1686f563f9b4cb1db3a745a920bf0afa">{"itemType":"attachment","title":"1641 Depositions","accessDate":"2012-01-11 19:54:47","url":"http://1641.tcd.ie/project-conservation.php","note":"","linkMode":1,"mimeType":"text/html","charset":"utf-8","tags":[]}</content>
-          </entry>
-        </feed>"""
-        self.collections_doc = """<?xml version="1.0"?>
-        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-          <title>Zotero / urschrei / Collections</title>
-          <id>http://zotero.org/users/436/collections?limit=1&amp;content=json</id>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;content=json"/>
-          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;content=json"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;content=json&amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/collections?limit=1&amp;content=json&amp;start=37"/>
-          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/collections?limit=1"/>
-          <zapi:totalResults>38</zapi:totalResults>
-          <zapi:apiVersion>1</zapi:apiVersion>
-          <updated>2011-03-16T15:00:09Z</updated>
-          <entry>
-            <title>Badiou</title>
-            <author>
-              <name>urschrei</name>
-              <uri>http://zotero.org/urschrei</uri>
-            </author>
-            <id>http://zotero.org/urschrei/collections/HTUHVPE5</id>
-            <published>2011-03-16T14:48:18Z</published>
-            <updated>2011-03-16T15:00:09Z</updated>
-            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/collections/HTUHVPE5"/>
-            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/collections/HTUHVPE5"/>
-            <zapi:key>HTUHVPE5</zapi:key>
-            <zapi:numCollections>0</zapi:numCollections>
-            <zapi:numItems>27</zapi:numItems>
-            <content type="application/json" zapi:etag="7252daf2495feb8ec89c61f391bcba24">{"name":"A Midsummer Night's Dream","parent":false}</content>
           </entry>
         </feed>"""
         self.tags_doc = """<?xml version="1.0"?>
@@ -443,7 +393,7 @@ class ZoteroTests(unittest.TestCase):
             'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
             body=self.items_doc)
 
-    @httprettified
+    @httpretty.activate
     def testFailWithoutCredentials(self):
         """ Instance creation should fail, because we're leaving out a
             credential
@@ -451,15 +401,15 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.MissingCredentials):
             zf = z.Zotero('myuserID')
 
-    @httprettified
+    @httpretty.activate
     def testRequestBuilder(self):
         """ Should add the user key, then url-encode all other added parameters
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         zot.add_parameters(limit=0, start=7)
-        self.assertEqual('content=json&start=7&limit=0&key=myuserkey', zot.url_params)
+        self.assertEqual('start=7&limit=0', zot.url_params)
 
-    @httprettified
+    @httpretty.activate
     def testBuildQuery(self):
         """ Check that spaces etc. are being correctly URL-encoded and added
             to the URL parameters
@@ -469,11 +419,11 @@ class ZoteroTests(unittest.TestCase):
         query_string = '/users/{u}/tags/hi there/items'
         query = zot._build_query(query_string)
         self.assertEqual(
-            '/users/myuserID/tags/hi%20there/items?content=json&start=10&key=myuserkey',
+            '/users/myuserID/tags/hi%20there/items?start=10',
             query)
 
-    @httprettified
-    def testParseItemAtomDoc(self):
+    @httpretty.activate
+    def testParseItemJSONDoc(self):
         """ Should successfully return a list of item dicts, key should match
             input doc's zapi:key value, and author should have been correctly
             parsed out of the XHTML payload
@@ -481,22 +431,19 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=json&key=myuserkey',
-            body=self.items_doc)
+            'https://api.zotero.org/users/myuserID/items',
+            content_type='application/json',
+            body=self.item_doc)
+
         items_data = zot.items()
-        self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
-        self.assertEqual(u'7252daf2495feb8ec89c61f391bcba24', items_data[0]['etag'])
-        self.assertEqual(u'McIntyre', items_data[0]['creators'][0]['lastName'])
-        self.assertEqual(u'journalArticle', items_data[0]['itemType'])
-        test_dt = datetime.strptime(
-            u'Mon, 14 Feb 2011 00:27:03 UTC',
-            "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=pytz.timezone('GMT'))
-        incoming_dt = datetime.strptime(
-            items_data[0]['updated'],
-            "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=pytz.timezone('GMT'))
+        self.assertEqual(u'X42A7DEE', items_data['data']['key'])
+        self.assertEqual(u'Institute of Physics (Great Britain)', items_data['data']['creators'][0]['name'])
+        self.assertEqual(u'book', items_data['data']['itemType'])
+        test_dt = parser.parse("2011-01-13T03:37:29Z")
+        incoming_dt = parser.parse(items_data['data']['dateModified'])
         self.assertEqual(test_dt, incoming_dt)
 
-    @httprettified
+    @httpretty.activate
     def testParseAttachmentsAtomDoc(self):
         """ Ensure that attachments are being correctly parsed """
         zot = z.Zotero('myuserid', 'user', 'myuserkey')
@@ -507,7 +454,7 @@ class ZoteroTests(unittest.TestCase):
         attachments_data = zot.items()
         self.assertEqual(u'1641 Depositions', attachments_data[0]['title'])
 
-    @httprettified
+    @httpretty.activate
     def testParseKeysResponse(self):
         """ Check that parsing plain keys returned by format = keys works """
         zot = z.Zotero('myuserid', 'user', 'myuserkey')
@@ -519,7 +466,7 @@ class ZoteroTests(unittest.TestCase):
         response = zot.items()
         self.assertEqual('ABCDE\nFGHIJ\nKLMNO\n', response)
 
-    @httprettified
+    @httpretty.activate
     def testParseChildItems(self):
         """ Try and parse child items """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
@@ -530,7 +477,7 @@ class ZoteroTests(unittest.TestCase):
         items_data = zot.children('ABC123')
         self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
 
-    @httprettified
+    @httpretty.activate
     def testEncodings(self):
         """ Should be able to print unicode strings to stdout, and convert
             them to UTF-8 before printing them
@@ -551,7 +498,7 @@ class ZoteroTests(unittest.TestCase):
             self.fail(
                 'Your Python install appears to dislike encoding unicode strings as UTF-8')
 
-    @httprettified
+    @httpretty.activate
     def testCitUTF8(self):
         """ ensure that unicode citations are correctly processed by Pyzotero
         """
@@ -563,7 +510,7 @@ class ZoteroTests(unittest.TestCase):
         cit = zot.item('GW8V2CK7', content='citation', style='chicago-author-date')
         self.assertEqual(cit[0], u'<span>(Robert Ä. Caro 1974)</span>')
 
-    @httprettified
+    @httpretty.activate
     def testParseItemAtomBibDoc(self):
         """ Should match a DIV with class = csl-entry
         """
@@ -577,7 +524,7 @@ class ZoteroTests(unittest.TestCase):
         dec = items_data[0]
         self.assertTrue(dec.startswith("""<div class="csl-entry">"""))
 
-    @httprettified
+    @httpretty.activate
     def testParseCollectionsAtomDoc(self):
         """ Should successfully return a list of collection dicts, key should
             match input doc's zapi:key value, and 'title' value should match
@@ -594,7 +541,7 @@ class ZoteroTests(unittest.TestCase):
             "A Midsummer Night's Dream",
             collections_data[0]['name'])
 
-    @httprettified
+    @httpretty.activate
     def testParseTagsAtomDoc(self):
         """ Should successfully return a list of tags
         """
@@ -607,7 +554,7 @@ class ZoteroTests(unittest.TestCase):
         tags_data = zot.tags()
         self.assertEqual('Authority in literature', tags_data[0])
 
-    @httprettified
+    @httpretty.activate
     def testParseGroupsAtomDoc(self):
         """ Should successfully return a list of group dicts, ID should match
             input doc's zapi:key value, and 'total_items' value should match
@@ -632,7 +579,7 @@ class ZoteroTests(unittest.TestCase):
         zot.add_parameters(start=2)
         self.assertEqual('content=json&start=2&key=myuserkey', zot.url_params)
 
-    @httprettified
+    @httpretty.activate
     def testParamsBlankAfterCall(self):
         """ self.url_params should be blank after an API call
         """
@@ -644,7 +591,7 @@ class ZoteroTests(unittest.TestCase):
         _ = zot.items()
         self.assertEqual(None, zot.url_params)
 
-    @httprettified
+    @httpretty.activate
     def testResponseForbidden(self):
         """ Ensure that an error is properly raised for 403
         """
@@ -657,7 +604,7 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.UserNotAuthorised):
             zot.items()
 
-    @httprettified
+    @httpretty.activate
     def testResponseUnsupported(self):
         """ Ensure that an error is properly raised for 400
         """
@@ -670,7 +617,7 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.UnsupportedParams):
             zot.items()
 
-    @httprettified
+    @httpretty.activate
     def testResponseNotFound(self):
         """ Ensure that an error is properly raised for 404
         """
@@ -683,7 +630,7 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.ResourceNotFound):
             zot.items()
 
-    @httprettified
+    @httpretty.activate
     def testResponseMiscError(self):
         """ Ensure that an error is properly raised for unspecified errors
         """
@@ -696,7 +643,7 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.HTTPError):
             zot.items()
 
-    @httprettified
+    @httpretty.activate
     def testGetItems(self):
         """ Ensure that we can retrieve a list of all items """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
@@ -708,7 +655,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(t[0]['itemType'], 'artwork')
         self.assertEqual(t[-1]['itemType'], 'webpage')
 
-    @httprettified
+    @httpretty.activate
     def testGetTemplate(self):
         """ Ensure that item templates are retrieved and converted into dicts
         """
@@ -728,7 +675,7 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.ParamNotPassed):
             t = zot.create_collection(t)
 
-    @httprettified
+    @httpretty.activate
     def testCreateItem(self):
         """ Ensure that items can be created
         """
@@ -766,7 +713,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertNotIn("TAGABC123", exc)
         self.assertNotIn("GROUPABC123", exc)
 
-    @httprettified
+    @httpretty.activate
     def testUpdateItem(self):
         """ Test that we can update an item
             This test is a kludge; it only tests that the mechanism for
