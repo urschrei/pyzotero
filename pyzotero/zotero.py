@@ -912,6 +912,7 @@ class Zotero(object):
         if len(payload) > 50:
             raise ze.TooManyItems(
                 "You may only create up to 50 items per call")
+        # TODO: strip extra data if it's an existing item
         to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
         headers = {
             'X-Zotero-Write-Token': token(),
@@ -919,18 +920,17 @@ class Zotero(object):
         }
         req = requests.post(
             url=self.endpoint
-            + '/{t}/{u}/items?key={k}'.format(
+            + '/{t}/{u}/items'.format(
                 t=self.library_type,
-                u=self.library_id,
-                k=self.api_key),
+                u=self.library_id),
             data=to_send,
-            headers=headers)
-        data = req.text
+            headers=dict(headers.items() + self.default_headers().items()))
+        data = req.json()
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(req)
-        return self._json_processor(feedparser.parse(data))
+        return req
 
     def create_collection(self, payload):
         """

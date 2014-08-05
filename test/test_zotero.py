@@ -400,32 +400,45 @@ class ZoteroTests(unittest.TestCase):
         self.assertNotIn("TAGABC123", exc)
         self.assertNotIn("GROUPABC123", exc)
 
+    # @httpretty.activate
+    # def testUpdateItem(self):
+    #     """ Test that we can update an item
+    #         This test is a kludge; it only tests that the mechanism for
+    #         internal key removal is OK, and that we haven't made any silly
+    #         list/dict comprehension or genexpr errors
+    #     """
+    #     import json
+    #     # first, retrieve an item
+    #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
+    #     HTTPretty.register_uri(
+    #         HTTPretty.GET,
+    #         'https://api.zotero.org/users/myuserID/items',
+    #         body=self.items_doc)
+    #     items_data = zot.items()
+    #     items_data['title'] = 'flibble'
+    #     json.dumps(*zot._cleanup(items_data))
+
     @httpretty.activate
-    def testUpdateItem(self):
-        """ Test that we can update an item
-            This test is a kludge; it only tests that the mechanism for
-            internal key removal is OK, and that we haven't made any silly
-            list/dict comprehension or genexpr errors
+    def testItemCreation(self):
+        """ Tests creation of a new item using a template
         """
-        import json
-        # first, retrieve an item
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
-            body=self.items_doc)
-        items_data = zot.items()
-        items_data[0]['title'] = 'flibble'
-        json.dumps(*zot._cleanup(items_data[0]))
+            'https://api.zotero.org/items/new?itemType=book',
+            body=self.item_templt,
+            content_type='application/json')
+        template = zot.item_template(itemType='book')
 
-    def testEtagsParsing(self):
-        """ Tests item and item update response etag parsing
-        """
-        zot = z.Zotero('myuserID', 'user', 'myuserkey')
-        self.assertEqual(z.etags(self.created_response), ['1ed002db69174ae2ae0e3b90499df15e'])
-        self.assertEqual(
-            z.etags(self.items_doc),
-            ['7252daf2495feb8ec89c61f391bcba24'])
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/items/new?itemType=book',
+            body=self.creation_doc,
+            content_type='application/json',
+            status=200)
+        # now let's test something
+        resp = zot.create_items([template])
+        self.assertEqual('ABC123', resp['success']['0'])
 
     def testTooManyItems(self):
         """ Should fail because we're passing too many items
