@@ -749,12 +749,11 @@ class Zotero(object):
             }
             upload_reg = requests.post(
                 url=self.endpoint
-                + '/users/{u}/items/{i}/file?key={k}'.format(
+                + '/users/{u}/items/{i}/file'.format(
                     u=self.library_id,
-                    i=created[idx]['key'],
-                    k=self.api_key),
+                    i=created[idx]['key']),
                 data=reg_data,
-                headers=reg_headers)
+                headers=dict(reg_headers.items() + self.default_headers.items()))
             try:
                 upload_reg.raise_for_status()
             except requests.exceptions.HTTPError:
