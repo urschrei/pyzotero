@@ -233,7 +233,7 @@ class ZoteroTests(unittest.TestCase):
             body=self.tags_doc)
         # /users/myuserID/tags?key=myuserkey
         tags_data = zot.tags()
-        self.assertEqual(u'Community / Economic Development', tags_data[0]['tag'])
+        self.assertEqual(u'Community / Economic Development', tags_data[0])
 
     @httpretty.activate
     def testParseGroupsAtomDoc(self):

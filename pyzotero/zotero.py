@@ -141,7 +141,6 @@ def retrieve(func):
             'text/plain': 'plain'
             }
         fmt = formats.get(self.request.headers['Content-Type'], 'json')
-        processor = self.processors.get(content)
         # clear all query parameters
         self.url_params = None
         # Or process atom if it's atom-formatted
@@ -151,9 +150,11 @@ def retrieve(func):
             processor = self.processors.get(content)
             # process the content correctly with a custom rule
             return processor(parsed)
-        # otherwise, just return the unparsed content as is
-        else:
-            return retrieved
+        if self.tag_data:
+            self.tag_data = False
+            return self._tags_data(retrieved)
+        # No need to do anything
+        return retrieved
     return wrapped_f
 
 
@@ -181,6 +182,7 @@ class Zotero(object):
         self.preserve_json_order = preserve_json_order
         self.url_params = None
         self.etags = None
+        self.tag_data = False
         self.request = None
         # these aren't valid item fields, so never send them to the server
         self.temp_keys = set(['key', 'etag', 'group_id', 'updated'])
@@ -202,7 +204,7 @@ class Zotero(object):
             'ris': self._bib_processor,
             'tei': self._bib_processor,
             'wikipedia': self._bib_processor,
-            'json': self._json_processor
+            'json': self._json_processor,
         }
         self.links = None
         self.templates = {}
@@ -461,9 +463,10 @@ class Zotero(object):
 
     @retrieve
     def tags(self, **kwargs):
-        """ Get tags for a specific item
+        """ Get tags
         """
         query_string = '/{t}/{u}/tags'
+        self.tag_data = True
         return self._build_query(query_string)
 
     @retrieve
@@ -474,6 +477,7 @@ class Zotero(object):
             u=self.library_id,
             t=self.library_type,
             i=item.upper())
+        self.tag_data = True
         return self._build_query(query_string)
 
     def all_top(self, **kwargs):
@@ -582,7 +586,7 @@ class Zotero(object):
     def _tags_data(self, retrieved):
         """ Format and return data from API calls which return Tags
         """
-        tags = [t['title'] for t in retrieved.entries]
+        tags = [t['tag'] for t in retrieved]
         self.url_params = None
         return tags
 
@@ -653,7 +657,7 @@ class Zotero(object):
                 liblevel = '/{t}/{u}/items/{i}/children'
             # Create one or more new attachments
             headers = dict({
-                'X-Zotero-Write-Token': token(),
+                'Zotero-Write-Token': token(),
                 'Content-Type': 'application/json',
             }.items() + self.default_headers().items())
             to_send = json.dumps({'items': payload})
@@ -669,8 +673,8 @@ class Zotero(object):
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(req)
-            data = req.text
-            return self._json_processor(feedparser.parse(data))
+            data = req.json()
+            return data
 
         def get_auth(attachment):
             """
@@ -697,15 +701,14 @@ class Zotero(object):
                 url=self.endpoint
                 + '/users/{u}/items/{i}/file?key={k}'.format(
                     u=self.library_id,
-                    i=created[idx]['key'],
-                    k=self.api_key),
+                    i=created[idx]['key']),
                 data=data,
                 headers=auth_headers)
             try:
                 auth_req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(auth_req)
-            return json.loads(auth_req.text)
+            return auth_req.json()
 
         def uploadfile(authdata):
             """
@@ -948,7 +951,7 @@ class Zotero(object):
         if not 'parent' in payload:
             payload['parent'] = ''
         headers = {
-            'X-Zotero-Write-Token': token(),
+            'Zotero-Write-Token': token(),
         }
         req = requests.post(
             url=self.endpoint
