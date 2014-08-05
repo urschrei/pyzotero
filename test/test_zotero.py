@@ -56,6 +56,7 @@ class ZoteroTests(unittest.TestCase):
         self.item_templt = self.get_doc('item_template.json')
         self.item_types = self.get_doc('item_types.json')
         self.keys_response = self.get_doc('keys_doc.txt')
+        self.creation_doc = self.get_doc('creation_doc.json')
         # Add the item file to the mock response by default
         HTTPretty.enable()
         HTTPretty.register_uri(
@@ -348,6 +349,7 @@ class ZoteroTests(unittest.TestCase):
         HTTPretty.register_uri(
             HTTPretty.GET,
             'https://api.zotero.org/items/new?itemType=book',
+            content_type='application/json',
             body=self.item_templt)
         t = zot.item_template('book')
         self.assertEqual('book', t['itemType'])
@@ -388,7 +390,7 @@ class ZoteroTests(unittest.TestCase):
             'https://api.zotero.org/items/new?itemType=book',
             body=self.item_templt,
             content_type='application/json')
-        template = zot.item_template(itemType='book')
+        template = zot.item_template('book')
         HTTPretty.register_uri(
             HTTPretty.GET,
             'https://api.zotero.org/items/new?itemType=book',
