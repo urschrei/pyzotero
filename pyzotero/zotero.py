@@ -306,9 +306,19 @@ class Zotero(object):
         return False
 
     def add_parameters(self, **params):
-        """ Add URL parameters. Will always add the api key if it exists
+        """
+        Add URL parameters
+        Also ensure that only valid format/content combinations are requested
         """
         self.url_params = None
+        # we want JSON by default
+        if not params.get('format'):
+            params['format'] = 'json'
+        # non-standard content must be retrieved as Atom
+        if params.get('content'):
+            params['format'] = 'atom'
+        # TODO: rewrite format=atom, content=json request
+
         self.url_params = urlencode(params)
 
     def _build_query(self, query_string):
