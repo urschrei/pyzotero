@@ -1,8 +1,7 @@
 {
+    "failed": {},
+    "unchanged": {},
     "success": {
         "0": "ABC123"
-    },
-    "unchanged": {},
-    "failed": {},
-}
+    }
 }

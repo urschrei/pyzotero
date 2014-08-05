@@ -927,12 +927,11 @@ class Zotero(object):
                 u=self.library_id),
             data=to_send,
             headers=dict(headers.items() + self.default_headers().items()))
-        data = req.json()
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(req)
-        return req
+        return req.json()
 
     def create_collection(self, payload):
         """
