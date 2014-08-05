@@ -215,7 +215,8 @@ class Zotero(object):
         return {
             "User-Agent": "Pyzotero/%s" % __version__,
             "Authorization": "Bearer %s" % self.api_key,
-            "Zotero-Api-Version": "%s" % __api_version__}
+            "Zotero-API-Version": "%s" % __api_version__,
+            }
 
     def _cache(self, template, key):
         """
