@@ -149,29 +149,7 @@ class ZoteroTests(unittest.TestCase):
             content_type='application/json',
             body=self.items_doc)
         items_data = zot.children('ABC123')
-        self.assertEqual(u'NM66T6EF', items_data[0]['key'])
-
-    # @httpretty.activate
-    # def testEncodings(self):
-    #     """ Should be able to print unicode strings to stdout, and convert
-    #         them to UTF-8 before printing them
-    #     """
-    #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
-    #     HTTPretty.register_uri(
-    #         HTTPretty.GET,
-    #         'https://api.zotero.org/users/myuserID/items?key=myuserkey',
-    #         content_type='application/json',
-    #         body=self.items_doc)
-    #     items_data = zot.items()
-    #     try:
-    #         print(items_data[0]['title'])
-    #     except UnicodeError:
-    #         self.fail('Your Python install appears unable to print unicode')
-    #     try:
-    #         print(items_data[0]['title'].encode('utf-8'))
-    #     except UnicodeError:
-    #         self.fail(
-    #             'Your Python install appears to dislike encoding unicode strings as UTF-8')
+        self.assertEqual(u'NM66T6EF', items_data[0]['key']
 
     @httpretty.activate
     def testCitUTF8(self):
@@ -198,7 +176,6 @@ class ZoteroTests(unittest.TestCase):
             content_type='application/atom+xml',
             body=self.biblio_doc)
         items_data = zot.items()
-        # print dec
         self.assertEqual(
             items_data[0],
             u'<div class="csl-entry">Robert A. Caro. \u201cThe Power Broker\u202f: Robert Moses and the Fall of New York,\u201d 1974.</div>'
@@ -231,7 +208,6 @@ class ZoteroTests(unittest.TestCase):
             'https://api.zotero.org/users/myuserID/tags?limit=1',
             content_type='application/json',
             body=self.tags_doc)
-        # /users/myuserID/tags?key=myuserkey
         tags_data = zot.tags()
         self.assertEqual(u'Community / Economic Development', tags_data[0])
 
