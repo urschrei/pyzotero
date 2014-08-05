@@ -134,21 +134,20 @@ def retrieve(func):
             self.request.url) and \
             self.content.search(
                 self.request.url).group(0) or 'bib'
-        fmt = self.fmt.search(
-            self.request.url) and \
-            self.fmt.search(
-                self.request.url).group(0) or 'json'
+       # JSON by default
+        formats = {
+            'application/atom+xml': 'atom',
+            'application/json': 'json',
+            'text/plain': 'plain'
+            }
+        fmt = formats.get(self.request.headers['Content-Type'], 'json')
         processor = self.processors.get(content)
         # clear all query parameters
         self.url_params = None
-        # JSON by default
-        if fmt == 'json':
-            if content == 'bib':
-                return retrieved
-            return retrieved
         # Or process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
+            # select the correct processor
             processor = self.processors.get(content)
             # process the content correctly with a custom rule
             return processor(parsed)
