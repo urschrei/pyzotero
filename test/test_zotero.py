@@ -123,7 +123,7 @@ class ZoteroTests(unittest.TestCase):
             content_type='application/json',
             body=self.attachments_doc)
         attachments_data = zot.items()
-        self.assertEqual(u'1641 Depositions', attachments_data['title'])
+        self.assertEqual(u'1641 Depositions', attachments_data['data']['title'])
 
     @httpretty.activate
     def testParseKeysResponse(self):
@@ -204,7 +204,7 @@ class ZoteroTests(unittest.TestCase):
             )
 
     @httpretty.activate
-    def testParseCollectionsAtomDoc(self):
+    def testParseCollectionsJSONDoc(self):
         """ Should successfully return a list of collection dicts, key should
             match input doc's zapi:key value, and 'title' value should match
             input doc's title value
@@ -216,10 +216,9 @@ class ZoteroTests(unittest.TestCase):
             content_type='application/json',
             body=self.collections_doc)
         collections_data = zot.collections()
-        self.assertEqual(u'N7W92H48', collections_data[0]['key'])
         self.assertEqual(
-            "A Midsummer Night's Dream",
-            collections_data[0]['name'])
+            "LoC",
+            collections_data[0]['data']['name'])
 
     @httpretty.activate
     def testParseTagsJSON(self):
@@ -236,7 +235,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(u'Community / Economic Development', tags_data[0])
 
     @httpretty.activate
-    def testParseGroupsAtomDoc(self):
+    def testParseGroupsJSONDoc(self):
         """ Should successfully return a list of group dicts, ID should match
             input doc's zapi:key value, and 'total_items' value should match
             input doc's zapi:numItems value
@@ -248,8 +247,7 @@ class ZoteroTests(unittest.TestCase):
             content_type='application/json',
             body=self.groups_doc)
         groups_data = zot.groups()
-        self.assertEqual('DFW', groups_data[0]['name'])
-        self.assertEqual('10248', groups_data[0]['group_id'])
+        self.assertEqual('smart_cities', groups_data[0]['data']['name'])
 
     def testParamsReset(self):
         """ Should successfully reset URL parameters after a query string
@@ -361,44 +359,6 @@ class ZoteroTests(unittest.TestCase):
         t = {'foo': 'bar'}
         with self.assertRaises(z.ze.ParamNotPassed):
             t = zot.create_collection(t)
-
-    @httpretty.activate
-    def testCreateItem(self):
-        """ Ensure that items can be created
-        """
-        # first, retrieve an item template
-        zot = z.Zotero('myuserID', 'user', 'myuserkey')
-        HTTPretty.register_uri(
-            HTTPretty.GET,
-            'https://api.zotero.org/items/new?itemType=book',
-            body=self.item_templt)
-        t = zot.item_template('book')
-        # Update the item type
-        t['itemType'] = 'journalArticle'
-        # Add keys which should be removed before the data is sent
-        t['key'] = 'KEYABC123'
-        t['etag'] = 'TAGABC123'
-        t['group_id'] = 'GROUPABC123'
-        t['updated'] = '14 March, 2011'
-        tn = dict(t)
-        tn['key'] = 'KEYABC124'
-        ls = []
-        ls.append(t)
-        ls.append(tn)
-        # register a 403 response
-        HTTPretty.register_uri(
-            HTTPretty.POST,
-            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
-            body=self.items_doc,
-            status=403)
-        with self.assertRaises(z.ze.UserNotAuthorised) as e:
-            _ = zot.create_items(ls)
-        exc = str(e.exception)
-        # this test is a kludge; we're checking the POST data in the 403 response
-        self.assertIn("journalArticle", exc)
-        self.assertNotIn("KEYABC123", exc)
-        self.assertNotIn("TAGABC123", exc)
-        self.assertNotIn("GROUPABC123", exc)
 
     # @httpretty.activate
     # def testUpdateItem(self):
