@@ -1,0 +1,106 @@
+[{
+    "itemType": "artwork",
+    "localized": "Artwork"
+}, {
+    "itemType": "audioRecording",
+    "localized": "Audio Recording"
+}, {
+    "itemType": "bill",
+    "localized": "Bill"
+}, {
+    "itemType": "blogPost",
+    "localized": "Blog Post"
+}, {
+    "itemType": "book",
+    "localized": "Book"
+}, {
+    "itemType": "bookSection",
+    "localized": "Book Section"
+}, {
+    "itemType": "case",
+    "localized": "Case"
+}, {
+    "itemType": "computerProgram",
+    "localized": "Computer Program"
+}, {
+    "itemType": "conferencePaper",
+    "localized": "Conference Paper"
+}, {
+    "itemType": "dictionaryEntry",
+    "localized": "Dictionary Entry"
+}, {
+    "itemType": "document",
+    "localized": "Document"
+}, {
+    "itemType": "email",
+    "localized": "E-mail"
+}, {
+    "itemType": "encyclopediaArticle",
+    "localized": "Encyclopedia Article"
+}, {
+    "itemType": "film",
+    "localized": "Film"
+}, {
+    "itemType": "forumPost",
+    "localized": "Forum Post"
+}, {
+    "itemType": "hearing",
+    "localized": "Hearing"
+}, {
+    "itemType": "instantMessage",
+    "localized": "Instant Message"
+}, {
+    "itemType": "interview",
+    "localized": "Interview"
+}, {
+    "itemType": "journalArticle",
+    "localized": "Journal Article"
+}, {
+    "itemType": "letter",
+    "localized": "Letter"
+}, {
+    "itemType": "magazineArticle",
+    "localized": "Magazine Article"
+}, {
+    "itemType": "manuscript",
+    "localized": "Manuscript"
+}, {
+    "itemType": "map",
+    "localized": "Map"
+}, {
+    "itemType": "newspaperArticle",
+    "localized": "Newspaper Article"
+}, {
+    "itemType": "note",
+    "localized": "Note"
+}, {
+    "itemType": "patent",
+    "localized": "Patent"
+}, {
+    "itemType": "podcast",
+    "localized": "Podcast"
+}, {
+    "itemType": "presentation",
+    "localized": "Presentation"
+}, {
+    "itemType": "radioBroadcast",
+    "localized": "Radio Broadcast"
+}, {
+    "itemType": "report",
+    "localized": "Report"
+}, {
+    "itemType": "statute",
+    "localized": "Statute"
+}, {
+    "itemType": "tvBroadcast",
+    "localized": "TV Broadcast"
+}, {
+    "itemType": "thesis",
+    "localized": "Thesis"
+}, {
+    "itemType": "videoRecording",
+    "localized": "Video Recording"
+}, {
+    "itemType": "webpage",
+    "localized": "Web Page"
+}]

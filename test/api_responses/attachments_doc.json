@@ -1,0 +1,54 @@
+{
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/users/436/items/TM8QRS36",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/urschrei/items/TM8QRS36",
+            "type": "text/html"
+        },
+        "up": {
+            "href": "https://api.zotero.org/users/436/items/47RUN6RI",
+            "type": "application/json"
+        },
+        "enclosure": {
+            "href": "https://api.zotero.org/users/436/items/TM8QRS36/file/view",
+            "type": "text/html"
+        }
+    },
+    "library": {
+        "type": "user",
+        "id": 436,
+        "links": {
+            "alternate": {
+                "href": "https://www.zotero.org/urschrei",
+                "type": "text/html"
+            }
+        },
+        "name": "urschrei"
+    },
+    "version": 2,
+    "meta": {},
+    "key": "TM8QRS36",
+    "data": {
+        "dateAdded": "2012-01-11T19:54:47Z",
+        "contentType": "text/html",
+        "itemType": "attachment",
+        "title": "1641 Depositions",
+        "accessDate": "2012-01-11T19:54:47Z",
+        "linkMode": "imported_url",
+        "charset": "utf-8",
+        "relations": {},
+        "filename": "project-conservation.html",
+        "note": "",
+        "url": "http://1641.tcd.ie/project-conservation.php",
+        "version": 2,
+        "key": "TM8QRS36",
+        "mtime": 1326311686000,
+        "md5": "80893b449d89a94722a04190d4330008",
+        "dateModified": "2012-01-11T19:54:47Z",
+        "tags": [],
+        "parentItem": "47RUN6RI"
+    }
+}

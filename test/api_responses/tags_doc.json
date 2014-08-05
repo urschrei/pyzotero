@@ -1,0 +1,19 @@
+[
+    {
+        "tag": "Community / Economic Development",
+        "links": {
+            "self": {
+                "href": "https://api.zotero.org/users/436/tags/Community+%2F+Economic+Development",
+                "type": "application/json"
+            },
+            "alternate": {
+                "href": "http://zotero.org/users/436/tags/Community+%2F+Economic+Development",
+                "type": "text/html"
+            }
+        },
+        "meta": {
+            "type": 1,
+            "numItems": 1
+        }
+    }
+]

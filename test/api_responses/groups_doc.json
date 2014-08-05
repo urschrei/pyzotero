@@ -1,0 +1,33 @@
+[{
+    "data": {
+        "description": "",
+        "url": "",
+        "libraryReading": "members",
+        "version": 0,
+        "members": [1177919, 1408658],
+        "owner": 436,
+        "fileEditing": "admins",
+        "hasImage": 1,
+        "type": "Private",
+        "id": 169947,
+        "libraryEditing": "admins",
+        "name": "smart_cities"
+    },
+    "version": 0,
+    "meta": {
+        "lastModified": "2013-05-22T11:26:50Z",
+        "numItems": 817,
+        "created": "2013-05-22T11:22:46Z"
+    },
+    "id": 169947,
+    "links": {
+        "self": {
+            "href": "https://api.zotero.org/groups/169947",
+            "type": "application/json"
+        },
+        "alternate": {
+            "href": "https://www.zotero.org/groups/169947",
+            "type": "text/html"
+        }
+    }
+}]

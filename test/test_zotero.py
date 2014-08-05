@@ -35,362 +35,33 @@ import json
 class ZoteroTests(unittest.TestCase):
     """ Tests for pyzotero
     """
+    cwd = os.path.dirname(os.path.realpath(__file__))
+
+    def get_doc(self, doc_name, cwd=cwd):
+        """ return the requested test document """
+        with open(os.path.join(cwd, 'api_responses', '%s' % doc_name), 'r') as f:
+            return f.read()
+
     def setUp(self):
         """ Set stuff up
         """
-        cwd = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(cwd, 'api_responses/item.json'), 'r') as f:
-            self.item_doc = f.read()
-        with open(os.path.join(cwd, 'api_responses/items.json'), 'r') as f:
-            self.items_doc = f.read()
-        with open(os.path.join(cwd, 'api_responses/collections.json'), 'r') as c:
-            self.collections_doc = c.read()
-        self.citation_doc = """<?xml version="1.0" encoding="UTF-8"?>
-            <entry xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-            <title>The power broker : Robert Moses and the fall of New York</title>
-            <author><name>urschrei</name><uri>http://zotero.org/urschrei</uri></author>
-            <id>http://zotero.org/urschrei/items/GW8V2CK7</id>
-            <published>2014-02-12T16:16:22Z</published>
-            <updated>2014-03-06T20:25:20Z</updated>
-            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/GW8V2CK7?content=citation"/>
-            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/GW8V2CK7"/>
-            <zapi:key>GW8V2CK7</zapi:key>
-            <zapi:version>764</zapi:version>
-            <zapi:itemType>document</zapi:itemType>
-            <zapi:creatorSummary>Robert \xc3\x84. Caro</zapi:creatorSummary>
-            <zapi:year>1974</zapi:year>
-            <zapi:numChildren>0</zapi:numChildren>
-            <zapi:numTags>0</zapi:numTags>
-            <content zapi:type="citation" type="xhtml">
-                <span xmlns="http://www.w3.org/1999/xhtml">(Robert \xc3\x84. Caro 1974)</span>
-            </content>
-            </entry>"""
-        self.biblio_doc = """<?xml version="1.0" encoding="UTF-8"?>
-            <entry xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-                <title>The power broker : Robert Moses and the fall of New York</title>
-                <author>
-                <name>urschrei</name>
-                <uri>http://zotero.org/urschrei</uri>
-                </author>
-                <id>http://zotero.org/urschrei/items/GW8V2CK7</id>
-                <published>2014-02-12T16:16:22Z</published>
-                <updated>2014-02-12T16:16:22Z</updated>
-                <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/GW8V2CK7?content=bib"/>
-                <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/GW8V2CK7"/>
-                <zapi:key>GW8V2CK7</zapi:key>
-                <zapi:version>739</zapi:version>
-                <zapi:itemType>document</zapi:itemType>
-                <zapi:creatorSummary>Robert A. Caro</zapi:creatorSummary>
-                <zapi:year>1974</zapi:year>
-                <zapi:numChildren>0</zapi:numChildren>
-                <zapi:numTags>0</zapi:numTags>
-                <content zapi:type="bib" type="xhtml">
-                <div xmlns="http://www.w3.org/1999/xhtml" class="csl-bib-body" style="line-height: 1.35; padding-left: 2em; text-indent:-2em;">
-            <div class="csl-entry">Robert Ä. Caro. 1974. “The Power Broker : Robert Moses and the Fall of New York.”</div>
-            </div>
-              </content>
-            </entry>"""
-        self.attachments_doc = """<?xml version="1.0"?>
-        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-          <title>Zotero / urschrei / Items</title>
-          <id>http://zotero.org/users/436/items?limit=1&amp;content=json</id>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
-          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;content=json"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items?limit=1&amp;amp;start=1128"/>
-          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items?limit=1"/>
-          <zapi:totalResults>1129</zapi:totalResults>
-          <zapi:apiVersion>1</zapi:apiVersion>
-          <updated>2012-01-11T19:54:47Z</updated>
-          <entry>
-            <title>1641 Depositions</title>
-            <author>
-              <name>urschrei</name>
-              <uri>http://zotero.org/urschrei</uri>
-            </author>
-            <id>http://zotero.org/urschrei/items/TM8QRS36</id>
-            <published>2012-01-11T19:54:47Z</published>
-            <updated>2012-01-11T19:54:47Z</updated>
-            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/TM8QRS36?content=json"/>
-            <link rel="up" type="application/atom+xml" href="https://api.zotero.org/users/436/items/47RUN6RI?content=json"/>
-            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/TM8QRS36"/>
-            <zapi:key>TM8QRS36</zapi:key>
-            <zapi:itemType>attachment</zapi:itemType>
-            <zapi:numTags>0</zapi:numTags>
-            <content zapi:type="json" zapi:etag="1686f563f9b4cb1db3a745a920bf0afa">{"itemType":"attachment","title":"1641 Depositions","accessDate":"2012-01-11 19:54:47","url":"http://1641.tcd.ie/project-conservation.php","note":"","linkMode":1,"mimeType":"text/html","charset":"utf-8","tags":[]}</content>
-          </entry>
-        </feed>"""
-        self.tags_doc = """<?xml version="1.0"?>
-        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-          <title>Zotero / urschrei / Tags</title>
-          <id>http://zotero.org/users/436/tags?limit=1&amp;content=json</id>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json"/>
-          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;content=json"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/tags?limit=1&amp;amp;start=319"/>
-          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/tags?limit=1"/>
-          <zapi:totalResults>320</zapi:totalResults>
-          <zapi:apiVersion>1</zapi:apiVersion>
-          <updated>2010-03-27T13:56:08Z</updated>
-          <entry xmlns:zxfer="http://zotero.org/ns/transfer">
-            <title>Authority in literature</title>
-            <author>
-              <name>urschrei</name>
-              <uri>http://zotero.org/urschrei</uri>
-            </author>
-            <id>http://zotero.org/urschrei/tags/Authority+in+literature</id>
-            <published>2010-03-26T18:23:14Z</published>
-            <updated>2010-03-27T13:56:08Z</updated>
-            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/tags/Authority+in+literature"/>
-            <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/tags/Authority+in+literature"/>
-            <zapi:numItems>1</zapi:numItems>
-          </entry>
-        </feed>"""
-        self.groups_doc = """<?xml version="1.0"?>
-        <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-          <title>urschrei&#x2019;s Groups</title>
-          <id>http://zotero.org/users/436/groups?limit=1&amp;content=json</id>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json"/>
-          <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;content=json"/>
-          <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;amp;start=1"/>
-          <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/groups?limit=1&amp;amp;start=1"/>
-          <link rel="alternate" type="text/html" href="http://zotero.org/users/436/groups?limit=1"/>
-          <zapi:totalResults>2</zapi:totalResults>
-          <zapi:apiVersion>1</zapi:apiVersion>
-          <updated>2010-07-04T21:56:22Z</updated>
-          <entry xmlns:zxfer="http://zotero.org/ns/transfer">
-            <title>DFW</title>
-            <author>
-              <name>urschrei</name>
-              <uri>http://zotero.org/urschrei</uri>
-            </author>
-            <id>http://zotero.org/groups/dfw</id>
-            <published>2010-01-20T12:31:26Z</published>
-            <updated>2010-07-04T21:56:22Z</updated>
-            <link rel="self" type="application/atom+xml" href="https://api.zotero.org/groups/10248?content=json"/>
-            <link rel="alternate" type="text/html" href="http://zotero.org/groups/dfw"/>
-            <zapi:numItems>468</zapi:numItems>
-            <content type="application/json">{"name":"DFW","owner":436,"type":"PublicOpen","description":"%3Cp%3EA+grouped+collection+of+the+David+Foster+Wallace+bibliography%2C+adapted%2Fedited%2Fupdated+from+what%27s+available+elsewhere.%3C%2Fp%3E","url":"","hasImage":1,"libraryEnabled":1,"libraryEditing":"admins","libraryReading":"all","fileEditing":"none","members":{"2":539271}}</content>
-          </entry>
-        </feed>"""
-        self.bib_doc = """<?xml version="1.0"?>
-         <feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-           <title>Zotero / urschrei / Top-Level Items</title>
-           <id>http://zotero.org/users/436/items/top?limit=1&amp;content=bib</id>
-           <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;content=bib"/>
-           <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;content=bib"/>
-           <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;content=bib&amp;start=1"/>
-           <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?limit=1&amp;content=bib&amp;start=949"/>
-           <link rel="alternate" type="text/html" href="http://zotero.org/users/436/items/top?limit=1"/>
-           <zapi:totalResults>950</zapi:totalResults>
-           <zapi:apiVersion>1</zapi:apiVersion>
-           <updated>2011-02-14T00:27:03Z</updated>
-           <entry>
-             <title>Copyright in custom code: Who owns commissioned software?</title>
-             <author>
-               <name>urschrei</name>
-               <uri>http://zotero.org/urschrei</uri>
-             </author>
-             <id>http://zotero.org/urschrei/items/T4AH4RZA</id>
-             <published>2011-02-14T00:27:03Z</published>
-             <updated>2011-02-14T00:27:03Z</updated>
-             <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/T4AH4RZA?content=bib"/>
-             <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/T4AH4RZA"/>
-             <zapi:key>T4AH4RZA</zapi:key>
-             <zapi:itemType>journalArticle</zapi:itemType>
-             <zapi:creatorSummary>McIntyre</zapi:creatorSummary>
-             <zapi:numChildren>1</zapi:numChildren>
-             <zapi:numTags>0</zapi:numTags>
-             <content type="xhtml" zapi:etag="7252daf2495feb8ec89c61f391bcba24">
-               <div xmlns="http://www.w3.org/1999/xhtml" class="csl-bib-body" style="line-height: 1.35; padding-left: 2em; text-indent:-2em;">
-           <div class="csl-entry">McIntyre, T. J. &#x201C;Copyright in custom code: Who owns commissioned software?&#x201D; <i>Journal of Intellectual Property Law &amp; Practice</i> (2007).</div>
-         </div>
-             </content>
-           </entry>
-         </feed>"""
-        self.created_response = """<?xml version="1.0"?>
-        <entry xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
-          <title>Hell, I don't Know</title>
-          <author>
-            <name>urschrei</name>
-            <uri>http://zotero.org/urschrei</uri>
-          </author>
-          <id>http://zotero.org/urschrei/items/NVGIBE59</id>
-          <published>2011-12-14T19:24:20Z</published>
-          <updated>2011-12-17T19:19:37Z</updated>
-          <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/NVGIBE59?content=json"/>
-          <link rel="alternate" type="text/html" href="http://zotero.org/urschrei/items/NVGIBE59"/>
-          <zapi:key>NVGIBE59</zapi:key>
-          <zapi:itemType>journalArticle</zapi:itemType>
-          <zapi:creatorSummary>Salo</zapi:creatorSummary>
-          <zapi:year/>
-          <zapi:numChildren>1</zapi:numChildren>
-          <zapi:numTags>0</zapi:numTags>
-          <content type="application/json" zapi:etag="1ed002db69174ae2ae0e3b90499df15e">{"itemType":"journalArticle","title":"Hell, I don't Know","creators":[{"creatorType":"author","firstName":"Dorotea","lastName":"Salo"}],"abstractNote":"","publicationTitle":"","volume":"","issue":"","pages":"","date":"","series":"","seriesTitle":"","seriesText":"","journalAbbreviation":"","language":"","DOI":"","ISSN":"","shortTitle":"","url":"","accessDate":"","archive":"","archiveLocation":"","libraryCatalog":"","callNumber":"","rights":"","extra":"","tags":[]}</content>
-        </entry>"""
-        self.item_templt = """{
-          "itemType" : "book",
-          "title" : "",
-          "creators" : [
-            {
-              "creatorType" : "author",
-              "firstName" : "",
-              "lastName" : ""
-            }
-          ],
-          "url" : "",
-          "tags" : [],
-          "notes" : [],
-          "etag" : ""
-        }"""
-        self.item_types = """[
-        {
-            "itemType":"artwork",
-            "localized":"Artwork"
-        },
-        {
-            "itemType":"audioRecording",
-            "localized":"Audio Recording"
-        },
-        {
-            "itemType":"bill",
-            "localized":"Bill"
-        },
-        {
-            "itemType":"blogPost",
-            "localized":"Blog Post"
-        },
-        {
-            "itemType":"book",
-            "localized":"Book"
-        },
-        {
-            "itemType":"bookSection",
-            "localized":"Book Section"
-        },
-        {
-            "itemType":"case",
-            "localized":"Case"
-        },
-        {
-            "itemType":"computerProgram",
-            "localized":"Computer Program"
-        },
-        {
-            "itemType":"conferencePaper",
-            "localized":"Conference Paper"
-        },
-        {
-            "itemType":"dictionaryEntry",
-            "localized":"Dictionary Entry"
-        },
-        {
-            "itemType":"document",
-            "localized":"Document"
-        },
-        {
-            "itemType":"email",
-            "localized":"E-mail"
-        },
-        {
-            "itemType":"encyclopediaArticle",
-            "localized":"Encyclopedia Article"
-        },
-        {
-            "itemType":"film",
-            "localized":"Film"
-        },
-        {
-            "itemType":"forumPost",
-            "localized":"Forum Post"
-        },
-        {
-            "itemType":"hearing",
-            "localized":"Hearing"
-        },
-        {
-            "itemType":"instantMessage",
-            "localized":"Instant Message"
-        },
-        {
-            "itemType":"interview",
-            "localized":"Interview"
-        },
-        {
-            "itemType":"journalArticle",
-            "localized":"Journal Article"
-        },
-        {
-            "itemType":"letter",
-            "localized":"Letter"
-        },
-        {
-            "itemType":"magazineArticle",
-            "localized":"Magazine Article"
-        },
-        {
-            "itemType":"manuscript",
-            "localized":"Manuscript"
-        },
-        {
-            "itemType":"map",
-            "localized":"Map"
-        },
-        {
-            "itemType":"newspaperArticle",
-            "localized":"Newspaper Article"
-        },
-        {
-            "itemType":"note",
-            "localized":"Note"
-        },
-        {
-            "itemType":"patent",
-            "localized":"Patent"
-        },
-        {
-            "itemType":"podcast",
-            "localized":"Podcast"
-        },
-        {
-            "itemType":"presentation",
-            "localized":"Presentation"
-        },
-        {
-            "itemType":"radioBroadcast",
-            "localized":"Radio Broadcast"
-        },
-        {
-            "itemType":"report",
-            "localized":"Report"
-        },
-        {
-            "itemType":"statute",
-            "localized":"Statute"
-        },
-        {
-            "itemType":"tvBroadcast",
-            "localized":"TV Broadcast"
-        },
-        {
-            "itemType":"thesis",
-            "localized":"Thesis"
-        },
-        {
-            "itemType":"videoRecording",
-            "localized":"Video Recording"
-        },
-        {
-            "itemType":"webpage",
-            "localized":"Web Page"
-        }
-        ]"""
-        self.keys_response = """ABCDE\nFGHIJ\nKLMNO\n"""
+        self.item_doc = self.get_doc('item_doc.json')
+        self.items_doc = self.get_doc('items_doc.json')
+        self.collections_doc = self.get_doc('collections_doc.json')
+        self.citation_doc = self.get_doc('citation_doc.xml')
+        self.biblio_doc = self.get_doc('bib_doc.xml')
+        self.attachments_doc = self.get_doc('attachments_doc.json')
+        self.tags_doc = self.get_doc('tags_doc.json')
+        self.groups_doc = self.get_doc('groups_doc.json')
+        self.item_templt = self.get_doc('item_template.json')
+        self.item_types = self.get_doc('item_types.json')
+        self.keys_response = self.get_doc('keys_doc.txt')
         # Add the item file to the mock response by default
         HTTPretty.enable()
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items',
+            content_type='application/json',
             body=self.items_doc)
 
     @httpretty.activate
@@ -403,11 +74,11 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testRequestBuilder(self):
-        """ Should add the user key, then url-encode all other added parameters
+        """ Should url-encode all added parameters
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         zot.add_parameters(limit=0, start=7)
-        self.assertEqual('start=7&limit=0', zot.url_params)
+        self.assertEqual('start=7&limit=0&format=json', zot.url_params)
 
     @httpretty.activate
     def testBuildQuery(self):
@@ -419,7 +90,7 @@ class ZoteroTests(unittest.TestCase):
         query_string = '/users/{u}/tags/hi there/items'
         query = zot._build_query(query_string)
         self.assertEqual(
-            '/users/myuserID/tags/hi%20there/items?start=10',
+            '/users/myuserID/tags/hi%20there/items?start=10&format=json',
             query)
 
     @httpretty.activate
@@ -443,7 +114,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(test_dt, incoming_dt)
 
     @httpretty.activate
-    def testParseAttachmentsAtomDoc(self):
+    def testParseAttachmentsJSONDoc(self):
         """ Ensure that attachments are being correctly parsed """
         zot = z.Zotero('myuserid', 'user', 'myuserkey')
         HTTPretty.register_uri(
@@ -452,7 +123,7 @@ class ZoteroTests(unittest.TestCase):
             content_type='application/json',
             body=self.attachments_doc)
         attachments_data = zot.items()
-        self.assertEqual(u'1641 Depositions', attachments_data[0]['title'])
+        self.assertEqual(u'1641 Depositions', attachments_data['title'])
 
     @httpretty.activate
     def testParseKeysResponse(self):
@@ -462,9 +133,10 @@ class ZoteroTests(unittest.TestCase):
         HTTPretty.register_uri(
             HTTPretty.GET,
             'https://api.zotero.org/users/myuserid/items?format=keys',
+            content_type='text/plain',
             body=self.keys_response)
         response = zot.items()
-        self.assertEqual('ABCDE\nFGHIJ\nKLMNO\n', response)
+        self.assertEqual(u'JIFWQ4AN', response[:8])
 
     @httpretty.activate
     def testParseChildItems(self):
@@ -476,7 +148,7 @@ class ZoteroTests(unittest.TestCase):
             content_type='application/json',
             body=self.items_doc)
         items_data = zot.children('ABC123')
-        self.assertEqual(u'T4AH4RZA', items_data[0]['key'])
+        self.assertEqual(u'NM66T6EF', items_data[0]['key'])
 
     # @httpretty.activate
     # def testEncodings(self):
@@ -508,9 +180,10 @@ class ZoteroTests(unittest.TestCase):
         HTTPretty.register_uri(
             HTTPretty.GET,
             'https://api.zotero.org/users/myuserID/items/GW8V2CK7?content=citation&style=chicago-author-date&key=myuserkey',
+            content_type='application/atom+xml',
             body=self.citation_doc)
         cit = zot.item('GW8V2CK7', content='citation', style='chicago-author-date')
-        self.assertEqual(cit[0], u'<span>(Robert Ä. Caro 1974)</span>')
+        self.assertEqual(cit[0], u'<span>Robert A. Caro, “The Power Broker.”</span>')
 
     @httpretty.activate
     def testParseItemAtomBibDoc(self):
@@ -520,11 +193,15 @@ class ZoteroTests(unittest.TestCase):
         zot.url_params = 'content=bib'
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
-            body=self.bib_doc)
+            'https://api.zotero.org/users/myuserID/items?content=bib&format=atom',
+            content_type='application/atom+xml',
+            body=self.biblio_doc)
         items_data = zot.items()
-        dec = items_data[0]
-        self.assertTrue(dec.startswith("""<div class="csl-entry">"""))
+        # print dec
+        self.assertEqual(
+            items_data[0],
+            u'<div class="csl-entry">Robert A. Caro. \u201cThe Power Broker\u202f: Robert Moses and the Fall of New York,\u201d 1974.</div>'
+            )
 
     @httpretty.activate
     def testParseCollectionsAtomDoc(self):
@@ -535,28 +212,28 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/collections?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/collections',
             content_type='application/json',
             body=self.collections_doc)
         collections_data = zot.collections()
-        self.assertEqual(u'HTUHVPE5', collections_data[0]['key'])
+        self.assertEqual(u'N7W92H48', collections_data[0]['key'])
         self.assertEqual(
             "A Midsummer Night's Dream",
             collections_data[0]['name'])
 
     @httpretty.activate
-    def testParseTagsAtomDoc(self):
+    def testParseTagsJSON(self):
         """ Should successfully return a list of tags
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/tags?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/tags?limit=1',
             content_type='application/json',
             body=self.tags_doc)
         # /users/myuserID/tags?key=myuserkey
         tags_data = zot.tags()
-        self.assertEqual('Authority in literature', tags_data[0])
+        self.assertEqual(u'Community / Economic Development', tags_data[0]['tag'])
 
     @httpretty.activate
     def testParseGroupsAtomDoc(self):
@@ -582,7 +259,7 @@ class ZoteroTests(unittest.TestCase):
         zot.add_parameters(start=5, limit=10)
         zot._build_query('/whatever')
         zot.add_parameters(start=2)
-        self.assertEqual('start=2&key=myuserkey', zot.url_params)
+        self.assertEqual('start=2&format=json', zot.url_params)
 
     @httpretty.activate
     def testParamsBlankAfterCall(self):
