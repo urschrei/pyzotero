@@ -915,7 +915,7 @@ class Zotero(object):
         # TODO: strip extra data if it's an existing item
         to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
         headers = {
-            'X-Zotero-Write-Token': token(),
+            'Zotero-Write-Token': token(),
             'Content-Type': 'application/json',
         }
         req = requests.post(

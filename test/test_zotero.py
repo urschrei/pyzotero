@@ -429,7 +429,6 @@ class ZoteroTests(unittest.TestCase):
             body=self.item_templt,
             content_type='application/json')
         template = zot.item_template(itemType='book')
-
         HTTPretty.register_uri(
             HTTPretty.GET,
             'https://api.zotero.org/items/new?itemType=book',
