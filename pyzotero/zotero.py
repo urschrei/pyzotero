@@ -606,7 +606,7 @@ class Zotero(object):
             return copy.deepcopy(self.templates[template_name]['tmplt'])
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return self._cache(json.loads(retrieved), template_name)
+        return self._cache(retrieved, template_name)
 
     def _attachment_template(self, attachment_type):
         """
