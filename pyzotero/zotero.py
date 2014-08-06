@@ -915,7 +915,7 @@ class Zotero(object):
             raise ze.TooManyItems(
                 "You may only create up to 50 items per call")
         # TODO: strip extra data if it's an existing item
-        to_send = json.dumps({'items': [i for i in self._cleanup(*payload)]})
+        to_send = json.dumps([i for i in self._cleanup(*payload)])
         headers = {
             'Zotero-Write-Token': token(),
             'Content-Type': 'application/json',
