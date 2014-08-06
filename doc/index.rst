@@ -627,9 +627,9 @@ Example:
         i = zot.items()
         # see above for example of returned item structure
         # modify the latest item which was added to your library
-        i[0]['title'] = 'The Sheltering Sky'
-        i[0]['creators'][0]['firstName'] = 'Paul'
-        i[0]['creators'][0]['lastName'] = 'Bowles'
+        i[0]['data']['title'] = 'The Sheltering Sky'
+        i[0]['data']['creators'][0]['firstName'] = 'Paul'
+        i[0]['data']['creators'][0]['lastName'] = 'Bowles'
         zot.update_item(i[0])
 
    .. py:method:: Zotero.check_items(items)
@@ -696,8 +696,7 @@ Example:
 
     .. code-block:: python
 
-        zot.add_parameters(limit=1)
-        z = zot.top()
+        z = zot.top(limit=1)
         # we've now retrieved the most recent top-level item
         updated = zot.add_tags(z[0], 'tag1', 'tag2', 'tag3')
         # updated now contains a representation of the updated server item
