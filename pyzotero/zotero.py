@@ -781,11 +781,11 @@ class Zotero(object):
         """
         # Make sure there's a tags field, or add one
         try:
-            assert(item['tags'])
+            assert(item['data']['tags'])
         except AssertionError:
-            item['tags'] = list()
+            item['data']['tags'] = list()
         for tag in tags:
-            item['tags'].append({u'tag': u'%s' % tag})
+            item['data']['tags'].append({u'tag': u'%s' % tag})
         # make sure everything's OK
         assert(self.check_items([item]))
         return self.update_item(item)
@@ -819,13 +819,13 @@ class Zotero(object):
             'charset'])
         template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
-            to_check = set(i for i in list(item.keys()))
+            to_check = set(i for i in list(item['data'].keys()))
             difference = to_check.difference(template)
             if difference:
                 raise ze.InvalidItemFields(
                     "Invalid keys present in item %s: %s" % (pos + 1,
                     ' '.join(i for i in difference)))
-        return True
+        return [i['data'] for i in item]
 
     def item_types(self):
         """ Get all available item types
