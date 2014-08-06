@@ -887,7 +887,7 @@ class Zotero(object):
         query_string = '/itemFields'
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return self._cache(json.loads(retrieved), 'item_fields')
+        return self._cache(retrieved, 'item_fields')
 
     def item_creator_types(self, itemtype):
         """ Get all available creator types for an item
