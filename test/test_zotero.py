@@ -149,7 +149,7 @@ class ZoteroTests(unittest.TestCase):
             content_type='application/json',
             body=self.items_doc)
         items_data = zot.children('ABC123')
-        self.assertEqual(u'NM66T6EF', items_data[0]['key']
+        self.assertEqual(u'NM66T6EF', items_data[0]['key'])
 
     @httpretty.activate
     def testCitUTF8(self):
