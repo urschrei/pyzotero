@@ -120,7 +120,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserid', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserid/items?key=myuserkey',
+            'https://api.zotero.org/users/myuserid/items',
             content_type='application/json',
             body=self.attachments_doc)
         attachments_data = zot.items()
@@ -145,7 +145,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items/ABC123/children?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items/ABC123/children',
             content_type='application/json',
             body=self.items_doc)
         items_data = zot.children('ABC123')
@@ -220,7 +220,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/groups?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/groups',
             content_type='application/json',
             body=self.groups_doc)
         groups_data = zot.groups()
@@ -243,7 +243,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items',
             content_type='application/json',
             body=self.items_doc)
         _ = zot.items()
@@ -256,7 +256,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items',
             content_type='application/json',
             body=self.items_doc,
             status=403)
@@ -270,7 +270,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items',
             content_type='application/json',
             body=self.items_doc,
             status=400)
@@ -284,7 +284,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items',
             body=self.items_doc,
             content_type='application/json',
             status=404)
@@ -298,7 +298,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+            'https://api.zotero.org/users/myuserID/items',
             content_type='application/json',
             body=self.items_doc,
             status=500)
@@ -393,7 +393,7 @@ class ZoteroTests(unittest.TestCase):
     #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
     #     HTTPretty.register_uri(
     #         HTTPretty.GET,
-    #         'https://api.zotero.org/users/myuserID/items?key=myuserkey',
+    #         'https://api.zotero.org/users/myuserID/items',
     #         responses=[
     #             HTTPretty.Response(body=self.items_doc, status=429),
     #             HTTPretty.Response(body=self.items_doc, status=429),
