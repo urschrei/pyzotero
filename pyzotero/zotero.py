@@ -657,7 +657,10 @@ class Zotero(object):
                 'Zotero-Write-Token': token(),
                 'Content-Type': 'application/json',
             }.items() + self.default_headers().items())
-            # TODO: where does the parent id go?
+            # If we have a Parent ID, add it as a parentItem
+            if parentid:
+                for child in payload:
+                    child['parentItem'] = parentid
             to_send = json.dumps(payload)
             req = requests.post(
                 url=self.endpoint
@@ -768,6 +771,7 @@ class Zotero(object):
             for r_idx, r_content in enumerate(registered_idx):
                 attach = payload[r_content]['filename']
                 authdata = get_auth(attach, registered_keys[r_idx])
+                # now we need to check for 'exists'
                 uploadfile(authdata, registered_keys[r_idx])
         return created
 
