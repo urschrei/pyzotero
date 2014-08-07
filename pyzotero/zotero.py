@@ -657,6 +657,7 @@ class Zotero(object):
                 'Zotero-Write-Token': token(),
                 'Content-Type': 'application/json',
             }.items() + self.default_headers().items())
+            # TODO: where does the parent id go?
             to_send = json.dumps(payload)
             req = requests.post(
                 url=self.endpoint
