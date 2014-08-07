@@ -816,7 +816,12 @@ class Zotero(object):
             'mimeType',
             'linkMode',
             'note',
-            'charset'])
+            'charset',
+            'dateAdded',
+            'version',
+            'collections',
+            'dateModified',
+            'relations'])
         template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
             to_check = set(i for i in list(item['data'].keys()))
@@ -825,7 +830,7 @@ class Zotero(object):
                 raise ze.InvalidItemFields(
                     "Invalid keys present in item %s: %s" % (pos + 1,
                     ' '.join(i for i in difference)))
-        return [i['data'] for i in item]
+        return [i['data'] for i in items]
 
     def item_types(self):
         """ Get all available item types
