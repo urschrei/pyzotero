@@ -651,6 +651,7 @@ Uploading files
 
         :param list files: a list containing one or more file paths: ``['/path/to/file/file.pdf', … ]``
         :param string parentid: a library Item ID. If this is specified, attachments will be created as child items of this ID.
+        :rtype: Dict. Showing status of each requested upload.
 
     .. py:method:: Zotero.attachment_both(files[, parentid])
 
@@ -658,6 +659,7 @@ Uploading files
 
         :param list files: a list containing one or more lists or tuples in the following format: ``(file name, file path)``
         :param string parentid: a library Item ID. If this is specified, attachments will be created as child items of this ID.
+        :rtype: Dict. Showing status of each requested upload.
 
 Deleting items
 --------------

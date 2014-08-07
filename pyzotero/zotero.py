@@ -660,7 +660,7 @@ class Zotero(object):
                 'Zotero-Write-Token': token(),
                 'Content-Type': 'application/json',
             }.items() + self.default_headers().items())
-            to_send = json.dumps({'items': payload})
+            to_send = json.dumps(payload)
             req = requests.post(
                 url=self.endpoint
                 + liblevel.format(
@@ -676,7 +676,7 @@ class Zotero(object):
             data = req.json()
             return data
 
-        def get_auth(attachment):
+        def get_auth(attachment, reg_key):
             """
             Step 1: get upload authorisation for a file
             """
@@ -699,9 +699,9 @@ class Zotero(object):
             }
             auth_req = requests.post(
                 url=self.endpoint
-                + '/users/{u}/items/{i}/file?key={k}'.format(
+                + '/users/{u}/items/{i}/file'.format(
                     u=self.library_id,
-                    i=created[idx]['key']),
+                    i=reg_key),
                 data=data,
                 headers=auth_headers)
             try:
@@ -710,10 +710,12 @@ class Zotero(object):
                 error_handler(auth_req)
             return auth_req.json()
 
-        def uploadfile(authdata):
+        def uploadfile(authdata, reg_key):
             """
             Step 2: auth successful, and file not on server
             zotero.org/support/dev/server_api/file_upload#a_full_upload
+
+            reg_key isn't used, but we need to pass it through to Step 3
             """
             upload_file = bytearray(authdata['prefix'].encode())
             upload_file.extend(open(attach, 'r').read()),
@@ -733,9 +735,10 @@ class Zotero(object):
                 upload.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(upload)
-            return register_upload(authdata)
+            # now check the responses
+            return register_upload(authdata, reg_key)
 
-        def register_upload(authdata):
+        def register_upload(authdata, reg_key):
             """
             Step 3: upload successful, so register it
             """
@@ -751,26 +754,24 @@ class Zotero(object):
                 url=self.endpoint
                 + '/users/{u}/items/{i}/file'.format(
                     u=self.library_id,
-                    i=created[idx]['key']),
+                    i=reg_key),
                 data=reg_data,
-                headers=dict(reg_headers.items() + self.default_headers.items()))
+                headers=dict(reg_headers.items() + self.default_headers().items()))
             try:
                 upload_reg.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(upload_reg)
 
         created = create_prelim(payload)
-        for idx, content in enumerate(created):
-            attach = content.get('filename')
-            if attach:
-                authdata = get_auth(attach)
-                # only upload files that don't exist
-                if not authdata.get('exists'):
-                    uploadfile(authdata)
-                else:
-                    # item exists
-                    continue
-        return True
+        registered_idx = [int(k) for k in created['success'].keys()]
+        if registered_idx:
+            # only upload and register authorised files
+            registered_keys = created['success'].values()
+            for r_idx, r_content in enumerate(registered_idx):
+                attach = payload[r_content]['filename']
+                authdata = get_auth(attach, registered_keys[r_idx])
+                uploadfile(authdata, registered_keys[r_idx])
+        return created
 
     def add_tags(self, item, *tags):
         """
