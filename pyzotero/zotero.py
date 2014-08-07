@@ -762,6 +762,7 @@ class Zotero(object):
             except requests.exceptions.HTTPError:
                 error_handler(upload_reg)
 
+        # TODO: The flow needs to be a bit clearer
         created = create_prelim(payload)
         registered_idx = [int(k) for k in created['success'].keys()]
         if registered_idx:
