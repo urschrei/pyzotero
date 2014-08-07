@@ -651,10 +651,7 @@ class Zotero(object):
             Step 0: Register intent to upload files
             """
             verify(payload)
-            if not parentid:
-                liblevel = '/{t}/{u}/items'
-            else:
-                liblevel = '/{t}/{u}/items/{i}/children'
+            liblevel = '/{t}/{u}/items'
             # Create one or more new attachments
             headers = dict({
                 'Zotero-Write-Token': token(),
@@ -665,8 +662,7 @@ class Zotero(object):
                 url=self.endpoint
                 + liblevel.format(
                     t=self.library_type,
-                    u=self.library_id,
-                    i=parentid),
+                    u=self.library_id,),
                 data=to_send,
                 headers=headers)
             try:
