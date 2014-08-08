@@ -646,7 +646,7 @@ class Zotero(object):
                         "The file at %s couldn't be opened or found." %
                         templt[u'filename'])
 
-        def create_prelim(payload):
+        def create_prelim(payload, parentid=None):
             """
             Step 0: Register intent to upload files
             """
@@ -763,7 +763,7 @@ class Zotero(object):
                 error_handler(upload_reg)
 
         # TODO: The flow needs to be a bit clearer
-        created = create_prelim(payload)
+        created = create_prelim(payload, parentid)
         registered_idx = [int(k) for k in created['success'].keys()]
         if registered_idx:
             # only upload and register authorised files
