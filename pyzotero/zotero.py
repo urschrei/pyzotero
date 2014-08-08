@@ -771,7 +771,9 @@ class Zotero(object):
             for r_idx, r_content in enumerate(registered_idx):
                 attach = payload[r_content]['filename']
                 authdata = get_auth(attach, registered_keys[r_idx])
-                # now we need to check for 'exists'
+                # no need to keep going if the file exists
+                if authdata == {'exists: 1'}:
+                    continue
                 uploadfile(authdata, registered_keys[r_idx])
         return created
 
