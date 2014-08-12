@@ -1033,9 +1033,9 @@ class Zotero(object):
         Update an existing item
         Accepts one argument, a dict containing Item data
         """
-        modified = payload['version ']
-        ident = payload['key']
         to_send = self.check_items([payload])[0]
+        modified = payload['version']
+        ident = payload['key']
         headers = self.default_headers()
         req = requests.put(
             url=self.endpoint
@@ -1044,13 +1044,12 @@ class Zotero(object):
                 u=self.library_id,
                 id=ident),
             headers=headers,
-            data=to_send)
+            data=json.dumps(to_send))
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(req)
-        data = req.text
-        return data
+        return True
 
     def addto_collection(self, collection, payload):
         """

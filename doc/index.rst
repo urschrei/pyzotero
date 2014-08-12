@@ -618,7 +618,7 @@ If successful, ``resp`` will be a dict containing the creation status of each it
         :param dict item: a dict containing item data
         :rtype: Boolean
 
-        Returns dict containing the status of the updated items, as above. Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
+        Will return ``True`` if the request was successful, or will raise an error.
 
 Example:
 
