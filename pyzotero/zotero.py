@@ -120,9 +120,6 @@ def retrieve(func):
         func's return value is part of a URI, and it's this
         which is intercepted and passed to _retrieve_data:
         '/users/123/items?key=abc123'
-        the atom doc returned by _retrieve_data is then
-        passed to _etags in order to extract the etag attributes
-        from each entry, then to feedparser, then to the correct processor
         """
         if kwargs:
             self.add_parameters(**kwargs)
