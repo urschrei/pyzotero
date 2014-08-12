@@ -1086,17 +1086,23 @@ class Zotero(object):
         """
         Delete an item from a collection
         Accepts two arguments:
-        The collection ID, and a dict containing one or more item dicts
+        The collection ID, and and an item dict
         """
         ident = payload['key']
-        req = requests.delete(
+        modified = payload['version']
+        # strip the collection data from the item
+        modified_collections = [c for c in payload['data']['collections'] if c != collection]
+        headers = dict({
+            'If-Unmodified-Since-Version': modified}.items()
+            + self.default_headers().items())
+        req = requests.patch(
             url=self.endpoint
-            + '/{t}/{u}/collections/{c}/items/'.format(
+            + '/{t}/{u}/items/{i}'.format(
                 t=self.library_type,
                 u=self.library_id,
-                c=collection.upper())
-            + ident,
-            headers=self.default_headers())
+                i=ident),
+            data=json.dumps({'collections': modified_collections}),
+            headers=headers)
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
