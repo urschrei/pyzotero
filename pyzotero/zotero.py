@@ -973,23 +973,21 @@ class Zotero(object):
 
     def update_collection(self, payload):
         """
-        Update a Zotero collection
+        Update a Zotero collection property such as 'name'
         Accepts one argument, a dict containing collection data retrieved
         using e.g. 'collections()'
         """
-        tkn = payload['etag']
+        modified = payload['version']
         key = payload['key']
-        # remove any keys we've added
-        to_send = (i for i in self._cleanup(payload))
-        headers = {
-            'If-Match': tkn,
-        }
+        headers = dict({
+            'If-Unmodified-Since-Version': modified}.items()
+            + self.default_headers().items())
         req = requests.put(
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
                 t=self.library_type, u=self.library_id, c=key),
             headers=headers,
-            payload=to_send)
+            payload=json.dumps(payload))
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1035,18 +1033,16 @@ class Zotero(object):
         Update an existing item
         Accepts one argument, a dict containing Item data
         """
-        etag = payload['etag']
+        modified = payload['version ']
         ident = payload['key']
-        to_send = json.dumps(*self._cleanup(payload))
-        headers = {
-            'If-Match': etag,
-            'Content-Type': 'application/json',
-        }
+        to_send = self.check_items([payload])[0]
+        headers = self.default_headers()
         req = requests.put(
             url=self.endpoint
-            + '/{t}/{u}/items/'.format(
-                t=self.library_type, u=self.library_id)
-            + ident,
+            + '/{t}/{u}/items/{id}'.format(
+                t=self.library_type,
+                u=self.library_id,
+                id=ident),
             headers=headers,
             data=to_send)
         try:
