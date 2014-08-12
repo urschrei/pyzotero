@@ -1132,11 +1132,11 @@ class Zotero(object):
         Delete a Collection from a Zotero library
         Accepts a single argument: a dict containing item data
         """
-        etag = payload['etag']
+        modified = payload['version']
         ident = payload['key']
         headers = dict({
-            'If-Match': etag,
-        }.items() + self.default_headers())
+            'If-Unmodified-Since-Version': modified}.items()
+            + self.default_headers().items())
         req = requests.delete(
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
