@@ -1060,18 +1060,22 @@ class Zotero(object):
         """
         Add one or more items to a collection
         Accepts two arguments:
-        The collection ID, and a list containing one or more item dicts
+        The collection ID, and an item dict
         """
-        # create a string containing item IDs
-        to_send = ' '.join([p['key'].encode('utf8') for p in payload])
-        headers = self.default_headers()
-        req = requests.post(
+        ident = payload['key']
+        modified = payload['version']
+        # add the collection data from the item
+        modified_collections = payload['data']['collections'] + list(collection)
+        headers = dict({
+            'If-Unmodified-Since-Version': modified}.items()
+            + self.default_headers().items())
+        req = requests.patch(
             url=self.endpoint
-            + '/{t}/{u}/collections/{c}/itemsx'.format(
+            + '/{t}/{u}/items/{i}'.format(
                 t=self.library_type,
                 u=self.library_id,
-                c=collection.upper()),
-            data=to_send,
+                i=ident),
+            data=json.dumps({'collections': modified_collections}),
             headers=headers)
         try:
             req.raise_for_status()
