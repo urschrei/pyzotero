@@ -715,12 +715,12 @@ Collection Methods
         :param dict name: dict containing the key ``name`` and the value of the new collection name you wish to create. May optionally contain a ``parent`` key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.
         :rtype: Boolean
 
-    .. py:method:: Zotero.addto_collection(collection, items)
+    .. py:method:: Zotero.addto_collection(collection, item)
 
         Add the specified item(s) to the specified collection
 
         :param str collection: a collection key
-        :param list items: list of one or more item dicts
+        :param dict item: an item dict retrieved using an API call 
         :rtype: Boolean
 
         Collection keys can be obtained by a call to :py:meth:`collections()` (see details above).
@@ -730,7 +730,7 @@ Collection Methods
         Remove the specified item from the specified collection
 
         :param str collection: a collection key
-        :param dict item: dict containing item data
+        :param dict item: a dict containing item data
         :rtype: Boolean
 
         See the :py:meth:`delete_item()` example for multiple-item removal.
