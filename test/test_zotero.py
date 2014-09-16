@@ -48,8 +48,8 @@ class ZoteroTests(unittest.TestCase):
         self.item_doc = self.get_doc('item_doc.json')
         self.items_doc = self.get_doc('items_doc.json')
         self.collections_doc = self.get_doc('collections_doc.json')
-        self.citation_doc = self.get_doc('citation_doc.xml')
-        self.biblio_doc = self.get_doc('bib_doc.xml')
+        # self.citation_doc = self.get_doc('citation_doc.xml')
+        # self.biblio_doc = self.get_doc('bib_doc.xml')
         self.attachments_doc = self.get_doc('attachments_doc.json')
         self.tags_doc = self.get_doc('tags_doc.json')
         self.groups_doc = self.get_doc('groups_doc.json')
@@ -151,35 +151,35 @@ class ZoteroTests(unittest.TestCase):
         items_data = zot.children('ABC123')
         self.assertEqual(u'NM66T6EF', items_data[0]['key'])
 
-    @httpretty.activate
-    def testCitUTF8(self):
-        """ ensure that unicode citations are correctly processed by Pyzotero
-        """
-        zot = z.Zotero('myuserID', 'user', 'myuserkey')
-        HTTPretty.register_uri(
-            HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items/GW8V2CK7?content=citation&style=chicago-author-date&key=myuserkey',
-            content_type='application/atom+xml',
-            body=self.citation_doc)
-        cit = zot.item('GW8V2CK7', content='citation', style='chicago-author-date')
-        self.assertEqual(cit[0], u'<span>Robert A. Caro, “The Power Broker.”</span>')
+    # @httpretty.activate
+    # def testCitUTF8(self):
+    #     """ ensure that unicode citations are correctly processed by Pyzotero
+    #     """
+    #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
+    #     HTTPretty.register_uri(
+    #         HTTPretty.GET,
+    #         'https://api.zotero.org/users/myuserID/items/GW8V2CK7?content=citation&style=chicago-author-date&key=myuserkey',
+    #         content_type='application/atom+xml',
+    #         body=self.citation_doc)
+    #     cit = zot.item('GW8V2CK7', content='citation', style='chicago-author-date')
+    #     self.assertEqual(cit[0], u'<span>Robert A. Caro, “The Power Broker.”</span>')
 
-    @httpretty.activate
-    def testParseItemAtomBibDoc(self):
-        """ Should match a DIV with class = csl-entry
-        """
-        zot = z.Zotero('myuserID', 'user', 'myuserkey')
-        zot.url_params = 'content=bib'
-        HTTPretty.register_uri(
-            HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items?content=bib&format=atom',
-            content_type='application/atom+xml',
-            body=self.biblio_doc)
-        items_data = zot.items()
-        self.assertEqual(
-            items_data[0],
-            u'<div class="csl-entry">Robert A. Caro. \u201cThe Power Broker\u202f: Robert Moses and the Fall of New York,\u201d 1974.</div>'
-            )
+    # @httpretty.activate
+    # def testParseItemAtomBibDoc(self):
+    #     """ Should match a DIV with class = csl-entry
+    #     """
+    #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
+    #     zot.url_params = 'content=bib'
+    #     HTTPretty.register_uri(
+    #         HTTPretty.GET,
+    #         'https://api.zotero.org/users/myuserID/items?content=bib&format=atom',
+    #         content_type='application/atom+xml',
+    #         body=self.biblio_doc)
+    #     items_data = zot.items()
+    #     self.assertEqual(
+    #         items_data[0],
+    #         u'<div class="csl-entry">Robert A. Caro. \u201cThe Power Broker\u202f: Robert Moses and the Fall of New York,\u201d 1974.</div>'
+    #         )
 
     @httpretty.activate
     def testParseCollectionsJSONDoc(self):
