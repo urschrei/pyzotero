@@ -415,16 +415,6 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
-    def tag_items(self, tag, **kwargs):
-        """ Get items for a specific tag
-        """
-        query_string = '/{t}/{u}/tags/{ta}'.format(
-            u=self.library_id,
-            t=self.library_type,
-            ta=tag)
-        return self._build_query(query_string)
-
-    @retrieve
     def collection_items(self, collection, **kwargs):
         """ Get a specific collection's items
         """

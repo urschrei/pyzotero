@@ -165,14 +165,6 @@ The following methods will retrieve either user or group items, depending on the
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.tag_items(itemID[, search/request parameters])
-
-        Returns items for a specific tag
-
-        :param str itemID: a zotero item ID
-        :rtype: list of dicts
-
-
     .. py:method:: Zotero.collection_items(collectionID[, search/request parameters])
 
         Returns items from the specified collection
