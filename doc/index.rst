@@ -61,7 +61,7 @@ Installation using ``easy_install`` may be successful, but isn't tested or offic
 ===============================
 Installing development versions
 ===============================
-Pyzotero remains in development as of March 2012. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
+Pyzotero remains in development as of October 2014. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
 
 
 =======
