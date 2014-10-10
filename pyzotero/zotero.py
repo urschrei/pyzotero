@@ -891,7 +891,7 @@ class Zotero(object):
         """
         # check for a valid cached version
         template_name = 'item_creator_types_' + itemtype
-        query_string = '/itemTypeFields?itemType={i}'.format(
+        query_string = '/itemTypeCreatorTypes?itemType={i}'.format(
             i=itemtype)
         if self.templates.get(template_name) and not \
                 self._updated(
