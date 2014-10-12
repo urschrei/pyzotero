@@ -658,21 +658,9 @@ Deleting items
 
     .. py:method:: Zotero.delete_item(item)
 
-        Delete an item from your library
+        Delete one or more items from your library
 
-        :param dict item: a dict containing item data. You must first retrieve the item(s) you wish to delete, as the item's ``etag`` data is required for successful deletion. Deletion of multiple items is most easily accomplished using e.g. a ``for`` loop.
-        :rtype: Boolean
-
-Example:
-
-    .. code-block:: python
-        :emphasize-lines: 5
-
-        i = zot.items()
-        # only delete the last five items we added
-        to_delete = i[:5]
-        for d in to_delete:
-            zot.delete_item(d)
+        :param list item: a list of one or more dicts containing item data. You must first retrieve the item(s) you wish to delete, as ``version`` data is required.
 
 ===========
 Adding tags
