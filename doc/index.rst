@@ -463,11 +463,12 @@ The following two examples produce the same result:
         zot.add_parameters(limit=7, start=3)
         z = zot.top()
 
-All parameters are optional. **You may also set a search term here, using the 'itemType', 'q', 'qmode', or 'tag' parameters**.
+The following parameters are are **optional**.
+
+**You may also set a search term here, using the 'itemType', 'q', 'qmode', or 'tag' parameters**.
 
 This area of the Zotero Read API is under development, and may change frequently. See `the API documentation <https://www.zotero.org/support/dev/web_api/v3/basics#read_requests>`_ for the most up-to-date details of search syntax usage and export format details.
 
-.. note:: All parameters below are **optional**.
 
 
     .. py:method:: Zotero.add_parameters([format=None, itemKey=None, itemType=None, q=None, qmode=None, since=None, tag=None, sort=None, direction=None, limit=None, start=None, [content=None[ ,style=None]]])
