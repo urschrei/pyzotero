@@ -39,7 +39,7 @@ Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` fro
 
 ## Issues ##
 
-Pyzotero remains in development as of March 2014. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
+Pyzotero remains in development as of October 2014. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
 
 ## Pull Requests ##
 
