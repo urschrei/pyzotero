@@ -45,6 +45,15 @@ Pyzotero remains in development as of March 2014. The latest commits can be foun
 
 Pull requests are welcomed. Please read the [contribution guidelines](CONTRIBUTING.md). 
 
+## Versioning ##
+As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); version increments are performed as follows:  
+
+
+
+1. MAJOR version when you make incompatible API changes,
+2. MINOR version when you add functionality in a backwards-compatible manner, and
+3. PATCH version when you make backwards-compatible bug fixes.
+
 # License #
 
 Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See `license.txt` for details.  
