@@ -1,0 +1,13 @@
+{
+    "itemType": "book",
+    "title": "",
+    "creators": [{
+        "creatorType": "author",
+        "firstName": "",
+        "lastName": ""
+    }],
+    "url": "",
+    "tags": [],
+    "collections": [],
+    "relations": {}
+}

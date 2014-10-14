@@ -1,6 +1,6 @@
 Description
 ===========
-A Python wrapper for the `Zotero API <http://www.zotero.org/support/dev/server_api>`_. You'll require a library ID and access key, which can be set up `here <http://www.zotero.org/settings/keys/new>`_.
+A Python wrapper for the `Zotero API (v3) <https://www.zotero.org/support/dev/web_api/v3/start>`_. You'll require a library ID and access key, which can be set up `here <http://www.zotero.org/settings/keys/new>`_.
 
 
 .. Pyzotero documentation master file, created by
@@ -28,7 +28,7 @@ Getting started (short version)
             # we've retrieved the latest five top-level items in our library
             # we can print each item's item type and ID
             for item in items:
-                print('Item Type: %s | Key: %s') % (item['itemType'], item['key'])
+                print('Item Type: %s | Key: %s') % (item['data']['itemType'], item['data']['key'])
 
 2. Refer to the :ref:`read` and :ref:`write`.
 
@@ -40,6 +40,7 @@ Installation, testing, usage (longer version)
 Installation
 ============
 Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
+As of v1.0.0, Pyzotero is also available as a wheel: ``pip install --use-wheel pyzotero``
 
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
@@ -61,13 +62,15 @@ Installation using ``easy_install`` may be successful, but isn't tested or offic
 ===============================
 Installing development versions
 ===============================
-Pyzotero remains in development as of March 2012. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
+Pyzotero remains in development as of October 2014. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
 
 
 =======
 Testing
 =======
-Run ``tests.py`` in the pyzotero directory, or, using `Nose <http://readthedocs.org/docs/nose/en/latest/>`_, ``nosetests``. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
+Testing requires the ``Nose``, ``HTTPretty``, and ``Python-Dateutil`` packages.
+
+Run ``test_zotero.py`` in the ``pyzotero/test`` directory, or, using `Nose <http://readthedocs.org/docs/nose/en/latest/>`_, ``nosetests`` from the top-level directory. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
 
 
 ======================
@@ -75,6 +78,7 @@ Building Documentation
 ======================
 If you wish to build Pyzotero's documentation for offline use, it can be built from the ``doc`` directory of a local git repo by running ``make`` followed by the desired output format(s) (``html``, ``epub``, ``latexpdf`` etc.)
 
+This functionality requires Sphinx.
 See the `Sphinx documentation <http://sphinx.pocoo.org/tutorial.html#running-the-build>`_ for full details.
 
 
@@ -126,6 +130,9 @@ Read API Methods
 Retrieving Items
 ====================
 
+**Note:** In contrast to the v1 API, a great deal of additional metadata is now returned. In most cases, simply accessing items by referring to their ``item['data']`` key will suffice.
+
+
 The following methods will retrieve either user or group items, depending on the value (``user`` or ``group``) used to create the ``Zotero`` instance:
 
 
@@ -162,14 +169,6 @@ The following methods will retrieve either user or group items, depending on the
         :rtype: list of dicts
 
 
-    .. py:method:: Zotero.tag_items(itemID[, search/request parameters])
-
-        Returns items for a specific tag
-
-        :param str itemID: a zotero item ID
-        :rtype: list of dicts
-
-
     .. py:method:: Zotero.collection_items(collectionID[, search/request parameters])
 
         Returns items from the specified collection
@@ -193,35 +192,61 @@ Example of returned data:
     .. code-block:: python
 
 
-        [{'DOI': '',
-         'ISSN': '1747-1532',
-         'abstractNote': '',
-         'accessDate': '',
-         'archive': '',
-         'archiveLocation': '',
-         'callNumber': '',
-         'creators': [{'creatorType': 'author',
-                       'firstName': 'T. J.',
-                       'lastName': 'McIntyre'}],
-         'date': '2007',
-         'extra': '',
-         'issue': '',
-         'itemType': 'journalArticle',
-         'journalAbbreviation': '',
-         'language': '',
-         'libraryCatalog': 'Google Scholar',
-         'pages': '',
-         'publicationTitle': 'Journal of Intellectual Property Law & Practice',
-         'rights': '',
-         'series': '',
-         'seriesText': '',
-         'seriesTitle': '',
-         'shortTitle': 'Copyright in custom code',
-         'tags': [],
-         'title': 'Copyright in custom code: Who owns commissioned software?',
-         'updated': 'Mon, 14 Mar 2011 22:30:17 GMT',
-         'url': '',
-         'volume': ''}]
+        [{u'data': {u'ISBN': u'0810116820',
+                   u'abstractNote': u'',
+                   u'accessDate': u'',
+                   u'archive': u'',
+                   u'archiveLocation': u'',
+                   u'callNumber': u'HIB 828.912 BEC:3g N9',
+                   u'collections': [u'2UNGXMU9'],
+                   u'creators': [{u'creatorType': u'author',
+                                  u'firstName': u'Daniel',
+                                  u'lastName': u'Katz'}],
+                   u'date': u'1999',
+                   u'dateAdded': u'2010-01-04T14:50:40Z',
+                   u'dateModified': u'2014-08-06T11:28:41Z',
+                   u'edition': u'',
+                   u'extra': u'',
+                   u'itemType': u'book',
+                   u'key': u'VDNIEAPH',
+                   u'language': u'',
+                   u'libraryCatalog': u'library.catalogue.tcd.ie Library Catalog',
+                   u'numPages': u'',
+                   u'numberOfVolumes': u'',
+                   u'place': u'Evanston, Ill',
+                   u'publisher': u'Northwestern University Press',
+                   u'relations': {u'dc:replaces': u'http://zotero.org/users/436/items/9TXN8QUD'},
+                   u'rights': u'',
+                   u'series': u'',
+                   u'seriesNumber': u'',
+                   u'shortTitle': u'Saying I No More',
+                   u'tags': [{u'tag': u'Beckett, Samuel', u'type': 1},
+                             {u'tag': u'Consciousness in literature', u'type': 1},
+                             {u'tag': u'English prose literature', u'type': 1},
+                             {u'tag': u'Ireland', u'type': 1},
+                             {u'tag': u'Irish authors', u'type': 1},
+                             {u'tag': u'Modernism (Literature)', u'type': 1},
+                             {u'tag': u'Prose', u'type': 1},
+                             {u'tag': u'Self in literature', u'type': 1},
+                             {u'tag': u'Subjectivity in literature', u'type': 1}],
+                   u'title': u'Saying I No More: Subjectivity and Consciousness in The Prose of Samuel Beckett',
+                   u'url': u'',
+                   u'version': 792,
+                   u'volume': u''},
+         u'key': u'VDNIEAPH',
+         u'library': {u'id': 436,
+                      u'links': {u'alternate': {u'href': u'https://www.zotero.org/urschrei',
+                                                u'type': u'text/html'}},
+                      u'name': u'urschrei',
+                      u'type': u'user'},
+         u'links': {u'alternate': {u'href': u'https://www.zotero.org/urschrei/items/VDNIEAPH',
+                                   u'type': u'text/html'},
+                    u'self': {u'href': u'https://api.zotero.org/users/436/items/VDNIEAPH',
+                              u'type': u'application/json'}},
+         u'meta': {u'creatorSummary': u'Katz',
+                   u'numChildren': 0,
+                   u'parsedDate': u'1999-00-00'},
+         u'version': 792}]
 
 
 
@@ -247,7 +272,23 @@ Example of returned data:
 
     .. code-block:: python
 
-        [{'key': 'PRMD6BGB', 'name': "A Midsummer Night's Dream"}]
+        [{u'data': {u'key': u'5TSDXJG6',
+                    u'name': u'Critical GIS',
+                    u'parentCollection': False,
+                    u'relations': {},
+                    u'version': 778},
+          u'key': u'5TSDXJG6',
+          u'library': {u'id': 436,
+                       u'links': {u'alternate': {u'href': u'https://www.zotero.org/urschrei',
+                                                 u'type': u'text/html'}},
+                       u'name': u'urschrei',
+                       u'type': u'user'},
+          u'links': {u'alternate': {u'href': u'https://www.zotero.org/urschrei/collections/5TSDXJG6',
+                                    u'type': u'text/html'},
+                     u'self': {u'href': u'https://api.zotero.org/users/436/collections/5TSDXJG6',
+                               u'type': u'application/json'}},
+          u'meta': {u'numCollections': 0, u'numItems': 1},
+          u'version': 778}]
 
 
 ==========================
@@ -263,22 +304,28 @@ Example of returned data:
 
     .. code-block:: python
 
-        [{u'description': u'%3Cp%3EBGerman+Cinema+and+related+literature.%3C%2Fp%3E',
-            u'fileEditing': u'none',
-            u'group_id': u'153',
-            u'hasImage': 1,
-            u'libraryEditing': u'admins',
-            u'libraryEnabled': 1,
-            u'libraryReading': u'all',
-            u'members': {u'0': 436,
-               u'1': 6972,
-               u'15': 499956,
-               u'16': 521307,
-               u'17': 619180},
-            u'name': u'German Cinema',
-            u'owner': 10421,
-            u'type': u'PublicOpen',
-            u'url': u''}]
+        [{u'data': {u'description': u'',
+                    u'fileEditing': u'admins',
+                    u'hasImage': 1,
+                    u'id': 169947,
+                    u'libraryEditing': u'admins',
+                    u'libraryReading': u'members',
+                    u'members': [1177919, 1408658],
+                    u'name': u'smart_cities',
+                    u'owner': 436,
+                    u'type': u'Private',
+                    u'url': u'',
+                    u'version': 0},
+          u'id': 169947,
+          u'links': {u'alternate': {u'href': u'https://www.zotero.org/groups/169947',
+                                    u'type': u'text/html'},
+                     u'self': {u'href': u'https://api.zotero.org/groups/169947',
+                               u'type': u'application/json'}},
+          u'meta': {u'created': u'2013-05-22T11:22:46Z',
+                    u'lastModified': u'2013-05-22T11:26:50Z',
+                    u'numItems': 817},
+          u'version': 0}]
+
 
 ===================
 Retrieving Tags
@@ -408,24 +455,6 @@ Search / Request Parameters for Read API calls
 
 Additional parameters may be set on Read API methods **following any required parameters**, or set using the :py:meth:`Zotero.add_parameters()` method detailed below.
 
-All parameters are optional. **You may also set a search term here, using the 'itemType', 'q', or 'tag' parameters**.
-
-This area of the Zotero Read API is under heavy development as of early 2012, and may change frequently. See `the API documentation <http://www.zotero.org/support/dev/server_api/read_api#search_syntax>`_ for the most up-to-date details of search syntax usage and export format details.
-
-    .. py:method:: Zotero.add_parameters([format=None, itemKey=None, itemType=None, q=None, tag=None, limit=None, start=None, order=None, sort=None, [content=None[ ,style=None]]])
-
-        :param str format: only 'keys' is currently supported as an alternate format
-        :param str itemKey: A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request.
-        :param str itemType: item type search
-        :param str q: a search term, which currently matches titles and individual creator fields
-        :param str tag: tag search
-        :param int limit: 1 – 99 or None
-        :param int start: 1 – total number of items in your library or None
-        :param str order: any one of the following: “dateAdded”, “dateModified”, “title”, “creator”, “type”, “date”, “publisher”, “publication”, “journalAbbreviation”, “language”, “accessDate”, “libraryCatalog”, “callNumber”, “rights”, “addedBy”, “numItems”
-        :param str sort: 'asc' or 'desc'
-        :param str content: 'bib', or one of the export formats (see below). If 'bib' is passed, you may also pass:
-        :param str style: Any valid CSL style in the Zotero style repository
-        :rtype: list of HTML strings or None
 
 The following two examples produce the same result:
 
@@ -437,6 +466,41 @@ The following two examples produce the same result:
         # set parameters using explicit method
         zot.add_parameters(limit=7, start=3)
         z = zot.top()
+
+The following parameters are are **optional**.
+
+**You may also set a search term here, using the 'itemType', 'q', 'qmode', or 'tag' parameters**.
+
+This area of the Zotero Read API is under development, and may change frequently. See `the API documentation <https://www.zotero.org/support/dev/web_api/v3/basics#read_requests>`_ for the most up-to-date details of search syntax usage and export format details.
+
+
+
+    .. py:method:: Zotero.add_parameters([format=None, itemKey=None, itemType=None, q=None, qmode=None, since=None, tag=None, sort=None, direction=None, limit=None, start=None, [content=None[ ,style=None]]])
+
+        :param str format: "atom", "bib", "json", "keys", "versions". Pyzotero retrieves and decodes JSON responses by default
+        :param str itemKey: A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request
+
+        Search parameters:
+
+        :param str itemType: item type search. See the `Search Syntax <https://www.zotero.org/support/dev/web_api/v3/basics#search_syntax>`_ for details
+        :param str q: Quick search. Searches titles and individual creator fields by default. Use the ``qmode`` parameter to change the mode. Currently supports phrase searching only
+        :param str qmode: Quick search mode. To include full-text content in the search, use ``everything``. Defaults to ``titleCreatorYear``. Searching of other fields will be possible in the future
+        :param int since: default ``0``. Return only objects modified after the specified library version
+        :param str tag: tag search. See the `Search Syntax <https://www.zotero.org/support/dev/web_api/v3/basics#search_syntax>`_ for details
+
+        The following parameters can be used for search requests:
+
+        :param str sort: The name of the field by which entries are sorted: (``dateAdded``, ``dateModified``, ``title``, ``creator``, ``type``, ``date``, ``publisher``, ``publicationTitle``, ``journalAbbreviation``, ``language``, ``accessDate``, ``libraryCatalog``, ``callNumber``, ``rights``, ``addedBy``, ``numItems``, (tags))
+        :param str direction: ``asc`` or ``desc``
+        :param int limit: 1 – 100 or None
+        :param int start: 1 – total number of items in your library or None
+
+
+        If you wish to retrieve citation or bibliography entries, use the following parameters:
+
+        :param str content: 'bib', 'html', or one of the export formats (see below). If 'bib' is passed, you may **also** pass:
+        :param str style: Any valid CSL style in the Zotero style repository
+        :rtype: list of HTML strings or None.
 
 
 .. note::
@@ -460,7 +524,7 @@ If these are set, the return value is a list of UTF-8 formatted HTML ``div`` ele
 You may also set ``content='citation'`` if you wish to retrieve citations. Similar to ``bib``, the result will be a list of one or more HTML ``span`` elements.
 
 
-If you select one of the available `export formats <http://www.zotero.org/support/dev/server_api/read_api#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
+If you select one of the available `export formats <https://www.zotero.org/support/dev/web_api/v3/basics#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
 
 If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
 
@@ -538,7 +602,11 @@ Example:
         resp = zot.create_items([template])
 
 
-If successful, ``resp`` will have the same structure as items retrieved with an :py:meth:`items()` call, e.g. a list of one or more dicts (see :ref:`Item Data <returned>`, above).
+If successful, ``resp`` will be a dict containing the creation status of each item: 
+
+    .. code-block:: python
+
+        {'failed': {}, 'success': {'0': 'ABC123'}, 'unchanged': {}}
 
     .. py:method:: Zotero.update_item(item)
 
@@ -547,7 +615,7 @@ If successful, ``resp`` will have the same structure as items retrieved with an 
         :param dict item: a dict containing item data
         :rtype: Boolean
 
-        Returns a copy of the updated item, if successful. Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
+        Will return ``True`` if the request was successful, or will raise an error.
 
 Example:
 
@@ -556,9 +624,9 @@ Example:
         i = zot.items()
         # see above for example of returned item structure
         # modify the latest item which was added to your library
-        i[0]['title'] = 'The Sheltering Sky'
-        i[0]['creators'][0]['firstName'] = 'Paul'
-        i[0]['creators'][0]['lastName'] = 'Bowles'
+        i[0]['data']['title'] = 'The Sheltering Sky'
+        i[0]['data']['creators'][0]['firstName'] = 'Paul'
+        i[0]['data']['creators'][0]['lastName'] = 'Bowles'
         zot.update_item(i[0])
 
    .. py:method:: Zotero.check_items(items)
@@ -566,7 +634,7 @@ Example:
         Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised, detailing the invalid fields.
 
         :param list items: one or more dicts containing item data
-        :rtype: Boolean
+        :rtype: List. Each list item is a valid dict containing item data.
  
 
 Uploading files
@@ -580,6 +648,7 @@ Uploading files
 
         :param list files: a list containing one or more file paths: ``['/path/to/file/file.pdf', … ]``
         :param string parentid: a library Item ID. If this is specified, attachments will be created as child items of this ID.
+        :rtype: Dict. Showing status of each requested upload.
 
     .. py:method:: Zotero.attachment_both(files[, parentid])
 
@@ -587,27 +656,16 @@ Uploading files
 
         :param list files: a list containing one or more lists or tuples in the following format: ``(file name, file path)``
         :param string parentid: a library Item ID. If this is specified, attachments will be created as child items of this ID.
+        :rtype: Dict. Showing status of each requested upload.
 
 Deleting items
 --------------
 
     .. py:method:: Zotero.delete_item(item)
 
-        Delete an item from your library
+        Delete one or more items from your library
 
-        :param dict item: a dict containing item data. You must first retrieve the item(s) you wish to delete, as the item's ``etag`` data is required for successful deletion. Deletion of multiple items is most easily accomplished using e.g. a ``for`` loop.
-        :rtype: Boolean
-
-Example:
-
-    .. code-block:: python
-        :emphasize-lines: 5
-
-        i = zot.items()
-        # only delete the last five items we added
-        to_delete = i[:5]
-        for d in to_delete:
-            zot.delete_item(d)
+        :param list item: a list of one or more dicts containing item data. You must first retrieve the item(s) you wish to delete, as ``version`` data is required.
 
 ===========
 Adding tags
@@ -625,8 +683,7 @@ Example:
 
     .. code-block:: python
 
-        zot.add_parameters(limit=1)
-        z = zot.top()
+        z = zot.top(limit=1)
         # we've now retrieved the most recent top-level item
         updated = zot.add_tags(z[0], 'tag1', 'tag2', 'tag3')
         # updated now contains a representation of the updated server item
@@ -643,12 +700,12 @@ Collection Methods
         :param dict name: dict containing the key ``name`` and the value of the new collection name you wish to create. May optionally contain a ``parent`` key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.
         :rtype: Boolean
 
-    .. py:method:: Zotero.addto_collection(collection, items)
+    .. py:method:: Zotero.addto_collection(collection, item)
 
         Add the specified item(s) to the specified collection
 
         :param str collection: a collection key
-        :param list items: list of one or more item dicts
+        :param dict item: an item dict retrieved using an API call 
         :rtype: Boolean
 
         Collection keys can be obtained by a call to :py:meth:`collections()` (see details above).
@@ -658,7 +715,7 @@ Collection Methods
         Remove the specified item from the specified collection
 
         :param str collection: a collection key
-        :param dict item: dict containing item data
+        :param dict item: a dict containing item data
         :rtype: Boolean
 
         See the :py:meth:`delete_item()` example for multiple-item removal.
