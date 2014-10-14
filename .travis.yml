@@ -10,3 +10,4 @@ script: nosetests -v
 branches:
     only:
         - dev
+        - api_v3
