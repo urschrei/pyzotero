@@ -381,7 +381,7 @@ class ZoteroTests(unittest.TestCase):
     def testTooManyItems(self):
         """ Should fail because we're passing too many items
         """
-        itms = [i for i in xrange(51)]
+        itms = [i for i in range(51)]
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         with self.assertRaises(z.ze.TooManyItems):
             zot.create_items(itms)
