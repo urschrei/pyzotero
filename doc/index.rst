@@ -40,6 +40,7 @@ Installation, testing, usage (longer version)
 Installation
 ============
 Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
+As of v1.0.0, Pyzotero is also available as a wheel: ``pip install --use-wheel pyzotero``
 
 From a local clone, if you wish to install Pyzotero from a specific branch:
 

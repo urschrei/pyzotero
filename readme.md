@@ -17,7 +17,8 @@ See [Read The Docs][3] for full documentation of available Pyzotero methods, cod
 
 # Installation #
 
-* using [pip][10]: `pip install pyzotero` 
+* Using [pip][10]: `pip install pyzotero`  
+* From a wheel: `pip install --use-wheel pyzotero`  
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
 Example:
