@@ -67,7 +67,9 @@ Pyzotero remains in development as of October 2014. Unstable development version
 =======
 Testing
 =======
-Run ``tests.py`` in the pyzotero directory, or, using `Nose <http://readthedocs.org/docs/nose/en/latest/>`_, ``nosetests``. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
+Testing requires the ``Nose``, ``HTTPretty``, and ``Python-Dateutil`` packages.
+
+Run ``test_zotero.py`` in the ``pyzotero/test`` directory, or, using `Nose <http://readthedocs.org/docs/nose/en/latest/>`_, ``nosetests`` from the top-level directory. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
 
 
 ======================
@@ -75,6 +77,7 @@ Building Documentation
 ======================
 If you wish to build Pyzotero's documentation for offline use, it can be built from the ``doc`` directory of a local git repo by running ``make`` followed by the desired output format(s) (``html``, ``epub``, ``latexpdf`` etc.)
 
+This functionality requires Sphinx.
 See the `Sphinx documentation <http://sphinx.pocoo.org/tutorial.html#running-the-build>`_ for full details.
 
 
