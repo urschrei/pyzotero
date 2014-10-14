@@ -290,10 +290,9 @@ class Zotero(object):
                 u=self.library_id,
                 t=self.library_type,
                 **payload)
-            headers = dict({
-                'If-Modified-Since':
-                payload['updated'].strftime("%a, %d %b %Y %H:%M:%S %Z")}.items() +
-                self.default_headers().items())
+            headers = {
+                'If-Modified-Since': payload['updated'].strftime("%a, %d %b %Y %H:%M:%S %Z")}
+            headers.update(self.default_headers())
             # perform the request, and check whether the response returns 304
             r = requests.get(query, headers=headers)
             try:
@@ -640,10 +639,11 @@ class Zotero(object):
             verify(payload)
             liblevel = '/{t}/{u}/items'
             # Create one or more new attachments
-            headers = dict({
+            headers = {
                 'Zotero-Write-Token': token(),
                 'Content-Type': 'application/json',
-            }.items() + self.default_headers().items())
+            }
+            headers.update(self.default_headers())
             # If we have a Parent ID, add it as a parentItem
             if parentid:
                 for child in payload:
@@ -672,10 +672,11 @@ class Zotero(object):
             with open(attachment, 'rb') as f:
                 for chunk in iter(lambda: f.read(8192), b''):
                     digest.update(chunk)
-            auth_headers = dict({
+            auth_headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'If-None-Match': '*',
-            }.items() + self.default_headers().items())
+            }
+            auth_headers.update(self.default_headers())
             data = {
                 'md5': digest.hexdigest(),
                 'filename': os.path.basename(attachment),
@@ -734,6 +735,7 @@ class Zotero(object):
                 'If-None-Match': '*',
                 'User-Agent': 'Pyzotero/%s' % __version__
             }
+            reg_headers.update(self.default_headers())
             reg_data = {
                 'upload': authdata.get('uploadKey')
             }
@@ -743,7 +745,7 @@ class Zotero(object):
                     u=self.library_id,
                     i=reg_key),
                 data=reg_data,
-                headers=dict(reg_headers.items() + self.default_headers().items()))
+                headers=dict(reg_headers))
             try:
                 upload_reg.raise_for_status()
             except requests.exceptions.HTTPError:
@@ -917,13 +919,14 @@ class Zotero(object):
             'Zotero-Write-Token': token(),
             'Content-Type': 'application/json',
         }
+        headers.update(self.default_headers())
         req = requests.post(
             url=self.endpoint
             + '/{t}/{u}/items'.format(
                 t=self.library_type,
                 u=self.library_id),
             data=to_send,
-            headers=dict(headers.items() + self.default_headers().items()))
+            headers=dict(headers))
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
