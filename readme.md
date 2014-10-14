@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/urschrei/pyzotero.png?branch=dev)](https://travis-ci.org/urschrei/pyzotero) [![Wheel Status](https://pypip.in/wheel/Pyzotero/badge.svg)](https://pypi.python.org/pypi/Pyzotero/) [![Supported Python versions](https://pypip.in/py_versions/Pyzotero/badge.svg)](https://pypi.python.org/pypi/Pyzotero/)
+
 ``` python
 from pyzotero import zotero
 zot = zotero.Zotero(library_id, library_type, api_key)
@@ -5,7 +7,7 @@ items = zot.top(limit=5)
 # we've retrieved the latest five top-level items in our library
 # we can print each item's item type and ID
 for item in items:
-    print('Item Type: %s | Key: %s') % (item['data']['itemType'], item['data']['key'])
+    print('Item: %s | Key: %s') % (item['data']['itemType'], item['data']['key'])
 ```
 
 # Description #
@@ -57,9 +59,6 @@ As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); ve
 # License #
 
 Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See `license.txt` for details.  
-
-[![Build Status](https://travis-ci.org/urschrei/pyzotero.png?branch=dev)](https://travis-ci.org/urschrei/pyzotero)
-
 
 [1]: https://www.zotero.org/support/dev/web_api/v3/start
 [2]: https://www.zotero.org/settings/keys/new
