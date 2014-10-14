@@ -4,6 +4,7 @@ python:
   - "3.4"
 install:
 - pip install nose
+- pip install python-dateutil
 - pip install httpretty
 - pip install . --use-mirrors
 script: nosetests -v
