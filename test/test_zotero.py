@@ -36,9 +36,11 @@ try:
     from urllib import urlencode
     from urllib import quote
     from urlparse import urlparse
+    from urlparse import parse_qs
 except ImportError:
     from urllib.parse import urlencode
     from urllib.parse import urlparse
+    from urllib.parse import parse_qs
     from urllib.parse import quote
 
 
@@ -89,7 +91,9 @@ class ZoteroTests(unittest.TestCase):
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         zot.add_parameters(limit=0, start=7)
-        self.assertEqual('start=7&limit=0&format=json', zot.url_params)
+        self.assertEqual(
+            parse_qs('start=7&limit=0&format=json'),
+            parse_qs(zot.url_params))
 
     @httpretty.activate
     def testBuildQuery(self):
