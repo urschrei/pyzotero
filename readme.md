@@ -32,13 +32,9 @@ pip install .
 
 Installation using `easy_install` may be successful, but is neither tested nor officially supported – pip is the preferred method.
 
-# Python 3 #
-
-Python 3.4 is currently experimentally supported.
-
 ## Testing ##
 
-Run `tests.py` in the `pyzotero` directory, or, using [Nose][7], `nosetests` from the top-level directory.
+Run `test_zotero.py` in the [pyzotero/test](test) directory, or, using [Nose][7], `nosetests` from the top-level directory.
 
 ## Issues ##
 
