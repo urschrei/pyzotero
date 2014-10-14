@@ -31,6 +31,16 @@ import pytz
 from dateutil import parser
 import json
 
+# Python 3 compatibility faffing
+try:
+    from urllib import urlencode
+    from urllib import quote
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlencode
+    from urllib.parse import urlparse
+    from urllib.parse import quote
+
 
 class ZoteroTests(unittest.TestCase):
     """ Tests for pyzotero
