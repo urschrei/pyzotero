@@ -966,9 +966,8 @@ class Zotero(object):
         """
         modified = payload['version']
         key = payload['key']
-        headers = dict({
-            'If-Unmodified-Since-Version': modified}.items()
-            + self.default_headers().items())
+        headers = {'If-Unmodified-Since-Version': modified}
+        headers.update(default_headers())
         req = requests.put(
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
@@ -1023,7 +1022,8 @@ class Zotero(object):
         to_send = self.check_items([payload])[0]
         modified = payload['version']
         ident = payload['key']
-        headers = self.default_headers()
+        headers = {'If-Unmodified-Since-Version': modified}
+        headers.update(self.default_headers())
         req = requests.put(
             url=self.endpoint
             + '/{t}/{u}/items/{id}'.format(
@@ -1048,9 +1048,8 @@ class Zotero(object):
         modified = payload['version']
         # add the collection data from the item
         modified_collections = payload['data']['collections'] + list(collection)
-        headers = dict({
-            'If-Unmodified-Since-Version': modified}.items()
-            + self.default_headers().items())
+        headers = {'If-Unmodified-Since-Version': modified}
+        headers.update(self.default_headers())
         req = requests.patch(
             url=self.endpoint
             + '/{t}/{u}/items/{i}'.format(
@@ -1076,9 +1075,8 @@ class Zotero(object):
         # strip the collection data from the item
         modified_collections = [
             c for c in payload['data']['collections'] if c != collection]
-        headers = dict({
-            'If-Unmodified-Since-Version': modified}.items()
-            + self.default_headers().items())
+        headers = {'If-Unmodified-Since-Version': modified}
+        headers.update(self.default_headers())
         req = requests.patch(
             url=self.endpoint
             + '/{t}/{u}/items/{i}'.format(
@@ -1116,9 +1114,8 @@ class Zotero(object):
                 t=self.library_type,
                 u=self.library_id,
                 c=ident)
-        headers = dict({
-            'If-Unmodified-Since-Version': modified}.items()
-            + self.default_headers().items())
+        headers = {'If-Unmodified-Since-Version': modified}
+        headers.update(self.default_headers())
         req = requests.delete(
             url=url,
             params=params,
@@ -1137,9 +1134,8 @@ class Zotero(object):
         """
         modified = payload['version']
         ident = payload['key']
-        headers = dict({
-            'If-Unmodified-Since-Version': modified}.items()
-            + self.default_headers().items())
+        headers = {'If-Unmodified-Since-Version': modified}
+        headers.update(self.default_headers())
         req = requests.delete(
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
