@@ -9,18 +9,19 @@ import sys
 from setuptools import setup, find_packages
 
 sys.path.insert(1, "..")
-from pyzotero import zotero as zot
+from pyzotero.zotero import __version__ as version
+from pyzotero.zotero import __author__ as author
 
 setup(
     name='Pyzotero',
-    version=zot.__version__,
+    version=version,
     description='Python wrapper for the Zotero API',
-    author=zot.__author__,
+    author=author,
     author_email='urschrei@gmail.com',
     license='GNU GPL Version 3',
     url='https://github.com/urschrei/pyzotero',
     include_package_data=True,
-    download_url='https://github.com/urschrei/pyzotero/tarball/v%s' % zot.__version__,
+    download_url='https://github.com/urschrei/pyzotero/tarball/v%s' % version,
     keywords=['zotero'],
     classifiers=[
         'Programming Language :: Python',
