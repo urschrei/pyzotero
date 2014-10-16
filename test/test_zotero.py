@@ -105,8 +105,8 @@ class ZoteroTests(unittest.TestCase):
         query_string = '/users/{u}/tags/hi there/items'
         query = zot._build_query(query_string)
         self.assertEqual(
-            '/users/myuserID/tags/hi%20there/items?start=10&format=json',
-            query)
+            parse_qs('/users/myuserID/tags/hi%20there/items?start=10&format=json'),
+            parse_qs(query))
 
     @httpretty.activate
     def testParseItemJSONDoc(self):
@@ -248,7 +248,9 @@ class ZoteroTests(unittest.TestCase):
         zot.add_parameters(start=5, limit=10)
         zot._build_query('/whatever')
         zot.add_parameters(start=2)
-        self.assertEqual('start=2&format=json', zot.url_params)
+        self.assertEqual(
+            parse_qs('start=2&format=json'),
+            parse_qs(zot.url_params))
 
     @httpretty.activate
     def testParamsBlankAfterCall(self):
