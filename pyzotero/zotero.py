@@ -1152,9 +1152,8 @@ class Zotero(object):
                 t=self.library_type,
                 u=self.library_id,
                 c=ident)
-        headers = dict({
-            'If-Unmodified-Since-Version': modified}.items()
-            + self.default_headers().items())
+        headers = {'If-Unmodified-Since-Version': modified}
+        headers.update(self.default_headers())
         req = requests.delete(
             url=url,
             params=params,
