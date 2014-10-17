@@ -936,15 +936,17 @@ class Zotero(object):
         'parent': OPTIONAL, the parent collection to which you wish to add this
         """
         # no point in proceeding if there's no 'name' key
-        if 'name' not in payload:
-            raise ze.ParamNotPassed(
-                "The dict you pass must include a 'name' key")
-        # add a blank 'parent' key if it hasn't been passed
-        if not 'parent' in payload:
-            payload['parent'] = ''
+        for item in payload:
+            if 'name' not in item:
+                raise ze.ParamNotPassed(
+                    "The dict you pass must include a 'name' key")
+            # add a blank 'parent' key if it hasn't been passed
+            if not 'parentCollection' in item:
+                payload['parentCollection'] = ''
         headers = {
             'Zotero-Write-Token': token(),
         }
+        headers.update(self.default_headers())
         req = requests.post(
             url=self.endpoint
             + '/{t}/{u}/collections'.format(
@@ -956,7 +958,7 @@ class Zotero(object):
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(req)
-        return True
+        return req.text
 
     def update_collection(self, payload):
         """
