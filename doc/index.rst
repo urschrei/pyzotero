@@ -743,10 +743,9 @@ Example:
 
         Delete a collection from the Zotero library
 
-        :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`)
+        :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`). Alternatively, you may pass a **list** of collection dicts.
         :rtype: Boolean
 
-        See the :py:meth:`delete_item()` example for ways to delete multiple collections.
 
 
 Notes
