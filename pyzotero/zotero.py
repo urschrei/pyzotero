@@ -1132,34 +1132,19 @@ class Zotero(object):
     def delete_collection(self, payload):
         """
         Delete a Collection from a Zotero library
-        Accepts a single argument:
-            a dict containing item data
-            OR a list of dicts containing item data
+        Accepts a single argument: a dict containing item data
         """
-        params = None
-        if isinstance(payload, list):
-            params = {'collectionKey': ','.join([p['key'] for p in payload])}
-            modified = payload[0]['version']
-            url = self.endpoint + \
-            '/{t}/{u}/collections'.format(
-                t=self.library_type,
-                u=self.library_id)
-        else:
-            ident = payload['key']
-            modified = payload['version']
-            url = self.endpoint + \
-            '/{t}/{u}/collections/{c}'.format(
+        modified = payload['version']
+        ident = payload['key']
+        headers = {'If-Unmodified-Since-Version': modified}
+        headers.update(self.default_headers())
+        req = requests.delete(
+            url=self.endpoint
+            + '/{t}/{u}/collections/{c}'.format(
                 t=self.library_type,
                 u=self.library_id,
-                c=ident)
-        headers = dict({
-            'If-Unmodified-Since-Version': modified}.items()
-            + self.default_headers().items())
-        req = requests.delete(
-            url=url,
-            params=params,
+                c=ident),
             headers=headers)
-
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
