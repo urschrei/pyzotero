@@ -7,11 +7,11 @@ Created by Stephan Hügel on 2011-03-04
 """
 import sys
 from setuptools import setup, find_packages
-
+version = '1.0.1'
 
 setup(
     name='Pyzotero',
-    version='1.0.1',
+    version=version,
     description='Python wrapper for the Zotero API',
     author='Stephan Hügel',
     author_email='urschrei@gmail.com',
