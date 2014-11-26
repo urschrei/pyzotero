@@ -198,6 +198,17 @@ class Zotero(object):
         }
         self.links = None
         self.templates = {}
+        self.file_content_types = ['application/msword'
+                                   'application/pdf',
+                                   'application/octet-stream',
+                                   'application/x-tex',
+                                   'application/x-texinfo',
+                                   'image/jpeg',
+                                   'image/png',
+                                   'image/gif',
+                                   'image/tiff',
+                                   'application/postscript',
+                                   'application/rtf']
 
     def default_headers(self):
         """
@@ -244,9 +255,10 @@ class Zotero(object):
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.request)
-        if self.request.headers['Content-Type'] == 'application/json':
+        content_type = self.request.headers['Content-Type'].lower()
+        if content_type == 'application/json':
             return self.request.json()
-        elif self.request.headers['Content-Type'] == 'application/pdf':
+        elif content_type in self.file_content_types:
             return self.request.content
         else:
             return self.request.text
