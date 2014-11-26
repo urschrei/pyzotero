@@ -129,7 +129,7 @@ def retrieve(func):
         formats = {
             'application/atom+xml': 'atom',
             'application/json': 'json',
-            'text/plain': 'plain'
+            'text/plain': 'plain',
             }
         fmt = formats.get(self.request.headers['Content-Type'], 'json')
         # clear all query parameters
@@ -246,6 +246,8 @@ class Zotero(object):
             error_handler(self.request)
         if self.request.headers['Content-Type'] == 'application/json':
             return self.request.json()
+        elif self.request.headers['Content-Type'] == 'application/pdf':
+            return self.request.content
         else:
             return self.request.text
 
@@ -392,6 +394,16 @@ class Zotero(object):
         """ Get a specific item
         """
         query_string = '/{t}/{u}/items/{i}'.format(
+            u=self.library_id,
+            t=self.library_type,
+            i=item.upper())
+        return self._build_query(query_string)
+
+    @retrieve
+    def file(self, item, **kwargs):
+        """ Get the file from an specific item
+        """
+        query_string = '/{t}/{u}/items/{i}/file'.format(
             u=self.library_id,
             t=self.library_type,
             i=item.upper())

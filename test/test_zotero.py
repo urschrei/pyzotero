@@ -69,6 +69,7 @@ class ZoteroTests(unittest.TestCase):
         self.item_types = self.get_doc('item_types.json')
         self.keys_response = self.get_doc('keys_doc.txt')
         self.creation_doc = self.get_doc('creation_doc.json')
+        self.item_pdf = self.get_doc('item_file.pdf')
         # Add the item file to the mock response by default
         HTTPretty.enable()
         HTTPretty.register_uri(
@@ -127,6 +128,21 @@ class ZoteroTests(unittest.TestCase):
         test_dt = parser.parse("2011-01-13T03:37:29Z")
         incoming_dt = parser.parse(items_data['data']['dateModified'])
         self.assertEqual(test_dt, incoming_dt)
+
+    @httpretty.activate
+    def testParseItemJSONDoc(self):
+        """ Should successfully return a list of item dicts, key should match
+            input doc's zapi:key value, and author should have been correctly
+            parsed out of the XHTML payload
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/item/GSTS2FT9',
+            content_type='application/pdf',
+            body=self.item_file)
+        items_data = zot.file('GSTS2FT9')
+        self.assertEqual(b'One very strange PDF', items_data)
 
     @httpretty.activate
     def testParseAttachmentsJSONDoc(self):
@@ -328,6 +344,18 @@ class ZoteroTests(unittest.TestCase):
         HTTPretty.register_uri(
             HTTPretty.GET,
             'https://api.zotero.org/itemTypes',
+            body=self.item_types)
+        t = zot.item_types()
+        self.assertEqual(t[0]['itemType'], 'artwork')
+        self.assertEqual(t[-1]['itemType'], 'webpage')
+
+    @httpretty.activate
+    def testGetItemFile(self):
+        """ Ensure that we can retrieve an attached file """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/item/myItemID/file',
             body=self.item_types)
         t = zot.item_types()
         self.assertEqual(t[0]['itemType'], 'artwork')
