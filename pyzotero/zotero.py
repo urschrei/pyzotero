@@ -315,7 +315,7 @@ class Zotero(object):
 
         self.url_params = urlencode(params)
 
-    def _build_query(self, query_string):
+    def _build_query(self, query_string, no_params=False):
         """
         Set request parameters. Will always add the user ID if it hasn't
         been specifically set by an API method
@@ -328,9 +328,10 @@ class Zotero(object):
             raise ze.ParamNotPassed(
                 'There\'s a request parameter missing: %s' % err)
         # Add the URL parameters and the user key, if necessary
-        if not self.url_params:
-            self.add_parameters()
-        query = '%s?%s' % (query, self.url_params)
+        if no_params == False:
+            if not self.url_params:
+                self.add_parameters()
+            query = '%s?%s' % (query, self.url_params)
         return query
 
     # The following methods are Zotero Read API calls
@@ -407,7 +408,7 @@ class Zotero(object):
             u=self.library_id,
             t=self.library_type,
             i=item.upper())
-        return self._build_query(query_string)
+        return self._build_query(query_string, no_params=True)
 
     @retrieve
     def children(self, item, **kwargs):
