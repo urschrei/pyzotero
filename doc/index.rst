@@ -168,7 +168,7 @@ The following methods will retrieve either user or group items, depending on the
         :param str itemID: a zotero item ID
         :rtype: list of dicts
 
-
+    
     .. py:method:: Zotero.collection_items(collectionID[, search/request parameters])
 
         Returns items from the specified collection
@@ -261,6 +261,13 @@ Retrieving Collections
 
         :rtype: list of dicts
 
+    .. py:method:: Zotero.collection(collectionID[, search/request parameters])
+
+        Returns a library's collection
+
+        :param str collectionID: a Zotero library collection ID
+        :rtype: dict
+        
     .. py:method:: Zotero.collections_sub(collectionID[, search/request parameters])
 
         Returns a sub-collection from a specific collection
