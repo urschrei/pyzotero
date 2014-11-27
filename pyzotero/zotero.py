@@ -418,6 +418,16 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
+    def collection(self, collection, **kwargs):
+        """ Get user collection
+        """
+        query_string = '/{t}/{u}/collections/{c}'.format(
+            u=self.library_id,
+            t=self.library_type,
+            c=collection.upper())
+        return self._build_query(query_string)
+
+    @retrieve
     def collections(self, **kwargs):
         """ Get user collections
         """
