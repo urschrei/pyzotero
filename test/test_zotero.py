@@ -60,6 +60,7 @@ class ZoteroTests(unittest.TestCase):
         self.item_doc = self.get_doc('item_doc.json')
         self.items_doc = self.get_doc('items_doc.json')
         self.collections_doc = self.get_doc('collections_doc.json')
+        self.collection_doc = self.get_doc('collection_doc.json')
         # self.citation_doc = self.get_doc('citation_doc.xml')
         # self.biblio_doc = self.get_doc('bib_doc.xml')
         self.attachments_doc = self.get_doc('attachments_doc.json')
@@ -194,6 +195,23 @@ class ZoteroTests(unittest.TestCase):
     #         items_data[0],
     #         u'<div class="csl-entry">Robert A. Caro. \u201cThe Power Broker\u202f: Robert Moses and the Fall of New York,\u201d 1974.</div>'
     #         )
+
+    @httpretty.activate
+    def testParseCollectionJSONDoc(self):
+        """ Should successfully return a single collection dict,
+            'name' key value should match input doc's name value
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/collections/KIMI8BSG',
+            content_type='application/json',
+            body=self.collection_doc)
+        collections_data = zot.collection('KIMI8BSG')
+        self.assertEqual(
+            "LoC",
+            collections_data['data']['name'])
+
 
     @httpretty.activate
     def testParseCollectionsJSONDoc(self):
