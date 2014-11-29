@@ -198,7 +198,7 @@ class Zotero(object):
         }
         self.links = None
         self.templates = {}
-        self.file_content_types = ['application/msword'
+        self.file_content_types = ['application/msword',
                                    'application/pdf',
                                    'application/octet-stream',
                                    'application/x-tex',
