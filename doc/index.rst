@@ -161,6 +161,13 @@ The following methods will retrieve either user or group items, depending on the
         :param str itemID: a zotero item ID
         :rtype: list of dicts
 
+    .. py:method:: Zotero.file(itemID[, search/request parameters])
+
+        Returns the raw file content of an item
+
+        :param str itemID: a zotero item ID
+        :rtype: binary string
+
     .. py:method:: Zotero.children(itemID[, search/request parameters])
 
         Returns the child items of a specific item

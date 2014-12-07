@@ -70,6 +70,7 @@ class ZoteroTests(unittest.TestCase):
         self.item_types = self.get_doc('item_types.json')
         self.keys_response = self.get_doc('keys_doc.txt')
         self.creation_doc = self.get_doc('creation_doc.json')
+        self.item_file = self.get_doc('item_file.pdf')
         # Add the item file to the mock response by default
         HTTPretty.enable()
         HTTPretty.register_uri(
@@ -130,6 +131,20 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(test_dt, incoming_dt)
 
     @httpretty.activate
+    def testGetItemFile(self):
+        """
+        Should successfully return a binary string with a PDF content
+        """
+        zot = z.Zotero('myuserid', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserid/items/MYITEMID/file',
+            content_type='application/pdf',
+            body=self.item_file)
+        items_data = zot.file('myitemid')
+        self.assertEqual(b'One very strange PDF\n', items_data)
+
+    @httpretty.activate
     def testParseAttachmentsJSONDoc(self):
         """ Ensure that attachments are being correctly parsed """
         zot = z.Zotero('myuserid', 'user', 'myuserkey')
@@ -157,10 +172,10 @@ class ZoteroTests(unittest.TestCase):
     @httpretty.activate
     def testParseChildItems(self):
         """ Try and parse child items """
-        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        zot = z.Zotero('myuserid', 'user', 'myuserkey')
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items/ABC123/children',
+            'https://api.zotero.org/users/myuserid/items/ABC123/children',
             content_type='application/json',
             body=self.items_doc)
         items_data = zot.children('ABC123')

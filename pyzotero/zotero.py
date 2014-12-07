@@ -129,7 +129,7 @@ def retrieve(func):
         formats = {
             'application/atom+xml': 'atom',
             'application/json': 'json',
-            'text/plain': 'plain'
+            'text/plain': 'plain',
             }
         fmt = formats.get(self.request.headers['Content-Type'], 'json')
         # clear all query parameters
@@ -198,6 +198,17 @@ class Zotero(object):
         }
         self.links = None
         self.templates = {}
+        self.file_content_types = ['application/msword',
+                                   'application/pdf',
+                                   'application/octet-stream',
+                                   'application/x-tex',
+                                   'application/x-texinfo',
+                                   'image/jpeg',
+                                   'image/png',
+                                   'image/gif',
+                                   'image/tiff',
+                                   'application/postscript',
+                                   'application/rtf']
 
     def default_headers(self):
         """
@@ -244,8 +255,11 @@ class Zotero(object):
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.request)
-        if self.request.headers['Content-Type'] == 'application/json':
+        content_type = self.request.headers['Content-Type'].lower()
+        if content_type == 'application/json':
             return self.request.json()
+        elif content_type in self.file_content_types:
+            return self.request.content
         else:
             return self.request.text
 
@@ -313,7 +327,7 @@ class Zotero(object):
 
         self.url_params = urlencode(params)
 
-    def _build_query(self, query_string):
+    def _build_query(self, query_string, no_params=False):
         """
         Set request parameters. Will always add the user ID if it hasn't
         been specifically set by an API method
@@ -326,9 +340,10 @@ class Zotero(object):
             raise ze.ParamNotPassed(
                 'There\'s a request parameter missing: %s' % err)
         # Add the URL parameters and the user key, if necessary
-        if not self.url_params:
-            self.add_parameters()
-        query = '%s?%s' % (query, self.url_params)
+        if no_params == False:
+            if not self.url_params:
+                self.add_parameters()
+            query = '%s?%s' % (query, self.url_params)
         return query
 
     # The following methods are Zotero Read API calls
@@ -396,6 +411,16 @@ class Zotero(object):
             t=self.library_type,
             i=item.upper())
         return self._build_query(query_string)
+
+    @retrieve
+    def file(self, item, **kwargs):
+        """ Get the file from an specific item
+        """
+        query_string = '/{t}/{u}/items/{i}/file'.format(
+            u=self.library_id,
+            t=self.library_type,
+            i=item.upper())
+        return self._build_query(query_string, no_params=True)
 
     @retrieve
     def children(self, item, **kwargs):
