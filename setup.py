@@ -7,8 +7,7 @@ Created by Stephan Hügel on 2011-03-04
 """
 import sys
 from setuptools import setup, find_packages
-from pkg_resources import get_distribution
-version = get_distribution('pyzotero').version
+version = '1.1.0'
 
 setup(
     name='Pyzotero',
