@@ -61,7 +61,7 @@ class ZoteroTests(unittest.TestCase):
         self.items_doc = self.get_doc('items_doc.json')
         self.collections_doc = self.get_doc('collections_doc.json')
         self.collection_doc = self.get_doc('collection_doc.json')
-        # self.citation_doc = self.get_doc('citation_doc.xml')
+        self.citation_doc = self.get_doc('citation_doc.xml')
         # self.biblio_doc = self.get_doc('bib_doc.xml')
         self.attachments_doc = self.get_doc('attachments_doc.json')
         self.tags_doc = self.get_doc('tags_doc.json')
@@ -181,19 +181,20 @@ class ZoteroTests(unittest.TestCase):
         items_data = zot.children('ABC123')
         self.assertEqual(u'NM66T6EF', items_data[0]['key'])
 
-    # @httpretty.activate
-    # def testCitUTF8(self):
-    #     """ ensure that unicode citations are correctly processed by Pyzotero
-    #     """
-    #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
-    #     HTTPretty.register_uri(
-    #         HTTPretty.GET,
-    #         'https://api.zotero.org/users/myuserID/items/GW8V2CK7?content=citation&style=chicago-author-date&key=myuserkey',
-    #         content_type='application/atom+xml',
-    #         body=self.citation_doc)
-    #     cit = zot.item('GW8V2CK7', content='citation', style='chicago-author-date')
-    #     self.assertEqual(cit[0], u'<span>Robert A. Caro, “The Power Broker.”</span>')
-
+    @httpretty.activate
+    def testCitUTF8(self):
+        """ ensure that unicode citations are correctly processed by Pyzotero
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items/GW8V2CK7?content=citation&style=chicago-author-date&key=myuserkey',
+            content_type='application/atom+xml',
+            body=self.citation_doc)
+        cit = zot.item('GW8V2CK7', content='citation', style='chicago-author-date')
+        self.assertEqual(
+            cit[0],
+            u'\\n      <span>(Ans\\xe6lm and Tka\\u010dik 2014)</span>\\n')
     # @httpretty.activate
     # def testParseItemAtomBibDoc(self):
     #     """ Should match a DIV with class = csl-entry
