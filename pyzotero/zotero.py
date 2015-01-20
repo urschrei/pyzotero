@@ -388,6 +388,12 @@ class Zotero(object):
         query_string = '/{t}/{u}/items'
         return self._build_query(query_string)
 
+    def last_modified_version(self, **kwargs):
+        """ Get the last modified version
+        """
+        self.items(**kwargs)
+        return int(self.request.headers.get('last-modified-version', 0))
+
     @retrieve
     def top(self, **kwargs):
         """ Get user top-level items
