@@ -463,6 +463,19 @@ If you wish to retrieve item counts for subsets of a library, you can use the fo
 
 .. _parameters:
 
+================================
+Retrieving last modified version
+================================
+
+If you wish to retrieve the last modified version of a library, you can use the following method:
+
+.. py:method:: Zotero.last_modified_version()
+
+    Returns the last modified version of the library
+
+    :rtype: int
+
+
 ==============================================
 Search / Request Parameters for Read API calls
 ==============================================
