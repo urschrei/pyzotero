@@ -1012,7 +1012,7 @@ class Zotero(object):
         modified = payload['version']
         key = payload['key']
         headers = {'If-Unmodified-Since-Version': modified}
-        headers.update(default_headers())
+        headers.update(self.default_headers())
         req = requests.put(
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
