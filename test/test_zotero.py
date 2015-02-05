@@ -102,11 +102,11 @@ class ZoteroTests(unittest.TestCase):
         """
         try:
             from urlparse import parse_qs
-            orig = '/users/myuserID/tags/hi%20there/items?start=10&format=json'
+            orig = 'https://api.zotero.org/users/myuserID/tags/hi%20there/items?start=10&format=json'
         except ImportError:
             # Py3!
             from urllib.parse import parse_qs
-            orig = '/users/myuserID/tags/hi%20there/items?format=json&start=10'
+            orig = 'https://api.zotero.org/users/myuserID/tags/hi%20there/items?format=json&start=10'
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         zot.add_parameters(start=10)
         query_string = '/users/{u}/tags/hi there/items'
