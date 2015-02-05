@@ -99,12 +99,20 @@ class ZoteroTests(unittest.TestCase):
         """ Check that spaces etc. are being correctly URL-encoded and added
             to the URL parameters
         """
+        # Python 3 faffery
+        try:
+            from urlparse import parse_qs
+            orig = '/users/myuserID/tags/hi%20there/items?start=10&format=json'
+        except ImportError:
+            from urllib.parse import parse_qs
+            orig = '/users/myuserID/tags/hi%20there/items?format=json&start=10'
+        
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         zot.add_parameters(start=10)
         query_string = '/users/{u}/tags/hi there/items'
         query = zot._build_query(query_string)
         self.assertEqual(
-            parse_qs('/users/myuserID/tags/hi%20there/items?start=10&format=json'),
+            parse_qs(orig),
             parse_qs(query))
 
     @httpretty.activate
