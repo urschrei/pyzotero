@@ -191,9 +191,17 @@ class ZoteroTests(unittest.TestCase):
         """ ensure that unicode citations are correctly processed by Pyzotero
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        url = 'https://api.zotero.org/users/myuserID/items/GW8V2CK7?content=citation&style=chicago-author-date&key=myuserkey'
+        # distinguish between py2 and py3
+        try:
+            from urlparse import parse_qs
+        except ImportError:
+            # Py3!
+            from urllib.parse import parse_qs
+            url = 'https://api.zotero.org/users/myuserID/items/GW8V2CK7?format=atom&content=citation&style=chicago-author-date'
         HTTPretty.register_uri(
             HTTPretty.GET,
-            'https://api.zotero.org/users/myuserID/items/GW8V2CK7?content=citation&style=chicago-author-date&key=myuserkey',
+            url,
             content_type='application/atom+xml',
             body=self.citation_doc)
         cit = zot.item('GW8V2CK7', content='citation', style='chicago-author-date')
