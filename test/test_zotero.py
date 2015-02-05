@@ -27,6 +27,7 @@ import httpretty
 from httpretty import HTTPretty
 from pyzotero.pyzotero import zotero as z
 from dateutil import parser
+from collections import OrderedDict
 
 # Python 3 compatibility faffing
 try:
@@ -99,21 +100,20 @@ class ZoteroTests(unittest.TestCase):
         """ Check that spaces etc. are being correctly URL-encoded and added
             to the URL parameters
         """
-        # Python 3 faffery
-        try:
-            from urlparse import parse_qs
-            orig = '/users/myuserID/tags/hi%20there/items?start=10&format=json'
-        except ImportError:
-            from urllib.parse import parse_qs
-            orig = '/users/myuserID/tags/hi%20there/items?format=json&start=10'
-        
+        orig = '/users/myuserID/tags/hi%20there/items?start=10&format=json'
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         zot.add_parameters(start=10)
         query_string = '/users/{u}/tags/hi there/items'
         query = zot._build_query(query_string)
+        # get dictionaries, convert to Ordered
+        # we need to convert because Py3's query parser returns different order
+        parsed_orig = parse_qs(orig)
+        ordered_orig = OrderedDict(sorted(parsed_orig.items(), key=lambda t: t[0]))
+        parsed_query = parse_qs(query)
+        ordered_query = OrderedDict(sorted(parsed_query.items(), key=lambda t: t[0]))
         self.assertEqual(
-            parse_qs(orig),
-            parse_qs(query))
+            ordered_orig,
+            ordered_query)
 
     @httpretty.activate
     def testParseItemJSONDoc(self):
