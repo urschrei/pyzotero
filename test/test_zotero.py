@@ -24,12 +24,9 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 import os
 import unittest
 import httpretty
-from httpretty import HTTPretty, httprettified
+from httpretty import HTTPretty
 from pyzotero.pyzotero import zotero as z
-from datetime import datetime
-import pytz
 from dateutil import parser
-import json
 
 # Python 3 compatibility faffing
 try:
@@ -85,7 +82,7 @@ class ZoteroTests(unittest.TestCase):
             credential
         """
         with self.assertRaises(z.ze.MissingCredentials):
-            zf = z.Zotero('myuserID')
+            _ = z.Zotero('myuserID')
 
     @httpretty.activate
     def testRequestBuilder(self):
