@@ -105,15 +105,9 @@ class ZoteroTests(unittest.TestCase):
         zot.add_parameters(start=10)
         query_string = '/users/{u}/tags/hi there/items'
         query = zot._build_query(query_string)
-        # get dictionaries, convert to Ordered
-        # we need to convert because Py3's query parser returns different order
-        parsed_orig = parse_qs(orig)
-        ordered_orig = OrderedDict(sorted(parsed_orig.items(), key=lambda t: t[0]))
-        parsed_query = parse_qs(query)
-        ordered_query = OrderedDict(sorted(parsed_query.items(), key=lambda t: t[0]))
         self.assertEqual(
-            ordered_orig,
-            ordered_query)
+            sorted(parse_qs(orig).items()),
+            sorted(parse_qs(query).items()))
 
     @httpretty.activate
     def testParseItemJSONDoc(self):
