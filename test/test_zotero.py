@@ -101,6 +101,11 @@ class ZoteroTests(unittest.TestCase):
             to the URL parameters
         """
         orig = '/users/myuserID/tags/hi%20there/items?start=10&format=json'
+        try:
+            from urlparse import parse_qs
+        except ImportError:
+            # Py3!
+            orig = '/users/myuserID/tags/hi%20there/items?format=json&start=10'
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         zot.add_parameters(start=10)
         query_string = '/users/{u}/tags/hi there/items'
