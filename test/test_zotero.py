@@ -198,7 +198,7 @@ class ZoteroTests(unittest.TestCase):
         except ImportError:
             # Py3!
             from urllib.parse import parse_qs
-            url = 'https://api.zotero.org/users/myuserID/items/GW8V2CK7?format=atom&content=citation&style=chicago-author-date'
+            url = 'https://api.zotero.org/users/myuserID/items/GW8V2CK7?style=chicago-author-date&format=atom&content=citation'
         HTTPretty.register_uri(
             HTTPretty.GET,
             url,
