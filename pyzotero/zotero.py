@@ -973,10 +973,10 @@ class Zotero(object):
     def create_collection(self, payload):
         """
         Create a new Zotero collection
-        Accepts one argument, a dict containing the following keys:
+        Accepts one argument, a list of dicts containing the following keys:
 
         'name': the name of the collection
-        'parent': OPTIONAL, the parent collection to which you wish to add this
+        'parentCollection': OPTIONAL, the parent collection to which you wish to add this
         """
         # no point in proceeding if there's no 'name' key
         for item in payload:
