@@ -391,7 +391,7 @@ class ZoteroTests(unittest.TestCase):
         """ Ensure that collection creation fails with the wrong dict
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
-        t = {'foo': 'bar'}
+        t = [{'foo': 'bar'}]
         with self.assertRaises(z.ze.ParamNotPassed):
             t = zot.create_collection(t)
 
