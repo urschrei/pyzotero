@@ -27,7 +27,6 @@ import httpretty
 from httpretty import HTTPretty
 from pyzotero.pyzotero import zotero as z
 from dateutil import parser
-from collections import OrderedDict
 
 # Python 3 compatibility faffing
 try:
