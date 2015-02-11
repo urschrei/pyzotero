@@ -539,7 +539,7 @@ class Zotero(object):
         """
         items = []
         items.extend(query)
-        while not self.links['self'] == self.links['last']:
+        while self.links.get('next'):
             items.extend(self.follow())
         return items
 
