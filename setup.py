@@ -7,7 +7,7 @@ Created by Stephan Hügel on 2011-03-04
 """
 import sys
 from setuptools import setup, find_packages
-version = '1.1.2'
+version = '1.1.3'
 
 setup(
     name='Pyzotero',
