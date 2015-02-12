@@ -198,17 +198,18 @@ class Zotero(object):
         }
         self.links = None
         self.templates = {}
-        self.file_content_types = ['application/msword',
-                                   'application/pdf',
-                                   'application/octet-stream',
-                                   'application/x-tex',
-                                   'application/x-texinfo',
-                                   'image/jpeg',
-                                   'image/png',
-                                   'image/gif',
-                                   'image/tiff',
-                                   'application/postscript',
-                                   'application/rtf']
+        self.file_content_types = [
+            'application/msword',
+            'application/pdf',
+            'application/octet-stream',
+            'application/x-tex',
+            'application/x-texinfo',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/tiff',
+            'application/postscript',
+            'application/rtf']
 
     def default_headers(self):
         """
