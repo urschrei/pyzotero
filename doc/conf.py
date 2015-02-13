@@ -11,7 +11,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys
 from datetime import date
 sys.path.insert(1, "..")
 from pyzotero import zotero as zot
