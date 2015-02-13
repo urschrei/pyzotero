@@ -132,6 +132,13 @@ Read API Methods
 
 **Note:** :ref:`search/request parameters <parameters>` inside square brackets are optional. Methods such as :py:meth:`Zotero.top()`, :py:meth:`Zotero.items()` etc. can be called with no additional parameters if you wish.
 
+
+    .. py:method:: Zotero.key_info()
+
+        Returns info about the user and group library permissions associated with the current ``Zotero`` instance, based on the API key. Together with :py:meth:`Zotero.groups()`, this allows all accessible resources to be determined.
+
+        :rtype: dict
+
 ====================
 Retrieving Items
 ====================
