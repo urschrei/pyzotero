@@ -1,6 +1,6 @@
 Description
 ===========
-A Python wrapper for the `Zotero API (v3) <https://www.zotero.org/support/dev/web_api/v3/start>`_. You'll require a library ID and access key, which can be set up `here <http://www.zotero.org/settings/keys/new>`_.
+Pyzotero is a Python wrapper for the `Zotero API (v3) <https://www.zotero.org/support/dev/web_api/v3/start>`_. 
 
 
 .. Pyzotero documentation master file, created by
@@ -14,7 +14,15 @@ A Python wrapper for the `Zotero API (v3) <https://www.zotero.org/support/dev/we
 
 Getting started (short version)
 ===============================
-1. In a shell / prompt: ``pip install pyzotero``. Then:
+1. In a shell / prompt: ``pip install pyzotero``.
+2. You'll need the ID of the personal or group library you want to access:
+  
+  * Your **personal library ID** is available `here <https://www.zotero.org/settings/keys>`_, in the section ``Your userID for use in API calls``.
+  * For **group libraries**, the ID can be found by opening the group's page: ``https://www.zotero.org/groups/groupname``, and hovering over the ``group settings`` link. The ID is the integer after ``/groups/``.
+
+3. You'll also need [*]_ to get an **API key** from the Zotero `site <https://www.zotero.org/settings/keys/new>`_.
+4. Are you accessing your own Zotero library? ``library_type`` is ``user``.
+5. Are you accessing a shared group library? ``library_type`` is ``group``. 
 
 
 .. _hello-world:
@@ -30,7 +38,7 @@ Getting started (short version)
             for item in items:
                 print('Item Type: %s | Key: %s') % (item['data']['itemType'], item['data']['key'])
 
-2. Refer to the :ref:`read` and :ref:`write`.
+Refer to the :ref:`read` and :ref:`write`.
 
 
 Installation, testing, usage (longer version)
@@ -40,7 +48,7 @@ Installation, testing, usage (longer version)
 Installation
 ============
 Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
-As of v1.0.0, Pyzotero is also available as a wheel: ``pip install --use-wheel pyzotero``
+As of v1.0.0, Pyzotero is also available as a wheel.
 
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
@@ -56,13 +64,11 @@ The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org
 
 The `feedparser <http://feedparser.org>`_ (>= 0.5.1), `pytz <http://pypi.python.org/pypi/pytz/>`_ , and `Requests <http://docs.python-requests.org/en/latest/>`_ libraries are required. They will be automatically installed when installing Pyzotero using pip. For versions of Python below 2.7, the `ordereddict <http://pypi.python.org/pypi/ordereddict>`_ module is also required. This optional dependency can be included with Pyzotero with the command ``pip install pyzotero[ordereddict]``.
 
-Installation using ``easy_install`` may be successful, but isn't tested or officially supported – pip is the preferred method.
-
 
 ===============================
 Installing development versions
 ===============================
-Pyzotero remains in development as of October 2014. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
+Pyzotero remains in development as of February 2015. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
 
 
 =======
@@ -793,3 +799,5 @@ This is The Grinch.
 .. figure:: cat.png
 
     *Orangecat*
+
+.. [*] This isn't strictly true: you only need an API key for personal libraries and non-public group libraries.

@@ -4,7 +4,7 @@
 
 1. `pip install pyzotero`
 2. You'll need the ID of the personal or group library you want to access:
-    - Your **personal library ID** is available [here](https://www.zotero.org/settings/keys), in the section `Your userID for use in API calls is`.
+    - Your **personal library ID** is available [here](https://www.zotero.org/settings/keys), in the section `Your userID for use in API calls`.
     - For **group libraries**, the ID can be found by opening the group's page: `https://www.zotero.org/groups/groupname`, and hovering over the `group settings` link. The ID is the integer after `/groups/`.
 3. You'll also need<sup>†</sup> to get an **API key** [here][2].
 4. Are you accessing your own Zotero library? `library_type` is `user`.
@@ -22,12 +22,13 @@ for item in items:
     print('Item: %s | Key: %s') % (item['data']['itemType'], item['data']['key'])
 ```
 
+# Documentation #
+Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
+
 # Description #
 Pyzotero is a Python wrapper for the [Zotero read and write APIs (currently API v3)][1].
-See [Read The Docs][3] for full documentation of available Pyzotero methods, code examples, and sample output.
 
 # Installation #
-
 * Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7 and 3.4)
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
