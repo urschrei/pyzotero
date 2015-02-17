@@ -1,9 +1,14 @@
 [![Build Status](https://travis-ci.org/urschrei/pyzotero.png?branch=dev)](https://travis-ci.org/urschrei/pyzotero) [![Wheel Status](https://pypip.in/wheel/Pyzotero/badge.svg)](https://pypi.python.org/pypi/Pyzotero/) [![Supported Python versions](https://pypip.in/py_versions/Pyzotero/badge.svg)](https://pypi.python.org/pypi/Pyzotero/)
 
-1. You'll need the library ID of the personal or group library you want to access.
-2. You'll also need<sup>†</sup> to get an access key [here][2].
-3. Are you accessing your own Zotero library? `library_type` is `user`.
-4. Are you accessing a shared group library? `library_type` is `group`.  
+# Quickstart #
+
+1. `pip install pyzotero`
+2. You'll need the ID of the personal or group library you want to access:
+    - Your **personal library ID** is available [here](https://www.zotero.org/settings/keys), in the section `Your userID for use in API calls is`.
+    - For **group libraries**, the ID can be found by opening the group's page: `https://www.zotero.org/groups/groupname`, and hovering over the `group settings` link. The ID is the integer after `/groups/`.
+3. You'll also need<sup>†</sup> to get an **API key** [here][2].
+4. Are you accessing your own Zotero library? `library_type` is `user`.
+5. Are you accessing a shared group library? `library_type` is `group`.  
 
 Then:
 
