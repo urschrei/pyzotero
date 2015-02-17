@@ -3,12 +3,13 @@ python:
   - "2.7"
   - "3.4"
 install:
-- pip install nose
+- python setup.py -q install
 - pip install python-dateutil
 - pip install httpretty
-- pip install . --use-mirrors
 script: nosetests -v
 branches:
     only:
         - dev
-        - api_v3
+notifications:
+  email:
+    - urschrei@example.com
