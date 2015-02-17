@@ -25,9 +25,6 @@ for item in items:
 # Documentation #
 Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
 
-# Description #
-Pyzotero is a Python wrapper for the [Zotero read and write APIs (currently API v3)][1].
-
 # Installation #
 * Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7 and 3.4)
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
