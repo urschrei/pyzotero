@@ -1,5 +1,12 @@
 [![Build Status](https://travis-ci.org/urschrei/pyzotero.png?branch=dev)](https://travis-ci.org/urschrei/pyzotero) [![Wheel Status](https://pypip.in/wheel/Pyzotero/badge.svg)](https://pypi.python.org/pypi/Pyzotero/) [![Supported Python versions](https://pypip.in/py_versions/Pyzotero/badge.svg)](https://pypi.python.org/pypi/Pyzotero/)
 
+1. You'll need the library ID of the personal or group library you want to access.
+2. You'll also need<sup>†</sup> to get an access key [here][2].
+3. Are you accessing your own Zotero library? `library_type` is `user`.
+4. Are you accessing a shared group library? `library_type` is `group`.  
+
+Then:
+
 ``` python
 from pyzotero import zotero
 zot = zotero.Zotero(library_id, library_type, api_key)
@@ -11,14 +18,12 @@ for item in items:
 ```
 
 # Description #
-Pyzotero is a Python wrapper for the [Zotero read and write APIs (currently API v3)][1]. You'll require a library ID and access key, which can be set up [here][2].
-
+Pyzotero is a Python wrapper for the [Zotero read and write APIs (currently API v3)][1].
 See [Read The Docs][3] for full documentation of available Pyzotero methods, code examples, and sample output.
 
 # Installation #
 
-* Using [pip][10]: `pip install pyzotero`  
-* From a wheel: `pip install --use-wheel pyzotero`  
+* Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7 and 3.4)
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
 Example:
@@ -29,8 +34,6 @@ cd pyzotero
 git checkout dev
 pip install .
 ```
-
-Installation using `easy_install` may be successful, but is neither tested nor officially supported – pip is the preferred method.
 
 ## Testing ##
 
@@ -49,9 +52,9 @@ As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); ve
 
 
 
-1. MAJOR version when you make incompatible API changes,
-2. MINOR version when you add functionality in a backwards-compatible manner, and
-3. PATCH version when you make backwards-compatible bug fixes.
+1. MAJOR version will increment with incompatible API changes,
+2. MINOR version will increment when functionality is added in a backwards-compatible manner, and
+3. PATCH version will increment with backwards-compatible bug fixes.
 
 # License #
 
@@ -67,3 +70,5 @@ Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See
 [8]: http://www.gnu.org/copyleft/gpl.html
 [9]: https://github.com/urschrei/pyzotero/tree/dev
 [10]: http://www.pip-installer.org/en/latest/index.html
+† This isn't strictly true: you only need an API key for personal libraries and non-public group libraries.
+
