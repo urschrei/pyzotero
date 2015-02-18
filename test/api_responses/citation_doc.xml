@@ -1,1 +1,21 @@
-u'<?xml version="1.0" encoding="UTF-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">\n  <title>Zotero / urschrei / Top-Level Items</title>\n  <id>http://zotero.org/users/436/items/top?content=citation&amp;format=atom&amp;limit=1&amp;style=chicago-author-date</id>\n  <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?content=citation&amp;format=atom&amp;limit=1&amp;style=chicago-author-date"/>\n  <link rel="first" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?content=citation&amp;format=atom&amp;limit=1&amp;style=chicago-author-date"/>\n  <link rel="next" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?content=citation&amp;format=atom&amp;limit=1&amp;start=1&amp;style=chicago-author-date"/>\n  <link rel="last" type="application/atom+xml" href="https://api.zotero.org/users/436/items/top?content=citation&amp;format=atom&amp;limit=1&amp;start=756&amp;style=chicago-author-date"/>\n  <link rel="alternate" type="text/html" href="https://www.zotero.org/users/436/items/top"/>\n  <updated>2014-12-10T16:36:51Z</updated>\n  <entry>\n    <title>Test Book</title>\n    <author>\n      <name>urschrei</name>\n      <uri>http://zotero.org/users/436</uri>\n    </author>\n    <id>http://zotero.org/users/436/items/IGR8S5NK</id>\n    <published>2014-12-10T16:35:53Z</published>\n    <updated>2014-12-10T16:36:51Z</updated>\n    <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/436/items/IGR8S5NK?content=citation"/>\n    <link rel="alternate" type="text/html" href="https://www.zotero.org/urschrei/items/IGR8S5NK"/>\n    <zapi:key>IGR8S5NK</zapi:key>\n    <zapi:version>866</zapi:version>\n    <zapi:itemType>book</zapi:itemType>\n    <zapi:creatorSummary>Ans\xe6lm and Tka\u010dik</zapi:creatorSummary>\n    <zapi:parsedDate>2014</zapi:parsedDate>\n    <zapi:numChildren>0</zapi:numChildren>\n    <content zapi:type="citation" type="xhtml">\n      <span xmlns="http://www.w3.org/1999/xhtml">(Ans\xe6lm and Tka\u010dik 2014)</span>\n    </content>\n  </entry>\n</feed>\n'
+<?xml version="1.0" encoding="UTF-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:zapi="http://zotero.org/ns/api">
+  <title>Front Matter</title>
+  <author>
+    <name>Z public library</name>
+    <uri>http://zotero.org/users/475425</uri>
+  </author>
+  <id>http://zotero.org/users/475425/items/U52JBZ4X</id>
+  <published>2011-01-13T02:32:38Z</published>
+  <updated>2011-01-13T02:32:38Z</updated>
+  <link rel="self" type="application/atom+xml" href="https://api.zotero.org/users/475425/items/U52JBZ4X?content=citation"/>
+  <link rel="alternate" type="text/html" href="https://www.zotero.org/z_public_library/items/U52JBZ4X"/>
+  <zapi:key>U52JBZ4X</zapi:key>
+  <zapi:version>1</zapi:version>
+  <zapi:itemType>journalArticle</zapi:itemType>
+  <zapi:parsedDate>2004-12-01</zapi:parsedDate>
+  <zapi:numChildren>0</zapi:numChildren>
+  <content zapi:type="citation" type="xhtml">
+    <span xmlns="http://www.w3.org/1999/xhtml">(Ans\xe6lm and Tka\u010dik 2014)</span>
+  </content>
+</entry>
