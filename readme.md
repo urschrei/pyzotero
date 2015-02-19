@@ -44,7 +44,7 @@ Run `test_zotero.py` in the [pyzotero/test](test) directory, or, using [Nose][7]
 
 ## Issues ##
 
-Pyzotero remains in development as of October 2014. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
+Pyzotero remains in development as of February 2015. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
 
 ## Pull Requests ##
 
