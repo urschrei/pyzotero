@@ -3,13 +3,16 @@ python:
   - "2.7"
   - "3.4"
 install:
-- python setup.py -q install
-- pip install python-dateutil
-- pip install httpretty
+  - pip install . --download-cache $HOME/.pip-cache
+  - pip install python-dateutil --download-cache $HOME/.pip-cache
+  - pip install httpretty --download-cache $HOME/.pip-cache
+cache:
+  directories:
+    - $HOME/.pip-cache
 script: nosetests -v
 branches:
-    only:
-        - dev
+  only:
+    - dev
 notifications:
   email:
     - urschrei@example.com
