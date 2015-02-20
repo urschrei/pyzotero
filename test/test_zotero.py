@@ -82,7 +82,7 @@ class ZoteroTests(unittest.TestCase):
             credential
         """
         with self.assertRaises(z.ze.MissingCredentials):
-            _ = z.Zotero('myuserID')
+            z.Zotero('myuserID')
 
     @httpretty.activate
     def testRequestBuilder(self):
@@ -295,7 +295,7 @@ class ZoteroTests(unittest.TestCase):
             'https://api.zotero.org/users/myuserID/items',
             content_type='application/json',
             body=self.items_doc)
-        _ = zot.items()
+        zot.items()
         self.assertEqual(None, zot.url_params)
 
     @httpretty.activate
