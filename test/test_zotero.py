@@ -181,7 +181,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testCitUTF8(self):
-        """ ensure that unicode citations are correctly processed by Pyzotero
+        """ Ensure that unicode citations are correctly processed by Pyzotero
         """
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         url = 'https://api.zotero.org/users/myuserID/items/GW8V2CK7'
