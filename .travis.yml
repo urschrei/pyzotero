@@ -6,9 +6,7 @@ install:
   - pip install .
   - pip install python-dateutil
   - pip install httpretty
-cache:
-  directories:
-    - $HOME/.cache/pip
+cache: pip
 script: nosetests -v
 branches:
   only:
