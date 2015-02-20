@@ -45,14 +45,15 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
+        'Intended Audience :: Education',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Operating System :: OS Independent',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     packages=find_packages(),
-    install_requires=['feedparser >= 5.1.0', 'pytz', 'requests', 'six'],
+    install_requires=['feedparser >= 5.1.0', 'pytz', 'requests'],
     extras_require={
         'ordereddict': ['ordereddict==1.1']
     },
