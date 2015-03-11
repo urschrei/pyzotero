@@ -1103,7 +1103,7 @@ class Zotero(object):
         ident = payload['key']
         modified = payload['version']
         # add the collection data from the item
-        modified_collections = payload['data']['collections'] + list(collection)
+        modified_collections = payload['data']['collections'] + [collection]
         headers = {'If-Unmodified-Since-Version': modified}
         headers.update(self.default_headers())
         req = requests.patch(
