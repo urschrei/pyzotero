@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Tests for the Pyzotero module
@@ -227,7 +227,6 @@ class ZoteroTests(unittest.TestCase):
             "LoC",
             collections_data['data']['name'])
 
-
     @httpretty.activate
     def testParseCollectionsJSONDoc(self):
         """ Should successfully return a list of collection dicts, key should
@@ -386,6 +385,19 @@ class ZoteroTests(unittest.TestCase):
         t = [{'foo': 'bar'}]
         with self.assertRaises(z.ze.ParamNotPassed):
             t = zot.create_collection(t)
+
+    @httpretty.activate
+    def testNoApiKey(self):
+        """ Ensure that pyzotero works when api_key is not set
+        """
+        zot = z.Zotero('myuserID', 'user')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserID/items',
+            content_type='application/json',
+            body=self.item_doc)
+        items = zot.items()
+        self.assertEqual(len(items), 6) # this isn't a very good assertion
 
     # @httpretty.activate
     # def testUpdateItem(self):

@@ -125,7 +125,7 @@ def retrieve(func):
             self.request.url) and \
             self.content.search(
                 self.request.url).group(0) or 'bib'
-       # JSON by default
+        # JSON by default
         formats = {
             'application/atom+xml': 'atom',
             'application/json': 'json',
@@ -168,8 +168,7 @@ class Zotero(object):
             raise ze.MissingCredentials(
                 'Please provide both the library ID and the library type')
         # api_key is not required for public individual or group libraries
-        if api_key:
-            self.api_key = api_key
+        self.api_key = api_key
         self.preserve_json_order = preserve_json_order
         self.url_params = None
         self.tag_data = False
@@ -215,11 +214,14 @@ class Zotero(object):
         """
         It's always OK to include these headers
         """
-        return {
+        _headers = {
             "User-Agent": "Pyzotero/%s" % __version__,
-            "Authorization": "Bearer %s" % self.api_key,
             "Zotero-API-Version": "%s" % __api_version__,
-            }
+        }
+        if self.api_key:
+            _headers["Authorization"] = "Bearer %s" % self.api_key,
+        return _headers
+
 
     def _cache(self, template, key):
         """
@@ -341,7 +343,7 @@ class Zotero(object):
             raise ze.ParamNotPassed(
                 'There\'s a request parameter missing: %s' % err)
         # Add the URL parameters and the user key, if necessary
-        if no_params == False:
+        if no_params is False:
             if not self.url_params:
                 self.add_parameters()
             query = '%s?%s' % (query, self.url_params)
