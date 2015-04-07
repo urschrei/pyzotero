@@ -26,7 +26,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.1.5'
+__version__ = '1.1.6'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
