@@ -26,7 +26,7 @@ along with Pyzotero. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.1.6'
+__version__ = '1.1.7'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -219,7 +219,7 @@ class Zotero(object):
             "Zotero-API-Version": "%s" % __api_version__,
         }
         if self.api_key:
-            _headers["Authorization"] = "Bearer %s" % self.api_key,
+            _headers["Authorization"] = "Bearer %s" % self.api_key
         return _headers
 
 
