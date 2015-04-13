@@ -61,7 +61,7 @@ As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); ve
 
 # License #
 
-Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See `license.txt` for details.  
+Pyzotero is licensed under the [MIT license][8]. See [license.txt](license.txt) for details.  
 
 [1]: https://www.zotero.org/support/dev/web_api/v3/start
 [2]: https://www.zotero.org/settings/keys/new
@@ -70,7 +70,7 @@ Pyzotero is licensed under version 3 of the [GNU General Public License][8]. See
 [5]: http://feedparser.org
 [6]: http://pypi.python.org/pypi/pip
 [7]: https://nose.readthedocs.org/en/latest/
-[8]: http://www.gnu.org/copyleft/gpl.html
+[8]: http://opensource.org/licenses/MIT
 [9]: https://github.com/urschrei/pyzotero/tree/dev
 [10]: http://www.pip-installer.org/en/latest/index.html
 † This isn't strictly true: you only need an API key for personal libraries and non-public group libraries.
