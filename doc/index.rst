@@ -796,7 +796,7 @@ Most Read API methods return **lists** of **dicts** or, in the case of tag metho
 
 License
 =======
-Pyzotero is licensed under the `GNU GPL Version 3 <http://www.gnu.org/licenses/gpl.html>`_  license, in line with Zotero's own license. Details can be found in the file ``license.txt``.
+Pyzotero is licensed under the `MIT <http://opensource.org/licenses/MIT>`_  license.
 
 
 Cat Picture
