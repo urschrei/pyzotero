@@ -326,7 +326,7 @@ class Zotero(object):
             params['format'] = 'atom'
         # TODO: rewrite format=atom, content=json request
 
-        self.url_params = urlencode(params)
+        self.url_params = urlencode(params, doseq=True)
 
     def _build_query(self, query_string, no_params=False):
         """
