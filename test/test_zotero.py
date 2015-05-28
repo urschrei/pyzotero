@@ -29,6 +29,7 @@ THE SOFTWARE.
 """
 
 import os
+import json
 import unittest
 import httpretty
 from httpretty import HTTPretty
@@ -368,9 +369,8 @@ class ZoteroTests(unittest.TestCase):
             HTTPretty.GET,
             'https://api.zotero.org/itemTypes',
             body=self.item_types)
-        t = zot.item_types()
+        t = json.loads(zot.item_types())
         self.assertEqual(t[0]['itemType'], 'artwork')
-        self.assertEqual(t[-1]['itemType'], 'webpage')
 
     @httpretty.activate
     def testGetTemplate(self):

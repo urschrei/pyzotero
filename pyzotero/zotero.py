@@ -897,7 +897,7 @@ class Zotero(object):
         query_string = '/itemTypes'
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return self._cache(json.loads(retrieved), 'item_types')
+        return self._cache(retrieved, 'item_types')
 
     def creator_fields(self):
         """ Get localised creator fields
@@ -912,7 +912,7 @@ class Zotero(object):
         query_string = '/creatorFields'
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return self._cache(json.loads(retrieved), 'creator_fields')
+        return self._cache(retrieved, 'creator_fields')
 
     def item_type_fields(self, itemtype):
         """ Get all valid fields for an item
@@ -929,7 +929,7 @@ class Zotero(object):
             return self.templates[template_name]['tmplt']
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return self._cache(json.loads(retrieved), template_name)
+        return self._cache(retrieved, template_name)
 
     def item_fields(self):
         """ Get all available item fields
@@ -961,7 +961,7 @@ class Zotero(object):
             return self.templates[template_name]['tmplt']
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
-        return self._cache(json.loads(retrieved), template_name)
+        return self._cache(retrieved, template_name)
 
     def create_items(self, payload):
         """
