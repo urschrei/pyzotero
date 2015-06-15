@@ -430,6 +430,13 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
+    def deleted(self, **kwargs):
+        """ Get all deleted items (requires since= parameter)
+        """
+        query_string = '/{t}/{u}/deleted'
+        return self._build_query(query_string)
+
+    @retrieve
     def item(self, item, **kwargs):
         """ Get a specific item
         """

@@ -167,6 +167,12 @@ The following methods will retrieve either user or group items, depending on the
 
         :rtype: list of dicts
 
+    .. py:method:: Zotero.deleted([search/request parameters])
+
+        Returns deleted collections, library items, tags, searches and settings (requires "since=" parameter)
+
+        :rtype: list of dicts
+
     .. py:method:: Zotero.item(itemID[, search/request parameters])
 
         Returns a specific item
