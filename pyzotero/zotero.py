@@ -262,6 +262,7 @@ class Zotero(object):
         self.request = requests.get(
             url=full_url,
             headers=self.default_headers())
+        self.request.encoding = "utf-8"
         try:
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
