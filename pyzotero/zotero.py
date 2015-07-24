@@ -34,7 +34,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.1.10'
+__version__ = '1.1.11'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -827,7 +827,9 @@ class Zotero(object):
                 attach = payload[r_content]['filename']
                 authdata = get_auth(attach, registered_keys[r_idx])
                 # no need to keep going if the file exists
-                if authdata == {'exists: 1'}:
+                if authdata.get('exists'):
+                    created['unchanged'][unicode(r_idx)] = registered_keys[r_idx]
+                    created['success'].pop(unicode(r_idx), None)
                     continue
                 uploadfile(authdata, registered_keys[r_idx])
         return created
