@@ -828,8 +828,8 @@ class Zotero(object):
                 authdata = get_auth(attach, registered_keys[r_idx])
                 # no need to keep going if the file exists
                 if authdata.get('exists'):
-                    created['unchanged'][unicode(r_idx)] = registered_keys[r_idx]
-                    created['success'].pop(unicode(r_idx), None)
+                    created['unchanged'][unicode(r_idx)] = \
+                        created['success'].pop(unicode(r_idx), None)
                     continue
                 uploadfile(authdata, registered_keys[r_idx])
         return created
