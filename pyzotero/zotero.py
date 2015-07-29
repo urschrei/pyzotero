@@ -973,16 +973,21 @@ class Zotero(object):
         retrieved = self._retrieve_data(query_string)
         return self._cache(retrieved, template_name)
 
-    def create_items(self, payload):
+    def create_items(self, payload, parentid=None):
         """
         Create new Zotero items
-        Accepts one argument, a list containing one or more item dicts
+        Accepts two arguments:
+            a list containing one or more item dicts
+            an optional parent item ID
         """
         if len(payload) > 50:
             raise ze.TooManyItems(
                 "You may only create up to 50 items per call")
         # TODO: strip extra data if it's an existing item
+        if parentid:
+            [item.update({u'parentItem': parentid}) for item in payload]
         to_send = json.dumps([i for i in self._cleanup(*payload)])
+        raise
         headers = {
             'Zotero-Write-Token': token(),
             'Content-Type': 'application/json',
