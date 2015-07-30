@@ -626,11 +626,12 @@ Item Methods
 Creating items
 --------------
 
-    .. py:method:: Zotero.create_items(items)
+    .. py:method:: Zotero.create_items(items[, parentid])
 
         Create Zotero library items
 
         :param list items: one or more dicts containing item data
+        :param str parentid: A Parent item ID. This will cause the item(s) to become the child items of the given parent ID
         :rtype: list of dicts
 
         Returns a copy of the created item(s), if successful. Use of :py:meth:`item_template` is recommended in order to first obtain a dict with a structure which is known to be valid.

@@ -984,14 +984,11 @@ class Zotero(object):
             raise ze.TooManyItems(
                 "You may only create up to 50 items per call")
         # TODO: strip extra data if it's an existing item
-        if parentid:
-            [item.update({u'parentItem': parentid}) for item in payload]
-        to_send = json.dumps([i for i in self._cleanup(*payload)])
-        raise
         headers = {
             'Zotero-Write-Token': token(),
             'Content-Type': 'application/json',
         }
+        to_send = json.dumps([i for i in self._cleanup(*payload)])
         headers.update(self.default_headers())
         req = requests.post(
             url=self.endpoint
@@ -1004,7 +1001,28 @@ class Zotero(object):
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(req)
-        return req.json()
+        resp = req.json()
+        if parentid:
+            # we need to create child items using PATCH
+            # TODO: handle possibility of item creation but failed parent attachment
+            for _, v in resp['success'].items():
+                uheaders = {'If-Unmodified-Since-Version': req.headers['last-modified-version']}
+                uheaders.update(self.default_headers())
+                payload = json.dumps({'parentItem': parentid})
+                presp = requests.patch(
+                    url=self.endpoint + '/{t}/{u}/items/{v}'.format(
+                        t=self.library_type,
+                        u=self.library_id,
+                        v=v
+                    ),
+                    data=payload,
+                    headers=dict(uheaders)
+                )
+                try:
+                    presp.raise_for_status()
+                except requests.exceptions.HTTPError:
+                    error_handler(presp)
+        return resp
 
     def create_collection(self, payload):
         """
