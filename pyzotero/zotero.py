@@ -1005,15 +1005,15 @@ class Zotero(object):
         if parentid:
             # we need to create child items using PATCH
             # TODO: handle possibility of item creation but failed parent attachment
-            for _, v in resp['success'].items():
-                uheaders = {'If-Unmodified-Since-Version': req.headers['last-modified-version']}
-                uheaders.update(self.default_headers())
+            uheaders = {'If-Unmodified-Since-Version': req.headers['last-modified-version']}
+            uheaders.update(self.default_headers())
+            for value in resp['success'].values():
                 payload = json.dumps({'parentItem': parentid})
                 presp = requests.patch(
                     url=self.endpoint + '/{t}/{u}/items/{v}'.format(
                         t=self.library_type,
                         u=self.library_id,
-                        v=v
+                        v=value
                     ),
                     data=payload,
                     headers=dict(uheaders)
