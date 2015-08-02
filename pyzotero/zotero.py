@@ -1004,8 +1004,10 @@ class Zotero(object):
         resp = req.json()
         if parentid:
             # we need to create child items using PATCH
-            # TODO: handle possibility of item creation but failed parent attachment
-            uheaders = {'If-Unmodified-Since-Version': req.headers['last-modified-version']}
+            # TODO: handle possibility of item creation + failed parent attachment
+            uheaders = {
+                'If-Unmodified-Since-Version': req.headers['last-modified-version']
+            }
             uheaders.update(self.default_headers())
             for value in resp['success'].values():
                 payload = json.dumps({'parentItem': parentid})
