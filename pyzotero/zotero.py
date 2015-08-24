@@ -38,11 +38,12 @@ __version__ = '1.1.11'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
-try:
+import sys
+if sys.version_info[0] == 2:
     from urllib import urlencode
     from urllib import quote
     from urlparse import urlparse
-except ImportError:
+else:
     from urllib.parse import urlencode
     from urllib.parse import urlparse
     from urllib.parse import quote
