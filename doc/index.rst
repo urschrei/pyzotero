@@ -182,7 +182,12 @@ The following methods will retrieve either user or group items, depending on the
 
     .. py:method:: Zotero.file(itemID[, search/request parameters])
 
-        Returns the raw file content of an item
+        Returns the raw file content of an item. This can be dumped like so:
+
+        .. code-block:: python
+
+          with open('article.pdf', 'wb') as f:
+            f.write(zot.file('BM8MZJBB'))
 
         :param str itemID: a zotero item ID
         :rtype: binary string

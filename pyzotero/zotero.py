@@ -139,8 +139,10 @@ def retrieve(func):
             'application/atom+xml': 'atom',
             'application/json': 'json',
             'text/plain': 'plain',
+            'application/pdf; charset=utf-8': 'pdf'
             }
         fmt = formats.get(self.request.headers['Content-Type'], 'json')
+        print fmt
         # clear all query parameters
         self.url_params = None
         # Or process atom if it's atom-formatted
@@ -150,6 +152,9 @@ def retrieve(func):
             processor = self.processors.get(content)
             # process the content correctly with a custom rule
             return processor(parsed)
+        # bypass all other processing and return raw content
+        if fmt == 'pdf':
+            return self.request.content
         if self.tag_data:
             self.tag_data = False
             return self._tags_data(retrieved)
