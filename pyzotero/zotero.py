@@ -34,7 +34,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.1.11'
+__version__ = '1.1.12'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -142,7 +142,6 @@ def retrieve(func):
             'application/pdf; charset=utf-8': 'pdf'
             }
         fmt = formats.get(self.request.headers['Content-Type'], 'json')
-        print fmt
         # clear all query parameters
         self.url_params = None
         # Or process atom if it's atom-formatted
