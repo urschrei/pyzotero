@@ -139,11 +139,18 @@ def retrieve(func):
             'application/atom+xml': 'atom',
             'application/json': 'json',
             'text/plain': 'plain',
-            'application/pdf; charset=utf-8': 'pdf'
+            'application/pdf; charset=utf-8': 'pdf',
+            'application/msword': 'doc',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+            'application/zip': 'zip'
             }
         fmt = formats.get(self.request.headers['Content-Type'], 'json')
         # clear all query parameters
         self.url_params = None
+        if fmt in ['pdf', 'xlsx', 'docx', 'doc', 'zip']:
+            # bypass all other processing and return raw content
+            return self.request.content
         # Or process atom if it's atom-formatted
         if fmt == 'atom':
             parsed = feedparser.parse(retrieved)
@@ -151,9 +158,6 @@ def retrieve(func):
             processor = self.processors.get(content)
             # process the content correctly with a custom rule
             return processor(parsed)
-        # bypass all other processing and return raw content
-        if fmt == 'pdf':
-            return self.request.content
         if self.tag_data:
             self.tag_data = False
             return self._tags_data(retrieved)
