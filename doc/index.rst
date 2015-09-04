@@ -180,18 +180,6 @@ The following methods will retrieve either user or group items, depending on the
         :param str itemID: a zotero item ID
         :rtype: list of dicts
 
-    .. py:method:: Zotero.file(itemID[, search/request parameters])
-
-        Returns the raw file content of an item. This can be dumped like so:
-
-        .. code-block:: python
-
-          with open('article.pdf', 'wb') as f:
-            f.write(zot.file('BM8MZJBB'))
-
-        :param str itemID: a zotero item ID
-        :rtype: binary string
-
     .. py:method:: Zotero.children(itemID[, search/request parameters])
 
         Returns the child items of a specific item
@@ -282,6 +270,41 @@ Example of returned data:
 
 
 See :ref:`'Hello World' <hello-world>` example, above
+
+====================
+Retrieving Files
+====================
+
+    .. py:method:: Zotero.file(itemID[, search/request parameters])
+
+        Returns the raw file content of an item. This can be dumped like so:
+
+        .. code-block:: python
+
+          with open('article.pdf', 'wb') as f:
+            f.write(zot.file('BM8MZJBB'))
+
+        :param str itemID: a zotero item ID
+        :rtype: binary string
+
+    .. py:method:: Zotero.dump(itemID[, filename, path])
+
+      A convenient wrapper around :py:meth:`Zotero.file()`. Writes an attachment to disk using the optional path and filename.
+      If neither are supplied, the file is written to the current working
+      directory, and a :py:meth:`Zotero.item()` call is first made to determine the attachment
+      filename. No error checking is done regarding the path.
+
+      .. code-block:: python
+
+        # write a file to the current working directory using the stored filename
+        zot.dump('BM8MZJBB')
+        # write the same file to a different path, with a new name
+        zot.dump('BM8MZJBB', 'article_1.pdf', '/home/beckett/pdfs')
+
+      :param str itemID: a zotero item ID
+      :param str filename: (optional) an alternate filename
+      :param str path: (optional) a valid path for the file
+      :rtype: None
 
 =======================
 Retrieving Collections

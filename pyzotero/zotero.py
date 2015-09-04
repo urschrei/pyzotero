@@ -466,6 +466,19 @@ class Zotero(object):
             i=item.upper())
         return self._build_query(query_string, no_params=True)
 
+    def dump(self, itemkey, filename=None, path=None):
+        """ 
+        Dump a file attachment to disk, with optional filename and path
+        """
+        if not filename:
+            filename = self.item(itemkey)['data']['filename']
+        if path:
+            pth = os.path.join(path, filename)
+        else:
+            pth = filename
+        with open(pth, 'wb') as f:
+            f.write(self.file(itemkey))
+
     @retrieve
     def children(self, item, **kwargs):
         """ Get a specific item's child items
