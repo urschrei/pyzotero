@@ -97,7 +97,6 @@ def token():
     return str(uuid.uuid4().hex)
 
 
-
 # Override feedparser's buggy isBase64 method until they fix it
 feedparser._FeedParserMixin._isBase64 = ib64_patched
 
@@ -164,6 +163,7 @@ def retrieve(func):
         # No need to do anything
         return retrieved
     return wrapped_f
+
 
 
 class Zotero(object):
@@ -238,7 +238,6 @@ class Zotero(object):
         if self.api_key:
             _headers["Authorization"] = "Bearer %s" % self.api_key
         return _headers
-
 
     def _cache(self, template, key):
         """
@@ -1287,6 +1286,7 @@ class Zotero(object):
         return True
 
 
+
 class Backoff(object):
     """ a simple backoff timer for HTTP 429 responses """
     def __init__(self, delay=1):
@@ -1301,6 +1301,7 @@ class Backoff(object):
     def reset(self):
         """ reset delay """
         self.wait = 1
+
 
 
 backoff = Backoff()
