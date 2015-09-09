@@ -98,14 +98,14 @@ If you encounter an error while using Pyzotero, please open an issue on its `Git
 General Usage
 =====================
 
-.. note::
+.. important::
     A given ``Zotero`` instance is bound to the library or group used to create it. Thus, if you create a ``Zotero`` instance with a ``library_id`` of ``67`` and a ``library_type`` of ``group``, its item methods will only operate upon that group. Similarly, if you create a ``Zotero`` instance with your own ``library_id`` and a ``library_type`` of ``user``, the instance will be bound to your Zotero library.
 
 
 First, create a new Zotero instance:
 
 
-    .. py:class:: Zotero(library_id, library_type, api_key, preserve_json_order)
+    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order])
 
         :param str library_id: a valid Zotero API user ID
         :param str library_type: a valid Zotero API library type: **user** or **group**
@@ -130,20 +130,25 @@ Example:
 Read API Methods
 ====================
 
-**Note:** :ref:`search/request parameters <parameters>` inside square brackets are optional. Methods such as :py:meth:`Zotero.top()`, :py:meth:`Zotero.items()` etc. can be called with no additional parameters if you wish.
+.. note:: 
+    All search/request parameters inside square brackets are **optional**. Methods such as :py:meth:`Zotero.top()`, :py:meth:`Zotero.items()` etc. can be called with no additional parameters if you wish.
+
+.. tip:: 
+    The Read API returns 25 results by default (the API documentation claims 50). If you wish to retrieve e.g. all top-level collections, you'll have to wrap your call with :py:meth:`Zotero.everything()`: ``results = zot.everything(zot.collections())``
 
 
-    .. py:method:: Zotero.key_info()
+.. py:method:: Zotero.key_info()
 
-        Returns info about the user and group library permissions associated with the current ``Zotero`` instance, based on the API key. Together with :py:meth:`Zotero.groups()`, this allows all accessible resources to be determined.
+    Returns info about the user and group library permissions associated with the current ``Zotero`` instance, based on the API key. Together with :py:meth:`Zotero.groups()`, this allows all accessible resources to be determined.
 
-        :rtype: dict
+    :rtype: dict
 
 ====================
 Retrieving Items
 ====================
 
-**Note:** In contrast to the v1 API, a great deal of additional metadata is now returned. In most cases, simply accessing items by referring to their ``item['data']`` key will suffice.
+.. tip::
+    In contrast to the v1 API, a great deal of additional metadata is now returned. In most cases, simply accessing items by referring to their ``item['data']`` key will suffice.
 
 
 The following methods will retrieve either user or group items, depending on the value (``user`` or ``group``) used to create the ``Zotero`` instance:
