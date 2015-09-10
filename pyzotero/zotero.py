@@ -795,12 +795,12 @@ class Zotero(object):
         retrieved = self._retrieve_data(query_string)
         return self._cache(retrieved, 'creator_fields')
 
-    def item_type_fields(self, itemtype):
-        """ Get all valid fields for an item
+    def fields_types(self, tname, qstring, itemtype):
+        """ Retrieve item fields or creator types
         """
         # check for a valid cached version
-        template_name = 'item_type_fields_' + itemtype
-        query_string = '/itemTypeFields?itemType={i}'.format(
+        template_name = tname + itemtype
+        query_string = qstring.format(
             i=itemtype)
         if self.templates.get(template_name) and not \
                 self._updated(
@@ -811,6 +811,22 @@ class Zotero(object):
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
         return self._cache(retrieved, template_name)
+
+    def item_type_fields(self, itemtype):
+        """ Get all valid fields for an item
+        """
+        return self.fields_types(
+            'item_types_fields_',
+            '/itemTypeFields?itemType={i}',
+            itemtype)
+
+    def item_creator_types(self, itemtype):
+        """ Get all available creator types for an item
+        """
+        return self.fields_types(
+            'item_creator_types_',
+            '/itemTypeCreatorTypes?itemType={i}',
+            itemtype)
 
     def item_fields(self):
         """ Get all available item fields
@@ -826,23 +842,6 @@ class Zotero(object):
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
         return self._cache(retrieved, 'item_fields')
-
-    def item_creator_types(self, itemtype):
-        """ Get all available creator types for an item
-        """
-        # check for a valid cached version
-        template_name = 'item_creator_types_' + itemtype
-        query_string = '/itemTypeCreatorTypes?itemType={i}'.format(
-            i=itemtype)
-        if self.templates.get(template_name) and not \
-                self._updated(
-                    query_string,
-                    self.templates[template_name],
-                    template_name):
-            return self.templates[template_name]['tmplt']
-        # otherwise perform a normal request and cache the response
-        retrieved = self._retrieve_data(query_string)
-        return self._cache(retrieved, template_name)
 
     def create_items(self, payload, parentid=None):
         """
