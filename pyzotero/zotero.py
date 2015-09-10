@@ -144,11 +144,14 @@ def retrieve(func):
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
             'application/zip': 'zip',
             'audio/mpeg': 'mp3',
+            'video/mp4': 'mp4',
+            'audio/x-wav': 'wav',
+            'video/x-msvideo': 'avi'
             }
         fmt = formats.get(self.request.headers['Content-Type'], 'json')
         # clear all query parameters
         self.url_params = None
-        if fmt in ['pdf', 'xlsx', 'docx', 'doc', 'zip', 'mp3']:
+        if fmt in ['pdf', 'xlsx', 'docx', 'doc', 'zip', 'mp3', 'mp4', 'wav', 'avi']:
             # bypass all other processing and return raw content
             return self.request.content
         # Or process atom if it's atom-formatted
