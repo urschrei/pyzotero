@@ -311,6 +311,9 @@ Retrieving Files
       :param str path: (optional) a valid path for the file
       :rtype: None
 
+
+File retrieval and dumping should work for most common document, audio and video file formats. If you encounter an error, `please open an issue <https://github.com/urschrei/pyzotero/issues>`_.
+
 =======================
 Retrieving Collections
 =======================
