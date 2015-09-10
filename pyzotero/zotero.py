@@ -142,12 +142,13 @@ def retrieve(func):
             'application/msword': 'doc',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-            'application/zip': 'zip'
+            'application/zip': 'zip',
+            'audio/mpeg': 'mp3',
             }
         fmt = formats.get(self.request.headers['Content-Type'], 'json')
         # clear all query parameters
         self.url_params = None
-        if fmt in ['pdf', 'xlsx', 'docx', 'doc', 'zip']:
+        if fmt in ['pdf', 'xlsx', 'docx', 'doc', 'zip', 'mp3']:
             # bypass all other processing and return raw content
             return self.request.content
         # Or process atom if it's atom-formatted
