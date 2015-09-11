@@ -1209,6 +1209,7 @@ class Zupload(object):
     """
     Zotero file attachment helper
     Receives a Zotero instance, file(s) to upload, and optional parent ID
+
     """
     def __init__(self, zinstance, payload, parentid=None):
         super(Zupload, self).__init__()
@@ -1216,7 +1217,7 @@ class Zupload(object):
         self.payload = payload
         self.parentid = parentid
 
-    def verify(self, files):
+    def _verify(self, files):
         """
         ensure that all files to be attached exist
         open()'s better than exists(), cos it avoids a race condition
@@ -1237,11 +1238,11 @@ class Zupload(object):
                     "The file at %s couldn't be opened or found." %
                     templt[u'filename'])
 
-    def create_prelim(self):
+    def _create_prelim(self):
         """
         Step 0: Register intent to upload files
         """
-        self.verify(self.payload)
+        self._verify(self.payload)
         liblevel = '/{t}/{u}/items'
         # Create one or more new attachments
         headers = {
@@ -1268,7 +1269,7 @@ class Zupload(object):
         data = req.json()
         return data
 
-    def get_auth(self, attachment, reg_key):
+    def _get_auth(self, attachment, reg_key):
         """
         Step 1: get upload authorisation for a file
         """
@@ -1303,7 +1304,7 @@ class Zupload(object):
             error_handler(auth_req)
         return auth_req.json()
 
-    def upload_file(self, authdata, attachment, reg_key):
+    def _upload_file(self, authdata, attachment, reg_key):
         """
         Step 2: auth successful, and file not on server
         zotero.org/support/dev/server_api/file_upload#a_full_upload
@@ -1329,16 +1330,15 @@ class Zupload(object):
         except requests.exceptions.HTTPError:
             error_handler(upload)
         # now check the responses
-        return self.register_upload(authdata, reg_key)
+        return self._register_upload(authdata, reg_key)
 
-    def register_upload(self, authdata, reg_key):
+    def _register_upload(self, authdata, reg_key):
         """
         Step 3: upload successful, so register it
         """
         reg_headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'If-None-Match': '*',
-            'User-Agent': 'Pyzotero/%s' % __version__
         }
         reg_headers.update(self.zinstance.default_headers())
         reg_data = {
@@ -1358,18 +1358,18 @@ class Zupload(object):
 
     def upload(self):
         # TODO: The flow needs to be a bit clearer
-        created = self.create_prelim()
+        created = self._create_prelim()
         registered_idx = [int(k) for k in created['success'].keys()]
         if registered_idx:
             # only upload and register authorised files
             registered_keys = created['success'].values()
             for r_idx, r_content in enumerate(registered_idx):
                 attach = self.payload[r_content]['filename']
-                authdata = self.get_auth(attach, registered_keys[r_idx])
+                authdata = self._get_auth(attach, registered_keys[r_idx])
                 # no need to keep going if the file exists
                 if authdata.get('exists'):
                     created['unchanged'][unicode(r_idx)] = \
                         created['success'].pop(unicode(r_idx), None)
                     continue
-                self.upload_file(authdata, attach, registered_keys[r_idx])
+                self._upload_file(authdata, attach, registered_keys[r_idx])
         return created
