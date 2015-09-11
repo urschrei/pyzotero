@@ -1357,6 +1357,12 @@ class Zupload(object):
             error_handler(upload_reg)
 
     def upload(self):
+        """
+        File upload functionality
+
+        Goes through upload steps 0 - 3 (private class methods), and returns
+        a dict noting success, failure, or unchanged 
+        """
         # TODO: The flow needs to be a bit clearer
         created = self._create_prelim()
         registered_idx = [int(k) for k in created['success'].keys()]
