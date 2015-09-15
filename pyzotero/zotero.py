@@ -347,7 +347,8 @@ class Zotero(object):
         if params.get('content'):
             params['format'] = 'atom'
         # TODO: rewrite format=atom, content=json request
-
+        if not params.get('limit'):
+            params['limit'] = 100
         self.url_params = urlencode(params, doseq=True)
 
     def _build_query(self, query_string, no_params=False):
