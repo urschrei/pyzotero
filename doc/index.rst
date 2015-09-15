@@ -343,6 +343,13 @@ Retrieving Collections
         :param str collectionID: a Zotero library collection ID
         :rtype: list of dicts
 
+    .. py:method:: Zotero.all_collections([collectionID])
+
+        Returns either all collections and sub-collections in a flat list, or, if a collection ID is specified, that collection and all of its sub-collections. This method can be called at any collection "depth".
+
+        :param str collectionID: a Zotero library collection ID (optional)
+        :rtype: list of dicts
+
 Example of returned data:
 
     .. code-block:: python
