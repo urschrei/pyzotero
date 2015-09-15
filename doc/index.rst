@@ -319,20 +319,26 @@ Retrieving Collections
 =======================
     .. py:method:: Zotero.collections([search/request parameters])
 
-        Returns a library's collections
+        Returns a library's collections. **This includes subcollections**.
+
+        :rtype: list of dicts
+
+    .. py:method:: Zotero.collections_top([search/request parameters])
+
+        Returns a library's top-level collections.
 
         :rtype: list of dicts
 
     .. py:method:: Zotero.collection(collectionID[, search/request parameters])
 
-        Returns a library's collection
+        Returns a specific collection
 
         :param str collectionID: a Zotero library collection ID
         :rtype: dict
         
     .. py:method:: Zotero.collections_sub(collectionID[, search/request parameters])
 
-        Returns a sub-collection from a specific collection
+        Returns the sub-collections of a specific collection
 
         :param str collectionID: a Zotero library collection ID
         :rtype: list of dicts

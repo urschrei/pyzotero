@@ -519,6 +519,13 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
+    def collections_top(self, **kwargs):
+        """ Get top-level user collections
+        """
+        query_string = '/{t}/{u}/collections/top'
+        return self._build_query(query_string)
+
+    @retrieve
     def collections_sub(self, collection, **kwargs):
         """ Get subcollections for a specific collection
         """
