@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.1.13'
+__version__ = '1.1.14'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
