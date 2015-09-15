@@ -99,7 +99,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         zot.add_parameters(limit=0, start=7)
         self.assertEqual(
-            parse_qs('start=7&limit=0&format=json'),
+            parse_qs('start=7&limit=100&format=json'),
             parse_qs(zot.url_params))
 
     # @httpretty.activate
@@ -289,7 +289,7 @@ class ZoteroTests(unittest.TestCase):
         zot._build_query('/whatever')
         zot.add_parameters(start=2)
         self.assertEqual(
-            parse_qs('start=2&format=json'),
+            parse_qs('start=2&format=json&limit=100'),
             parse_qs(zot.url_params))
 
     @httpretty.activate
