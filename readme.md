@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/urschrei/pyzotero.png?branch=dev)](https://travis-ci.org/urschrei/pyzotero) [![Wheel Status](https://pypip.in/wheel/Pyzotero/badge.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Supported Python versions](https://pypip.in/py_versions/Pyzotero/badge.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/)
+[![Build Status](https://travis-ci.org/urschrei/pyzotero.png?branch=dev)](https://travis-ci.org/urschrei/pyzotero) [![Wheel Status](https://img.shields.io/pypi/wheel/Pyzotero.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Supported Python versions](https://img.shields.io/pypi/pyversions/Django.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Docs](https://readthedocs.org/projects/pyzotero/badge/?version=latest)](http://pyzotero.readthedocs.org/en/latest/?badge=latest)
+
 
 # Quickstart #
 
