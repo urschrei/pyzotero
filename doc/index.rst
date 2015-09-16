@@ -210,7 +210,7 @@ The following methods will retrieve either user or group items, depending on the
 
 .. _returned:
 
-Example of returned data:
+Example of returned item data:
 
 
     .. code-block:: python
@@ -350,7 +350,7 @@ Retrieving Collections
         :param str collectionID: a Zotero library collection ID (optional)
         :rtype: list of dicts
 
-Example of returned data:
+Example of returned collection data:
 
     .. code-block:: python
 
@@ -382,7 +382,7 @@ Retrieving groups
 
         :rtype: list of dicts
 
-Example of returned data:
+Example of returned group data:
 
     .. code-block:: python
 
@@ -426,7 +426,7 @@ Retrieving Tags
         :param str itemID: a valid Zotero library Item ID
         :rtype: list of strings
 
-Example of returned data:
+Example of returned tag data:
 
     .. code-block:: python
 
