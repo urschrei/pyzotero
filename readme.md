@@ -27,7 +27,7 @@ for item in items:
 Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
 
 # Installation #
-* Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7 and 3.4)
+* Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7, 3.4, and 3.5)
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
 Example:
@@ -45,7 +45,7 @@ Run `test_zotero.py` in the [pyzotero/test](test) directory, or, using [Nose][7]
 
 ## Issues ##
 
-Pyzotero remains in development as of February 2015. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
+Pyzotero remains in development as of September 2015. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
 
 ## Pull Requests ##
 
@@ -67,9 +67,6 @@ Pyzotero is licensed under the [MIT license][8]. See [license.txt](license.txt) 
 [1]: https://www.zotero.org/support/dev/web_api/v3/start
 [2]: https://www.zotero.org/settings/keys/new
 [3]: http://pyzotero.readthedocs.org/en/latest/
-[4]: http://packages.python.org/Pyzotero/
-[5]: http://feedparser.org
-[6]: http://pypi.python.org/pypi/pip
 [7]: https://nose.readthedocs.org/en/latest/
 [8]: http://opensource.org/licenses/MIT
 [9]: https://github.com/urschrei/pyzotero/tree/dev
