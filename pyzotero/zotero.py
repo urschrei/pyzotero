@@ -527,14 +527,13 @@ class Zotero(object):
         all_collections = []
         def subcoll(clct):
             """ recursively add collections to a flat master list """
-            # if there are child collections
+            all_collections.append(clct)
             if clct['meta'].get('numCollections', 0) > 0:
                 # add collection to master list & recur with all child collections
-                all_collections.append(clct)
                 [subcoll(c) for c in
                     self.everything(self.collections_sub(clct['data']['key']))]
-            else:
-                all_collections.append(clct)
+
+        # select all top-level collections or a specific collection and children 
         if collid:
             toplevel = [self.collection(collid)]
         else:
