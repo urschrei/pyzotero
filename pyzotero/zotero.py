@@ -41,10 +41,10 @@ import sys
 if sys.version_info[0] == 2:
     from urllib import urlencode
     from urllib import quote
-    from urlparse import urlparse
+    from urlparse import urlparse, urlunparse, parse_qsl
 else:
     from urllib.parse import urlencode
-    from urllib.parse import urlparse
+    from urllib.parse import urlparse, urlunparse, parse_qsl
     from urllib.parse import quote
 
 import requests
@@ -216,6 +216,7 @@ class Zotero(object):
             'json': self._json_processor,
         }
         self.links = None
+        self.self_link = {}
         self.templates = {}
         self.file_content_types = [
             'application/msword',
@@ -270,6 +271,8 @@ class Zotero(object):
         Returns a JSON document
         """
         full_url = '%s%s' % (self.endpoint, request)
+        # The API doesn't return this any more, so we have to cheat
+        self.self_link = request
         self.request = requests.get(
             url=full_url,
             headers=self.default_headers())
@@ -298,6 +301,17 @@ class Zotero(object):
                     path=parsed[2],
                     query=parsed[4])
                 extracted[key] = fragment
+            # add a 'self' link
+            parsed = list(urlparse(self.self_link))
+            # strip 'format' query parameter
+            stripped = "&".join(
+                ['%s=%s' % (p[0], p[1]) for p in parse_qsl(parsed[4]) if
+                p[0] != u'format']
+            )
+            # rebuild url fragment
+            # this is a death march
+            extracted['self'] = urlunparse([
+                parsed[0], parsed[1], parsed[2], parsed[3], stripped, parsed[5]])
             return extracted
         except KeyError:
             # No links present, because it's a single item
