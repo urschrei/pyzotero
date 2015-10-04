@@ -138,6 +138,7 @@ def retrieve(func):
             'application/json': 'json',
             'text/plain': 'plain',
             'application/pdf; charset=utf-8': 'pdf',
+            'application/pdf': 'pdf',
             'application/msword': 'doc',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
@@ -145,26 +146,38 @@ def retrieve(func):
             'audio/mpeg': 'mp3',
             'video/mp4': 'mp4',
             'audio/x-wav': 'wav',
-            'video/x-msvideo': 'avi'
+            'video/x-msvideo': 'avi',
+            'application/octet-stream': 'octet',
+            'application/x-tex': 'tex',
+            'application/x-texinfo': 'texinfo',
+            'image/jpeg': 'jpeg',
+            'image/png': 'png',
+            'image/gif': 'gif',
+            'image/tiff': 'tiff',
+            'application/postscript': 'postscript',
+            'application/rtf': 'rtf'
             }
-        fmt = formats.get(self.request.headers['Content-Type'], 'json')
+        # select format, or assume JSON
+        fmt = formats.get(
+            self.request.headers['Content-Type'].lower(), 'json')
         # clear all query parameters
         self.url_params = None
-        if fmt in ['pdf', 'xlsx', 'docx', 'doc', 'zip', 'mp3', 'mp4', 'wav', 'avi']:
-            # bypass all other processing and return raw content
-            return self.request.content
-        # Or process atom if it's atom-formatted
+        # check to see whether it's tag data
+        if self.tag_data:
+            self.tag_data = False
+            return self._tags_data(retrieved.json())
         if fmt == 'atom':
-            parsed = feedparser.parse(retrieved)
+            parsed = feedparser.parse(retrieved.text)
             # select the correct processor
             processor = self.processors.get(content)
             # process the content correctly with a custom rule
             return processor(parsed)
-        if self.tag_data:
-            self.tag_data = False
-            return self._tags_data(retrieved)
-        # No need to do anything
-        return retrieved
+        # it's binary, so return raw content
+        elif fmt != 'json':
+            return retrieved.content
+        # no need to do anything special, return JSON
+        else:
+            return retrieved.json()
     return wrapped_f
 
 
@@ -218,18 +231,6 @@ class Zotero(object):
         self.links = None
         self.self_link = {}
         self.templates = {}
-        self.file_content_types = [
-            'application/msword',
-            'application/pdf',
-            'application/octet-stream',
-            'application/x-tex',
-            'application/x-texinfo',
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/tiff',
-            'application/postscript',
-            'application/rtf']
 
     def default_headers(self):
         """
@@ -243,7 +244,7 @@ class Zotero(object):
             _headers["Authorization"] = "Bearer %s" % self.api_key
         return _headers
 
-    def _cache(self, template, key):
+    def _cache(self, response, key):
         """
         Add a retrieved template to the cache for 304 checking
         accepts a dict and key name, adds the retrieval time, and adds both
@@ -253,9 +254,9 @@ class Zotero(object):
         thetime = datetime.datetime.utcnow().replace(
             tzinfo=pytz.timezone('GMT'))
         self.templates[key] = {
-            'tmplt': template,
+            'tmplt': response.json(),
             'updated': thetime}
-        return copy.deepcopy(template)
+        return copy.deepcopy(response.json())
 
     @cleanwrap
     def _cleanup(self, to_clean):
@@ -281,13 +282,7 @@ class Zotero(object):
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.request)
-        content_type = self.request.headers['Content-Type'].lower()
-        if content_type == 'application/json':
-            return self.request.json()
-        elif content_type in self.file_content_types:
-            return self.request.content
-        else:
-            return self.request.text
+        return self.request
 
     def _extract_links(self):
         """

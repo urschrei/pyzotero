@@ -368,9 +368,10 @@ class ZoteroTests(unittest.TestCase):
         HTTPretty.register_uri(
             HTTPretty.GET,
             'https://api.zotero.org/itemTypes',
+            content_type='application/json',
             body=self.item_types)
-        t = json.loads(zot.item_types())
-        self.assertEqual(t[0]['itemType'], 'artwork')
+        resp = zot.item_types()
+        self.assertEqual(resp[0]['itemType'], 'artwork')
 
     @httpretty.activate
     def testGetTemplate(self):
