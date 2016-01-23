@@ -793,7 +793,13 @@ class Zotero(object):
             'version',
             'collections',
             'dateModified',
-            'relations'])
+            'relations',
+            #  attachment items
+            'parentItem',
+            'mtime',
+            'contentType',
+            'md5',
+            'filename'])
         template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
             to_check = set(i for i in list(item['data'].keys()))
