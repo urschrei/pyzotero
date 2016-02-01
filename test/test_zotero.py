@@ -173,7 +173,7 @@ class ZoteroTests(unittest.TestCase):
             content_type='text/plain',
             body=self.keys_response)
         response = zot.items()
-        self.assertEqual('JIFWQ4AN', response[:8])
+        self.assertEqual('JIFWQ4AN', response[:8].decode("utf-8"))
 
     @httpretty.activate
     def testParseChildItems(self):
