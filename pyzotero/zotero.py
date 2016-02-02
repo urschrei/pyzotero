@@ -156,7 +156,7 @@ def retrieve(func):
             'image/tiff': 'tiff',
             'application/postscript': 'postscript',
             'application/rtf': 'rtf'
-            }
+        }
         # select format, or assume JSON
         fmt = formats.get(
             self.request.headers['Content-Type'].lower(), 'json')
