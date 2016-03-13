@@ -8,7 +8,7 @@ install:
   - pip install .
   - pip install python-dateutil
   - pip install httpretty
-  - python-coveralls
+  - pip install python-coveralls
   - pip install nosexcover
 cache: pip
 script: nosetests --with-xcoverage --cover-package=pyzotero --cover-tests
