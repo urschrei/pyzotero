@@ -8,11 +8,14 @@ install:
   - pip install .
   - pip install python-dateutil
   - pip install httpretty
+  - pip install nosexcover
 cache: pip
-script: nosetests -v
+script: nosetests --with-xcoverage --cover-package=pyzotero --cover-tests
 branches:
   only:
     - dev
+after_success:
+  - coveralls
 notifications:
   email:
     - urschrei@gmail.com
