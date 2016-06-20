@@ -36,7 +36,7 @@ Getting started (short version)
             # we've retrieved the latest five top-level items in our library
             # we can print each item's item type and ID
             for item in items:
-                print('Item Type: %s | Key: %s') % (item['data']['itemType'], item['data']['key'])
+            print('Item Type: %s | Key: %s' % (item['data']['itemType'], item['data']['key']))
 
 Refer to the :ref:`read` and :ref:`write`.
 
