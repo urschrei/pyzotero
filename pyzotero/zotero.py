@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.1.15'
+__version__ = '1.1.16'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -701,9 +701,8 @@ class Zotero(object):
     def _tags_data(self, retrieved):
         """ Format and return data from API calls which return Tags
         """
-        tags = [t['tag'] for t in retrieved]
         self.url_params = None
-        return tags
+        return [t['tag'] for t in retrieved]
 
     # The following methods are Write API calls
     def item_template(self, itemtype):
@@ -1100,6 +1099,34 @@ class Zotero(object):
                 u=self.library_id,
                 i=ident),
             data=json.dumps({'collections': modified_collections}),
+            headers=headers)
+        try:
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
+        return True
+
+    def delete_tags(self, *payload):
+        """
+        Delete a group of tags
+        pass in up to 50 tags, or use *[tags]
+
+        """
+        if len(payload) > 50:
+            raise ze.TooManyItems("Only 50 tags or fewer may be deleted")
+        modified_tags = " || ".join([tag for tag in payload])
+        # first, get version data by getting one tag
+        tag = self.tags(limit=1)
+        headers = {
+            'If-Unmodified-Since-Version': self.request.headers['last-modified-version']
+            }
+        headers.update(self.default_headers())
+        req = requests.delete(
+            url=self.endpoint
+            + '/{t}/{u}/tags'.format(
+                t=self.library_type,
+                u=self.library_id),
+            params={'tag': modified_tags},
             headers=headers)
         try:
             req.raise_for_status()

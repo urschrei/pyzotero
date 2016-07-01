@@ -763,6 +763,17 @@ Deleting items
 
         :param list item: a list of one or more dicts containing item data. You must first retrieve the item(s) you wish to delete, as ``version`` data is required.
 
+Deleting tags
+--------------
+
+    .. py:method:: Zotero.delete_tags(tag_a[, tag …])
+
+        Delete one or more tags from your library
+
+        :param string tag: the tag(s) you'd like to delete
+
+        You may also pass a list using ``zot.delete_tags(*[tag_list])``
+
 ===========
 Adding tags
 ===========
@@ -772,8 +783,10 @@ Adding tags
         Add one or more tags to an item, and update it on the server
 
         :param dict item: a dict containing item data
-        :param string tag: the tag you'd like to add to the item
+        :param string tag: the tag(s) you'd like to add to the item
         :rtype: list of dicts
+
+        You may also pass a list using ``zot.add_tags(item, *[tag_list])``
 
 Example:
 
