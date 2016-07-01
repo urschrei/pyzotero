@@ -1106,11 +1106,10 @@ class Zotero(object):
             error_handler(req)
         return True
 
-    def delete_tags(self, payload):
+    def delete_tags(self, *payload):
         """
         Delete a group of tags
-        Accepts a single argument:
-            a list containing tags data
+        pass in up to 50 tags, or use *[tags]
 
         """
         if len(payload) > 50:

@@ -766,11 +766,13 @@ Deleting items
 Deleting tags
 --------------
 
-    .. py:method:: Zotero.delete_tags(tags)
+    .. py:method:: Zotero.delete_tags(tag_a[, tag …])
 
         Delete one or more tags from your library
 
-        :param list tags: a list containing tags you wish to delete.
+        :param string tag: the tag(s) you'd like to delete
+
+        You may also pass a list using ``zot.delete_tags(*[tag_list])``
 
 ===========
 Adding tags
@@ -781,8 +783,10 @@ Adding tags
         Add one or more tags to an item, and update it on the server
 
         :param dict item: a dict containing item data
-        :param string tag: the tag you'd like to add to the item
+        :param string tag: the tag(s) you'd like to add to the item
         :rtype: list of dicts
+
+        You may also pass a list using ``zot.add_tags(item, *[tag_list])``
 
 Example:
 
