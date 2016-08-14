@@ -158,8 +158,10 @@ def retrieve(func):
             'application/rtf': 'rtf'
         }
         # select format, or assume JSON
+        content_type_header = self.request.headers['Content-Type'].lower() + ";"
         fmt = formats.get(
-            self.request.headers['Content-Type'].lower(), 'json')
+            # strip "; charset=..." segment
+            content_type_header[0:content_type_header.index(';')], 'json')
         # clear all query parameters
         self.url_params = None
         # check to see whether it's tag data
