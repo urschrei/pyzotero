@@ -12,9 +12,6 @@ install:
   - pip install nosexcover
 cache: pip
 script: nosetests --with-xcoverage --cover-package=pyzotero --cover-tests
-branches:
-  only:
-    - dev
 after_success:
   - coveralls
 notifications:
