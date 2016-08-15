@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.1.17'
+__version__ = '1.1.18'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -165,7 +165,7 @@ def retrieve(func):
         # clear all query parameters
         self.url_params = None
         # check to see whether it's tag data
-        if self.tag_data:
+        if 'tags' in self.request.url:
             self.tag_data = False
             return self._tags_data(retrieved.json())
         if fmt == 'atom':
