@@ -956,7 +956,7 @@ class Zotero(object):
                 raise ze.ParamNotPassed(
                     "The dict you pass must include a 'name' key")
             # add a blank 'parentCollection' key if it hasn't been passed
-            if not 'parentCollection' in item:
+            if 'parentCollection' not in item:
                 item['parentCollection'] = ''
         headers = {
             'Zotero-Write-Token': token(),
