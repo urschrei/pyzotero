@@ -360,6 +360,9 @@ class Zotero(object):
         # TODO: rewrite format=atom, content=json request
         if not params.get('limit'):
             params['limit'] = 100
+        # Need ability to request arbitrary number of results for version response
+        elif (params['limit'] == -1 or params['limit'] is None):  # -1 value is hack that works with current version
+            del params['limit']
         self.url_params = urlencode(params, doseq=True)
 
     def _build_query(self, query_string, no_params=False):
@@ -481,7 +484,7 @@ class Zotero(object):
         return self._build_query(query_string, no_params=True)
 
     def dump(self, itemkey, filename=None, path=None):
-        """ 
+        """
         Dump a file attachment to disk, with optional filename and path
         """
         if not filename:
@@ -544,7 +547,7 @@ class Zotero(object):
                 [subcoll(c) for c in
                     self.everything(self.collections_sub(clct['data']['key']))]
 
-        # select all top-level collections or a specific collection and children 
+        # select all top-level collections or a specific collection and children
         if collid:
             toplevel = [self.collection(collid)]
         else:
@@ -1435,7 +1438,7 @@ class Zupload(object):
         File upload functionality
 
         Goes through upload steps 0 - 3 (private class methods), and returns
-        a dict noting success, failure, or unchanged 
+        a dict noting success, failure, or unchanged
         """
         # TODO: The flow needs to be a bit clearer
         created = self._create_prelim()
