@@ -26,7 +26,7 @@ for item in items:
 Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
 
 # Installation #
-* Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7, 3.4, and 3.5)
+* Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7, 3.4, 3.5, and 3.6)
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
 Example:
