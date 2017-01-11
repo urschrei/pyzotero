@@ -436,6 +436,26 @@ class Zotero(object):
         query_string = '/{t}/{u}/items'
         return self._build_query(query_string)
 
+    def item_versions(self, **kwargs):
+        """
+        Returns dict associating items keys (all no limit by default) to versions.
+        Accepts a since= parameter in kwargs to limit the data to those updated since since=
+        """
+        if ("limit" not in kwargs):
+            kwargs["limit"] = None
+        kwargs["format"] = 'versions'
+        return self.items(**kwargs)
+
+    def collection_versions(self, **kwargs):
+        """
+        Returns dict  associating collection keys (all no limit by default) to versions.
+        Accepts a since= parameter in kwargs to limit the data to those updated since since=
+        """
+        if ("limit" not in kwargs):
+            kwargs["limit"] = None
+        kwargs["format"] = 'versions'
+        return self.collections(**kwargs)
+
     def last_modified_version(self, **kwargs):
         """ Get the last modified version
         """

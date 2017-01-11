@@ -1,6 +1,6 @@
 Description
 ===========
-Pyzotero is a Python wrapper for the `Zotero API (v3) <https://www.zotero.org/support/dev/web_api/v3/start>`_. 
+Pyzotero is a Python wrapper for the `Zotero API (v3) <https://www.zotero.org/support/dev/web_api/v3/start>`_.
 
 
 .. Pyzotero documentation master file, created by
@@ -16,7 +16,7 @@ Getting started (short version)
 ===============================
 1. In a shell / prompt: ``pip install pyzotero``
 2. You'll need the ID of the personal or group library you want to access:
-  
+
   * Your **personal library ID** is available `here <https://www.zotero.org/settings/keys>`_, in the section ``Your userID for use in API calls``
   * For **group libraries**, the ID can be found by opening the group's page: ``https://www.zotero.org/groups/groupname``, and hovering over the ``group settings`` link. The ID is the integer after ``/groups/``
 
@@ -130,10 +130,10 @@ Example:
 Read API Methods
 ====================
 
-.. note:: 
+.. note::
     All search/request parameters inside square brackets are **optional**. Methods such as :py:meth:`Zotero.top()`, :py:meth:`Zotero.items()` etc. can be called with no additional parameters if you wish.
 
-.. tip:: 
+.. tip::
     The Read API returns 25 results by default (the API documentation claims 50). In the interests of usability, Pyzotero returns 100 items by default, by setting the API ``limit`` parameter to 100, unless it's set by the user. If you wish to retrieve e.g. all top-level items without specifiying a ``limit`` parameter, you'll have to wrap your call with :py:meth:`Zotero.everything()`: ``results = zot.everything(zot.top())``.
 
 
@@ -192,7 +192,7 @@ The following methods will retrieve either user or group items, depending on the
         :param str itemID: a zotero item ID
         :rtype: list of dicts
 
-    
+
     .. py:method:: Zotero.collection_items(collectionID[, search/request parameters])
 
         Returns items from the specified collection
@@ -335,7 +335,7 @@ Retrieving Collections
 
         :param str collectionID: a Zotero library collection ID
         :rtype: dict
-        
+
     .. py:method:: Zotero.collections_sub(collectionID[, search/request parameters])
 
         Returns the sub-collections of a specific collection
@@ -431,6 +431,30 @@ Example of returned tag data:
     .. code-block:: python
 
         ['Authority in literature', 'Errata']
+
+===================
+Retrieving Version Information
+===================
+
+The Zotero API recommends requesting version information for all (or all changed) items and collections when implementing syncing.  The following convience methods simplify this process.  Note that by default these methods impose no limit on the number of items/collection versions returned.  To retrieve only the versions of items changed after a given version use the since search/request parameter.
+
+    .. py:method:: Zotero.item_versions([search/request parameters])
+
+        Returns a dict containing version information for items in the library
+
+        :rtype: dict: string -> integer
+
+    .. py:method:: Zotero.collection_versions(itemID[, search/request parameters])
+
+        Returns a dict containing version information for collections in the library
+
+        :rtype: dict: string -> integer
+
+Example of returned tag data:
+
+    .. code-block:: python
+
+        {'C9KW275P': 3915, 'IB489TKM': 4025 }
 
 
 ==============================================
@@ -606,13 +630,13 @@ This area of the Zotero Read API is under development, and may change frequently
 A note on the ``content`` and ``style`` parameters:
 
 Example:
-    
+
     .. code-block:: python
 
         zot.add_parameters(content='bib', style='mla')
 
-    
-If these are set, the return value is a list of UTF-8 formatted HTML ``div`` elements, each containing an item:  
+
+If these are set, the return value is a list of UTF-8 formatted HTML ``div`` elements, each containing an item:
 
 ``['<div class="csl-entry">(content)</div>']``.
 
@@ -698,7 +722,7 @@ Example:
         resp = zot.create_items([template])
 
 
-If successful, ``resp`` will be a dict containing the creation status of each item: 
+If successful, ``resp`` will be a dict containing the creation status of each item:
 
     .. code-block:: python
 
@@ -731,7 +755,7 @@ Example:
 
         :param list items: one or more dicts containing item data
         :rtype: List. Each list item is a valid dict containing item data.
- 
+
 
 Uploading files
 ---------------
@@ -814,7 +838,7 @@ Collection Methods
         Add the specified item(s) to the specified collection
 
         :param str collection: a collection key
-        :param dict item: an item dict retrieved using an API call 
+        :param dict item: an item dict retrieved using an API call
         :rtype: Boolean
 
         Collection keys can be obtained by a call to :py:meth:`collections()` (see details above).
@@ -837,7 +861,7 @@ Collection Methods
         :rtype: Boolean
 
 Example:
-    
+
     .. code-block:: python
 
             # get existing collections, which will return a list of dicts
