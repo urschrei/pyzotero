@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.1.22'
+__version__ = '1.1.24'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -534,6 +534,16 @@ class Zotero(object):
         """ Get a specific collection's items
         """
         query_string = '/{t}/{u}/collections/{c}/items'.format(
+            u=self.library_id,
+            t=self.library_type,
+            c=collection.upper())
+        return self._build_query(query_string)
+
+    @retrieve
+    def collection_items_top(self, collection, **kwargs):
+        """ Get a specific collection's top-level items
+        """
+        query_string = '/{t}/{u}/collections/{c}/items/top'.format(
             u=self.library_id,
             t=self.library_type,
             c=collection.upper())

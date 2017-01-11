@@ -195,11 +195,18 @@ The following methods will retrieve either user or group items, depending on the
 
     .. py:method:: Zotero.collection_items(collectionID[, search/request parameters])
 
-        Returns items from the specified collection
+        Returns items from the specified collection. This includes sub-collection items
 
         :param str collectionID: a Zotero collection ID
         :rtype: list of dicts
 
+
+    .. py:method:: Zotero.collection_items_top(collectionID[, search/request parameters])
+
+        Returns top-level items from the specified collection.
+
+        :param str collectionID: a Zotero collection ID
+        :rtype: list of dicts
 
     .. py:method:: Zotero.get_subset(itemIDs[, search/request parameters])
 
