@@ -436,7 +436,9 @@ Example of returned tag data:
 Retrieving Version Information
 ===================
 
-The Zotero API recommends requesting version information for all (or all changed) items and collections when implementing syncing.  The following convience methods simplify this process.  Note that by default these methods impose no limit on the number of items/collection versions returned.  To retrieve only the versions of items changed after a given version use the since search/request parameter.
+The `Zotero API <https://www.zotero.org/support/dev/web_api/v3/syncing>`_ recommends requesting version information for all (or all changed) items and collections when implementing syncing.  The following convience methods (which by default return an unlimited number of responses) simplify this process.
+
+The return values of these methods associate each item/collection with the last version (or latter) at which the item/collection was modified.  By passing the keyword argument since=versionNum only items/collections who have been modified since versionNum are included in the response.  Thus, an application that last sucessfully synced with the server at versionNum can use these methods to determine which items/collections need to be retrieved from the server.
 
     .. py:method:: Zotero.item_versions([search/request parameters])
 
@@ -450,7 +452,7 @@ The Zotero API recommends requesting version information for all (or all changed
 
         :rtype: dict: string -> integer
 
-Example of returned tag data:
+Example of returned version data:
 
     .. code-block:: python
 
