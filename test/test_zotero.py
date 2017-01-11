@@ -64,6 +64,8 @@ class ZoteroTests(unittest.TestCase):
         """
         self.item_doc = self.get_doc('item_doc.json')
         self.items_doc = self.get_doc('items_doc.json')
+        self.item_versions = self.get_doc('item_versions.json')
+        self.collection_versions = self.get_doc('collection_versions.json')
         self.collections_doc = self.get_doc('collections_doc.json')
         self.collection_doc = self.get_doc('collection_doc.json')
         self.citation_doc = self.get_doc('citation_doc.xml')
@@ -174,6 +176,34 @@ class ZoteroTests(unittest.TestCase):
             body=self.keys_response)
         response = zot.items()
         self.assertEqual('JIFWQ4AN', response[:8].decode("utf-8"))
+
+    @httpretty.activate
+    def testParseItemVersionsResponse(self):
+        """ Check that parsing version dict returned by format = versions works """
+        zot = z.Zotero('myuserid', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserid/items?format=versions',
+            content_type='application/json',
+            body=self.item_versions)
+        iversions = zot.item_versions()
+        self.assertEqual(iversions['RRK27C5F'], 4000)
+        self.assertEqual(iversions['EAWCSKSF'], 4087)
+        self.assertEqual(len(iversions), 2)
+
+    @httpretty.activate
+    def testParseCollectionVersionsResponse(self):
+        """ Check that parsing version dict returned by format = versions works """
+        zot = z.Zotero('myuserid', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/users/myuserid/collections?format=versions',
+            content_type='application/json',
+            body=self.collection_versions)
+        iversions = zot.collection_versions()
+        self.assertEqual(iversions['RRK27C5F'], 4000)
+        self.assertEqual(iversions['EAWCSKSF'], 4087)
+        self.assertEqual(len(iversions), 2)
 
     @httpretty.activate
     def testParseChildItems(self):
