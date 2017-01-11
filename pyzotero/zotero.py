@@ -480,6 +480,9 @@ class Zotero(object):
     def deleted(self, **kwargs):
         """ Get all deleted items (requires since= parameter)
         """
+        if ("limit" not in kwargs):
+            # Currently deleted API doesn't respect limit leaving it out by default preserves compat
+            kwargs["limit"] = None
         query_string = '/{t}/{u}/deleted'
         return self._build_query(query_string)
 
