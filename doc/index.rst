@@ -432,13 +432,13 @@ Example of returned tag data:
 
         ['Authority in literature', 'Errata']
 
-===================
+==============================
 Retrieving Version Information
-===================
+==============================
 
-The `Zotero API <https://www.zotero.org/support/dev/web_api/v3/syncing>`_ recommends requesting version information for all (or all changed) items and collections when implementing syncing.  The following convience methods (which by default return an unlimited number of responses) simplify this process.
+The `Zotero API <https://www.zotero.org/support/dev/web_api/v3/syncing>`_ recommends requesting version information for all (or all changed) items and collections when implementing syncing.  The following convenience methods (which by default return an unlimited number of responses) simplify this process.
 
-The return values of these methods associate each item/collection with the last version (or latter) at which the item/collection was modified.  By passing the keyword argument since=versionNum only items/collections who have been modified since versionNum are included in the response.  Thus, an application that last sucessfully synced with the server at versionNum can use these methods to determine which items/collections need to be retrieved from the server.
+The return values of these methods associate each item / collection with the last version (or greater) at which the item / collection was modified.  By passing the keyword argument ``since=versionNum`` only items / collections which have been modified since ``versionNum`` are included in the response. Thus, an application which previously sucessfully synced with the server at ``versionNum`` can use these methods to determine which items / collections need to be retrieved from the server.
 
     .. py:method:: Zotero.item_versions([search/request parameters])
 
