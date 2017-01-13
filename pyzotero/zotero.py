@@ -358,7 +358,7 @@ class Zotero(object):
         if params.get('content'):
             params['format'] = 'atom'
         # TODO: rewrite format=atom, content=json request
-        if not params.get('limit'):
+        if ('limit' not in params or params['limit'] == 0):
             params['limit'] = 100
         # Need ability to request arbitrary number of results for version response
         elif (params['limit'] == -1 or params['limit'] is None):  # -1 value is hack that works with current version

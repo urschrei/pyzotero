@@ -104,6 +104,26 @@ class ZoteroTests(unittest.TestCase):
             parse_qs('start=7&limit=100&format=json'),
             parse_qs(zot.url_params))
 
+    @httpretty.activate
+    def testRequestBuilderLimitNone(self):
+        """ Should skip limit = 100 param if limit is set to None
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        zot.add_parameters(limit=None, start=7)
+        self.assertEqual(
+            parse_qs('start=7&format=json'),
+            parse_qs(zot.url_params))
+
+    @httpretty.activate
+    def testRequestBuilderLimitNegativeOne(self):
+        """ Should skip limit = 100 param if limit is set to -1
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        zot.add_parameters(limit=-1, start=7)
+        self.assertEqual(
+            parse_qs('start=7&format=json'),
+            parse_qs(zot.url_params))
+
     # @httpretty.activate
     # def testBuildQuery(self):
     #     """ Check that spaces etc. are being correctly URL-encoded and added
