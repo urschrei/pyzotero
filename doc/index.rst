@@ -466,6 +466,44 @@ Example of returned version data:
         {'C9KW275P': 3915, 'IB489TKM': 4025 }
 
 
+=================
+Full–Text Content
+=================
+
+These methods allow the retrieval of full–text content for given library items
+
+    .. py:method:: Zotero.new_fulltext(since)
+
+    Returns a dict containing item keys and library versions newer than
+    ``since`` (a library version string, e.g. ``"1085"``)
+
+    :rtype: dict: string -> integer
+
+Example of returned data:
+
+    .. code-block:: python
+
+        {
+            u'229QED6I': 747,
+            u'22TGJFS2': 769,
+            u'23SZWREM': 764
+        }
+
+    .. py:method:: Zotero.fulltext_item(itemID[, search/request parameters])
+
+    Returns a dict containing full-text data for the given attachment item.
+    ``indexedChars`` and ``totalChars`` are used for text documents, while ``indexedPages`` and ``totalPages`` are used for PDFs.
+
+Example of returned data:
+
+    .. code-block:: python
+
+        {
+        "content": "This is full-text content.",
+        "indexedPages": 50,
+        "totalPages": 50
+        }
+
 ==============================================
 The ``follow()``, and ``everything()`` methods
 ==============================================

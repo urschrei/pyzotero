@@ -436,6 +436,34 @@ class Zotero(object):
         query_string = '/{t}/{u}/items'
         return self._build_query(query_string)
 
+    @retrieve
+    def fulltext_item(self, itemkey, **kwargs):
+        """ Get full-text content for an item"""
+        query_string = "/{t}/{u}/items/{itemkey}/fulltext".format(
+            t=self.library_type,
+            u=self.library_id,
+            itemkey=itemkey)
+        return self._build_query(query_string)
+
+    def new_fulltext(self, version, **kwargs):
+        """
+        Retrieve list of full-text content items and versions which are newer
+        than <version> 
+        """
+        query_string = "/{t}/{u}/fulltext".format(
+            t=self.library_type,
+            u=self.library_id)
+        headers={
+            "since": str(version),
+        }
+        headers.update(self.default_headers())
+        req = requests.get(self.endpoint + query_string, headers=headers)
+        try:
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
+        return req.json()
+
     def item_versions(self, **kwargs):
         """
         Returns dict associating items keys (all no limit by default) to versions.
