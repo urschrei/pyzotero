@@ -445,7 +445,7 @@ class Zotero(object):
             itemkey=itemkey)
         return self._build_query(query_string)
 
-    def new_fulltext(self, version, **kwargs):
+    def new_fulltext(self, version):
         """
         Retrieve list of full-text content items and versions which are newer
         than <version> 
