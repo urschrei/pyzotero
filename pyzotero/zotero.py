@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -444,6 +444,27 @@ class Zotero(object):
             u=self.library_id,
             itemkey=itemkey)
         return self._build_query(query_string)
+
+    def set_fulltext(self, itemkey, payload):
+        """"
+        Set full-text data for an item
+        <itemkey> should correspond to an existing attachment item.
+        payload should be a dict containing three keys:
+        'content': the full-text content and either
+        For text documents, 'indexedChars' and 'totalChars' OR
+        For PDFs, 'indexedPages' and 'totalPages'.
+
+        """
+        req = requests.put(
+            url=self.endpoint + "/{t}/{u}/items/{k}/fulltext".format(
+                t=self.library_type, u=self.library_id, k=itemkey),
+            headers=self.default_headers(),
+            payload=json.dumps(payload))
+        try:
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
+        return True
 
     def new_fulltext(self, version):
         """

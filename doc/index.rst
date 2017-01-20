@@ -504,6 +504,32 @@ Example of returned data:
         "totalPages": 50
         }
 
+    .. py:method:: Zotero.set_fulltext(itemID, payload)
+
+    Set full-text data for an item
+
+    :rtype: boolean
+
+    ``itemID`` should correspond to an existing attachment item.
+
+    ``payload``: a dict containing three keys:
+
+        ``content``: the full-text content, and either
+
+        For text documents, ``indexedChars`` and ``totalChars`` OR
+
+        For PDFs, ``indexedPages`` and ``totalPages``.
+
+Example payload:
+
+    .. code-block:: python
+
+        {
+        "content": "This is full-text content.",
+        "indexedPages": 50,
+        "totalPages": 50
+        }
+
 ==============================================
 The ``follow()``, and ``everything()`` methods
 ==============================================
