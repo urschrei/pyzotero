@@ -1066,7 +1066,7 @@ class Zotero(object):
         Accepts one argument, a dict containing collection data retrieved
         using e.g. 'collections()'
         """
-        modified = payload['version']
+        modified = str(payload['version'])
         key = payload['key']
         headers = {'If-Unmodified-Since-Version': str(modified)}
         headers.update(self.default_headers())
@@ -1122,7 +1122,7 @@ class Zotero(object):
         Accepts one argument, a dict containing Item data
         """
         to_send = self.check_items([payload])[0]
-        modified = payload['version']
+        modified = str(payload['version'])
         ident = payload['key']
         headers = {'If-Unmodified-Since-Version': str(modified)}
         headers.update(self.default_headers())
@@ -1147,7 +1147,7 @@ class Zotero(object):
         The collection ID, and an item dict
         """
         ident = payload['key']
-        modified = payload['version']
+        modified = str(payload['version'])
         # add the collection data from the item
         modified_collections = payload['data']['collections'] + [collection]
         headers = {'If-Unmodified-Since-Version': str(modified)}
@@ -1173,7 +1173,7 @@ class Zotero(object):
         The collection ID, and and an item dict
         """
         ident = payload['key']
-        modified = payload['version']
+        modified = str(payload['version'])
         # strip the collection data from the item
         modified_collections = [
             c for c in payload['data']['collections'] if c != collection]
@@ -1231,14 +1231,14 @@ class Zotero(object):
         params = None
         if isinstance(payload, list):
             params = {'itemKey': ','.join([p['key'] for p in payload])}
-            modified = payload[0]['version']
+            modified = str(payload[0]['version'])
             url = self.endpoint + \
             '/{t}/{u}/items'.format(
                 t=self.library_type,
                 u=self.library_id)
         else:
             ident = payload['key']
-            modified = payload['version']
+            modified = str(payload['version'])
             url = self.endpoint + \
             '/{t}/{u}/items/{c}'.format(
                 t=self.library_type,
@@ -1267,14 +1267,14 @@ class Zotero(object):
         params = None
         if isinstance(payload, list):
             params = {'collectionKey': ','.join([p['key'] for p in payload])}
-            modified = payload[0]['version']
+            modified = str(payload[0]['version'])
             url = self.endpoint + \
             '/{t}/{u}/collections'.format(
                 t=self.library_type,
                 u=self.library_id)
         else:
             ident = payload['key']
-            modified = payload['version']
+            modified = str(payload['version'])
             url = self.endpoint + \
             '/{t}/{u}/collections/{c}'.format(
                 t=self.library_type,
