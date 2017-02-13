@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.2.1'
+__version__ = '1.2.2'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -455,11 +455,13 @@ class Zotero(object):
         For PDFs, 'indexedPages' and 'totalPages'.
 
         """
+        headers = self.default_headers()
+        headers.update({"Content-Type": "application/json"})
         req = requests.put(
             url=self.endpoint + "/{t}/{u}/items/{k}/fulltext".format(
                 t=self.library_type, u=self.library_id, k=itemkey),
-            headers=self.default_headers(),
-            payload=json.dumps(payload))
+            headers=headers,
+            data=json.dumps(payload))
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1070,12 +1072,13 @@ class Zotero(object):
         key = payload['key']
         headers = {'If-Unmodified-Since-Version': str(modified)}
         headers.update(self.default_headers())
+        headers.update({"Content-Type": "application/json"})
         req = requests.put(
             url=self.endpoint
             + '/{t}/{u}/collections/{c}'.format(
                 t=self.library_type, u=self.library_id, c=key),
             headers=headers,
-            payload=json.dumps(payload))
+            data=json.dumps(payload))
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
