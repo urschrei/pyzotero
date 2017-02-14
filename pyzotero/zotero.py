@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.2.2'
+__version__ = '1.2.3'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -890,13 +890,13 @@ class Zotero(object):
             'filename'])
         template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
-            to_check = set(i for i in list(item['data'].keys()))
+            to_check = set(i for i in list(item.keys()))
             difference = to_check.difference(template)
             if difference:
                 raise ze.InvalidItemFields(
                     "Invalid keys present in item %s: %s" % (pos + 1,
                     ' '.join(i for i in difference)))
-        return [i['data'] for i in items]
+        return items
 
     def item_types(self):
         """ Get all available item types
