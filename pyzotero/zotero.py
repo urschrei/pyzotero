@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.2.3'
+__version__ = '1.2.4'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -264,6 +264,9 @@ class Zotero(object):
     def _cleanup(self, to_clean):
         """ Remove keys we added for internal use
         """
+        # this item's been retrieved from the API, we only need the 'data' entry
+        if to_clean.keys() == [u'links', u'library', u'version', u'meta', u'key', u'data']:
+            to_clean = to_clean['data']
         return dict([[k, v] for k, v in list(to_clean.items())
                     if k not in self.temp_keys])
 
@@ -890,6 +893,9 @@ class Zotero(object):
             'filename'])
         template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
+            if item.keys() == [u'links', u'library', u'version', u'meta', u'key', u'data']:
+                # we have an item that was retrieved from the API
+                item = item['data']
             to_check = set(i for i in list(item.keys()))
             difference = to_check.difference(template)
             if difference:
