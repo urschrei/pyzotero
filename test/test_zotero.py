@@ -75,6 +75,7 @@ class ZoteroTests(unittest.TestCase):
         self.groups_doc = self.get_doc('groups_doc.json')
         self.item_templt = self.get_doc('item_template.json')
         self.item_types = self.get_doc('item_types.json')
+        self.item_fields = self.get_doc('item_fields.json')
         self.keys_response = self.get_doc('keys_doc.txt')
         self.creation_doc = self.get_doc('creation_doc.json')
         self.item_file = self.get_doc('item_file.pdf')
@@ -442,7 +443,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero('myuserID', 'user', 'myuserkey')
         t = [{'foo': 'bar'}]
         with self.assertRaises(z.ze.ParamNotPassed):
-            t = zot.create_collection(t)
+            t = zot.create_collections(t)
 
     @httpretty.activate
     def testNoApiKey(self):
@@ -476,6 +477,74 @@ class ZoteroTests(unittest.TestCase):
     #     json.dumps(*zot._cleanup(items_data))
 
     @httpretty.activate
+    def testCollectionCreation(self):
+        """ Tests creation of a new collection
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.POST,
+            'https://api.zotero.org/users/myuserID/collections',
+            body=self.creation_doc,
+            content_type='application/json',
+            status=200)
+        # now let's test something
+        resp = zot.create_collections([{'name': 'foo', 'key': 'ABC123'}])
+        self.assertTrue('ABC123', resp['success']['0'])
+        request = httpretty.last_request()
+        self.assertFalse('If-Unmodified-Since-Version' in request.headers)
+
+    @httpretty.activate
+    def testCollectionCreationLastModified(self):
+        """ Tests creation of a new collection with last_modified param
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.POST,
+            'https://api.zotero.org/users/myuserID/collections',
+            body=self.creation_doc,
+            content_type='application/json',
+            status=200)
+        # now let's test something
+        resp = zot.create_collections([{'name': 'foo', 'key': 'ABC123'}], last_modified=5)
+        self.assertEqual('ABC123', resp['success']['0'])
+        request = httpretty.last_request()
+        self.assertEqual(request.headers['If-Unmodified-Since-Version'], "5")
+
+    @httpretty.activate
+    def testCollectionUpdate(self):
+        """ Tests update of a collection
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.PUT,
+            'https://api.zotero.org/users/myuserID/collections/ABC123',
+            body="",
+            content_type='application/json',
+            status=200)
+        # now let's test something
+        resp = zot.update_collection({'name': 'foo', 'key': 'ABC123', 'version': 3})
+        self.assertEqual(True, resp)
+        request = httpretty.last_request()
+        self.assertEqual(request.headers['If-Unmodified-Since-Version'], "3")
+
+    @httpretty.activate
+    def testCollectionUpdateLastModified(self):
+        """ Tests update of a collection with last_modified set
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.PUT,
+            'https://api.zotero.org/users/myuserID/collections/ABC123',
+            body="",
+            content_type='application/json',
+            status=200)
+        # now let's test something
+        resp = zot.update_collection({'name': 'foo', 'key': 'ABC123', 'version': 3}, last_modified=5)
+        self.assertEqual(True, resp)
+        request = httpretty.last_request()
+        self.assertEqual(request.headers['If-Unmodified-Since-Version'], "5")
+
+    @httpretty.activate
     def testItemCreation(self):
         """ Tests creation of a new item using a template
         """
@@ -496,6 +565,74 @@ class ZoteroTests(unittest.TestCase):
         # now let's test something
         resp = zot.create_items([template])
         self.assertEqual('ABC123', resp['success']['0'])
+        request = httpretty.last_request()
+        self.assertFalse('If-Unmodified-Since-Version' in request.headers)
+
+    @httpretty.activate
+    def testItemCreationLastModified(self):
+        """ Checks 'If-Unmodified-Since-Version' header correctly set on create_items
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        HTTPretty.register_uri(
+            HTTPretty.POST,
+            'https://api.zotero.org/users/myuserID/items',
+            body=self.creation_doc,
+            content_type='application/json',
+            status=200)
+        # now let's test something
+        zot.create_items([{'key': 'ABC123'}], last_modified=5)
+        request = httpretty.last_request()
+        self.assertEqual(request.headers['If-Unmodified-Since-Version'], "5")
+
+    @httpretty.activate
+    def testItemUpdate(self):
+        """ Tests item update using update_item
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        update = {'key': 'ABC123',
+                  'version': 3,
+                  'itemType': 'book'}
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/itemFields',
+            body=self.item_fields,
+            content_type='application/json')
+        HTTPretty.register_uri(
+            HTTPretty.PATCH,
+            'https://api.zotero.org/users/myuserID/items/ABC123',
+            body="",
+            content_type='application/json',
+            status=204)
+        # now let's test something
+        resp = zot.update_item(update)
+        self.assertEqual(resp, True)
+        request = httpretty.last_request()
+        self.assertEqual(request.headers['If-Unmodified-Since-Version'], "3")
+
+    @httpretty.activate
+    def testItemUpdateLastModified(self):
+        """ Tests item update using update_item with last_modified parameter
+        """
+        zot = z.Zotero('myuserID', 'user', 'myuserkey')
+        update = {'key': 'ABC123',
+                  'version': 3,
+                  'itemType': 'book'}
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            'https://api.zotero.org/itemFields',
+            body=self.item_fields,
+            content_type='application/json')
+        HTTPretty.register_uri(
+            HTTPretty.PATCH,
+            'https://api.zotero.org/users/myuserID/items/ABC123',
+            body="",
+            content_type='application/json',
+            status=204)
+        # now let's test something
+        resp = zot.update_item(update, last_modified=5)
+        self.assertEqual(resp, True)
+        request = httpretty.last_request()
+        self.assertEqual(request.headers['If-Unmodified-Since-Version'], "5")
 
     def testTooManyItems(self):
         """ Should fail because we're passing too many items

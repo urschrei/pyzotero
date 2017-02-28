@@ -982,12 +982,13 @@ class Zotero(object):
         retrieved = self._retrieve_data(query_string)
         return self._cache(retrieved, 'item_fields')
 
-    def create_items(self, payload, parentid=None):
+    def create_items(self, payload, parentid=None, last_modified=None):
         """
         Create new Zotero items
         Accepts two arguments:
             a list containing one or more item dicts
-            an optional parent item ID
+            an optional parent item ID.
+        Note that this can also be used to update existing items
         """
         if len(payload) > 50:
             raise ze.TooManyItems(
@@ -997,6 +998,8 @@ class Zotero(object):
             'Zotero-Write-Token': token(),
             'Content-Type': 'application/json',
         }
+        if (last_modified is not None):
+            headers['If-Unmodified-Since-Version'] = str(last_modified)
         to_send = json.dumps([i for i in self._cleanup(*payload)])
         headers.update(self.default_headers())
         req = requests.post(
@@ -1035,9 +1038,13 @@ class Zotero(object):
                     error_handler(presp)
         return resp
 
-    def create_collection(self, payload):
+    def create_collection(self, payload, last_modified=None):
+        """Alias for create_collections to preserve backward compatibility"""
+        return self.create_collections(payload, last_modified)
+
+    def create_collections(self, payload, last_modified=None):
         """
-        Create a new Zotero collection
+        Create new Zotero collections
         Accepts one argument, a list of dicts containing the following keys:
 
         'name': the name of the collection
@@ -1054,6 +1061,8 @@ class Zotero(object):
         headers = {
             'Zotero-Write-Token': token(),
         }
+        if (last_modified is not None):
+            headers['If-Unmodified-Since-Version'] = str(last_modified)
         headers.update(self.default_headers())
         req = requests.post(
             url=self.endpoint
@@ -1066,15 +1075,17 @@ class Zotero(object):
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(req)
-        return req.text
+        return req.json()
 
-    def update_collection(self, payload):
+    def update_collection(self, payload, last_modified=None):
         """
         Update a Zotero collection property such as 'name'
         Accepts one argument, a dict containing collection data retrieved
         using e.g. 'collections()'
         """
         modified = payload['version']
+        if (last_modified is not None):
+            modified = last_modified
         key = payload['key']
         headers = {'If-Unmodified-Since-Version': str(modified)}
         headers.update(self.default_headers())
@@ -1125,17 +1136,20 @@ class Zotero(object):
         else:
             return self._attachment(to_add)
 
-    def update_item(self, payload):
+    def update_item(self, payload, last_modified=None):
         """
         Update an existing item
         Accepts one argument, a dict containing Item data
         """
         to_send = self.check_items([payload])[0]
-        modified = payload['version']
+        if (last_modified is None):
+            modified = payload['version']
+        else:
+            modified = last_modified
         ident = payload['key']
         headers = {'If-Unmodified-Since-Version': str(modified)}
         headers.update(self.default_headers())
-        req = requests.put(
+        req = requests.patch(
             url=self.endpoint
             + '/{t}/{u}/items/{id}'.format(
                 t=self.library_type,

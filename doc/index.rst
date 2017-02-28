@@ -772,17 +772,20 @@ Item Methods
 Creating items
 --------------
 
-    .. py:method:: Zotero.create_items(items[, parentid])
+    .. py:method:: Zotero.create_items(items[, parentid, last_modified])
 
         Create Zotero library items
 
         :param list items: one or more dicts containing item data
         :param str parentid: A Parent item ID. This will cause the item(s) to become the child items of the given parent ID
+        :param str/int last_modified: If not None will set the value of the If-Unmodified-Since-Version header. 
         :rtype: list of dicts
 
         Returns a copy of the created item(s), if successful. Use of :py:meth:`item_template` is recommended in order to first obtain a dict with a structure which is known to be valid.
 
         Before calling this method, the use of :py:meth:`check_items()` is encouraged, in order to confirm that the item to be created contains only valid fields.
+
+        Note that if any items contain a key field matching an existing item on the server it will be updated (any properties not in the dict will be left unmodified).
 
 Example:
 
@@ -801,11 +804,12 @@ If successful, ``resp`` will be a dict containing the creation status of each it
 
         {'failed': {}, 'success': {'0': 'ABC123'}, 'unchanged': {}}
 
-    .. py:method:: Zotero.update_item(item)
+    .. py:method:: Zotero.update_item(item [, last_modified])
 
         Update an item in your library
 
-        :param dict item: a dict containing item data
+        :param dict item: a dict containing item data.  Fields not in item will be left unmodified.
+        :param str/int last_modified: If not None will set the value of the If-Unmodified-Since-Version header.  If unspecified/None then If-Unmodified-Since-Version will be set to the version property of item.
         :rtype: Boolean
 
         Will return ``True`` if the request was successful, or will raise an error.
@@ -899,12 +903,18 @@ Example:
 Collection Methods
 ====================
 
-    .. py:method:: Zotero.create_collection(name)
+    .. py:method:: Zotero.create_collections(dicts[, last_modified])
 
         Create a new collection in the Zotero library
 
-        :param dict name: dict containing the key ``name`` and the value of the new collection name you wish to create. May optionally contain a ``parent`` key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.
+        :param list dicts: list of dicts each containing the key ``name`` with value equal new collection name you wish to create. Each dict may optionally contain a ``parent`` key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.
+        :param str/int last_modified: If not None will set the value of the If-Unmodified-Since-Version header. 
+        :rtype: list of dicts
         :rtype: Boolean
+
+    .. py:method:: Zotero.create_collections(dicts[, last_modified])
+
+        Alias for create_collections to preserve backward compatibility
 
     .. py:method:: Zotero.addto_collection(collection, item)
 
@@ -926,7 +936,7 @@ Collection Methods
 
         See the :py:meth:`delete_item()` example for multiple-item removal.
 
-    .. py:method:: Zotero.update_collection(collection)
+    .. py:method:: Zotero.update_collection(collection , last_modified])
 
         Update an existing collection name
 
