@@ -1009,6 +1009,7 @@ class Zotero(object):
                 u=self.library_id),
             data=to_send,
             headers=dict(headers))
+        self.request = req
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1032,6 +1033,7 @@ class Zotero(object):
                     data=payload,
                     headers=dict(uheaders)
                 )
+                self.request = presp
                 try:
                     presp.raise_for_status()
                 except requests.exceptions.HTTPError:
@@ -1071,6 +1073,7 @@ class Zotero(object):
                 u=self.library_id),
             headers=headers,
             data=json.dumps(payload))
+        self.request = req
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1096,6 +1099,7 @@ class Zotero(object):
                 t=self.library_type, u=self.library_id, c=key),
             headers=headers,
             data=json.dumps(payload))
+        self.request = req
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1157,6 +1161,7 @@ class Zotero(object):
                 id=ident),
             headers=headers,
             data=json.dumps(to_send))
+        self.request = req
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1183,6 +1188,7 @@ class Zotero(object):
                 i=ident),
             data=json.dumps({'collections': modified_collections}),
             headers=headers)
+        self.request = req
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1210,6 +1216,7 @@ class Zotero(object):
                 i=ident),
             data=json.dumps({'collections': modified_collections}),
             headers=headers)
+        self.request = req
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1238,6 +1245,7 @@ class Zotero(object):
                 u=self.library_id),
             params={'tag': modified_tags},
             headers=headers)
+        self.request = req
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1280,6 +1288,7 @@ class Zotero(object):
             params=params,
             headers=headers
         )
+        self.request = req
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1321,7 +1330,7 @@ class Zotero(object):
             url=url,
             params=params,
             headers=headers)
-
+        self.request = req
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
