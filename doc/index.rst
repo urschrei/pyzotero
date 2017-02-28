@@ -858,11 +858,12 @@ Uploading files
 Deleting items
 --------------
 
-    .. py:method:: Zotero.delete_item(item)
+    .. py:method:: Zotero.delete_item(item[, last_modified])
 
         Delete one or more items from your library
 
         :param list item: a list of one or more dicts containing item data. You must first retrieve the item(s) you wish to delete, as ``version`` data is required.
+        :param str/int last_modified: If not None will set the value of the If-Unmodified-Since-Version header. 
 
 Deleting tags
 --------------
@@ -955,11 +956,12 @@ Example:
             zot.update_collection(c[0])
 
 
-    .. py:method:: Zotero.delete_collection(collection)
+    .. py:method:: Zotero.delete_collection(collection[, last_modified])
 
         Delete a collection from the Zotero library
 
         :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`). Alternatively, you may pass a **list** of collection dicts.
+        :param str/int last_modified: If not None will set the value of the If-Unmodified-Since-Version header.
         :rtype: Boolean
 
 

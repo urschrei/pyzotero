@@ -1244,7 +1244,7 @@ class Zotero(object):
             error_handler(req)
         return True
 
-    def delete_item(self, payload):
+    def delete_item(self, payload, last_modified=None):
         """
         Delete Items from a Zotero library
         Accepts a single argument:
@@ -1254,14 +1254,20 @@ class Zotero(object):
         params = None
         if isinstance(payload, list):
             params = {'itemKey': ','.join([p['key'] for p in payload])}
-            modified = payload[0]['version']
+            if (last_modified is not None):
+                modified = last_modified
+            else:
+                modified = payload[0]['version']
             url = self.endpoint + \
             '/{t}/{u}/items'.format(
                 t=self.library_type,
                 u=self.library_id)
         else:
             ident = payload['key']
-            modified = payload['version']
+            if (last_modified is not None):
+                modified = last_modified
+            else:
+                modified = payload['version']
             url = self.endpoint + \
             '/{t}/{u}/items/{c}'.format(
                 t=self.library_type,
@@ -1280,7 +1286,7 @@ class Zotero(object):
             error_handler(req)
         return True
 
-    def delete_collection(self, payload):
+    def delete_collection(self, payload, last_modified=None):
         """
         Delete a Collection from a Zotero library
         Accepts a single argument:
@@ -1290,14 +1296,20 @@ class Zotero(object):
         params = None
         if isinstance(payload, list):
             params = {'collectionKey': ','.join([p['key'] for p in payload])}
-            modified = payload[0]['version']
+            if (last_modified is not None):
+                modified = last_modified
+            else:
+                modified = payload[0]['version']
             url = self.endpoint + \
             '/{t}/{u}/collections'.format(
                 t=self.library_type,
                 u=self.library_id)
         else:
             ident = payload['key']
-            modified = payload['version']
+            if (last_modified is not None):
+                modified = last_modified
+            else:
+                modified = payload['version']
             url = self.endpoint + \
             '/{t}/{u}/collections/{c}'.format(
                 t=self.library_type,
