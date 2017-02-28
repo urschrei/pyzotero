@@ -103,9 +103,9 @@ feedparser._FeedParserMixin._isBase64 = ib64_patched
 def cleanwrap(func):
     """ Wrapper for Zotero._cleanup
     """
-    def enc(self, *args):
+    def enc(self, *args, **kwargs):
         """ Send each item to _cleanup() """
-        return (func(self, item) for item in args)
+        return (func(self, item, **kwargs) for item in args)
     return enc
 
 
@@ -261,14 +261,14 @@ class Zotero(object):
         return copy.deepcopy(response.json())
 
     @cleanwrap
-    def _cleanup(self, to_clean):
+    def _cleanup(self, to_clean, allow=()):
         """ Remove keys we added for internal use
         """
         # this item's been retrieved from the API, we only need the 'data' entry
         if to_clean.keys() == [u'links', u'library', u'version', u'meta', u'key', u'data']:
             to_clean = to_clean['data']
         return dict([[k, v] for k, v in list(to_clean.items())
-                    if k not in self.temp_keys])
+                    if (k in allow or k not in self.temp_keys)])
 
     def _retrieve_data(self, request=None):
         """
@@ -1000,7 +1000,7 @@ class Zotero(object):
         }
         if (last_modified is not None):
             headers['If-Unmodified-Since-Version'] = str(last_modified)
-        to_send = json.dumps([i for i in self._cleanup(*payload)])
+        to_send = json.dumps([i for i in self._cleanup(*payload, allow=('key'))])
         headers.update(self.default_headers())
         req = requests.post(
             url=self.endpoint
