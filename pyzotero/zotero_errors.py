@@ -148,3 +148,11 @@ class TooManyRetries(PyZoteroError):
     Raise after the backoff period for new requests exceeds 32s
     """
     pass
+
+
+class UploadError(PyZoteroError):
+    """
+    Raise if connection dropped during upload or other non HTTP error code is returned
+    """
+    pass
+
