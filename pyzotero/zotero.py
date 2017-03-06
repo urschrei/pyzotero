@@ -1550,7 +1550,7 @@ class Zupload(object):
                     # "Content-Type": authdata['contentType'],
                     'User-Agent': 'Pyzotero/%s' % __version__})
         except (ConnectionError, requests.exceptions.ConnectionError) as e:
-            raise ze.UploadError("Prefix: {} Suffix: {}".format(authdata['prefix'], authdata['suffix'])) from e
+            raise ze.UploadError("ConnectionError") from e
         try:
             upload.raise_for_status()
         except requests.exceptions.HTTPError:
