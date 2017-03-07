@@ -135,6 +135,7 @@ def retrieve(func):
         # JSON by default
         formats = {
             'application/atom+xml': 'atom',
+            'application/x-bibtex': 'bibtex',
             'application/json': 'json',
             'text/plain': 'plain',
             'application/pdf; charset=utf-8': 'pdf',
@@ -159,6 +160,7 @@ def retrieve(func):
         }
         # select format, or assume JSON
         content_type_header = self.request.headers['Content-Type'].lower() + ";"
+        control_chars = re.compile('\s+')
         fmt = formats.get(
             # strip "; charset=..." segment
             content_type_header[0:content_type_header.index(';')], 'json')
@@ -174,6 +176,8 @@ def retrieve(func):
             processor = self.processors.get(content)
             # process the content correctly with a custom rule
             return processor(parsed)
+        if fmt == 'bibtex':
+            return [re.sub(control_chars, ' ', item) for item in retrieved.text.split('\n\n')]
         # it's binary, so return raw content
         elif fmt != 'json':
             return retrieved.content
