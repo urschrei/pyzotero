@@ -1491,7 +1491,7 @@ class Zupload(object):
             self.payload[int(k)]['key'] = data['success'][k]
         return data
 
-    def _get_auth(self, attachment, reg_key):
+    def _get_auth(self, attachment, reg_key, md5=None):
         """
         Step 1: get upload authorisation for a file
         """
@@ -1501,10 +1501,10 @@ class Zupload(object):
             for chunk in iter(lambda: att.read(8192), b''):
                 digest.update(chunk)
         auth_headers = {'Content-Type': 'application/x-www-form-urlencoded' }
-        if attachment.get('md5', False):
+        if not md5:
             auth_headers['If-None-Match'] = '*'
         else:
-            auth_headers['If-Match'] = attachment['md5']  # docs specify that for existing file we use this
+            auth_headers['If-Match'] = md5  # docs specify that for existing file we use this
         auth_headers.update(self.zinstance.default_headers())
         data = {
             'md5': digest.hexdigest(),
@@ -1597,7 +1597,7 @@ class Zupload(object):
                 result["failure"].append(item)
                 continue
             attach = str(self.basedir.joinpath(item['filename']))
-            authdata = self._get_auth(attach, item["key"])
+            authdata = self._get_auth(attach, item["key"], md5=item.get('md5', None))
             # no need to keep going if the file exists
             if authdata.get('exists'):
                 result["unchanged"].append(item)
