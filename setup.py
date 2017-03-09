@@ -55,7 +55,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     packages=find_packages(),
-    install_requires=['feedparser >= 5.1.0', 'pytz', 'requests'],
+    install_requires=['feedparser >= 5.1.0', 'pytz', 'requests', 'pathlib'],
     extras_require={
         'ordereddict': ['ordereddict==1.1']
     },
