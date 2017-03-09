@@ -865,11 +865,15 @@ Uploading files
         :rtype: Dict. Showing status of each requested upload.
 
     .. code-block:: python
-          # example of the return type
-          {'success': [attach1, attach2...],
-           'failure': [attach3, attach4...],
-           'unchanged': [attach4, attach5...]}
-           # Note that unlike the space-saving responses from the server the return value here eschews the complex index / key lookup and simply passes back the ``imported_file`` item template populated with keys (if created successfully or passed in) corresponding to each result. This is the return type for all of these methods.
+            # example of the return type
+            {
+                'success': [attach1, attach2...],
+                'failure': [attach3, attach4...],
+                'unchanged': [attach4, attach5...]
+            }
+    
+    .. note:: 
+        unlike the space-saving responses from the server the return value here eschews the complex index / key lookup and simply passes back the ``imported_file`` item template populated with keys (if created successfully or passed in) corresponding to each result. This is the return type for all of these methods.
 
 Deleting items
 --------------
