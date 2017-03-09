@@ -857,7 +857,7 @@ Uploading files
 
     .. py:method:: Zotero.upload_attachments(attachments[, parentid, basedir=None])
 
-        Upload files to their corresponding attachments.  If the attachments lack the key property they are assumed not to exist and will be created.  The parentid parameter is not compatible with existing attachments.  For uploads to succed the filename parameter of each attachment must resolve 
+        Upload files to their corresponding attachments.  If the attachments lack the ``key`` property they are assumed not to exist and will be created.  The ``parentid`` parameter is **not compatible** with existing attachments.  In order for uploads to succeed, the filename parameter of each attachment must resolve.
 
         :param list attachments: A list of dicts representing zotero imported files which may or may not already have their key fields filled in.
         :param string parentid: a library Item ID. If this is specified and key fields are not included, attachments will be created as child items of this ID.
@@ -869,7 +869,7 @@ Uploading files
           {'success': [attach1, attach2...],
            'failure': [attach3, attach4...],
            'unchanged': [attach4, attach5...]}
-           #Note that unlike the space saving responses from the server the return value here eschews the complex index/key lookup and simply passes back the imported_file item template populated with keys (if created successfully or passed in) corresponding to each result.  This is the return type for all of these methods
+           # Note that unlike the space-saving responses from the server the return value here eschews the complex index / key lookup and simply passes back the ``imported_file`` item template populated with keys (if created successfully or passed in) corresponding to each result. This is the return type for all of these methods.
 
 Deleting items
 --------------
