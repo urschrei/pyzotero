@@ -60,6 +60,7 @@ import datetime
 import re
 import pytz
 import mimetypes
+from pathlib import Path
 
 try:
     from collections import OrderedDict
@@ -839,6 +840,10 @@ class Zotero(object):
         res = attachment.upload()
         return res
 
+    def upload_attachments(self, attachments, parentid=None, basedir=None):
+        """Upload files to the already created (but never uploaded) attachments"""
+        return Zupload(self, attachments, parentid, basedir=basedir).upload()
+
     def add_tags(self, item, *tags):
         """
         Add one or more tags to a retrieved item,
@@ -1418,38 +1423,50 @@ class Zupload(object):
     Receives a Zotero instance, file(s) to upload, and optional parent ID
 
     """
-    def __init__(self, zinstance, payload, parentid=None):
+    def __init__(self, zinstance, payload, parentid=None, basedir=None):
         super(Zupload, self).__init__()
         self.zinstance = zinstance
         self.payload = payload
         self.parentid = parentid
+        if (basedir is None):
+            self.basedir = Path('')
+        elif isinstance(basedir, Path):
+            self.basedir = basedir
+        else:
+            self.basedir = Path(basedir)
 
-    def _verify(self, files):
+    def _verify(self, payload):
         """
         ensure that all files to be attached exist
         open()'s better than exists(), cos it avoids a race condition
         """
-        for templt in files:
-            if os.path.isfile(templt[u'filename']):
+        if (not payload):  # Check payload has nonzero length
+            raise ze.ParamNotPassed
+        for templt in payload:
+            if os.path.isfile(str(self.basedir.joinpath(templt[u'filename']))):
                 try:
                     # if it is a file, try to open it, and catch the error
-                    with open(templt[u'filename']) as _:
+                    with open(str(self.basedir.joinpath(templt[u'filename']))) as _:
                         pass
                 except IOError:
                     raise ze.FileDoesNotExist(
                         "The file at %s couldn't be opened or found." %
-                        templt[u'filename'])
+                        str(self.basedir.joinpath(templt[u'filename'])))
             # no point in continuing if the file isn't a file
             else:
                 raise ze.FileDoesNotExist(
                     "The file at %s couldn't be opened or found." %
-                    templt[u'filename'])
+                    str(self.basedir.joinpath(templt[u'filename'])))
 
     def _create_prelim(self):
         """
         Step 0: Register intent to upload files
         """
         self._verify(self.payload)
+        if ("key" in self.payload[0] and self.payload[0]["key"]):
+            if (next((i for i in self.payload if "key" not in i), False)):
+                raise ze.UnsupportedParams("Can't pass payload entries with and without keys to Zupload")
+            return None  # Don't do anything if payload comes with keys
         liblevel = '/{t}/{u}/items'
         # Create one or more new attachments
         headers = {
@@ -1474,9 +1491,11 @@ class Zupload(object):
         except requests.exceptions.HTTPError:
             error_handler(req)
         data = req.json()
+        for k in data['success']:
+            self.payload[int(k)]['key'] = data['success'][k]
         return data
 
-    def _get_auth(self, attachment, reg_key):
+    def _get_auth(self, attachment, reg_key, md5=None):
         """
         Step 1: get upload authorisation for a file
         """
@@ -1485,10 +1504,11 @@ class Zupload(object):
         with open(attachment, 'rb') as att:
             for chunk in iter(lambda: att.read(8192), b''):
                 digest.update(chunk)
-        auth_headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'If-None-Match': '*',
-        }
+        auth_headers = {'Content-Type': 'application/x-www-form-urlencoded' }
+        if not md5:
+            auth_headers['If-None-Match'] = '*'
+        else:
+            auth_headers['If-Match'] = md5  # docs specify that for existing file we use this
         auth_headers.update(self.zinstance.default_headers())
         data = {
             'md5': digest.hexdigest(),
@@ -1496,7 +1516,8 @@ class Zupload(object):
             'filesize': os.path.getsize(attachment),
             'mtime': str(int(os.path.getmtime(attachment) * 1000)),
             'contentType': mtypes[0] or 'application/octet-stream',
-            'charset': mtypes[1]
+            'charset': mtypes[1],
+            'params': 1
         }
         auth_req = requests.post(
             url=self.zinstance.endpoint
@@ -1518,20 +1539,22 @@ class Zupload(object):
 
         reg_key isn't used, but we need to pass it through to Step 3
         """
-        upload_file = bytearray(authdata['prefix'].encode())
-        upload_file.extend(open(attachment, 'r').read()),
-        upload_file.extend(authdata['suffix'].encode())
-        # Requests chokes on bytearrays, so convert to str
-        upload_dict = {
-            'file': (
-                os.path.basename(attachment),
-                str(upload_file))}
-        upload = requests.post(
-            url=authdata['url'],
-            files=upload_dict,
-            headers={
-                "Content-Type": authdata['contentType'],
-                'User-Agent': 'Pyzotero/%s' % __version__})
+        upload_dict = authdata['params']  # using params now since prefix/suffix concat was giving ConnectionError
+        upload_list = [('key', upload_dict['key'])]  # must pass tuple of tuples not dict to ensure key comes first
+        for k in upload_dict:
+            if k != 'key':
+                upload_list.append((k, upload_dict[k]))
+        upload_list.append(('file', open(attachment, 'rb').read()))  # The prior code for attaching file gave me content not match md5 errors
+        upload_pairs = tuple(upload_list)
+        try:
+            upload = requests.post(
+                url=authdata['url'],
+                files=upload_pairs,
+                headers={
+                    # "Content-Type": authdata['contentType'],
+                    'User-Agent': 'Pyzotero/%s' % __version__})
+        except (ConnectionError, requests.exceptions.ConnectionError):
+            raise ze.UploadError("ConnectionError")
         try:
             upload.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -1569,20 +1592,20 @@ class Zupload(object):
 
         Goes through upload steps 0 - 3 (private class methods), and returns
         a dict noting success, failure, or unchanged
+        (returning the payload entries with that property as a list for each status)
         """
-        # TODO: The flow needs to be a bit clearer
-        created = self._create_prelim()
-        registered_idx = [int(k) for k in created['success'].keys()]
-        if registered_idx:
-            # only upload and register authorised files
-            registered_keys = created['success'].values()
-            for r_idx, r_content in enumerate(registered_idx):
-                attach = self.payload[r_content]['filename']
-                authdata = self._get_auth(attach, registered_keys[r_idx])
-                # no need to keep going if the file exists
-                if authdata.get('exists'):
-                    created['unchanged'][unicode(r_idx)] = \
-                        created['success'].pop(unicode(r_idx), None)
-                    continue
-                self._upload_file(authdata, attach, registered_keys[r_idx])
-        return created
+        result = {"success": [], "failure": [], "unchanged": []}
+        self._create_prelim()
+        for item in self.payload:
+            if "key" not in item:
+                result["failure"].append(item)
+                continue
+            attach = str(self.basedir.joinpath(item['filename']))
+            authdata = self._get_auth(attach, item["key"], md5=item.get('md5', None))
+            # no need to keep going if the file exists
+            if authdata.get('exists'):
+                result["unchanged"].append(item)
+                continue
+            self._upload_file(authdata, attach, item["key"])
+            result["success"].append(item)
+        return result
