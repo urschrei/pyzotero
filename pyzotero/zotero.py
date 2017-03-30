@@ -902,7 +902,7 @@ class Zotero(object):
             'filename'])
         template = template | set(self.temp_keys)
         for pos, item in enumerate(items):
-            if item.keys() == [u'links', u'library', u'version', u'meta', u'key', u'data']:
+            if set(item) == set([u'links', u'library', u'version', u'meta', u'key', u'data']):
                 # we have an item that was retrieved from the API
                 item = item['data']
             to_check = set(i for i in list(item.keys()))
