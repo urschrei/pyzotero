@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.2.8'
+__version__ = '1.2.9'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -702,14 +702,14 @@ class Zotero(object):
         if self.links.get('next'):
             return self.links.get('next')
         else:
-            return None
+            raise StopIteration
 
     def iterfollow(self):
         """ Generator for self.follow()
         """
         # use same criterion as self.follow()
         if self.links is None:
-            return
+            raise StopIteration
         while self.links.get('next'):
             yield self.follow()
 
