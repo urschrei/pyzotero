@@ -204,8 +204,13 @@ def retrieve(func):
             return retrieved.content
         # no need to do anything special, return JSON
         else:
-            return retrieved.json()
-
+            # is this a snapshot though?
+            retr = retrieved.json()
+            # I know, I know
+            if isinstance(retr, dict) and retr.get('data', {}).get('linkMode', {}) == u"imported_url":
+                return retrieved.content
+            else:
+                return retr
     return wrapped_f
 
 
