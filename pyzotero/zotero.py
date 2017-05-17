@@ -189,7 +189,7 @@ def retrieve(func):
             # is this a snapshot though?
             retr = retrieved.json()
             # I know, I know
-            if isinstance(retr, dict) and retr['data']['linkMode'] == u"imported_url":
+            if isinstance(retr, dict) and retr.get('data', {}).get('linkMode', {}) == u"imported_url":
                 return retrieved.content
             else:
                 return retr
