@@ -179,9 +179,6 @@ def retrieve(func):
             processor = self.processors.get(content)
             # process the content correctly with a custom rule
             return processor(parsed)
-        if fmt == "snapshot":
-            # we need to dump as a zip!
-            self.snapshot = True
         if fmt == 'bibtex':
             return bibtexparser.loads(retrieved.text)
         # it's binary, so return raw content
@@ -189,7 +186,13 @@ def retrieve(func):
             return retrieved.content
         # no need to do anything special, return JSON
         else:
-            return retrieved.json()
+            # is this a snapshot though?
+            retr = retrieved.json()
+            # I know, I know
+            if isinstance(retr, dict) and retr['data']['linkMode'] == u"imported_url":
+                return retrieved.content
+            else:
+                return retr
     return wrapped_f
 
 
@@ -586,17 +589,17 @@ class Zotero(object):
         Dump a file attachment to disk, with optional filename and path
         """
         if not filename:
-            filename = self.item(itemkey)['data']['filename']
+            try:
+                filename = self.item(itemkey)['data']['filename']
+            except TypeError:
+                filename = "item.html.zip"
         if path:
             pth = os.path.join(path, filename)
         else:
             pth = filename
-        file = self.file(itemkey)
-        if self.snapshot:
-            self.snapshot = False
-            pth = pth + ".zip"
+        to_write = self.file(itemkey)
         with open(pth, 'wb') as f:
-            f.write(file)
+            f.write(to_write)
 
     @retrieve
     def children(self, item, **kwargs):
