@@ -306,6 +306,8 @@ Retrieving Files
       directory, and a :py:meth:`Zotero.item()` call is first made to determine the attachment
       filename. No error checking is done regarding the path.
 
+      .. note:: HTML snapshots will be dumped as zip files, with "zip" appended to the file name.
+
       .. code-block:: python
 
         # write a file to the current working directory using the stored filename
