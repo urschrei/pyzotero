@@ -138,6 +138,7 @@ def retrieve(func):
             'application/atom+xml': 'atom',
             'application/x-bibtex': 'bibtex',
             'application/json': 'json',
+            'text/html': 'snapshot',
             'text/plain': 'plain',
             'application/pdf; charset=utf-8': 'pdf',
             'application/pdf': 'pdf',
@@ -177,6 +178,9 @@ def retrieve(func):
             processor = self.processors.get(content)
             # process the content correctly with a custom rule
             return processor(parsed)
+        if fmt == "snapshot":
+            # we need to dump as a zip!
+            self.snapshot = True
         if fmt == 'bibtex':
             return [re.sub(control_chars, ' ', item) for item in retrieved.text.split('\n\n')]
         # it's binary, so return raw content
@@ -213,6 +217,7 @@ class Zotero(object):
         self.url_params = None
         self.tag_data = False
         self.request = None
+        self.snapshot = False
         # these aren't valid item fields, so never send them to the server
         self.temp_keys = set(['key', 'etag', 'group_id', 'updated'])
         # determine which processor to use for the parsed content
@@ -575,8 +580,12 @@ class Zotero(object):
             pth = os.path.join(path, filename)
         else:
             pth = filename
+        file = self.file(itemkey)
+        if self.snapshot:
+            self.snapshot = False
+            pth = pth + ".zip"
         with open(pth, 'wb') as f:
-            f.write(self.file(itemkey))
+            f.write(file)
 
     @retrieve
     def children(self, item, **kwargs):
