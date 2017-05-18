@@ -712,17 +712,18 @@ class Zotero(object):
         Dump a file attachment to disk, with optional filename and path
         """
         if not filename:
-            filename = self.item(itemkey)["data"]["filename"]
+            try:
+                filename = self.item(itemkey)['data']['filename']
+            except TypeError:
+                filename = "{i}.zip".format(i=itemkey)
         if path:
             pth = os.path.join(path, filename)
         else:
             pth = filename
-        file = self.file(itemkey)
-        if self.snapshot:
-            self.snapshot = False
-            pth = pth + ".zip"
-        with open(pth, "wb") as f:
-            f.write(file)
+        to_write = self.file(itemkey)
+        with open(pth, 'wb') as f:
+            f.write(to_write)
+        return pth
 
     @retrieve
     def children(self, item, **kwargs):
