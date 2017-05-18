@@ -315,9 +315,9 @@ Retrieving Files
       A convenient wrapper around :py:meth:`Zotero.file()`. Writes an attachment to disk using the optional path and filename.
       If neither are supplied, the file is written to the current working
       directory, and a :py:meth:`Zotero.item()` call is first made to determine the attachment
-      filename. No error checking is done regarding the path.
+      filename. No error checking is done regarding the path. If successful, the full path including the file name is returned.
 
-      .. note:: HTML snapshots will be dumped as zip files, with "zip" appended to the file name.
+      .. note:: HTML snapshots will be dumped as zip files. These will be named with their API item key, and a .zip extension.
 
       .. code-block:: python
 
