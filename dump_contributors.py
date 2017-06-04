@@ -8,7 +8,7 @@ as_dict.pop(0)
 header = "# This is the list of people (as distinct from AUTHORS) who have contributed code to Pyzotero.\n\n| **Commits** | **Contributor**<br/> |\n| --- |--- |\n"
 template = "| {contributions} | [{login}]({html_url}) |\n"
 formatted = (template.format(**dct) for dct in as_dict)
-with open("CONTRIBUTORS", 'w') as f:
+with open("CONTRIBUTORS.md", 'w') as f:
     f.write(header)
     for item in formatted:
         f.write(item)
