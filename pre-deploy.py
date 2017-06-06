@@ -40,7 +40,7 @@ def check():
     return library_version == git_version
 
 if __name__ == '__main__':
-    if check():
+    if not check():
         sys.exit(1)
     else:
         sys.exit(0)
