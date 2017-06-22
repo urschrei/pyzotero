@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.2.12'
+__version__ = '1.2.13'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -892,7 +892,7 @@ class Zotero(object):
                 t['field'] for t in self.item_fields())
         # add fields we know to be OK
         template = template | set([
-            'path'
+            'path',
             'tags',
             'notes',
             'itemType',
