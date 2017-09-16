@@ -44,11 +44,11 @@ Run `test_zotero.py` in the [pyzotero/test](test) directory, or, using [Nose][7]
 
 ## Issues ##
 
-Pyzotero remains in development as of September 2015. The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
+The latest commits can be found on the [dev branch][9], although new features are currently rare. If you encounter an error, please open an issue.
 
 ## Pull Requests ##
 
-Pull requests are welcomed. Please read the [contribution guidelines](CONTRIBUTING.md). 
+Pull requests are welcomed. Please read the [contribution guidelines](CONTRIBUTING.md). In particular, please **base your PR on the `dev` branch**.
 
 ## Versioning ##
 As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); version increments are performed as follows:  
