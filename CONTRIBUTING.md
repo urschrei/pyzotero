@@ -13,3 +13,6 @@ Contributions are welcome. Please bear the following in mind:
 - One feature per pull request
 - If possible, [squash](http://git-scm.com/book/en/Git-Tools-Rewriting-History#Squashing-Commits) your commits before opening a pull request, unless it makes no sense to do so
 - If in doubt, comment your code.
+
+## License of Contributed Code
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be MIT licensed, without any additional terms or conditions.
