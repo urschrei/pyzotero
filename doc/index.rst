@@ -166,6 +166,12 @@ The following methods will retrieve either user or group items, depending on the
 
         :rtype: list of dicts
 
+    .. py:method:: Zotero.publications()
+
+        Returns the publications from the "My Publications" collection of a user's library. Only available on ``user`` libraries.
+
+        :rtype: list of dicts
+
     .. py:method:: Zotero.trash([search/request parameters])
 
         Returns library items from the library's trash

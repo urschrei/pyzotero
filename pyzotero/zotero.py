@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.2.13'
+__version__ = '1.2.14'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -396,6 +396,15 @@ class Zotero(object):
                 self.add_parameters()
             query = '%s?%s' % (query, self.url_params)
         return query
+
+    @retrieve
+    def publications(self):
+        """ Return the contents of My Publications
+        """
+        if self.library_type != 'users':
+            raise ze.CallDoesNotExist("This API call does not exist for group libraries")
+        query_string = '/{t}/{u}/publications/items'
+        return self._build_query(query_string)
 
     # The following methods are Zotero Read API calls
     def num_items(self):
