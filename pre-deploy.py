@@ -37,10 +37,8 @@ def check():
         ["git", "describe", "--abbrev=0", "--tags"]
     ).strip()
     library_version = unicode("v" + find_version("pyzotero/zotero.py")).strip()
-    return library_version == git_version
+    # invert the boolean because 1 (True) == Bash error exit code
+    return not library_version == git_version
 
 if __name__ == '__main__':
-    if not check():
-        sys.exit(1)
-    else:
-        sys.exit(0)
+    sys.exit(check())
