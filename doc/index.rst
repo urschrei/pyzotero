@@ -686,7 +686,7 @@ This area of the Zotero Read API is under development, and may change frequently
         :param str q: Quick search. Searches titles and individual creator fields by default. Use the ``qmode`` parameter to change the mode. Currently supports phrase searching only
         :param str qmode: Quick search mode. To include full-text content in the search, use ``everything``. Defaults to ``titleCreatorYear``. Searching of other fields will be possible in the future
         :param int since: default ``0``. Return only objects modified after the specified library version
-        :param str tag: tag search. See the `Search Syntax <https://www.zotero.org/support/dev/web_api/v3/basics#search_syntax>`_ for details. More than one tag may be passed by passing a list of strings. These are treated as ``AND`` search terms.
+        :param str tag: tag search. See the `Search Syntax <https://www.zotero.org/support/dev/web_api/v3/basics#search_syntax>`_ for details. More than one tag may be passed by passing a list of strings – These are treated as ``AND`` search terms, meaning only items which include all of the specified tags are returned. You can search for items matching any tag in a list by using ``OR``: ``"tag1 OR tag2"``, and all items which exclude a tag: ``"-tag"``.
 
         The following parameters can be used for search requests:
 
