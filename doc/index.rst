@@ -700,6 +700,7 @@ This area of the Zotero Read API is under development, and may change frequently
 
         :param str content: 'bib', 'html', or one of the export formats (see below). If 'bib' is passed, you may **also** pass:
         :param str style: Any valid CSL style in the Zotero style repository
+        :param str linkwrap: Set this to "1" to have URLs in bibliography entries (see below) wrapped in ``<a>`` tags.
         :rtype: list of HTML strings or None.
 
 
