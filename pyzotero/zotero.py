@@ -239,6 +239,7 @@ class Zotero(object):
             'tei': self._bib_processor,
             'wikipedia': self._bib_processor,
             'json': self._json_processor,
+            'html': self._bib_processor,
         }
         self.links = None
         self.self_link = {}
