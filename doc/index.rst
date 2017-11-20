@@ -677,7 +677,7 @@ This area of the Zotero Read API is under development, and may change frequently
 
     .. py:method:: Zotero.add_parameters([format=None, itemKey=None, itemType=None, q=None, qmode=None, since=None, tag=None, sort=None, direction=None, limit=None, start=None, [content=None[ ,style=None]]])
 
-        :param str format: "atom", "bib", "json", "keys", "versions". Pyzotero retrieves and decodes JSON responses by default
+        :param str format: "atom", "bib", "bibtex", json", "keys", "versions". Pyzotero retrieves and decodes JSON responses by default
         :param str itemKey: A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request
 
         Search parameters:
@@ -690,7 +690,7 @@ This area of the Zotero Read API is under development, and may change frequently
 
         The following parameters can be used for search requests:
 
-        :param str sort: The name of the field by which entries are sorted: (``dateAdded``, ``dateModified``, ``title``, ``creator``, ``type``, ``date``, ``publisher``, ``publicationTitle``, ``journalAbbreviation``, ``language``, ``accessDate``, ``libraryCatalog``, ``callNumber``, ``rights``, ``addedBy``, ``numItems``, (tags))
+        :param str sort: The name of the field by which entries are sorted: (``dateAdded``, ``dateModified``, ``title``, ``creator``, ``type``, ``date``, ``publisher``, ``publicationTitle``, ``journalAbbreviation``, ``language``, ``accessDate``, ``libraryCatalog``, ``callNumber``, ``rights``, ``addedBy``, ``numItems``, ``tags``)
         :param str direction: ``asc`` or ``desc``
         :param int limit: 1 – 100 or None
         :param int start: 1 – total number of items in your library or None
@@ -728,6 +728,8 @@ You may also set ``content='citation'`` if you wish to retrieve citations. Simil
 If you select one of the available `export formats <https://www.zotero.org/support/dev/web_api/v3/basics#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
 
 If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
+
+If you set ``format='bibtex'``, a `bibtexparser <https://bibtexparser.readthedocs.io/en/v0.6.2/bibtexparser.html#bibdatabase.BibDatabase.entries>`_ object containing citations will be returned. You can access the citations as a list of dicts using the ``.entries`` property. The bibtexparser object also implements a `dump method <https://bibtexparser.readthedocs.io/en/v0.6.2/bibtexparser.html#bibtexparser.dump>`_, if you'd like to write your citations to a ``.bib`` file.
 
 
 .. _write:

@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.2.15'
+__version__ = '1.3.0'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -50,6 +50,7 @@ else:
 import requests
 import socket
 import feedparser
+import bibtexparser
 import json
 import copy
 import uuid
@@ -182,7 +183,7 @@ def retrieve(func):
             # we need to dump as a zip!
             self.snapshot = True
         if fmt == 'bibtex':
-            return [re.sub(control_chars, ' ', item) for item in retrieved.text.split('\n\n')]
+            return bibtexparser.loads(retrieved.text)
         # it's binary, so return raw content
         elif fmt != 'json':
             return retrieved.content
@@ -747,10 +748,16 @@ class Zotero(object):
         Retrieve all items in the library for a particular query
         This method will override the 'limit' parameter if it's been set
         """
-        items = []
-        items.extend(query)
-        while self.links.get('next'):
-            items.extend(self.follow())
+        try:
+            items = []
+            items.extend(query)
+            while self.links.get('next'):
+                items.extend(self.follow())
+        except TypeError:
+            # we have a bibliography object ughh
+            items = copy.deepcopy(query)
+            while self.links.get('next'):
+                items.entries.extend(self.follow().entries)
         return items
 
     def get_subset(self, subset):
