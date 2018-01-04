@@ -839,7 +839,7 @@ Example:
 
    .. py:method:: Zotero.check_items(items)
 
-        Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``KeyError`` exception is raised, detailing the invalid fields.
+        Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``InvalidItemFields`` exception is raised, detailing the invalid fields.
 
         :param list items: one or more dicts containing item data
         :rtype: List. Each list item is a valid dict containing item data.
