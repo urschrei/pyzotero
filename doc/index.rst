@@ -21,8 +21,8 @@ Getting started (short version)
   * For **group libraries**, the ID can be found by opening the group's page: ``https://www.zotero.org/groups/groupname``, and hovering over the ``group settings`` link. The ID is the integer after ``/groups/``
 
 3. You'll also need [*]_ to get an **API key** from the Zotero `site <https://www.zotero.org/settings/keys/new>`_
-4. Are you accessing your own Zotero library? ``library_type`` is ``user``
-5. Are you accessing a shared group library? ``library_type`` is ``group``
+4. Are you accessing your own Zotero library? Set``library_type`` to ``'user'``
+5. Are you accessing a shared group library? Set``library_type`` to ``'group'``
 
 
 .. _hello-world:
@@ -48,7 +48,6 @@ Installation, testing, usage (longer version)
 Installation
 ============
 Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
-As of v1.0.0, Pyzotero is also available as a wheel.
 
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
@@ -62,13 +61,13 @@ From a local clone, if you wish to install Pyzotero from a specific branch:
 
 The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org/pypi/Pyzotero>`_
 
-The `feedparser <http://feedparser.org>`_ (>= 0.5.1), `pytz <http://pypi.python.org/pypi/pytz/>`_ , and `Requests <http://docs.python-requests.org/en/latest/>`_ libraries are required. They will be automatically installed when installing Pyzotero using pip. For versions of Python below 2.7, the `ordereddict <http://pypi.python.org/pypi/ordereddict>`_ module is also required. This optional dependency can be included with Pyzotero with the command ``pip install pyzotero[ordereddict]``.
+For versions of Python below 2.7, the `ordereddict <http://pypi.python.org/pypi/ordereddict>`_ module required. This optional dependency can be included with Pyzotero with the command ``pip install pyzotero[ordereddict]``.
 
 
 ===============================
 Installing development versions
 ===============================
-Pyzotero remains in development as of February 2015. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
+Pyzotero remains in development as of February 2018. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
 
 
 =======
@@ -99,7 +98,7 @@ General Usage
 =====================
 
 .. important::
-    A given ``Zotero`` instance is bound to the library or group used to create it. Thus, if you create a ``Zotero`` instance with a ``library_id`` of ``67`` and a ``library_type`` of ``group``, its item methods will only operate upon that group. Similarly, if you create a ``Zotero`` instance with your own ``library_id`` and a ``library_type`` of ``user``, the instance will be bound to your Zotero library.
+    A ``Zotero`` instance is bound to the library or group used to create it. Thus, if you create a ``Zotero`` instance with a ``library_id`` of ``67`` and a ``library_type`` of ``group``, its item methods will only operate upon that group. Similarly, if you create a ``Zotero`` instance with your own ``library_id`` and a ``library_type`` of ``user``, the instance will be bound to your Zotero library.
 
 
 First, create a new Zotero instance:
