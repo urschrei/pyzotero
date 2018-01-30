@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.3.0'
+__version__ = '1.3.1'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -373,10 +373,13 @@ class Zotero(object):
         if params.get('content'):
             params['format'] = 'atom'
         # TODO: rewrite format=atom, content=json request
-        if ('limit' not in params or params['limit'] == 0):
+        if ('limit' not in params or params.get('limit') == 0):
             params['limit'] = 100
         # Need ability to request arbitrary number of results for version response
         elif (params['limit'] == -1 or params['limit'] is None):  # -1 value is hack that works with current version
+            del params['limit']
+        # bib format can't have a limit
+        if params.get('format') == 'bib':
             del params['limit']
         self.url_params = urlencode(params, doseq=True)
 
