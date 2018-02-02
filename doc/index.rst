@@ -677,6 +677,11 @@ This area of the Zotero Read API is under development, and may change frequently
     .. py:method:: Zotero.add_parameters([format=None, itemKey=None, itemType=None, q=None, qmode=None, since=None, tag=None, sort=None, direction=None, limit=None, start=None, [content=None[ ,style=None]]])
 
         :param str format: "atom", "bib", "bibtex", json", "keys", "versions". Pyzotero retrieves and decodes JSON responses by default
+
+        .. attention::
+
+          Setting ``format='bib'`` will remove the ``limit`` parameter if it's been set, as **the API does not allow a limit on bibliography output**; it instead enforces a limit of 150 items, and if the set of items you are trying to generate a bibliography for exceeds 150, an error will be raised.
+
         :param str itemKey: A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request
 
         Search parameters:
