@@ -105,6 +105,7 @@ feedparser._FeedParserMixin._isBase64 = ib64_patched
 def cleanwrap(func):
     """ Wrapper for Zotero._cleanup
     """
+
     def enc(self, *args, **kwargs):
         """ Send each item to _cleanup() """
         return (func(self, item, **kwargs) for item in args)
@@ -116,6 +117,7 @@ def retrieve(func):
     Decorator for Zotero read API methods; calls _retrieve_data() and passes
     the result to the correct processor, based on a lookup
     """
+
     def wrapped_f(self, *args, **kwargs):
         """
         Returns result of _retrieve_data()
@@ -162,7 +164,8 @@ def retrieve(func):
             'application/rtf': 'rtf'
         }
         # select format, or assume JSON
-        content_type_header = self.request.headers['Content-Type'].lower() + ";"
+        content_type_header = self.request.headers[
+            'Content-Type'].lower() + ";"
         control_chars = re.compile('\s+')
         fmt = formats.get(
             # strip "; charset=..." segment
@@ -193,13 +196,13 @@ def retrieve(func):
     return wrapped_f
 
 
-
 class Zotero(object):
     """
     Zotero API methods
     A full list of methods can be found here:
     http://www.zotero.org/support/dev/server_api
     """
+
     def __init__(self, library_id=None, library_type=None, api_key=None,
                  preserve_json_order=False):
         """ Store Zotero credentials
@@ -276,11 +279,12 @@ class Zotero(object):
     def _cleanup(self, to_clean, allow=()):
         """ Remove keys we added for internal use
         """
-        # this item's been retrieved from the API, we only need the 'data' entry
+        # this item's been retrieved from the API, we only need the 'data'
+        # entry
         if to_clean.keys() == [u'links', u'library', u'version', u'meta', u'key', u'data']:
             to_clean = to_clean['data']
         return dict([[k, v] for k, v in list(to_clean.items())
-                    if (k in allow or k not in self.temp_keys)])
+                     if (k in allow or k not in self.temp_keys)])
 
     def _retrieve_data(self, request=None):
         """
@@ -318,7 +322,7 @@ class Zotero(object):
             # strip 'format' query parameter
             stripped = "&".join(
                 ['%s=%s' % (p[0], p[1]) for p in parse_qsl(parsed[4]) if
-                p[0] != u'format']
+                 p[0] != u'format']
             )
             # rebuild url fragment
             # this is a death march
@@ -375,8 +379,10 @@ class Zotero(object):
         # TODO: rewrite format=atom, content=json request
         if ('limit' not in params or params.get('limit') == 0):
             params['limit'] = 100
-        # Need ability to request arbitrary number of results for version response
-        elif (params['limit'] == -1 or params['limit'] is None):  # -1 value is hack that works with current version
+        # Need ability to request arbitrary number of results for version
+        # response
+        # -1 value is hack that works with current version
+        elif (params['limit'] == -1 or params['limit'] is None):
             del params['limit']
         # bib format can't have a limit
         if params.get('format') == 'bib':
@@ -407,7 +413,8 @@ class Zotero(object):
         """ Return the contents of My Publications
         """
         if self.library_type != 'users':
-            raise ze.CallDoesNotExist("This API call does not exist for group libraries")
+            raise ze.CallDoesNotExist(
+                "This API call does not exist for group libraries")
         query_string = '/{t}/{u}/publications/items'
         return self._build_query(query_string)
 
@@ -503,7 +510,7 @@ class Zotero(object):
         query_string = "/{t}/{u}/fulltext".format(
             t=self.library_type,
             u=self.library_id)
-        headers={
+        headers = {
             "since": str(version),
         }
         headers.update(self.default_headers())
@@ -559,7 +566,8 @@ class Zotero(object):
         """ Get all deleted items (requires since= parameter)
         """
         if ("limit" not in kwargs):
-            # Currently deleted API doesn't respect limit leaving it out by default preserves compat
+            # Currently deleted API doesn't respect limit leaving it out by
+            # default preserves compat
             kwargs["limit"] = None
         query_string = '/{t}/{u}/deleted'
         return self._build_query(query_string)
@@ -658,11 +666,13 @@ class Zotero(object):
             """ recursively add collections to a flat master list """
             all_collections.append(clct)
             if clct['meta'].get('numCollections', 0) > 0:
-                # add collection to master list & recur with all child collections
+                # add collection to master list & recur with all child
+                # collections
                 [subcoll(c) for c in
                     self.everything(self.collections_sub(clct['data']['key']))]
 
-        # select all top-level collections or a specific collection and children
+        # select all top-level collections or a specific collection and
+        # children
         if collid:
             toplevel = [self.collection(collid)]
         else:
@@ -942,7 +952,7 @@ class Zotero(object):
             if difference:
                 raise ze.InvalidItemFields(
                     "Invalid keys present in item %s: %s" % (pos + 1,
-                    ' '.join(i for i in difference)))
+                                                             ' '.join(i for i in difference)))
         return items
 
     def item_types(self):
@@ -1041,7 +1051,8 @@ class Zotero(object):
         }
         if (last_modified is not None):
             headers['If-Unmodified-Since-Version'] = str(last_modified)
-        to_send = json.dumps([i for i in self._cleanup(*payload, allow=('key'))])
+        to_send = json.dumps(
+            [i for i in self._cleanup(*payload, allow=('key'))])
         headers.update(self.default_headers())
         req = requests.post(
             url=self.endpoint
@@ -1058,7 +1069,8 @@ class Zotero(object):
         resp = req.json()
         if parentid:
             # we need to create child items using PATCH
-            # TODO: handle possibility of item creation + failed parent attachment
+            # TODO: handle possibility of item creation + failed parent
+            # attachment
             uheaders = {
                 'If-Unmodified-Since-Version': req.headers['last-modified-version']
             }
@@ -1277,7 +1289,7 @@ class Zotero(object):
         tag = self.tags(limit=1)
         headers = {
             'If-Unmodified-Since-Version': self.request.headers['last-modified-version']
-            }
+        }
         headers.update(self.default_headers())
         req = requests.delete(
             url=self.endpoint
@@ -1308,9 +1320,9 @@ class Zotero(object):
             else:
                 modified = payload[0]['version']
             url = self.endpoint + \
-            '/{t}/{u}/items'.format(
-                t=self.library_type,
-                u=self.library_id)
+                '/{t}/{u}/items'.format(
+                    t=self.library_type,
+                    u=self.library_id)
         else:
             ident = payload['key']
             if (last_modified is not None):
@@ -1318,10 +1330,10 @@ class Zotero(object):
             else:
                 modified = payload['version']
             url = self.endpoint + \
-            '/{t}/{u}/items/{c}'.format(
-                t=self.library_type,
-                u=self.library_id,
-                c=ident)
+                '/{t}/{u}/items/{c}'.format(
+                    t=self.library_type,
+                    u=self.library_id,
+                    c=ident)
         headers = {'If-Unmodified-Since-Version': str(modified)}
         headers.update(self.default_headers())
         req = requests.delete(
@@ -1351,9 +1363,9 @@ class Zotero(object):
             else:
                 modified = payload[0]['version']
             url = self.endpoint + \
-            '/{t}/{u}/collections'.format(
-                t=self.library_type,
-                u=self.library_id)
+                '/{t}/{u}/collections'.format(
+                    t=self.library_type,
+                    u=self.library_id)
         else:
             ident = payload['key']
             if (last_modified is not None):
@@ -1361,10 +1373,10 @@ class Zotero(object):
             else:
                 modified = payload['version']
             url = self.endpoint + \
-            '/{t}/{u}/collections/{c}'.format(
-                t=self.library_type,
-                u=self.library_id,
-                c=ident)
+                '/{t}/{u}/collections/{c}'.format(
+                    t=self.library_type,
+                    u=self.library_id,
+                    c=ident)
         headers = {'If-Unmodified-Since-Version': str(modified)}
         headers.update(self.default_headers())
         req = requests.delete(
@@ -1379,9 +1391,9 @@ class Zotero(object):
         return True
 
 
-
 class Backoff(object):
     """ a simple backoff timer for HTTP 429 responses """
+
     def __init__(self, delay=1):
         self.wait = delay
 
@@ -1394,7 +1406,6 @@ class Backoff(object):
     def reset(self):
         """ reset delay """
         self.wait = 1
-
 
 
 backoff = Backoff()
@@ -1448,13 +1459,13 @@ responses after 62 seconds. You are being rate-limited, try again later")
         raise ze.HTTPError(err_msg(req))
 
 
-
 class Zupload(object):
     """
     Zotero file attachment helper
     Receives a Zotero instance, file(s) to upload, and optional parent ID
 
     """
+
     def __init__(self, zinstance, payload, parentid=None, basedir=None):
         super(Zupload, self).__init__()
         self.zinstance = zinstance
@@ -1497,7 +1508,8 @@ class Zupload(object):
         self._verify(self.payload)
         if ("key" in self.payload[0] and self.payload[0]["key"]):
             if (next((i for i in self.payload if "key" not in i), False)):
-                raise ze.UnsupportedParams("Can't pass payload entries with and without keys to Zupload")
+                raise ze.UnsupportedParams(
+                    "Can't pass payload entries with and without keys to Zupload")
             return None  # Don't do anything if payload comes with keys
         liblevel = '/{t}/{u}/items'
         # Create one or more new attachments
@@ -1536,11 +1548,12 @@ class Zupload(object):
         with open(attachment, 'rb') as att:
             for chunk in iter(lambda: att.read(8192), b''):
                 digest.update(chunk)
-        auth_headers = {'Content-Type': 'application/x-www-form-urlencoded' }
+        auth_headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         if not md5:
             auth_headers['If-None-Match'] = '*'
         else:
-            auth_headers['If-Match'] = md5  # docs specify that for existing file we use this
+            # docs specify that for existing file we use this
+            auth_headers['If-Match'] = md5
         auth_headers.update(self.zinstance.default_headers())
         data = {
             'md5': digest.hexdigest(),
@@ -1571,12 +1584,16 @@ class Zupload(object):
 
         reg_key isn't used, but we need to pass it through to Step 3
         """
-        upload_dict = authdata['params']  # using params now since prefix/suffix concat was giving ConnectionError
-        upload_list = [('key', upload_dict['key'])]  # must pass tuple of tuples not dict to ensure key comes first
+        upload_dict = authdata[
+            'params']  # using params now since prefix/suffix concat was giving ConnectionError
+        # must pass tuple of tuples not dict to ensure key comes first
+        upload_list = [('key', upload_dict['key'])]
         for k in upload_dict:
             if k != 'key':
                 upload_list.append((k, upload_dict[k]))
-        upload_list.append(('file', open(attachment, 'rb').read()))  # The prior code for attaching file gave me content not match md5 errors
+        # The prior code for attaching file gave me content not match md5
+        # errors
+        upload_list.append(('file', open(attachment, 'rb').read()))
         upload_pairs = tuple(upload_list)
         try:
             upload = requests.post(
@@ -1633,7 +1650,8 @@ class Zupload(object):
                 result["failure"].append(item)
                 continue
             attach = str(self.basedir.joinpath(item['filename']))
-            authdata = self._get_auth(attach, item["key"], md5=item.get('md5', None))
+            authdata = self._get_auth(
+                attach, item["key"], md5=item.get('md5', None))
             # no need to keep going if the file exists
             if authdata.get('exists'):
                 result["unchanged"].append(item)
