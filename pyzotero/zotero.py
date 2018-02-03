@@ -166,7 +166,7 @@ def retrieve(func):
         # select format, or assume JSON
         content_type_header = self.request.headers[
             'Content-Type'].lower() + ";"
-        control_chars = re.compile('\s+')
+        re.compile('\s+')
         fmt = formats.get(
             # strip "; charset=..." segment
             content_type_header[0:content_type_header.index(';')], 'json')
@@ -448,7 +448,7 @@ class Zotero(object):
         """
         self.add_parameters(limit=1)
         query = self._build_query(query)
-        data = self._retrieve_data(query)
+        self._retrieve_data(query)
         self.url_params = None
         # extract the 'total items' figure
         return int(self.request.headers['Total-Results'])
@@ -751,7 +751,6 @@ class Zotero(object):
     def makeiter(self, func):
         """ Return a generator of func's results
         """
-        _ = func
         # reset the link. This results in an extra API call, yes
         self.links['next'] = self.links['self']
         return self.iterfollow()
