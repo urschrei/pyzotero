@@ -1488,7 +1488,7 @@ class Zupload(object):
             if os.path.isfile(str(self.basedir.joinpath(templt[u'filename']))):
                 try:
                     # if it is a file, try to open it, and catch the error
-                    with open(str(self.basedir.joinpath(templt[u'filename']))) as _:
+                    with open(str(self.basedir.joinpath(templt[u'filename']))):
                         pass
                 except IOError:
                     raise ze.FileDoesNotExist(
@@ -1601,7 +1601,7 @@ class Zupload(object):
                 headers={
                     # "Content-Type": authdata['contentType'],
                     'User-Agent': 'Pyzotero/%s' % __version__})
-        except (ConnectionError, requests.exceptions.ConnectionError):
+        except (requests.exceptions.ConnectionError):
             raise ze.UploadError("ConnectionError")
         try:
             upload.raise_for_status()
