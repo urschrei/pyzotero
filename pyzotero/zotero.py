@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.3.1'
+__version__ = '1.3.2'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -149,6 +149,7 @@ def retrieve(func):
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
             'application/zip': 'zip',
+            'application/epub+zip': 'zip',
             'audio/mpeg': 'mp3',
             'video/mp4': 'mp4',
             'audio/x-wav': 'wav',
