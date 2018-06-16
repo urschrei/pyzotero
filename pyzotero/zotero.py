@@ -187,7 +187,8 @@ def retrieve(func):
             # we need to dump as a zip!
             self.snapshot = True
         if fmt == 'bibtex':
-            return bibtexparser.loads(retrieved.text, common_strings=True)
+            parser = bibtexparser.bparser.BibTexParser(common_strings=True)
+            return parser.parse(retrieved.text)
         # it's binary, so return raw content
         elif fmt != 'json':
             return retrieved.content
