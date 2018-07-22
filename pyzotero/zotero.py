@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = u'Stephan Hügel'
-__version__ = '1.3.4'
+__version__ = '1.3.5'
 __api_version__ = '3'
 
 # Python 3 compatibility faffing
@@ -111,6 +111,10 @@ def cleanwrap(func):
         return (func(self, item, **kwargs) for item in args)
     return enc
 
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
 
 def retrieve(func):
     """
@@ -664,6 +668,7 @@ class Zotero(object):
         or for a specific collection. Works at all collection depths.
         """
         all_collections = []
+
         def subcoll(clct):
             """ recursively add collections to a flat master list """
             all_collections.append(clct)
@@ -1221,6 +1226,56 @@ class Zotero(object):
         except requests.exceptions.HTTPError:
             error_handler(req)
         return True
+
+    def update_items(self, payload):
+        """
+        Update existing items
+        Accepts one argument, a list of dicts containing Item data
+        """
+        to_send = [self.check_items([p])[0] for p in payload]
+        headers = {}
+        headers.update(self.default_headers())
+        # the API only accepts 50 items at a time, so we have to split
+        # anything longer
+        for chunk in chunks(to_send, 50):
+            req = requests.post(
+                url=self.endpoint
+                + '/{t}/{u}/items/'.format(
+                    t=self.library_type,
+                    u=self.library_id,),
+                headers=headers,
+                data=json.dumps(chunk))
+            self.request = req
+            try:
+                req.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(req)
+            return True
+
+    def update_collections(self, payload):
+        """
+        Update existing collections
+        Accepts one argument, a list of dicts containing Collection data
+        """
+        to_send = [self.check_items([p])[0] for p in payload]
+        headers = {}
+        headers.update(self.default_headers())
+        # the API only accepts 50 items at a time, so we have to split
+        # anything longer
+        for chunk in chunks(to_send, 50):
+            req = requests.post(
+                url=self.endpoint
+                + '/{t}/{u}/collections/'.format(
+                    t=self.library_type,
+                    u=self.library_id,),
+                headers=headers,
+                data=json.dumps(chunk))
+            self.request = req
+            try:
+                req.raise_for_status()
+            except requests.exceptions.HTTPError:
+                error_handler(req)
+            return True
 
     def addto_collection(self, collection, payload):
         """

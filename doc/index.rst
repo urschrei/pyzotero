@@ -784,8 +784,8 @@ Item Methods
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
         :rtype: dict
 
-Creating items
---------------
+Creating and Updating Items
+---------------------------
 
     .. py:method:: Zotero.create_items(items[, parentid, last_modified])
 
@@ -841,12 +841,21 @@ Example:
         i[0]['data']['creators'][0]['lastName'] = 'Bowles'
         zot.update_item(i[0])
 
-   .. py:method:: Zotero.check_items(items)
+  .. py:method:: Zotero.update_items(items)
 
-        Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``InvalidItemFields`` exception is raised, detailing the invalid fields.
+      Update items in your library. The API only accepts 50 items per call, so longer updates are chunked
 
-        :param list items: one or more dicts containing item data
-        :rtype: List. Each list item is a valid dict containing item data.
+      :param list items: a list of dicts containing Item data. Fields not in item will be left unmodified.
+      :rtype: Boolean
+
+      Will return ``True`` if the request was successful, or will raise an error.
+
+  .. py:method:: Zotero.check_items(items)
+
+      Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``InvalidItemFields`` exception is raised, detailing the invalid fields.
+
+      :param list items: one or more dicts containing item data
+      :rtype: List. Each list item is a valid dict containing item data.
 
 
 Uploading files
@@ -975,10 +984,19 @@ Collection Methods
 
     .. py:method:: Zotero.update_collection(collection , last_modified])
 
-        Update an existing collection name
+        Update existing collection metadata (name etc.)
 
         :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`)
         :rtype: Boolean
+
+    .. py:method:: Zotero.update_collections(collection_items)
+
+        Update multiple existing collection metadata. The API only accepts 50 collections per call, so longer updates are chunked
+
+        :param list collection_items: a list of dicts containing Collection data. Fields not in collection_item will be left unmodified.
+        :rtype: Boolean
+
+        Will return ``True`` if the request was successful, or will raise an error.
 
 Example:
 
