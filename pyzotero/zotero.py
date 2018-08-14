@@ -431,6 +431,12 @@ class Zotero(object):
         query = '/{t}/{u}/items/top'
         return self._totals(query)
 
+    def count_items(self):
+        """ Return the count of all items in a group / library
+        """
+        query = '/{t}/{u}/items'
+        return self._totals(query)
+
     def num_collectionitems(self, collection):
         """ Return the total number of items in the specified collection
         """

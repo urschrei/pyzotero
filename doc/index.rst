@@ -159,6 +159,12 @@ The following methods will retrieve either user or group items, depending on the
 
         :rtype: list of dicts
 
+    .. py:method:: Zotero.count_items()
+
+        Returns a count of all items in a library / group
+
+        :rtype: int
+
     .. py:method:: Zotero.top([search/request parameters])
 
         Returns top-level Zotero library items
