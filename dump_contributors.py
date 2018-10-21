@@ -11,6 +11,6 @@ as_dict = result.json()
 as_dict.pop(0)
 header = u"# This is the list of people (as distinct from [AUTHORS](AUTHORS)) who have contributed code to Pyzotero.\n\n| **Commits** | **Contributor**<br/> |\n| --- |--- |\n"
 template = u"| {contributions} | [{login}](https://github.com/urschrei/pyzotero/commits?author={login}) |\n"
-with io.open("CONTRIBUTORS.md", 'w', encoding="utf-8") as f:
+with io.open("CONTRIBUTORS.md", "w", encoding="utf-8") as f:
     f.write(header)
     f.writelines(template.format(**dct) for dct in as_dict)
