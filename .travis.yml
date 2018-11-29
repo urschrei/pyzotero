@@ -22,5 +22,5 @@ script: nosetests --with-xcoverage --cover-package=pyzotero --cover-tests
 after_success:
   - coveralls
 notifications:
-  email:
-    - urschrei@gmail.com
+#  email:
+#    - urschrei@gmail.com
