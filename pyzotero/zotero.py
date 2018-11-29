@@ -42,7 +42,7 @@ import sys
 if sys.version_info[0] == 2:
     from urllib import urlencode
     from urllib import quote
-    from urlparse3 import urlparse, urlunparse, parse_qsl
+    from urlparse import urlparse, urlunparse, parse_qsl
 else:
     from urllib.parse import urlencode
     from urllib.parse import urlparse, urlunparse, parse_qsl
