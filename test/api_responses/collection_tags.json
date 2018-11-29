@@ -1,0 +1,53 @@
+[
+    {
+        "tag": "cherry",
+        "links": {
+            "self": {
+                "href": "https://api.zotero.org/users/436/tags/cherry",
+                "type": "application/json"
+            },
+            "alternate": {
+                "href": "http://zotero.org/users/436/tags/cherry",
+                "type": "text/html"
+            }
+        },
+        "meta": {
+            "type": 0,
+            "numItems": 1
+        }
+    },
+    {
+        "tag": "banana",
+        "links": {
+            "self": {
+                "href": "https://api.zotero.org/users/436/tags/banana",
+                "type": "application/json"
+            },
+            "alternate": {
+                "href": "http://zotero.org/users/436/tags/banana",
+                "type": "text/html"
+            }
+        },
+        "meta": {
+            "type": 0,
+            "numItems": 1
+        }
+    },
+    {
+        "tag": "apple",
+        "links": {
+            "self": {
+                "href": "https://api.zotero.org/users/436/tags/apple",
+                "type": "application/json"
+            },
+            "alternate": {
+                "href": "http://zotero.org/users/436/tags/apple",
+                "type": "text/html"
+            }
+        },
+        "meta": {
+            "type": 0,
+            "numItems": 1
+        }
+    }
+]

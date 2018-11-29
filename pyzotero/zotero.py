@@ -42,7 +42,7 @@ import sys
 if sys.version_info[0] == 2:
     from urllib import urlencode
     from urllib import quote
-    from urlparse import urlparse, urlunparse, parse_qsl
+    from urlparse3 import urlparse, urlunparse, parse_qsl
 else:
     from urllib.parse import urlencode
     from urllib.parse import urlparse, urlunparse, parse_qsl
@@ -668,6 +668,15 @@ class Zotero(object):
         """ Get a specific collection's top-level items
         """
         query_string = "/{t}/{u}/collections/{c}/items/top".format(
+            u=self.library_id, t=self.library_type, c=collection.upper()
+        )
+        return self._build_query(query_string)
+
+    @retrieve
+    def collection_tags(self, collection, **kwargs):
+        """ Get a specific collection's tags
+        """
+        query_string = "/{t}/{u}/collections/{c}/tags".format(
             u=self.library_id, t=self.library_type, c=collection.upper()
         )
         return self._build_query(query_string)

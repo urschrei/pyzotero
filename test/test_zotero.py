@@ -29,12 +29,12 @@ THE SOFTWARE.
 """
 
 import os
-import json
 import unittest
+
 import httpretty
-from httpretty import HTTPretty
-from pyzotero.pyzotero import zotero as z
 from dateutil import parser
+from httpretty import HTTPretty
+from pyzotero import zotero as z
 
 # Python 3 compatibility faffing
 try:
@@ -69,6 +69,7 @@ class ZoteroTests(unittest.TestCase):
         self.collection_versions = self.get_doc("collection_versions.json")
         self.collections_doc = self.get_doc("collections_doc.json")
         self.collection_doc = self.get_doc("collection_doc.json")
+        self.collection_tags = self.get_doc("collection_tags.json")
         self.citation_doc = self.get_doc("citation_doc.xml")
         # self.biblio_doc = self.get_doc('bib_doc.xml')
         self.attachments_doc = self.get_doc("attachments_doc.json")
@@ -80,6 +81,7 @@ class ZoteroTests(unittest.TestCase):
         self.keys_response = self.get_doc("keys_doc.txt")
         self.creation_doc = self.get_doc("creation_doc.json")
         self.item_file = self.get_doc("item_file.pdf")
+
         # Add the item file to the mock response by default
         HTTPretty.enable()
         HTTPretty.register_uri(
@@ -292,6 +294,23 @@ class ZoteroTests(unittest.TestCase):
         )
         collections_data = zot.collection("KIMI8BSG")
         self.assertEqual("LoC", collections_data["data"]["name"])
+
+    @httpretty.activate
+    def testParseCollectionTagsJSONDoc(self):
+        """ Should successfully return a list of tags,
+            which should match input doc's number of tag items and 'tag' values
+        """
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/collections/KIMI8BSG/tags",
+            content_type="application/json",
+            body=self.collection_tags
+        )
+        collections_data = zot.collection_tags("KIMI8BSG")
+        self.assertEqual(3, len(collections_data))
+        for item in collections_data:
+            self.assertTrue(item in ['apple', 'banana', 'cherry'])
 
     @httpretty.activate
     def testParseCollectionsJSONDoc(self):
