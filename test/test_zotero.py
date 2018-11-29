@@ -34,7 +34,7 @@ import unittest
 import httpretty
 from dateutil import parser
 from httpretty import HTTPretty
-from pyzotero import zotero as z
+from pyzotero.pyzotero import zotero as z
 
 # Python 3 compatibility faffing
 try:
