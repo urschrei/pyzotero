@@ -1678,7 +1678,8 @@ class Zupload(object):
         reg_data = {"upload": authdata.get("uploadKey")}
         upload_reg = requests.post(
             url=self.zinstance.endpoint
-            + "/users/{u}/items/{i}/file".format(
+            + "/{t}/{u}/items/{i}/file".format(
+                t=self.zinstance.library_type,
                 u=self.zinstance.library_id, i=reg_key
             ),
             data=reg_data,
