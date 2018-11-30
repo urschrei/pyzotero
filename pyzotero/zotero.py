@@ -673,6 +673,15 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
+    def collection_tags(self, collection, **kwargs):
+        """ Get a specific collection's tags
+        """
+        query_string = "/{t}/{u}/collections/{c}/tags".format(
+            u=self.library_id, t=self.library_type, c=collection.upper()
+        )
+        return self._build_query(query_string)
+
+    @retrieve
     def collection(self, collection, **kwargs):
         """ Get user collection
         """
