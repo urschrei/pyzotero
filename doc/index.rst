@@ -1004,11 +1004,11 @@ Collection Methods
 
         Will return ``True`` if the request was successful, or will raise an error.
 
-    .. py:method:: Zotero.collection_tags(collection)
+    .. py:method:: Zotero.collection_tags(collectionID[, search/request parameters])
 
-        :param str collection: a collection ID
         Retrieve all tags for a given collection
 
+        :param str collectionID: a collection ID
         :rtype: list of strings
 
 Examples:
