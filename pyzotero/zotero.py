@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.3.8"
+__version__ = "1.3.9"
 __api_version__ = "3"
 
 # Python 3 compatibility faffing
@@ -1616,7 +1616,8 @@ class Zupload(object):
         }
         auth_req = requests.post(
             url=self.zinstance.endpoint
-            + "/users/{u}/items/{i}/file".format(
+            + "/{t}/{u}/items/{i}/file".format(
+                t=self.zinstance.library_type,
                 u=self.zinstance.library_id, i=reg_key
             ),
             data=data,
