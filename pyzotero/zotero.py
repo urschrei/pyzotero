@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.3.9"
+__version__ = "1.3.10"
 __api_version__ = "3"
 
 # Python 3 compatibility faffing
@@ -590,6 +590,13 @@ class Zotero(object):
         return self._build_query(query_string)
 
     @retrieve
+    def searches(self, **kwargs):
+        """ Get saved searches
+        """
+        query_string = "/{t}/{u}/searches"
+        return self._build_query(query_string)
+
+    @retrieve
     def deleted(self, **kwargs):
         """ Get all deleted items (requires since= parameter)
         """
@@ -909,6 +916,74 @@ class Zotero(object):
         attachment = Zupload(self, payload, parentid)
         res = attachment.upload()
         return res
+
+    def saved_search(self, name, conditions=None):
+        """ Create a saved search. conditions is a list of dicts
+        containing search conditions, and must contain the following str keys:
+        condition, operator, value
+        """
+        allowed_keys = set(["condition", "operator", "value"])
+        allowed_operators = set(
+            [
+                "is",
+                "isNot",
+                "beginsWith",
+                "contains",
+                "doesNotContain",
+                "isLessThan",
+                "isGreaterThan",
+                "isBefore",
+                "isAfter",
+                "isInTheLast",
+                "any",
+                "all",
+                "true",
+                "false",
+            ]
+        )
+        for condition in conditions:
+            if set(condition.keys()) != allowed_keys:
+                raise ze.ParamNotPassed(
+                    "Conditions keys can only be 'condition', 'operator', and 'values'"
+                )
+            if condition.get("operator") not in allowed_operators:
+                raise ze.ParamNotPassed("You have specified an unknown operator")
+        payload = dict()
+        payload["name"] = name
+        payload["conditions"] = conditions
+        headers = {"Zotero-Write-Token": token()}
+        headers.update(self.default_headers())
+        req = requests.post(
+            url=self.endpoint
+            + "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
+            headers=headers,
+            data=json.dumps([payload]),
+        )
+        self.request = req
+        try:
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
+        return req.json()
+
+    def delete_saved_search(self, keys):
+        """ Delete one or more saved searches by passing a list of one or more
+        unique search keys
+        """
+        headers = {"Zotero-Write-Token": token()}
+        headers.update(self.default_headers())
+        req = requests.delete(
+            url=self.endpoint
+            + "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
+            headers=headers,
+            params={"searchKey": ",".join(keys)},
+        )
+        self.request = req
+        try:
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(req)
+        return req.status_code
 
     def upload_attachments(self, attachments, parentid=None, basedir=None):
         """Upload files to the already created (but never uploaded) attachments"""
@@ -1617,8 +1692,7 @@ class Zupload(object):
         auth_req = requests.post(
             url=self.zinstance.endpoint
             + "/{t}/{u}/items/{i}/file".format(
-                t=self.zinstance.library_type,
-                u=self.zinstance.library_id, i=reg_key
+                t=self.zinstance.library_type, u=self.zinstance.library_id, i=reg_key
             ),
             data=data,
             headers=auth_headers,
@@ -1680,8 +1754,7 @@ class Zupload(object):
         upload_reg = requests.post(
             url=self.zinstance.endpoint
             + "/{t}/{u}/items/{i}/file".format(
-                t=self.zinstance.library_type,
-                u=self.zinstance.library_id, i=reg_key
+                t=self.zinstance.library_type, u=self.zinstance.library_id, i=reg_key
             ),
             data=reg_data,
             headers=dict(reg_headers),

@@ -294,6 +294,31 @@ Example of returned item data:
 
 See :ref:`'Hello World' <hello-world>` example, above
 
+==============
+Saved Searches
+==============
+Pyzotero allows you to retrieve, delete, or modify saved searches:
+
+    .. py:method:: Zotero.searches()
+
+        Retrieve all saved searches
+
+        :rtype: list of dicts
+
+    .. py:method:: Zotero.saved_search(name, conditions)
+
+        Create a new saved search. `conditions` is a list of one or more dicts, each of which must contain the following three string keys:
+        `condition`, `operator`, `value`. See the `documentation <https://www.zotero.org/support/dev/web_api/v3/write_requests#saved_search_requests>`_ for an example.
+
+        :rtype: None
+
+    .. py:method:: Zotero.delete_saved_search(search_keys)
+
+        Delete one or more saved searches. `search_keys` is a list of one or more search keys. These can be retrievd using :py:meth:`Zotero.searches()`
+
+        :rtype: None
+
+
 ====================
 Retrieving Files
 ====================
