@@ -285,6 +285,7 @@ class Zotero(object):
             "true": "true",
             "false": "false",
         }
+        # TODO: these mappings could be further simplified
         self.conditions_operators = {
             "deleted": [self.operators["true"], self.operators["false"]],
             "noChildren": [self.operators["true"], self.operators["false"]],
@@ -406,6 +407,35 @@ class Zotero(object):
             ],
             "tempTable": [self.operators["is"]],
         }
+        # aliases for numberfield
+        pagefields = [
+            "pages",
+            "numPages",
+            "numberOfVolumes",
+            "section",
+            "seriesNumber",
+            "issue",
+        ]
+        for pf in pagefields:
+            self.conditions_operators[pf] = self.conditions_operators.get("numberfield")
+        # aliases for datefield
+        datefields = ["accessDate", "date", "dateDue", "accepted"]
+        for df in datefields:
+            self.conditions_operators[df] = self.conditions_operators.get("datefield")
+        # aliases for field - this makes a blocking API call
+        item_fields = [
+            itm["field"]
+            for itm in self.item_fields()
+            if itm["field"]
+            not in set(
+                ["accessDate", "date", "pages", "section", "seriesNumber", "issue"]
+            )
+        ]
+        for itf in item_fields:
+            self.conditions_operators[itf] = self.conditions_operators.get("field")
+        # #########################
+        # END OF SAVED SEARCH LOGIC
+        # #########################
 
     def default_headers(self):
         """
