@@ -270,6 +270,7 @@ class Zotero(object):
         # for saved searches
         ####################
         self.operators = {
+            # this is a bit hacky, but I can't be bothered with Python's enums
             "is": "is",
             "isNot": "isNot",
             "beginsWith": "beginsWith",
@@ -1085,6 +1086,30 @@ class Zotero(object):
         attachment = Zupload(self, payload, parentid)
         res = attachment.upload()
         return res
+
+    def show_operators(self):
+        """ Show available saved search operators """
+        print("Available saved search operators: %s" % ", ".join(self.operators))
+
+    def show_conditions(self):
+        """ Show available saved search conditions """
+        print(
+            "Available saved search conditions: %s"
+            % ", ".join(self.conditions_operators.keys())
+        )
+
+    def show_condition_operators(self, condition):
+        """ Show available operators for a given saved search condition """
+        # dict keys of allowed operators for the current condition
+        permitted_operators = self.conditions_operators.get(condition)
+        # transform these into values
+        permitted_operators_list = set(
+            [self.operators.get(op) for op in permitted_operators]
+        )
+        print(
+            "Available saved search operators for '%s': %s"
+            % (condition, ", ".join(permitted_operators_list))
+        )
 
     def saved_search(self, name, conditions=None):
         """ Create a saved search. conditions is a list of dicts
