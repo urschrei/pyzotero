@@ -267,6 +267,145 @@ class Zotero(object):
         self.links = None
         self.self_link = {}
         self.templates = {}
+        # for saved searches
+        ####################
+        self.operators = {
+            "is": "is",
+            "isNot": "isNot",
+            "beginsWith": "beginsWith",
+            "contains": "contains",
+            "doesNotContain": "doesNotContain",
+            "isLessThan": "isLessThan",
+            "isGreaterThan": "isGreaterThan",
+            "isBefore": "isBefore",
+            "isAfter": "isAfter",
+            "isInTheLast": "isInTheLast",
+            "any": "any",
+            "all": "all",
+            "true": "true",
+            "false": "false",
+        }
+        self.conditions_operators = {
+            "deleted": [self.operators["true"], self.operators["false"]],
+            "noChildren": [self.operators["true"], self.operators["false"]],
+            "unfiled": [self.operators["true"], self.operators["false"]],
+            "publications": [self.operators["true"], self.operators["false"]],
+            "includeParentsAndChildren": [
+                self.operators["true"],
+                self.operators["false"],
+            ],
+            "includeParents": [self.operators["true"], self.operators["false"]],
+            "includeChildren": [self.operators["true"], self.operators["false"]],
+            "recursive": [self.operators["true"], self.operators["false"]],
+            "joinMode": [self.operators["any"], self.operators["all"]],
+            "quicksearch-titleCreatorYear": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "quicksearch-fields": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "quicksearch-everything": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "collectionID": [self.operators["is"], self.operators["isNot"]],
+            "savedSearchID": [self.operators["is"], self.operators["isNot"]],
+            "collection": [self.operators["is"], self.operators["isNot"]],
+            "savedSearch": [self.operators["is"], self.operators["isNot"]],
+            "dateAdded": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["isBefore"],
+                self.operators["isBefore"],
+                self.operators["isInTheLast"],
+            ],
+            "dateModified": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["isBefore"],
+                self.operators["isBefore"],
+                self.operators["isInTheLast"],
+            ],
+            "itemTypeID": [self.operators["is"], self.operators["isNot"]],
+            "itemType": [self.operators["is"], self.operators["isNot"]],
+            "fileTypeID": [self.operators["is"], self.operators["isNot"]],
+            "tagID": [self.operators["is"], self.operators["isNot"]],
+            "tag": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "note": [self.operators["contains"], self.operators["doesNotContain"]],
+            "childNote": [self.operators["contains"], self.operators["doesNotContain"]],
+            "creator": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "lastName": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "field": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "datefield": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["isBefore"],
+                self.operators["isBefore"],
+                self.operators["isInTheLast"],
+            ],
+            "year": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "numberfield": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+                self.operators["isLessThan"],
+                self.operators["isGreaterThan"],
+            ],
+            "libraryID": [self.operators["is"], self.operators["isNot"]],
+            "key": [
+                self.operators["is"],
+                self.operators["isNot"],
+                self.operators["beginsWith"],
+            ],
+            "itemID": [self.operators["is"], self.operators["isNot"]],
+            "annotation": [
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "fulltextWord": [
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "fulltextContent": [
+                self.operators["contains"],
+                self.operators["doesNotContain"],
+            ],
+            "tempTable": [self.operators["is"]],
+        }
 
     def default_headers(self):
         """
@@ -923,31 +1062,34 @@ class Zotero(object):
         condition, operator, value
         """
         allowed_keys = set(["condition", "operator", "value"])
-        allowed_operators = set(
-            [
-                "is",
-                "isNot",
-                "beginsWith",
-                "contains",
-                "doesNotContain",
-                "isLessThan",
-                "isGreaterThan",
-                "isBefore",
-                "isAfter",
-                "isInTheLast",
-                "any",
-                "all",
-                "true",
-                "false",
-            ]
-        )
+        operators_set = set(self.operators.keys())
         for condition in conditions:
             if set(condition.keys()) != allowed_keys:
                 raise ze.ParamNotPassed(
                     "Conditions keys can only be 'condition', 'operator', and 'values'"
                 )
-            if condition.get("operator") not in allowed_operators:
-                raise ze.ParamNotPassed("You have specified an unknown operator")
+            if condition.get("operator") not in operators_set:
+                raise ze.ParamNotPassed(
+                    "You have specified an unknown operator: %s"
+                    % condition.get("operator")
+                )
+            # dict keys of allowed operators for the current condition
+            permitted_operators = self.conditions_operators.get(
+                condition.get("condition")
+            )
+            # transform these into values
+            permitted_operators_list = set(
+                [self.operators.get(op) for op in permitted_operators]
+            )
+            if condition.get("operator") not in permitted_operators_list:
+                raise ze.ParamNotPassed(
+                    "You may not use the '%s' operator when selecting the '%s' condition. \nAllowed operators: %s"
+                    % (
+                        condition.get("operator"),
+                        condition.get("condition"),
+                        ", ".join(list(permitted_operators_list)),
+                    )
+                )
         payload = dict()
         payload["name"] = name
         payload["conditions"] = conditions
