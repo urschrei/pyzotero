@@ -15,6 +15,9 @@ import subprocess
 import re
 import io
 
+if sys.version_info.major == 3:
+    unicode = str
+
 
 def read(*names, **kwargs):
     with io.open(
@@ -35,7 +38,7 @@ def find_version(*file_paths):
 def check():
     git_version = subprocess.check_output(
         ["git", "describe", "--abbrev=0", "--tags"]
-    ).strip()
+    ).decode('utf-8').strip()
     library_version = unicode("v" + find_version("pyzotero/zotero.py")).strip()
     # invert the boolean because 1 (True) == Bash error exit code
     print("Git version: %s\nLibrary version: %s" % (git_version, library_version))
