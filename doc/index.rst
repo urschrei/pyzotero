@@ -312,7 +312,7 @@ Pyzotero allows you to retrieve, delete, or modify saved searches:
 
         :param str name: the name of the search
         :param list conditions: one or more dicts containing search conditions and operators
-        :rtype: None
+        :rtype: dict showing creation success status
 
     .. py:method:: Zotero.delete_saved_search(search_keys)
 
