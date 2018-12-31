@@ -951,7 +951,7 @@ class Zotero(object):
             % (condition, ", ".join(permitted_operators_list))
         )
 
-    def saved_search(self, name, conditions=None):
+    def saved_search(self, name, conditions):
         """ Create a saved search. conditions is a list of dicts
         containing search conditions, and must contain the following str keys:
         condition, operator, value
@@ -1602,7 +1602,7 @@ class SavedSearch(object):
     def __init__(self, zinstance):
         super(SavedSearch, self).__init__()
         self.zinstance = zinstance
-        self.keys = ("condition", "operator", "value")
+        self.searchkeys = ("condition", "operator", "value")
         # always exclude these fields from zotero.item_keys()
         self.excluded_items = (
             "accessDate",
@@ -1731,12 +1731,12 @@ class SavedSearch(object):
 
     def validate(self, conditions):
         """ Validate conditions, raising an error if any contain invalid operators """
-        allowed_keys = set(self.keys)
+        allowed_keys = set(self.searchkeys)
         operators_set = set(self.operators.keys())
         for condition in conditions:
             if set(condition.keys()) != allowed_keys:
                 raise ze.ParamNotPassed(
-                    "Conditions keys can only be 'condition', 'operator', and 'values'"
+                    "Keys must be all of: %s" % ', '.join(self.searchkeys)
                 )
             if condition.get("operator") not in operators_set:
                 raise ze.ParamNotPassed(
