@@ -1647,100 +1647,25 @@ class SavedSearch(object):
             "true": "true",
             "false": "false",
         }
-        # TODO: these mappings could be further simplified
-        self.conditions_operators = {
-            "deleted": [self.operators["true"], self.operators["false"]],
-            "noChildren": [self.operators["true"], self.operators["false"]],
-            "unfiled": [self.operators["true"], self.operators["false"]],
-            "publications": [self.operators["true"], self.operators["false"]],
-            "includeParentsAndChildren": [
-                self.operators["true"],
-                self.operators["false"],
-            ],
-            "includeParents": [self.operators["true"], self.operators["false"]],
-            "includeChildren": [self.operators["true"], self.operators["false"]],
-            "recursive": [self.operators["true"], self.operators["false"]],
-            "joinMode": [self.operators["any"], self.operators["all"]],
-            "quicksearch-titleCreatorYear": [
+        # common groupings of operators
+        self.groups = {
+            "A": [self.operators["true"], self.operators["false"]],
+            "B": [self.operators["any"], self.operators["all"]],
+            "C": [
                 self.operators["is"],
                 self.operators["isNot"],
                 self.operators["contains"],
                 self.operators["doesNotContain"],
             ],
-            "quicksearch-fields": [
+            "D": [self.operators["is"], self.operators["isNot"]],
+            "E": [
                 self.operators["is"],
                 self.operators["isNot"],
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "quicksearch-everything": [
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "collectionID": [self.operators["is"], self.operators["isNot"]],
-            "savedSearchID": [self.operators["is"], self.operators["isNot"]],
-            "collection": [self.operators["is"], self.operators["isNot"]],
-            "savedSearch": [self.operators["is"], self.operators["isNot"]],
-            "dateAdded": [
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["isBefore"],
                 self.operators["isBefore"],
                 self.operators["isInTheLast"],
             ],
-            "dateModified": [
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["isBefore"],
-                self.operators["isBefore"],
-                self.operators["isInTheLast"],
-            ],
-            "itemTypeID": [self.operators["is"], self.operators["isNot"]],
-            "itemType": [self.operators["is"], self.operators["isNot"]],
-            "fileTypeID": [self.operators["is"], self.operators["isNot"]],
-            "tagID": [self.operators["is"], self.operators["isNot"]],
-            "tag": [
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "note": [self.operators["contains"], self.operators["doesNotContain"]],
-            "childNote": [self.operators["contains"], self.operators["doesNotContain"]],
-            "creator": [
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "lastName": [
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "field": [
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "datefield": [
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["isBefore"],
-                self.operators["isBefore"],
-                self.operators["isInTheLast"],
-            ],
-            "year": [
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "numberfield": [
+            "F": [self.operators["contains"], self.operators["doesNotContain"]],
+            "G": [
                 self.operators["is"],
                 self.operators["isNot"],
                 self.operators["contains"],
@@ -1748,27 +1673,55 @@ class SavedSearch(object):
                 self.operators["isLessThan"],
                 self.operators["isGreaterThan"],
             ],
-            "libraryID": [self.operators["is"], self.operators["isNot"]],
-            "key": [
+            "H": [
                 self.operators["is"],
                 self.operators["isNot"],
                 self.operators["beginsWith"],
             ],
-            "itemID": [self.operators["is"], self.operators["isNot"]],
-            "annotation": [
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "fulltextWord": [
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "fulltextContent": [
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ],
-            "tempTable": [self.operators["is"]],
+            "I": [self.operators["is"]],
         }
+        self.conditions_operators = {
+            "deleted": self.groups["A"],
+            "noChildren": self.groups["A"],
+            "unfiled": self.groups["A"],
+            "publications": self.groups["A"],
+            "includeParentsAndChildren": self.groups["A"],
+            "includeParents": self.groups["A"],
+            "includeChildren": self.groups["A"],
+            "recursive": self.groups["A"],
+            "joinMode": self.groups["B"],
+            "quicksearch-titleCreatorYear": self.groups["C"],
+            "quicksearch-fields": self.groups["C"],
+            "quicksearch-everything": self.groups["C"],
+            "collectionID": self.groups["D"],
+            "savedSearchID": self.groups["D"],
+            "collection": self.groups["D"],
+            "savedSearch": self.groups["D"],
+            "dateAdded": self.groups["E"],
+            "dateModified": self.groups["E"],
+            "itemTypeID": self.groups["D"],
+            "itemType": self.groups["D"],
+            "fileTypeID": self.groups["D"],
+            "tagID": self.groups["D"],
+            "tag": self.groups["C"],
+            "note": self.groups["F"],
+            "childNote": self.groups["F"],
+            "creator": self.groups["C"],
+            "lastName": self.groups["C"],
+            "field": self.groups["C"],
+            "datefield": self.groups["E"],
+            "year": self.groups["C"],
+            "numberfield": self.groups["G"],
+            "libraryID": self.groups["D"],
+            "key": self.groups["H"],
+            "itemID": self.groups["D"],
+            "annotation": self.groups["F"],
+            "fulltextWord": self.groups["F"],
+            "fulltextContent": self.groups["F"],
+            "tempTable": self.groups["I"],
+        }
+        # ALIASES
+        #########################
         # aliases for numberfield
         pagefields = [
             "pages",
@@ -1795,6 +1748,7 @@ class SavedSearch(object):
         ]
         for itf in item_fields:
             self.conditions_operators[itf] = self.conditions_operators.get("field")
+        # END OF ALIASES
 
 
 class Zupload(object):
