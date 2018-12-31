@@ -294,53 +294,6 @@ Example of returned item data:
 
 See :ref:`'Hello World' <hello-world>` example, above
 
-==============
-Saved Searches
-==============
-Pyzotero allows you to retrieve, delete, or modify saved searches:
-
-    .. py:method:: Zotero.searches()
-
-        Retrieve all saved searches
-
-        :rtype: list of dicts
-
-    .. py:method:: Zotero.saved_search(name, conditions)
-
-        Create a new saved search. `conditions` is a list of one or more dicts, each of which must contain the following three string keys:
-        `condition`, `operator`, `value`. See the `documentation <https://www.zotero.org/support/dev/web_api/v3/write_requests#saved_search_requests>`_ for an example.
-
-        :param str name: the name of the search
-        :param list conditions: one or more dicts containing search conditions and operators
-        :rtype: dict showing creation success status
-
-    .. py:method:: Zotero.delete_saved_search(search_keys)
-
-        Delete one or more saved searches. `search_keys` is a list of one or more search keys. These can be retrievd using :py:meth:`Zotero.searches()`
-
-        :param list search_keys: list of unique saved search keys
-        :rtype: None
-
-    .. py:method:: Zotero.show_operators()
-
-        Show available saved search operators
-
-        :rtype: str
-
-    .. py:method:: Zotero.show_conditions()
-
-        Show available saved search conditions
-
-        :rtype: str
-
-    .. py:method:: Zotero.show_condition_operators(condition)
-
-        Show available operators for a given saved search condition
-
-        :param str condition: a valid saved search condition
-        :rtype: str
-
-
 ====================
 Retrieving Files
 ====================
@@ -793,6 +746,52 @@ If you set ``format='bibtex'``, a `bibtexparser <https://bibtexparser.readthedoc
 
 Write API Methods
 =================
+
+==============
+Saved Searches
+==============
+Pyzotero allows you to retrieve, delete, or modify saved searches:
+
+    .. py:method:: Zotero.searches()
+
+        Retrieve all saved searches
+
+        :rtype: list of dicts
+
+    .. py:method:: Zotero.saved_search(name, conditions)
+
+        Create a new saved search. `conditions` is a list of one or more dicts, each of which must contain the following three string keys:
+        `condition`, `operator`, `value`. See the `documentation <https://www.zotero.org/support/dev/web_api/v3/write_requests#saved_search_requests>`_ for an example.
+
+        :param str name: the name of the search
+        :param list conditions: one or more dicts containing search conditions and operators
+        :rtype: dict showing creation success status
+
+    .. py:method:: Zotero.delete_saved_search(search_keys)
+
+        Delete one or more saved searches. `search_keys` is a list of one or more search keys. These can be retrievd using :py:meth:`Zotero.searches()`
+
+        :param list search_keys: list of unique saved search keys
+        :rtype: None
+
+    .. py:method:: Zotero.show_operators()
+
+        Show available saved search operators
+
+        :rtype: str
+
+    .. py:method:: Zotero.show_conditions()
+
+        Show available saved search conditions
+
+        :rtype: str
+
+    .. py:method:: Zotero.show_condition_operators(condition)
+
+        Show available operators for a given saved search condition
+
+        :param str condition: a valid saved search condition
+        :rtype: str
 
 =================
 Item Methods
