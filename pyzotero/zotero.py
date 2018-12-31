@@ -1702,8 +1702,9 @@ class SavedSearch(object):
             "fulltextContent": self.groups["F"],
             "tempTable": self.groups["I"],
         }
-        # ALIASES
-        #########################
+        ###########
+        # ALIASES #
+        ###########
         # aliases for numberfield
         pagefields = (
             "pages",
@@ -1727,16 +1728,15 @@ class SavedSearch(object):
         ]
         for itf in item_fields:
             self.conditions_operators[itf] = self.conditions_operators.get("field")
-        # END OF ALIASES
 
     def validate(self, conditions):
-        """ Validate conditions, raising an error if any contain invalid operators """
+        """ Validate saved search conditions, raising an error if any contain invalid operators """
         allowed_keys = set(self.searchkeys)
         operators_set = set(self.operators.keys())
         for condition in conditions:
             if set(condition.keys()) != allowed_keys:
                 raise ze.ParamNotPassed(
-                    "Keys must be all of: %s" % ', '.join(self.searchkeys)
+                    "Keys must be all of: %s" % ", ".join(self.searchkeys)
                 )
             if condition.get("operator") not in operators_set:
                 raise ze.ParamNotPassed(
