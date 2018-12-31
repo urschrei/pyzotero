@@ -958,35 +958,7 @@ class Zotero(object):
         """
         if not self.savedsearch:
             self.savedsearch = SavedSearch(self)
-        allowed_keys = set(["condition", "operator", "value"])
-        operators_set = set(self.savedsearch.operators.keys())
-        for condition in conditions:
-            if set(condition.keys()) != allowed_keys:
-                raise ze.ParamNotPassed(
-                    "Conditions keys can only be 'condition', 'operator', and 'values'"
-                )
-            if condition.get("operator") not in operators_set:
-                raise ze.ParamNotPassed(
-                    "You have specified an unknown operator: %s"
-                    % condition.get("operator")
-                )
-            # dict keys of allowed operators for the current condition
-            permitted_operators = self.savedsearch.conditions_operators.get(
-                condition.get("condition")
-            )
-            # transform these into values
-            permitted_operators_list = set(
-                [self.savedsearch.operators.get(op) for op in permitted_operators]
-            )
-            if condition.get("operator") not in permitted_operators_list:
-                raise ze.ParamNotPassed(
-                    "You may not use the '%s' operator when selecting the '%s' condition. \nAllowed operators: %s"
-                    % (
-                        condition.get("operator"),
-                        condition.get("condition"),
-                        ", ".join(list(permitted_operators_list)),
-                    )
-                )
+        self.savedsearch.validate(conditions)
         payload = dict()
         payload["name"] = name
         payload["conditions"] = conditions
@@ -1749,6 +1721,38 @@ class SavedSearch(object):
         for itf in item_fields:
             self.conditions_operators[itf] = self.conditions_operators.get("field")
         # END OF ALIASES
+
+    def validate(self, conditions):
+        """ Validate conditions, raising an error if any contain invalid operators """
+        allowed_keys = set(["condition", "operator", "value"])
+        operators_set = set(self.operators.keys())
+        for condition in conditions:
+            if set(condition.keys()) != allowed_keys:
+                raise ze.ParamNotPassed(
+                    "Conditions keys can only be 'condition', 'operator', and 'values'"
+                )
+            if condition.get("operator") not in operators_set:
+                raise ze.ParamNotPassed(
+                    "You have specified an unknown operator: %s"
+                    % condition.get("operator")
+                )
+            # dict keys of allowed operators for the current condition
+            permitted_operators = self.conditions_operators.get(
+                condition.get("condition")
+            )
+            # transform these into values
+            permitted_operators_list = set(
+                [self.operators.get(op) for op in permitted_operators]
+            )
+            if condition.get("operator") not in permitted_operators_list:
+                raise ze.ParamNotPassed(
+                    "You may not use the '%s' operator when selecting the '%s' condition. \nAllowed operators: %s"
+                    % (
+                        condition.get("operator"),
+                        condition.get("condition"),
+                        ", ".join(list(permitted_operators_list)),
+                    )
+                )
 
 
 class Zupload(object):
