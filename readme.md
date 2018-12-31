@@ -40,7 +40,7 @@ pip install .
 
 ## Testing ##
 
-Run `test_zotero.py` in the [pyzotero/test](test) directory, or, using [Nose][7], `nosetests` from the top-level directory.
+Run `test_zotero.py` in the [pyzotero/test](test) directory, or, using [Nose2][7], `nose2` from the top-level directory.
 
 ## Issues ##
 
@@ -66,7 +66,7 @@ Pyzotero is licensed under the [MIT license][8]. See [license.txt](license.txt) 
 [1]: https://www.zotero.org/support/dev/web_api/v3/start
 [2]: https://www.zotero.org/settings/keys/new
 [3]: http://pyzotero.readthedocs.org/en/latest/
-[7]: https://nose.readthedocs.org/en/latest/
+[7]: https://nose2.readthedocs.io/en/latest/
 [8]: http://opensource.org/licenses/MIT
 [9]: https://github.com/urschrei/pyzotero/tree/dev
 [10]: http://www.pip-installer.org/en/latest/index.html
