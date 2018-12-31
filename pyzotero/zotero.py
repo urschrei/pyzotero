@@ -1602,6 +1602,16 @@ class SavedSearch(object):
     def __init__(self, zinstance):
         super(SavedSearch, self).__init__()
         self.zinstance = zinstance
+        self.keys = ("condition", "operator", "value")
+        # always exclude these fields from zotero.item_keys()
+        self.excluded_items = (
+            "accessDate",
+            "date",
+            "pages",
+            "section",
+            "seriesNumber",
+            "issue",
+        )
         self.operators = {
             # this is a bit hacky, but I can't be bothered with Python's enums
             "is": "is",
@@ -1621,36 +1631,36 @@ class SavedSearch(object):
         }
         # common groupings of operators
         self.groups = {
-            "A": [self.operators["true"], self.operators["false"]],
-            "B": [self.operators["any"], self.operators["all"]],
-            "C": [
+            "A": (self.operators["true"], self.operators["false"]),
+            "B": (self.operators["any"], self.operators["all"]),
+            "C": (
                 self.operators["is"],
                 self.operators["isNot"],
                 self.operators["contains"],
                 self.operators["doesNotContain"],
-            ],
-            "D": [self.operators["is"], self.operators["isNot"]],
-            "E": [
+            ),
+            "D": (self.operators["is"], self.operators["isNot"]),
+            "E": (
                 self.operators["is"],
                 self.operators["isNot"],
                 self.operators["isBefore"],
                 self.operators["isInTheLast"],
-            ],
-            "F": [self.operators["contains"], self.operators["doesNotContain"]],
-            "G": [
+            ),
+            "F": (self.operators["contains"], self.operators["doesNotContain"]),
+            "G": (
                 self.operators["is"],
                 self.operators["isNot"],
                 self.operators["contains"],
                 self.operators["doesNotContain"],
                 self.operators["isLessThan"],
                 self.operators["isGreaterThan"],
-            ],
-            "H": [
+            ),
+            "H": (
                 self.operators["is"],
                 self.operators["isNot"],
                 self.operators["beginsWith"],
-            ],
-            "I": [self.operators["is"]],
+            ),
+            "I": (self.operators["is"]),
         }
         self.conditions_operators = {
             "deleted": self.groups["A"],
@@ -1695,28 +1705,25 @@ class SavedSearch(object):
         # ALIASES
         #########################
         # aliases for numberfield
-        pagefields = [
+        pagefields = (
             "pages",
             "numPages",
             "numberOfVolumes",
             "section",
             "seriesNumber",
             "issue",
-        ]
+        )
         for pf in pagefields:
             self.conditions_operators[pf] = self.conditions_operators.get("numberfield")
         # aliases for datefield
-        datefields = ["accessDate", "date", "dateDue", "accepted"]
+        datefields = ("accessDate", "date", "dateDue", "accepted")
         for df in datefields:
             self.conditions_operators[df] = self.conditions_operators.get("datefield")
         # aliases for field - this makes a blocking API call unless item types have been cached
         item_fields = [
             itm["field"]
             for itm in self.zinstance.item_fields()
-            if itm["field"]
-            not in set(
-                ["accessDate", "date", "pages", "section", "seriesNumber", "issue"]
-            )
+            if itm["field"] not in set(self.excluded_items)
         ]
         for itf in item_fields:
             self.conditions_operators[itf] = self.conditions_operators.get("field")
@@ -1724,7 +1731,7 @@ class SavedSearch(object):
 
     def validate(self, conditions):
         """ Validate conditions, raising an error if any contain invalid operators """
-        allowed_keys = set(["condition", "operator", "value"])
+        allowed_keys = set(self.keys)
         operators_set = set(self.operators.keys())
         for condition in conditions:
             if set(condition.keys()) != allowed_keys:
