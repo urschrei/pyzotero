@@ -949,17 +949,15 @@ class Zotero(object):
         """
         if not self.savedsearch:
             self.savedsearch = SavedSearch(self)
-        self.savedsearch.validate(conditions)
-        payload = dict()
-        payload["name"] = name
-        payload["conditions"] = conditions
+        self.savedsearch._validate(conditions)
+        payload = [{"name": name, "conditions": conditions}]
         headers = {"Zotero-Write-Token": token()}
         headers.update(self.default_headers())
         req = requests.post(
             url=self.endpoint
             + "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
             headers=headers,
-            data=json.dumps([payload]),
+            data=json.dumps(payload),
         )
         self.request = req
         try:
@@ -1720,7 +1718,7 @@ class SavedSearch(object):
         for itf in item_fields:
             self.conditions_operators[itf] = self.conditions_operators.get("field")
 
-    def validate(self, conditions):
+    def _validate(self, conditions):
         """ Validate saved search conditions, raising an error if any contain invalid operators """
         allowed_keys = set(self.searchkeys)
         operators_set = set(self.operators.keys())
