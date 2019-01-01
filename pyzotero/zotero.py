@@ -922,19 +922,13 @@ class Zotero(object):
         """ Show available saved search operators """
         if not self.savedsearch:
             self.savedsearch = SavedSearch(self)
-        print(
-            "Available saved search operators: %s"
-            % ", ".join(self.savedsearch.operators)
-        )
+        return self.savedsearch.operators
 
     def show_conditions(self):
         """ Show available saved search conditions """
         if not self.savedsearch:
             self.savedsearch = SavedSearch(self)
-        print(
-            "Available saved search conditions: %s"
-            % ", ".join(self.savedsearch.conditions_operators.keys())
-        )
+        return self.savedsearch.conditions_operators.keys()
 
     def show_condition_operators(self, condition):
         """ Show available operators for a given saved search condition """
@@ -946,10 +940,7 @@ class Zotero(object):
         permitted_operators_list = set(
             [self.savedsearch.operators.get(op) for op in permitted_operators]
         )
-        print(
-            "Available saved search operators for '%s': %s"
-            % (condition, ", ".join(permitted_operators_list))
-        )
+        return permitted_operators_list
 
     def saved_search(self, name, conditions):
         """ Create a saved search. conditions is a list of dicts

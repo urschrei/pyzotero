@@ -778,20 +778,20 @@ Pyzotero allows you to retrieve, delete, or modify saved searches:
 
         Show available saved search operators
 
-        :rtype: str
+        :rtype: list
 
     .. py:method:: Zotero.show_conditions()
 
         Show available saved search conditions
 
-        :rtype: str
+        :rtype: list
 
     .. py:method:: Zotero.show_condition_operators(condition)
 
         Show available operators for a given saved search condition
 
         :param str condition: a valid saved search condition
-        :rtype: str
+        :rtype: list
 
 =================
 Item Methods
