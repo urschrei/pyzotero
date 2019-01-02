@@ -1,6 +1,6 @@
 [![Build Status](https://img.shields.io/travis/urschrei/pyzotero.svg)](https://travis-ci.org/urschrei/pyzotero) [![Coverage Status](https://coveralls.io/repos/github/urschrei/pyzotero/badge.svg?branch=dev)](https://coveralls.io/github/urschrei/pyzotero?branch=dev) [![Wheel Status](https://img.shields.io/pypi/wheel/Pyzotero.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Supported Python versions](https://img.shields.io/pypi/pyversions/Pyzotero.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Docs](https://readthedocs.org/projects/pyzotero/badge/?version=latest)](http://pyzotero.readthedocs.org/en/latest/?badge=latest) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt) [![PyPI Version](https://img.shields.io/pypi/v/Pyzotero.svg)](https://pypi.python.org/pypi/Pyzotero)  
 
-# Quickstart #
+# Quickstart
 
 1. `pip install pyzotero`
 2. You'll need the ID of the personal or group library you want to access:
@@ -22,10 +22,12 @@ for item in items:
     print('Item: %s | Key: %s') % (item['data']['itemType'], item['data']['key'])
 ```
 
-# Documentation #
+# Documentation
+
 Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
 
-# Installation #
+# Installation
+
 * Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7, 3.5, 3.6, and 3.7)
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
@@ -38,19 +40,20 @@ git checkout dev
 pip install .
 ```
 
-## Testing ##
+## Testing
 
 Run `test_zotero.py` in the [pyzotero/test](test) directory, or, using [Nose2][7], `nose2` from the top-level directory.
 
-## Issues ##
+## Issues
 
 The latest commits can be found on the [dev branch][9], although new features are currently rare. If you encounter an error, please open an issue.
 
-## Pull Requests ##
+## Pull Requests
 
 Pull requests are welcomed. Please read the [contribution guidelines](CONTRIBUTING.md). In particular, please **base your PR on the `dev` branch**.
 
-## Versioning ##
+## Versioning
+
 As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); version increments are performed as follows:  
 
 
@@ -59,7 +62,7 @@ As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); ve
 2. MINOR version will increment when functionality is added in a backwards-compatible manner, and
 3. PATCH version will increment with backwards-compatible bug fixes.
 
-# License #
+# License
 
 Pyzotero is licensed under the [MIT license][8]. See [license.txt](license.txt) for details.  
 
