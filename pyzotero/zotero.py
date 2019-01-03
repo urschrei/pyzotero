@@ -1429,7 +1429,7 @@ class Zotero(object):
             raise ze.TooManyItems("Only 50 tags or fewer may be deleted")
         modified_tags = " || ".join([tag for tag in payload])
         # first, get version data by getting one tag
-        tag = self.tags(limit=1)
+        self.tags(limit=1)
         headers = {
             "If-Unmodified-Since-Version": self.request.headers["last-modified-version"]
         }
