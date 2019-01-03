@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.3.12"
+__version__ = "1.3.13"
 __api_version__ = "3"
 
 # Python 3 compatibility faffing
@@ -207,6 +207,17 @@ def retrieve(func):
             return retrieved.json()
 
     return wrapped_f
+
+
+def ss_wrap(func):
+    """ ensure that a SavedSearch object exists """
+
+    def wrapper(self, *args, **kwargs):
+        if not self.savedsearch:
+            self.savedsearch = SavedSearch(self)
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 
 class Zotero(object):
@@ -918,23 +929,20 @@ class Zotero(object):
         res = attachment.upload()
         return res
 
+    @ss_wrap
     def show_operators(self):
         """ Show available saved search operators """
-        if not self.savedsearch:
-            self.savedsearch = SavedSearch(self)
         return self.savedsearch.operators
 
+    @ss_wrap
     def show_conditions(self):
         """ Show available saved search conditions """
-        if not self.savedsearch:
-            self.savedsearch = SavedSearch(self)
         return self.savedsearch.conditions_operators.keys()
 
+    @ss_wrap
     def show_condition_operators(self, condition):
         """ Show available operators for a given saved search condition """
         # dict keys of allowed operators for the current condition
-        if not self.savedsearch:
-            self.savedsearch = SavedSearch(self)
         permitted_operators = self.savedsearch.conditions_operators.get(condition)
         # transform these into values
         permitted_operators_list = set(
@@ -942,13 +950,12 @@ class Zotero(object):
         )
         return permitted_operators_list
 
+    @ss_wrap
     def saved_search(self, name, conditions):
         """ Create a saved search. conditions is a list of dicts
         containing search conditions, and must contain the following str keys:
         condition, operator, value
         """
-        if not self.savedsearch:
-            self.savedsearch = SavedSearch(self)
         self.savedsearch._validate(conditions)
         payload = [{"name": name, "conditions": conditions}]
         headers = {"Zotero-Write-Token": token()}
@@ -966,12 +973,11 @@ class Zotero(object):
             error_handler(req)
         return req.json()
 
+    @ss_wrap
     def delete_saved_search(self, keys):
         """ Delete one or more saved searches by passing a list of one or more
         unique search keys
         """
-        if not self.savedsearch:
-            self.savedsearch = SavedSearch(self)
         headers = {"Zotero-Write-Token": token()}
         headers.update(self.default_headers())
         req = requests.delete(
