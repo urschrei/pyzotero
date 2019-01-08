@@ -754,7 +754,7 @@ Pyzotero allows you to retrieve, delete, or modify saved searches:
 
     .. py:method:: Zotero.searches()
 
-        Retrieve all saved searches
+        Retrieve all saved searches. Note that this retrieves saved search *metadata*, as opposed to *content*; saved searches cannot currently (January 2019) be run using the API.
 
         :rtype: list of dicts
 
