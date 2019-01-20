@@ -29,6 +29,9 @@ def find_version(*file_paths):
 
 version = find_version("pyzotero/zotero.py")
 
+with open('README.md') as f:
+    readme = f.read()
+
 setup(
     name="Pyzotero",
     version=version,
@@ -62,12 +65,6 @@ setup(
         "bibtexparser",
     ],
     extras_require={"ordereddict": ["ordereddict==1.1"]},
-    long_description="""\
-A Python wrapper for the Zotero Server v3 API
----------------------------------------------
-
-Provides methods for accessing Zotero Server API v3.
-For full documentation see http://pyzotero.readthedocs.org/en/latest/
-
-""",
+    long_description=readme,
+    long_description_content_type="text/markdown",
 )
