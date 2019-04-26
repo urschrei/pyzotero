@@ -14,7 +14,7 @@ Pyzotero is a Python wrapper for the `Zotero API (v3) <https://www.zotero.org/su
 
 Getting started (short version)
 ===============================
-1. In a shell / prompt: ``pip install pyzotero``
+1. In a shell / prompt: ``pip install pyzotero`` or ``conda config --add channels conda-forge && conda install pyzotero``
 2. You'll need the ID of the personal or group library you want to access:
 
   * Your **personal library ID** is available `here <https://www.zotero.org/settings/keys>`_, in the section ``Your userID for use in API calls``

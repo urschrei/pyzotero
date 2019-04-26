@@ -4,7 +4,7 @@
 
 # Quickstart
 
-1. `pip install pyzotero`
+1. `pip install pyzotero` **or** `conda config --add channels conda-forge && conda install pyzotero`
 2. You'll need the ID of the personal or group library you want to access:
     - Your **personal library ID** is available [here](https://www.zotero.org/settings/keys), in the section `Your userID for use in API calls`
     - For **group libraries**, the ID can be found by opening the group's page: `https://www.zotero.org/groups/groupname`, and hovering over the `group settings` link. The ID is the integer after `/groups/`
