@@ -36,18 +36,7 @@ __author__ = "Stephan Hügel"
 __version__ = "1.3.15"
 __api_version__ = "3"
 
-# Python 3 compatibility faffing
 import sys
-
-if sys.version_info[0] == 2:
-    from urllib import urlencode
-    from urllib import quote
-    from urlparse import urlparse, urlunparse, parse_qsl
-else:
-    from urllib.parse import urlencode
-    from urllib.parse import urlparse, urlunparse, parse_qsl
-    from urllib.parse import quote
-
 import requests
 import socket
 import feedparser
@@ -64,13 +53,22 @@ import pytz
 import mimetypes
 from pathlib import Path
 
+from . import zotero_errors as ze
+
+# Python 3 compatibility faffing
+if sys.version_info[0] == 2:
+    from urllib import urlencode
+    from urllib import quote
+    from urlparse import urlparse, urlunparse, parse_qsl
+else:
+    from urllib.parse import urlencode
+    from urllib.parse import urlparse, urlunparse, parse_qsl
+    from urllib.parse import quote
+
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-
-from . import zotero_errors as ze
-
 
 # Avoid hanging the application if there's no server response
 timeout = 30
@@ -117,7 +115,7 @@ def cleanwrap(func):
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(l), n):
-        yield l[i : i + n]
+        yield l[i: i + n]
 
 
 def retrieve(func):
@@ -178,7 +176,7 @@ def retrieve(func):
         re.compile("\s+")
         fmt = formats.get(
             # strip "; charset=..." segment
-            content_type_header[0 : content_type_header.index(";")],
+            content_type_header[0: content_type_header.index(";")],
             "json",
         )
         # clear all query parameters
@@ -547,7 +545,7 @@ class Zotero(object):
     def new_fulltext(self, version):
         """
         Retrieve list of full-text content items and versions which are newer
-        than <version> 
+        than <version>
         """
         query_string = "/{t}/{u}/fulltext".format(
             t=self.library_type, u=self.library_id
