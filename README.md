@@ -64,6 +64,14 @@ As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); ve
 2. MINOR version will increment when functionality is added in a backwards-compatible manner, and
 3. PATCH version will increment with backwards-compatible bug fixes.
 
+# Citation
+
+Pyzotero has a DOI:  
+[![DOI](https://zenodo.org/badge/1423403.svg)](https://zenodo.org/badge/latestdoi/1423403)  
+You may also cite Pyzotero using [CITATION.bib](CITATION.bib).  
+A sample citation (APA 6th edition) might look like:  
+> Stephan Hügel, The Pyzotero Authors (2019, May 18). urschrei/pyzotero: Version v1.3.15. http://doi.org/10.5281/zenodo.2917290
+
 # License
 
 Pyzotero is licensed under the [MIT license][8]. See [license.txt](license.txt) for details.  
