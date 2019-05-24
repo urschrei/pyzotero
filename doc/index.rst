@@ -800,6 +800,7 @@ Item Methods
     .. py:method:: Zotero.item_types([locale])
 
         Returns a dict containing all available item types
+        
         :param string locale: Clients can optionally request names in other languages by passing a locale parameter (e.g., "fr-FR"), however, only "en-US" is currently supported.
         :rtype: dict
 
