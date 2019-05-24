@@ -33,11 +33,12 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.3.15"
+__version__ = "1.3.16"
 __api_version__ = "3"
 
 import sys
 import requests
+from requests import Request, Session
 import socket
 import feedparser
 import bibtexparser
@@ -317,7 +318,7 @@ class Zotero(object):
             ]
         )
 
-    def _retrieve_data(self, request=None):
+    def _retrieve_data(self, request=None, params=None):
         """
         Retrieve Zotero items via the API
         Combine endpoint and request to access the specific resource
@@ -326,7 +327,7 @@ class Zotero(object):
         full_url = "%s%s" % (self.endpoint, request)
         # The API doesn't return this any more, so we have to cheat
         self.self_link = request
-        self.request = requests.get(url=full_url, headers=self.default_headers())
+        self.request = requests.get(url=full_url, headers=self.default_headers(), params=params)
         self.request.encoding = "utf-8"
         try:
             self.request.raise_for_status()
@@ -1065,18 +1066,27 @@ class Zotero(object):
                 )
         return items
 
-    def item_types(self):
+    def item_types(self, locale="en-US"):
         """ Get all available item types
         """
         # Check for a valid cached version
-        if self.templates.get("item_types") and not self._updated(
-            "/itemTypes", self.templates["item_types"], "item_types"
-        ):
-            return self.templates["item_types"]["tmplt"]
+        params = {"locale": locale}
         query_string = "/itemTypes"
+        s = Session()
+        r = Request('GET', 'http://someurl.com', params=params).prepare()
+        # now split up the URL
+        result = urlparse(r.url)
+        # construct cache key
+        cachekey = result.path + "," + result.query
+        # the _updated call doesn't need the locale, since it's only checking for stale templates
+        if self.templates.get(cachekey) and not self._updated(
+            "/itemTypes", self.templates[cachekey], cachekey
+        ):
+            return self.templates[cachekey]["tmplt"]
         # otherwise perform a normal request and cache the response
-        retrieved = self._retrieve_data(query_string)
-        return self._cache(retrieved, "item_types")
+        retrieved = self._retrieve_data(query_string, params=params)
+
+        return self._cache(retrieved, cachekey)
 
     def creator_fields(self):
         """ Get localised creator fields
