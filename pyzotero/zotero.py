@@ -116,7 +116,7 @@ def cleanwrap(func):
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(l), n):
-        yield l[i: i + n]
+        yield l[i : i + n]
 
 
 def retrieve(func):
@@ -177,7 +177,7 @@ def retrieve(func):
         re.compile("\s+")
         fmt = formats.get(
             # strip "; charset=..." segment
-            content_type_header[0: content_type_header.index(";")],
+            content_type_header[0 : content_type_header.index(";")],
             "json",
         )
         # clear all query parameters
@@ -232,7 +232,7 @@ class Zotero(object):
         library_type=None,
         api_key=None,
         preserve_json_order=False,
-        locale="en-US"
+        locale="en-US",
     ):
         """ Store Zotero credentials
         """
@@ -329,7 +329,9 @@ class Zotero(object):
         full_url = "%s%s" % (self.endpoint, request)
         # The API doesn't return this any more, so we have to cheat
         self.self_link = request
-        self.request = requests.get(url=full_url, headers=self.default_headers(), params=params)
+        self.request = requests.get(
+            url=full_url, headers=self.default_headers(), params=params
+        )
         self.request.encoding = "utf-8"
         try:
             self.request.raise_for_status()
@@ -1024,7 +1026,7 @@ class Zotero(object):
         """
         params = {"locale": self.locale}
         query_string = "/itemFields"
-        r = Request('GET', 'http://someurl.com' + query_string, params=params).prepare()
+        r = Request("GET", "http://someurl.com" + query_string, params=params).prepare()
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
@@ -1080,7 +1082,7 @@ class Zotero(object):
         # Check for a valid cached version
         params = {"locale": self.locale}
         query_string = "/itemTypes"
-        r = Request('GET', 'http://someurl.com' + query_string, params=params).prepare()
+        r = Request("GET", "http://someurl.com" + query_string, params=params).prepare()
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
@@ -1100,7 +1102,7 @@ class Zotero(object):
         # Check for a valid cached version
         params = {"locale": self.locale}
         query_string = "/creatorFields"
-        r = Request('GET', 'http://someurl.com' + query_string, params=params).prepare()
+        r = Request("GET", "http://someurl.com" + query_string, params=params).prepare()
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
@@ -1139,7 +1141,9 @@ class Zotero(object):
         """ Get all available creator types for an item
         """
         return self.fields_types(
-            "item_creator_types_", "/itemTypeCreatorTypes?itemType={i}&locale={l}", itemtype
+            "item_creator_types_",
+            "/itemTypeCreatorTypes?itemType={i}&locale={l}",
+            itemtype,
         )
 
     def item_fields(self):
@@ -1148,7 +1152,7 @@ class Zotero(object):
         # Check for a valid cached version
         params = {"locale": self.locale}
         query_string = "/itemFields"
-        r = Request('GET', 'http://someurl.com' + query_string, params=params).prepare()
+        r = Request("GET", "http://someurl.com" + query_string, params=params).prepare()
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
