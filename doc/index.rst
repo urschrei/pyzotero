@@ -104,12 +104,13 @@ General Usage
 First, create a new Zotero instance:
 
 
-    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order])
+    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order, locale])
 
         :param str library_id: a valid Zotero API user ID
         :param str library_type: a valid Zotero API library type: **user** or **group**
         :param str api_key: a valid Zotero API user key
         :param bool preserve_json_order: Load JSON returns with OrderedDict to preserve their order
+        :param str locale: Set the `locale <https://www.zotero.org/support/dev/web_api/v3/types_and_fields#zotero_web_api_item_typefield_requests>`_, allowing retrieval of localised item types, field types, and creator types. Defaults to "en-US".
 
 
 Example:
@@ -797,11 +798,10 @@ Pyzotero allows you to retrieve, delete, or modify saved searches:
 Item Methods
 =================
 
-    .. py:method:: Zotero.item_types([locale])
+    .. py:method:: Zotero.item_types()
 
         Returns a dict containing all available item types
         
-        :param str locale: Clients can optionally request names in other languages by passing a locale parameter (e.g., "fr-FR"), however, only "en-US" is currently supported.
         :rtype: dict
 
     .. py:method:: Zotero.item_fields()
@@ -810,27 +810,24 @@ Item Methods
 
         :rtype: dict
 
-    .. py:method:: Zotero.item_creator_types(itemtype[, locale])
+    .. py:method:: Zotero.item_creator_types(itemtype)
 
         Returns a dict of all valid creator types for the specified item type
 
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
-        :param str locale: Clients can optionally request names in other languages by passing a locale parameter (e.g., "fr-FR"), however, only "en-US" is currently supported.
         :rtype: dict
 
-    .. py:method:: Zotero.creator_fields([locale])
+    .. py:method:: Zotero.creator_fields()
 
         Returns a dict containing all localised creator fields
 
         :rtype: dict
-        :param str locale: Clients can optionally request names in other languages by passing a locale parameter (e.g., "fr-FR"), however, only "en-US" is currently supported.
 
-    .. py:method:: Zotero.item_type_fields(itemtype[, locale])
+    .. py:method:: Zotero.item_type_fields(itemtype)
 
         Returns all valid fields for the specified item type
 
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
-        :param str locale: Clients can optionally request names in other languages by passing a locale parameter (e.g., "fr-FR"), however, only "en-US" is currently supported.
         :rtype: list of dicts
 
     .. py:method:: Zotero.item_template(itemtype)
@@ -906,12 +903,11 @@ Example:
 
       Will return ``True`` if the request was successful, or will raise an error.
 
-  .. py:method:: Zotero.check_items(items[, locale])
+  .. py:method:: Zotero.check_items(items)
 
       Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``InvalidItemFields`` exception is raised, detailing the invalid fields.
 
       :param list items: one or more dicts containing item data
-      :param str locale: Clients can optionally request names in other languages by passing a locale parameter (e.g., "fr-FR"), however, only "en-US" is currently supported.
       :rtype: List. Each list item is a valid dict containing item data.
 
 
