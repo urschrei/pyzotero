@@ -1014,19 +1014,25 @@ class Zotero(object):
         assert self.check_items([item])
         return self.update_item(item)
 
-    def check_items(self, items):
+    def check_items(self, items, locale="en-US"):
         """
         Check that items to be created contain no invalid dict keys
         Accepts a single argument: a list of one or more dicts
         The retrieved fields are cached and re-used until a 304 call fails
         """
-        # check for a valid cached version
-        if self.templates.get("item_fields") and not self._updated(
-            "/itemFields", self.templates["item_fields"], "item_fields"
+        params = {"locale": locale}
+        query_string = "/itemFields"
+        r = Request('GET', 'http://someurl.com' + query_string, params=params).prepare()
+        # now split up the URL
+        result = urlparse(r.url)
+        # construct cache key
+        cachekey = result.path + "," + result.query
+        if self.templates.get(cachekey) and not self._updated(
+            query_string, self.templates[cachekey], cachekey
         ):
-            template = set(t["field"] for t in self.templates["item_fields"]["tmplt"])
+            template = set(t["field"] for t in self.templates[cachekey]["tmplt"])
         else:
-            template = set(t["field"] for t in self.item_fields())
+            template = set(t["field"] for t in self.item_fields(locale=locale))
         # add fields we know to be OK
         template = template | set(
             [
@@ -1124,14 +1130,14 @@ class Zotero(object):
         """ Get all valid fields for an item
         """
         return self.fields_types(
-            "item_types_fields_", "/itemTypeFields?itemType={i}?locale={l}", itemtype, locale
+            "item_types_fields_", "/itemTypeFields?itemType={i}&locale={l}", itemtype, locale
         )
 
     def item_creator_types(self, itemtype, locale="en-US"):
         """ Get all available creator types for an item
         """
         return self.fields_types(
-            "item_creator_types_", "/itemTypeCreatorTypes?itemType={i}?locale={l}", itemtype, locale
+            "item_creator_types_", "/itemTypeCreatorTypes?itemType={i}&locale={l}", itemtype, locale
         )
 
     def item_fields(self, locale="en-US"):
