@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __api_version__ = "3"
 
 import sys
@@ -1028,7 +1028,7 @@ class Zotero(object):
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
-        cachekey = result.path + "," + result.query
+        cachekey = result.path + "_" + result.query
         if self.templates.get(cachekey) and not self._updated(
             query_string, self.templates[cachekey], cachekey
         ):
@@ -1084,7 +1084,7 @@ class Zotero(object):
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
-        cachekey = result.path + "," + result.query
+        cachekey = result.path + "_" + result.query
         if self.templates.get(cachekey) and not self._updated(
             query_string, self.templates[cachekey], cachekey
         ):
@@ -1104,7 +1104,7 @@ class Zotero(object):
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
-        cachekey = result.path + "," + result.query
+        cachekey = result.path + "_" + result.query
         if self.templates.get(cachekey) and not self._updated(
             query_string, self.templates[cachekey], cachekey
         ):
@@ -1118,7 +1118,7 @@ class Zotero(object):
         """ Retrieve item fields or creator types
         """
         # check for a valid cached version
-        template_name = tname + itemtype + self.locale
+        template_name = tname + itemtype + "_" + self.locale
         query_string = qstring.format(i=itemtype, l=self.locale)
         if self.templates.get(template_name) and not self._updated(
             query_string, self.templates[template_name], template_name
@@ -1132,14 +1132,14 @@ class Zotero(object):
         """ Get all valid fields for an item
         """
         return self.fields_types(
-            "item_types_fields_", "/itemTypeFields?itemType={i}&locale={l}", itemtype, self.locale
+            "item_types_fields_", "/itemTypeFields?itemType={i}&locale={l}", itemtype
         )
 
     def item_creator_types(self, itemtype):
         """ Get all available creator types for an item
         """
         return self.fields_types(
-            "item_creator_types_", "/itemTypeCreatorTypes?itemType={i}&locale={l}", itemtype, self.locale
+            "item_creator_types_", "/itemTypeCreatorTypes?itemType={i}&locale={l}", itemtype
         )
 
     def item_fields(self):
@@ -1152,7 +1152,7 @@ class Zotero(object):
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
-        cachekey = result.path + "," + result.query
+        cachekey = result.path + "_" + result.query
         if self.templates.get(cachekey) and not self._updated(
             query_string, self.templates[cachekey], cachekey
         ):
