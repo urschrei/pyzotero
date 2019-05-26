@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.1"
+__version__ = "1.4.2"
 __api_version__ = "3"
 
 import sys
@@ -117,6 +117,30 @@ def chunks(l, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(l), n):
         yield l[i : i + n]
+
+
+def tcache(func):
+    """ Take care of the URL building and caching for template functions """
+
+    def wrapped_f(self):
+        """ Calls the decorated function to get query string and params,
+        builds URL, retrieves template, caches result, and returns template
+        """
+        query_string, params = func(self)
+        r = Request("GET", self.endpoint + query_string, params=params).prepare()
+        # now split up the URL
+        result = urlparse(r.url)
+        # construct cache key
+        cachekey = result.path + "_" + result.query
+        if self.templates.get(cachekey) and not self._updated(
+            query_string, self.templates[cachekey], cachekey
+        ):
+            return self.templates[cachekey]["tmplt"]
+        # otherwise perform a normal request and cache the response
+        retrieved = self._retrieve_data(query_string, params=params)
+        return self._cache(retrieved, cachekey)
+
+    return wrapped_f
 
 
 def retrieve(func):
@@ -1076,99 +1100,48 @@ class Zotero(object):
                 )
         return items
 
+    @tcache
     def item_types(self):
         """ Get all available item types
         """
         # Check for a valid cached version
         params = {"locale": self.locale}
         query_string = "/itemTypes"
-        r = Request("GET", self.endpoint + query_string, params=params).prepare()
-        # now split up the URL
-        result = urlparse(r.url)
-        # construct cache key
-        cachekey = result.path + "_" + result.query
-        if self.templates.get(cachekey) and not self._updated(
-            query_string, self.templates[cachekey], cachekey
-        ):
-            return self.templates[cachekey]["tmplt"]
-        # otherwise perform a normal request and cache the response
-        retrieved = self._retrieve_data(query_string, params=params)
+        return query_string, params
 
-        return self._cache(retrieved, cachekey)
-
+    @tcache
     def creator_fields(self):
         """ Get localised creator fields
         """
         # Check for a valid cached version
         params = {"locale": self.locale}
         query_string = "/creatorFields"
-        r = Request("GET", self.endpoint + query_string, params=params).prepare()
-        # now split up the URL
-        result = urlparse(r.url)
-        # construct cache key
-        cachekey = result.path + "_" + result.query
-        if self.templates.get(cachekey) and not self._updated(
-            query_string, self.templates[cachekey], cachekey
-        ):
-            return self.templates[cachekey]["tmplt"]
-        # otherwise perform a normal request and cache the response
-        retrieved = self._retrieve_data(query_string, params=params)
+        return query_string, params
 
-        return self._cache(retrieved, cachekey)
-
-    def fields_types(self, tname, qstring, params=None):
-        """ Retrieve item fields or creator types
-        """
-        # check for a valid cached version
-        if not params:
-            params = {"locale": self.locale}
-        else:
-            params["locale"] = self.locale
-        r = Request("GET", self.endpoint + qstring, params=params).prepare()
-        # now split up the URL
-        result = urlparse(r.url)
-        # construct cache key
-        cachekey = result.path + "_" + result.query
-        if self.templates.get(cachekey) and not self._updated(
-            cachekey, self.templates[cachekey], cachekey
-        ):
-            return self.templates[cachekey]["tmplt"]
-        # we could also do query = urlunsplit(["", "", result.path, result.query, ""])
-        # otherwise perform a normal request and cache the response
-        retrieved = self._retrieve_data(qstring, params=params)
-        return self._cache(retrieved, cachekey)
-
+    @tcache
     def item_type_fields(self, itemtype):
         """ Get all valid fields for an item
         """
-        params = {"itemType": itemtype}
-        return self.fields_types("item_types_fields_", "/itemTypeFields", params)
+        params = {"itemType": itemtype, "locale": self.locale}
+        query_string = "/itemTypeFields"
+        return query_string, params
 
+    @tcache
     def item_creator_types(self, itemtype):
         """ Get all available creator types for an item
         """
-        params = {"itemType": itemtype}
-        return self.fields_types("item_creator_types_", "/itemTypeCreatorTypes", params)
+        params = {"itemType": itemtype, "locale": self.locale}
+        query_string = "/itemTypeCreatorTypes"
+        return query_string, params
 
+    @tcache
     def item_fields(self):
         """ Get all available item fields
         """
         # Check for a valid cached version
         params = {"locale": self.locale}
         query_string = "/itemFields"
-        r = Request("GET", self.endpoint + query_string, params=params).prepare()
-        # now split up the URL
-        result = urlparse(r.url)
-        # construct cache key
-        cachekey = result.path + "_" + result.query
-        if self.templates.get(cachekey) and not self._updated(
-            query_string, self.templates[cachekey], cachekey
-        ):
-            return self.templates[cachekey]["tmplt"]
-        # otherwise perform a normal request and cache the response
-        retrieved = self._retrieve_data(query_string, params=params)
-
-        return self._cache(retrieved, cachekey)
+        return query_string, params
 
     def create_items(self, payload, parentid=None, last_modified=None):
         """
