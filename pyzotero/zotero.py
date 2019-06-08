@@ -46,6 +46,7 @@ import json
 import copy
 import uuid
 import time
+import threading
 import os
 import hashlib
 import datetime
@@ -304,6 +305,37 @@ class Zotero(object):
         self.self_link = {}
         self.templates = {}
         self.savedsearch = None
+        # these are required for backoff handling (not yet implemented as of 4430c21)
+        self.backoff = False
+        self.backoff_duration = 0.0
+
+    def _reset_backoff(self):
+        self.backoff = False
+        self.backoff_duration = 0.0
+
+    def _set_backoff(self, duration):
+        """
+        Set a backoff
+        Spins up a timer in a background thread which resets the backoff logic
+        when it expires, then sets the time at which the backoff will expire.
+        This is required so that other calls can check whether there's
+        an active backoff; the threading.Timer method has no way
+        of returning a duration
+        """
+        self.backoff = True
+        self.backoff_duration = time.time() + duration
+        threading.Timer(duration, self._reset_backoff)
+
+    def _check_backoff(self):
+        """
+        Before an API call is made, we check whether there's an active backoff.
+        If there is, we check whether there's any time left on the backoff.
+        If there is, we sleep for the remainder before returning
+        """
+        if self.backoff:
+            remainder = self.backoff_duration - time.time()
+            if remainder > 0.0:
+                time.sleep(remainder)
 
     def default_headers(self):
         """
@@ -353,6 +385,8 @@ class Zotero(object):
         full_url = "%s%s" % (self.endpoint, request)
         # The API doesn't return this any more, so we have to cheat
         self.self_link = request
+        # ensure that we wait if there's an active backoff
+        self._check_backoff()
         self.request = requests.get(
             url=full_url, headers=self.default_headers(), params=params
         )
@@ -361,6 +395,10 @@ class Zotero(object):
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, self.request)
+        backoff = self.request.headers.get("Backoff")
+        if backoff:
+            # we've received a non-error backoff request, so set it
+            self._set_backoff(float(backoff))
         return self.request
 
     def _extract_links(self):
@@ -1529,7 +1567,6 @@ class Zotero(object):
         return True
 
 
-
 def error_handler(zot, req):
     """ Error handler for HTTP requests
     """
@@ -1560,7 +1597,7 @@ def error_handler(zot, req):
         # check to see whether its 429
         if req.status_code == 429:
             # try to get backoff duration
-            delay = req.headers.get('Backoff')
+            delay = req.headers.get("Backoff")
             if not delay:
                 raise ze.TooManyRetries(
                     "You are being rate-limited and no backoff duration has been received from the server. Try again later"
@@ -1571,6 +1608,7 @@ def error_handler(zot, req):
             raise error_codes.get(req.status_code)(err_msg(req))
     else:
         raise ze.HTTPError(err_msg(req))
+
 
 def _backoff_handler(zot, resp, delay):
     """
@@ -1585,6 +1623,7 @@ def _backoff_handler(zot, resp, delay):
         new_req.raise_for_status()
     except requests.exceptions.HTTPError:
         error_handler(zot, new_req)
+
 
 class SavedSearch(object):
     """ Saved search functionality """
