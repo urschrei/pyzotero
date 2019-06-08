@@ -1529,25 +1529,6 @@ class Zotero(object):
         return True
 
 
-class Backoff(object):
-    """ a simple backoff timer for HTTP 429 responses """
-
-    def __init__(self, delay=1):
-        self.wait = delay
-
-    @property
-    def delay(self):
-        """ return increasing delays """
-        self.wait = self.wait * 2
-        return self.wait
-
-    def reset(self):
-        """ reset delay """
-        self.wait = 1
-
-
-backoff = Backoff()
-
 
 def error_handler(req):
     """ Error handler for HTTP requests
@@ -1578,27 +1559,31 @@ def error_handler(req):
     if error_codes.get(req.status_code):
         # check to see whether its 429
         if req.status_code == 429:
-            # call our back-off function
-            delay = backoff.delay
-            if delay > 32:
-                # we've waited a total of 62 seconds (2 + 4 … + 32), so give up
-                backoff.reset()
+            # try to get backoff duration
+            delay = req.headers.get('Backoff')
+            if not delay:
                 raise ze.TooManyRetries(
-                    "Continuing to receive HTTP 429 \
-responses after 62 seconds. You are being rate-limited, try again later"
+                    "You are being rate-limited and no backoff duration has been received from the server. Try again later"
                 )
-            time.sleep(delay)
-            sess = requests.Session()
-            new_req = sess.send(req.request)
-            try:
-                new_req.raise_for_status()
-            except requests.exceptions.HTTPError:
-                error_handler(new_req)
+            else:
+                _backoff_handler(req, delay)
         else:
             raise error_codes.get(req.status_code)(err_msg(req))
     else:
         raise ze.HTTPError(err_msg(req))
 
+def _backoff_handler(req, delay):
+    """
+    A simple backoff handler.
+    Waits, then executes the original request
+    """
+    time.sleep(delay)
+    sess = requests.Session()
+    new_req = sess.send(req.request)
+    try:
+        new_req.raise_for_status()
+    except requests.exceptions.HTTPError:
+        error_handler(new_req)
 
 class SavedSearch(object):
     """ Saved search functionality """
