@@ -688,7 +688,7 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.TooManyItems):
             zot.create_items(itms)
 
-    # @httprettified
+    # @httpretty.activate
     # def testRateLimit(self):
     #     """ Test 429 response handling (e.g. wait, wait a bit longer etc.)
     #     """
@@ -697,9 +697,9 @@ class ZoteroTests(unittest.TestCase):
     #         HTTPretty.GET,
     #         'https://api.zotero.org/users/myuserID/items',
     #         responses=[
-    #             HTTPretty.Response(body=self.items_doc, status=429),
-    #             HTTPretty.Response(body=self.items_doc, status=429),
-    #             HTTPretty.Response(body=self.items_doc, status=200)])
+    #             HTTPretty.Response(body=self.items_doc, status=429)
+    #         ],
+    #     )
     #     zot.items()
     #     with self.assertEqual(z.backoff.delay, 8):
     #         zot.items()
