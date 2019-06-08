@@ -360,7 +360,7 @@ class Zotero(object):
         try:
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(self.request)
+            error_handler(self, self.request)
         return self.request
 
     def _extract_links(self):
@@ -425,7 +425,7 @@ class Zotero(object):
             try:
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
-                error_handler(req)
+                error_handler(self, req)
             return req.status_code == 304
         # Still plenty of life left in't
         return False
@@ -568,7 +568,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return True
 
     def new_fulltext(self, version):
@@ -585,7 +585,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return req.json()
 
     def item_versions(self, **kwargs):
@@ -997,7 +997,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return req.json()
 
     @ss_wrap
@@ -1017,7 +1017,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return req.status_code
 
     def upload_attachments(self, attachments, parentid=None, basedir=None):
@@ -1169,7 +1169,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         resp = req.json()
         if parentid:
             # we need to create child items using PATCH
@@ -1193,7 +1193,7 @@ class Zotero(object):
                 try:
                     presp.raise_for_status()
                 except requests.exceptions.HTTPError:
-                    error_handler(presp)
+                    error_handler(self, presp)
         return resp
 
     def create_collection(self, payload, last_modified=None):
@@ -1229,7 +1229,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return req.json()
 
     def update_collection(self, payload, last_modified=None):
@@ -1257,7 +1257,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return True
 
     def attachment_simple(self, files, parentid=None):
@@ -1319,7 +1319,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return True
 
     def update_items(self, payload):
@@ -1343,7 +1343,7 @@ class Zotero(object):
             try:
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
-                error_handler(req)
+                error_handler(self, req)
             return True
 
     def update_collections(self, payload):
@@ -1369,7 +1369,7 @@ class Zotero(object):
             try:
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
-                error_handler(req)
+                error_handler(self, req)
             return True
 
     def addto_collection(self, collection, payload):
@@ -1396,7 +1396,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return True
 
     def deletefrom_collection(self, collection, payload):
@@ -1425,7 +1425,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return True
 
     def delete_tags(self, *payload):
@@ -1453,7 +1453,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return True
 
     def delete_item(self, payload, last_modified=None):
@@ -1489,7 +1489,7 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return True
 
     def delete_collection(self, payload, last_modified=None):
@@ -1525,12 +1525,12 @@ class Zotero(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(self, req)
         return True
 
 
 
-def error_handler(req):
+def error_handler(zot, req):
     """ Error handler for HTTP requests
     """
     error_codes = {
@@ -1566,24 +1566,25 @@ def error_handler(req):
                     "You are being rate-limited and no backoff duration has been received from the server. Try again later"
                 )
             else:
-                _backoff_handler(req, delay)
+                _backoff_handler(zot, req, delay)
         else:
             raise error_codes.get(req.status_code)(err_msg(req))
     else:
         raise ze.HTTPError(err_msg(req))
 
-def _backoff_handler(req, delay):
+def _backoff_handler(zot, resp, delay):
     """
     A simple backoff handler.
     Waits, then executes the original request
+    zot is the Zotero instance, resp is the request response, delay is the backoff delay
     """
     time.sleep(delay)
     sess = requests.Session()
-    new_req = sess.send(req.request)
+    new_req = sess.send(resp.request)
     try:
         new_req.raise_for_status()
     except requests.exceptions.HTTPError:
-        error_handler(new_req)
+        error_handler(zot, new_req)
 
 class SavedSearch(object):
     """ Saved search functionality """
@@ -1826,7 +1827,7 @@ class Zupload(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(req)
+            error_handler(zinstance, req)
         data = req.json()
         for k in data["success"]:
             self.payload[int(k)]["key"] = data["success"][k]
@@ -1868,7 +1869,7 @@ class Zupload(object):
         try:
             auth_req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(auth_req)
+            error_handler(zinstance, auth_req)
         return auth_req.json()
 
     def _upload_file(self, authdata, attachment, reg_key):
@@ -1905,7 +1906,7 @@ class Zupload(object):
         try:
             upload.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(upload)
+            error_handler(zinstance, upload)
         # now check the responses
         return self._register_upload(authdata, reg_key)
 
@@ -1930,7 +1931,7 @@ class Zupload(object):
         try:
             upload_reg.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(upload_reg)
+            error_handler(zinstance, upload_reg)
 
     def upload(self):
         """
