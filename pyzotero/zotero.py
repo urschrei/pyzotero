@@ -144,6 +144,36 @@ def tcache(func):
     return wrapped_f
 
 
+def backoff_check(func):
+    """
+    Perform backoff processing
+    func must return a Requests GET / POST / PUT / PATCH / DELETE etc
+    This is is intercepted: we first check for an active backoff
+    and wait if need be.
+    After the response is received, we do normal error checking
+    and set a new backoff if necessary, before returning
+
+    Use with functions that are intended to return True
+    """
+
+    def wrapped_f(self, *args, **kwargs):
+        self._check_backoff()
+        # resp is a Requests response object
+        resp = func(self, *args, **kwargs)
+        try:
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError:
+            error_handler(self, resp)
+        self.request = resp
+        backoff = resp.headers.get("backoff")
+        if backoff:
+            self._set_backoff(backoff)
+
+        return True
+
+    return wrapped_f
+
+
 def retrieve(func):
     """
     Decorator for Zotero read API methods; calls _retrieve_data() and passes
@@ -584,6 +614,7 @@ class Zotero(object):
         )
         return self._build_query(query_string)
 
+    @backoff_check
     def set_fulltext(self, itemkey, payload):
         """"
         Set full-text data for an item
@@ -596,8 +627,7 @@ class Zotero(object):
         """
         headers = self.default_headers()
         headers.update({"Content-Type": "application/json"})
-        self._check_backoff()
-        req = requests.put(
+        return requests.put(
             url=self.endpoint
             + "/{t}/{u}/items/{k}/fulltext".format(
                 t=self.library_type, u=self.library_id, k=itemkey
@@ -605,11 +635,6 @@ class Zotero(object):
             headers=headers,
             data=json.dumps(payload),
         )
-        try:
-            req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
-        return True
 
     def new_fulltext(self, version):
         """
@@ -622,12 +647,12 @@ class Zotero(object):
         headers = {"since": str(version)}
         headers.update(self.default_headers())
         self._check_backoff()
-        req = requests.get(self.endpoint + query_string, headers=headers)
+        resp = requests.get(self.endpoint + query_string, headers=headers)
         try:
-            req.raise_for_status()
+            resp.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(self, req)
-        return req.json()
+            error_handler(self, resp)
+        return resp.json()
 
     def item_versions(self, **kwargs):
         """
@@ -1278,6 +1303,7 @@ class Zotero(object):
             error_handler(self, req)
         return req.json()
 
+    @backoff_check
     def update_collection(self, payload, last_modified=None):
         """
         Update a Zotero collection property such as 'name'
@@ -1291,8 +1317,7 @@ class Zotero(object):
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
         headers.update({"Content-Type": "application/json"})
-        self._check_backoff()
-        req = requests.put(
+        return requests.put(
             url=self.endpoint
             + "/{t}/{u}/collections/{c}".format(
                 t=self.library_type, u=self.library_id, c=key
@@ -1300,12 +1325,6 @@ class Zotero(object):
             headers=headers,
             data=json.dumps(payload),
         )
-        self.request = req
-        try:
-            req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
-        return True
 
     def attachment_simple(self, files, parentid=None):
         """
@@ -1341,6 +1360,7 @@ class Zotero(object):
         else:
             return self._attachment(to_add)
 
+    @backoff_check
     def update_item(self, payload, last_modified=None):
         """
         Update an existing item
@@ -1354,8 +1374,7 @@ class Zotero(object):
         ident = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        self._check_backoff()
-        req = requests.patch(
+        return requests.patch(
             url=self.endpoint
             + "/{t}/{u}/items/{id}".format(
                 t=self.library_type, u=self.library_id, id=ident
@@ -1363,12 +1382,6 @@ class Zotero(object):
             headers=headers,
             data=json.dumps(to_send),
         )
-        self.request = req
-        try:
-            req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
-        return True
 
     def update_items(self, payload):
         """
@@ -1422,6 +1435,7 @@ class Zotero(object):
                 error_handler(self, req)
             return True
 
+    @backoff_check
     def addto_collection(self, collection, payload):
         """
         Add one or more items to a collection
@@ -1434,8 +1448,7 @@ class Zotero(object):
         modified_collections = payload["data"]["collections"] + [collection]
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        self._check_backoff()
-        req = requests.patch(
+        return requests.patch(
             url=self.endpoint
             + "/{t}/{u}/items/{i}".format(
                 t=self.library_type, u=self.library_id, i=ident
@@ -1443,13 +1456,8 @@ class Zotero(object):
             data=json.dumps({"collections": modified_collections}),
             headers=headers,
         )
-        self.request = req
-        try:
-            req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
-        return True
 
+    @backoff_check
     def deletefrom_collection(self, collection, payload):
         """
         Delete an item from a collection
@@ -1464,8 +1472,7 @@ class Zotero(object):
         ]
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        self._check_backoff()
-        req = requests.patch(
+        return requests.patch(
             url=self.endpoint
             + "/{t}/{u}/items/{i}".format(
                 t=self.library_type, u=self.library_id, i=ident
@@ -1473,13 +1480,8 @@ class Zotero(object):
             data=json.dumps({"collections": modified_collections}),
             headers=headers,
         )
-        self.request = req
-        try:
-            req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
-        return True
 
+    @backoff_check
     def delete_tags(self, *payload):
         """
         Delete a group of tags
@@ -1495,20 +1497,14 @@ class Zotero(object):
             "If-Unmodified-Since-Version": self.request.headers["last-modified-version"]
         }
         headers.update(self.default_headers())
-        self._check_backoff()
-        req = requests.delete(
+        return requests.delete(
             url=self.endpoint
             + "/{t}/{u}/tags".format(t=self.library_type, u=self.library_id),
             params={"tag": modified_tags},
             headers=headers,
         )
-        self.request = req
-        try:
-            req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
-        return True
 
+    @backoff_check
     def delete_item(self, payload, last_modified=None):
         """
         Delete Items from a Zotero library
@@ -1537,15 +1533,9 @@ class Zotero(object):
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        self._check_backoff()
-        req = requests.delete(url=url, params=params, headers=headers)
-        self.request = req
-        try:
-            req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
-        return True
+        return requests.delete(url=url, params=params, headers=headers)
 
+    @backoff_check
     def delete_collection(self, payload, last_modified=None):
         """
         Delete a Collection from a Zotero library
@@ -1574,14 +1564,7 @@ class Zotero(object):
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        self._check_backoff()
-        req = requests.delete(url=url, params=params, headers=headers)
-        self.request = req
-        try:
-            req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
-        return True
+        return requests.delete(url=url, params=params, headers=headers)
 
 
 def error_handler(zot, req):
