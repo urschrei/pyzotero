@@ -1603,26 +1603,11 @@ def error_handler(zot, req):
                     "You are being rate-limited and no backoff duration has been received from the server. Try again later"
                 )
             else:
-                _backoff_handler(zot, req, delay)
+                zot._set_backoff(delay)
         else:
             raise error_codes.get(req.status_code)(err_msg(req))
     else:
         raise ze.HTTPError(err_msg(req))
-
-
-def _backoff_handler(zot, resp, delay):
-    """
-    A simple backoff handler.
-    Waits, then executes the original request
-    zot is the Zotero instance, resp is the request response, delay is the backoff delay
-    """
-    time.sleep(delay)
-    sess = requests.Session()
-    new_req = sess.send(resp.request)
-    try:
-        new_req.raise_for_status()
-    except requests.exceptions.HTTPError:
-        error_handler(zot, new_req)
 
 
 class SavedSearch(object):
