@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 import os
 import unittest
+import time
 
 import httpretty
 from dateutil import parser
@@ -162,6 +163,24 @@ class ZoteroTests(unittest.TestCase):
         test_dt = parser.parse("2011-01-13T03:37:29Z")
         incoming_dt = parser.parse(items_data["data"]["dateModified"])
         self.assertEqual(test_dt, incoming_dt)
+
+    @httpretty.activate
+    def testBackoff(self):
+        """ Test that backoffs are correctly processed
+        """
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/items",
+            content_type="application/json",
+            body=self.item_doc,
+            adding_headers={"backoff": 0.2},
+        )
+        zot.items()
+        self.assertTrue(zot.backoff)
+        time.sleep(0.3)
+        # Timer will have expired, triggering backoff reset
+        self.assertFalse(zot.backoff)
 
     @httpretty.activate
     def testGetItemFile(self):
@@ -305,12 +324,12 @@ class ZoteroTests(unittest.TestCase):
             HTTPretty.GET,
             "https://api.zotero.org/users/myuserID/collections/KIMI8BSG/tags",
             content_type="application/json",
-            body=self.collection_tags
+            body=self.collection_tags,
         )
         collections_data = zot.collection_tags("KIMI8BSG")
         self.assertEqual(3, len(collections_data))
         for item in collections_data:
-            self.assertTrue(item in ['apple', 'banana', 'cherry'])
+            self.assertTrue(item in ["apple", "banana", "cherry"])
 
     @httpretty.activate
     def testParseCollectionsJSONDoc(self):
@@ -688,21 +707,19 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.TooManyItems):
             zot.create_items(itms)
 
-    # @httpretty.activate
-    # def testRateLimit(self):
-    #     """ Test 429 response handling (e.g. wait, wait a bit longer etc.)
-    #     """
-    #     zot = z.Zotero('myuserID', 'user', 'myuserkey')
-    #     HTTPretty.register_uri(
-    #         HTTPretty.GET,
-    #         'https://api.zotero.org/users/myuserID/items',
-    #         responses=[
-    #             HTTPretty.Response(body=self.items_doc, status=429)
-    #         ],
-    #     )
-    #     zot.items()
-    #     with self.assertEqual(z.backoff.delay, 8):
-    #         zot.items()
+    @httpretty.activate
+    def testRateLimitWithBackoff(self):
+        """ Test 429 response handling when a backoff header is received
+        """
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/items",
+            status=429,
+            adding_headers={"backoff": 10},
+        )
+        zot.items()
+        self.assertTrue(zot.backoff)
 
     def tearDown(self):
         """ Tear stuff down

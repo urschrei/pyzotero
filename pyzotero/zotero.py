@@ -322,9 +322,10 @@ class Zotero(object):
         an active backoff; the threading.Timer method has no way
         of returning a duration
         """
+        duration = float(duration)
         self.backoff = True
         self.backoff_duration = time.time() + duration
-        threading.Timer(duration, self._reset_backoff)
+        threading.Timer(duration, self._reset_backoff).start()
 
     def _check_backoff(self):
         """
@@ -395,10 +396,9 @@ class Zotero(object):
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, self.request)
-        backoff = self.request.headers.get("Backoff")
+        backoff = self.request.headers.get("backoff")
         if backoff:
-            # we've received a non-error backoff request, so set it
-            self._set_backoff(float(backoff))
+            self._set_backoff(backoff)
         return self.request
 
     def _extract_links(self):
@@ -1597,7 +1597,7 @@ def error_handler(zot, req):
         # check to see whether its 429
         if req.status_code == 429:
             # try to get backoff duration
-            delay = req.headers.get("Backoff")
+            delay = req.headers.get("backoff")
             if not delay:
                 raise ze.TooManyRetries(
                     "You are being rate-limited and no backoff duration has been received from the server. Try again later"
