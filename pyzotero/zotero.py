@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.2"
+__version__ = "1.4.3"
 __api_version__ = "3"
 
 import sys
@@ -228,16 +228,7 @@ def retrieve(func):
             return retrieved.content
         # no need to do anything special, return JSON
         else:
-            # is this a snapshot though?
-            retr = retrieved.json()
-            # I know, I know
-            if (
-                isinstance(retr, dict)
-                and retr.get("data", {}).get("linkMode", {}) == "imported_url"
-            ):
-                return retrieved.content
-            else:
-                return retr
+            return retrieved.json()
 
     return wrapped_f
 
@@ -314,11 +305,7 @@ class Zotero(object):
         self.self_link = {}
         self.templates = {}
         self.savedsearch = None
-        # these are required for backoff handling (not yet implemented as of 4430c21)
-        self.backoff = False
-        self.backoff_duration = 0.0
-
-    def _reset_backoff(self):
+        # these are required for backoff handling
         self.backoff = False
         self.backoff_duration = 0.0
 
@@ -327,14 +314,18 @@ class Zotero(object):
         Set a backoff
         Spins up a timer in a background thread which resets the backoff logic
         when it expires, then sets the time at which the backoff will expire.
-        This is required so that other calls can check whether there's
-        an active backoff; the threading.Timer method has no way
+        The latter step is required so that other calls can check whether there's
+        an active backoff, because the threading.Timer method has no way
         of returning a duration
         """
         duration = float(duration)
         self.backoff = True
-        self.backoff_duration = time.time() + duration
         threading.Timer(duration, self._reset_backoff).start()
+        self.backoff_duration = time.time() + duration
+
+    def _reset_backoff(self):
+        self.backoff = False
+        self.backoff_duration = 0.0
 
     def _check_backoff(self):
         """
@@ -716,18 +707,17 @@ class Zotero(object):
         Dump a file attachment to disk, with optional filename and path
         """
         if not filename:
-            try:
-                filename = self.item(itemkey)["data"]["filename"]
-            except TypeError:
-                filename = "{i}.zip".format(i=itemkey)
+            filename = self.item(itemkey)["data"]["filename"]
         if path:
             pth = os.path.join(path, filename)
         else:
             pth = filename
-        to_write = self.file(itemkey)
+        file = self.file(itemkey)
+        if self.snapshot:
+            self.snapshot = False
+            pth = pth + ".zip"
         with open(pth, "wb") as f:
-            f.write(to_write)
-        return pth
+            f.write(file)
 
     @retrieve
     def children(self, item, **kwargs):
