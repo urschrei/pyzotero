@@ -495,6 +495,9 @@ class Zotero(object):
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(self, req)
+            backoff = self.request.headers.get("backoff")
+            if backoff:
+                self._set_backoff(backoff)
             return req.status_code == 304
         # Still plenty of life left in't
         return False
@@ -652,6 +655,9 @@ class Zotero(object):
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, resp)
+        backoff = self.request.headers.get("backoff")
+        if backoff:
+            self._set_backoff(backoff)
         return resp.json()
 
     def item_versions(self, **kwargs):
@@ -1065,6 +1071,9 @@ class Zotero(object):
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, req)
+        backoff = self.request.headers.get("backoff")
+        if backoff:
+            self._set_backoff(backoff)
         return req.json()
 
     @ss_wrap
@@ -1086,6 +1095,9 @@ class Zotero(object):
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, req)
+        backoff = self.request.headers.get("backoff")
+        if backoff:
+            self._set_backoff(backoff)
         return req.status_code
 
     def upload_attachments(self, attachments, parentid=None, basedir=None):
@@ -1240,6 +1252,9 @@ class Zotero(object):
         except requests.exceptions.HTTPError:
             error_handler(self, req)
         resp = req.json()
+        backoff = self.request.headers.get("backoff")
+        if backoff:
+            self._set_backoff(backoff)
         if parentid:
             # we need to create child items using PATCH
             # TODO: handle possibility of item creation + failed parent
@@ -1264,6 +1279,9 @@ class Zotero(object):
                     presp.raise_for_status()
                 except requests.exceptions.HTTPError:
                     error_handler(self, presp)
+                backoff = presp.get("backoff")
+                if backoff:
+                    self._set_backoff(backoff)
         return resp
 
     def create_collection(self, payload, last_modified=None):
@@ -1301,6 +1319,9 @@ class Zotero(object):
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, req)
+        backoff = req.headers.get("backoff")
+        if backoff:
+            self._set_backoff(backoff)
         return req.json()
 
     @backoff_check
@@ -1406,6 +1427,9 @@ class Zotero(object):
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(self, req)
+            backoff = req.get("backoff")
+            if backoff:
+                self._set_backoff(backoff)
             return True
 
     def update_collections(self, payload):
@@ -1433,6 +1457,9 @@ class Zotero(object):
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(self, req)
+            backoff = req.get("backoff")
+            if backoff:
+                self._set_backoff(backoff)
             return True
 
     @backoff_check
@@ -1853,6 +1880,9 @@ class Zupload(object):
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(zinstance, req)
+        backoff = req.get("backoff")
+        if backoff:
+            zinstance._set_backoff(backoff)
         data = req.json()
         for k in data["success"]:
             self.payload[int(k)]["key"] = data["success"][k]
@@ -1896,6 +1926,9 @@ class Zupload(object):
             auth_req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(zinstance, auth_req)
+        backoff = auth_req.headers.get("backoff")
+        if backoff:
+            zinstance._set_backoff(backoff)
         return auth_req.json()
 
     def _upload_file(self, authdata, attachment, reg_key):
@@ -1934,6 +1967,9 @@ class Zupload(object):
             upload.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(zinstance, upload)
+        backoff = upload.get("backoff")
+        if backoff:
+            zinstance._set_backoff(backoff)
         # now check the responses
         return self._register_upload(authdata, reg_key)
 
@@ -1960,6 +1996,9 @@ class Zupload(object):
             upload_reg.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(zinstance, upload_reg)
+        backoff = upload_reg.get("backoff")
+        if backoff:
+            self._set_backoff(backoff)
 
     def upload(self):
         """
