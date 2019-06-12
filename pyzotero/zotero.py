@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.3"
+__version__ = "1.4.4"
 __api_version__ = "3"
 
 import sys
@@ -1427,7 +1427,7 @@ class Zotero(object):
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(self, req)
-            backoff = req.get("backoff")
+            backoff = req.headers.get("backoff")
             if backoff:
                 self._set_backoff(backoff)
             return True
@@ -1457,7 +1457,7 @@ class Zotero(object):
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(self, req)
-            backoff = req.get("backoff")
+            backoff = req.headers.get("backoff")
             if backoff:
                 self._set_backoff(backoff)
             return True
@@ -1879,10 +1879,10 @@ class Zupload(object):
         try:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(zinstance, req)
-        backoff = req.get("backoff")
+            error_handler(self.zinstance, req)
+        backoff = req.headers.get("backoff")
         if backoff:
-            zinstance._set_backoff(backoff)
+            self.zinstance._set_backoff(backoff)
         data = req.json()
         for k in data["success"]:
             self.payload[int(k)]["key"] = data["success"][k]
