@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.4"
+__version__ = "1.4.5"
 __api_version__ = "3"
 
 import sys
@@ -572,14 +572,6 @@ class Zotero(object):
         """
         query = "/{t}/{u}/collections/{c}/items".format(
             u=self.library_id, t=self.library_type, c=collection.upper()
-        )
-        return self._totals(query)
-
-    def num_tagitems(self, tag):
-        """ Return the total number of items for the specified tag
-        """
-        query = "/{t}/{u}/tags/{ta}/items".format(
-            u=self.library_id, t=self.library_type, ta=tag
         )
         return self._totals(query)
 

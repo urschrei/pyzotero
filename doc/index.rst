@@ -634,14 +634,6 @@ If you wish to retrieve item counts for subsets of a library, you can use the fo
 
     :rtype: int
 
-.. py:method:: Zotero.num_tagitems(tag)
-
-    Returns the count of items for the specified tag
-
-    :rtype: int
-
-.. _parameters:
-
 ================================
 Retrieving last modified version
 ================================
