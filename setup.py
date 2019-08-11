@@ -60,7 +60,7 @@ setup(
     install_requires=[
         "feedparser >= 5.1.0",
         "pytz",
-        "requests",
+        "requests >= 2.21.0",
         "pathlib",
         "bibtexparser",
     ],
