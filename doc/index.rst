@@ -1003,9 +1003,9 @@ Collection Methods
         :rtype: list of dicts
         :rtype: Boolean
 
-    .. py:method:: Zotero.create_collections(dicts[, last_modified])
+    .. py:method:: Zotero.create_collection(dicts[, last_modified])
 
-        Alias for create_collections to preserve backward compatibility
+        Alias for :py:meth:`Zotero.create_collections()` to preserve backward compatibility
 
     .. py:method:: Zotero.addto_collection(collection, item)
 
