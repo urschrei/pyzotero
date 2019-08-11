@@ -49,6 +49,8 @@ Installation
 ============
 Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
 
+Using `Anaconda <https://www.anaconda.com/distribution/>`_: ``conda config --add channels conda-forge && conda install pyzotero``
+
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
     .. code-block:: bash
