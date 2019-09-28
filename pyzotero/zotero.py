@@ -1223,6 +1223,18 @@ class Zotero(object):
         query_string = "/itemFields"
         return query_string, params
 
+    def item_attachment_link_modes(self):
+        """ Get all available link mode types.
+        Note: No viable REST API route was found for this, so I tested and built a list from documentation found
+        here - https://www.zotero.org/support/dev/web_api/json
+        """
+        return [
+            "imported_file",
+            "imported_url",
+            "linked_file",
+            "linked_url"
+        ]
+
     def create_items(self, payload, parentid=None, last_modified=None):
         """
         Create new Zotero items
