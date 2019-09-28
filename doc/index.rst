@@ -824,11 +824,12 @@ Item Methods
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
         :rtype: list of dicts
 
-    .. py:method:: Zotero.item_template(itemtype)
+    .. py:method:: Zotero.item_template(itemtype, linkmode)
 
         Returns an item creation template for the specified item type
 
         :param str itemtype: a valid Zotero item type. A list of available item types can be obtained by the use of :py:meth:`item_types()`
+        :param str linkmode: either None (default) or a valid Zotero linkMode value required when itemtype is attachment. A list of available link modes can be obtained by the use of :py:meth:`item_attachment_link_modes()`
         :rtype: dict
 
 Creating and Updating Items
