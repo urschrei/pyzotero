@@ -985,7 +985,7 @@ class Zotero(object):
         return [t["tag"] for t in retrieved]
 
     # The following methods are Write API calls
-    def item_template(self, itemtype):
+    def item_template(self, itemtype, linkmode=None):
         """ Get a template for a new item
         """
         # if we have a template and it hasn't been updated since we stored it
@@ -995,6 +995,14 @@ class Zotero(object):
             query_string, self.templates[template_name], template_name
         ):
             return copy.deepcopy(self.templates[template_name]["tmplt"])
+
+        # Set linkMode parameter for API request if itemtype is attachment
+        if itemtype == "attachment":
+            try:
+                query_string = "{}&linkMode={}".format(query_string, linkmode)
+            except Exception as e:
+                raise error_handler(self, e)
+
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
         return self._cache(retrieved, template_name)
