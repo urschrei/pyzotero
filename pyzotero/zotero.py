@@ -123,11 +123,11 @@ def chunks(l, n):
 def tcache(func):
     """ Take care of the URL building and caching for template functions """
 
-    def wrapped_f(self):
+    def wrapped_f(self, *args, **kwargs):
         """ Calls the decorated function to get query string and params,
         builds URL, retrieves template, caches result, and returns template
         """
-        query_string, params = func(self)
+        query_string, params = func(self, *args, **kwargs)
         r = Request("GET", self.endpoint + query_string, params=params).prepare()
         # now split up the URL
         result = urlparse(r.url)
