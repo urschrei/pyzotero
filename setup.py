@@ -58,7 +58,7 @@ setup(
     ],
     packages=find_packages(),
     install_requires=[
-        "feedparser >= 5.1.0",
+        "feedparser == 5.1.0",
         "pytz",
         "requests >= 2.21.0",
         "pathlib",
