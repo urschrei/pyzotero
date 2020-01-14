@@ -1,4 +1,6 @@
 # General
+If at all possible, provide a [MVCE](https://stackoverflow.com/help/minimal-reproducible-example). If this is inappropriate (e.g. it's obviously a bug), just fill in the below:
+
 Platform:  
 Python version:  
 Pyzotero version: 
