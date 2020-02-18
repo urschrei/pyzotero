@@ -57,6 +57,8 @@ from pathlib import Path
 
 from . import zotero_errors as ze
 
+from functools import wraps
+
 # Python 3 compatibility faffing
 if sys.version_info[0] == 2:
     from urllib import urlencode
@@ -122,7 +124,8 @@ def chunks(l, n):
 
 def tcache(func):
     """ Take care of the URL building and caching for template functions """
-
+    
+    @wraps(func)
     def wrapped_f(self, *args, **kwargs):
         """ Calls the decorated function to get query string and params,
         builds URL, retrieves template, caches result, and returns template
@@ -156,6 +159,7 @@ def backoff_check(func):
     Use with functions that are intended to return True
     """
 
+    @wraps(func)
     def wrapped_f(self, *args, **kwargs):
         self._check_backoff()
         # resp is a Requests response object
@@ -179,7 +183,7 @@ def retrieve(func):
     Decorator for Zotero read API methods; calls _retrieve_data() and passes
     the result to the correct processor, based on a lookup
     """
-
+    @wraps(func)
     def wrapped_f(self, *args, **kwargs):
         """
         Returns result of _retrieve_data()
