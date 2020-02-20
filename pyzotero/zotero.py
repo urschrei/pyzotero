@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.10"
+__version__ = "1.4.11"
 __api_version__ = "3"
 
 import sys
@@ -1921,7 +1921,7 @@ class Zupload(object):
         try:
             auth_req.raise_for_status()
         except requests.exceptions.HTTPError:
-            error_handler(zinstance, auth_req)
+            error_handler(self.zinstance, auth_req)
         backoff = auth_req.headers.get("backoff")
         if backoff:
             zinstance._set_backoff(backoff)
@@ -1946,6 +1946,7 @@ class Zupload(object):
         # errors
         upload_list.append(("file", open(attachment, "rb").read()))
         upload_pairs = tuple(upload_list)
+        print(upload_pairs)
         try:
             self.zinstance._check_backoff()
             upload = requests.post(
