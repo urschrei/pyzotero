@@ -124,7 +124,7 @@ def chunks(l, n):
 
 def tcache(func):
     """ Take care of the URL building and caching for template functions """
-    
+
     @wraps(func)
     def wrapped_f(self, *args, **kwargs):
         """ Calls the decorated function to get query string and params,
@@ -183,6 +183,7 @@ def retrieve(func):
     Decorator for Zotero read API methods; calls _retrieve_data() and passes
     the result to the correct processor, based on a lookup
     """
+
     @wraps(func)
     def wrapped_f(self, *args, **kwargs):
         """
