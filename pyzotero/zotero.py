@@ -1937,14 +1937,11 @@ class Zupload(object):
         """
         upload_dict = authdata[
             "params"
-        ]  # using params now since prefix/suffix concat was giving ConnectionError
-        # must pass tuple of tuples not dict to ensure key comes first
-        upload_list = [("key", upload_dict["key"])]
-        for k in upload_dict:
-            if k != "key":
-                upload_list.append((k, upload_dict[k]))
-        # The prior code for attaching file gave me content not match md5
-        # errors
+        ]
+        # pass tuple of tuples (not dict!), to ensure key comes first
+        upload_list = [("key", upload_dict.pop("key"))]
+        for key, value in upload_dict.items():
+            upload_list.append((key, value))
         upload_list.append(("file", open(attachment, "rb").read()))
         upload_pairs = tuple(upload_list)
         try:
@@ -1953,7 +1950,6 @@ class Zupload(object):
                 url=authdata["url"],
                 files=upload_pairs,
                 headers={
-                    # "Content-Type": authdata['contentType'],
                     "User-Agent": "Pyzotero/%s"
                     % __version__
                 },
