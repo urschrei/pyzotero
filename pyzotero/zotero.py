@@ -1003,10 +1003,7 @@ class Zotero(object):
 
         # Set linkMode parameter for API request if itemtype is attachment
         if itemtype == "attachment":
-            try:
-                query_string = "{}&linkMode={}".format(query_string, linkmode)
-            except Exception as e:
-                raise error_handler(self, e)
+            query_string = "{}&linkMode={}".format(query_string, linkmode)
 
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
