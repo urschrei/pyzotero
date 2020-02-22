@@ -1230,12 +1230,7 @@ class Zotero(object):
         Note: No viable REST API route was found for this, so I tested and built a list from documentation found
         here - https://www.zotero.org/support/dev/web_api/json
         """
-        return [
-            "imported_file",
-            "imported_url",
-            "linked_file",
-            "linked_url"
-        ]
+        return ["imported_file", "imported_url", "linked_file", "linked_url"]
 
     def create_items(self, payload, parentid=None, last_modified=None):
         """
@@ -1952,9 +1947,7 @@ class Zupload(object):
 
         reg_key isn't used, but we need to pass it through to Step 3
         """
-        upload_dict = authdata[
-            "params"
-        ]
+        upload_dict = authdata["params"]
         # pass tuple of tuples (not dict!), to ensure key comes first
         upload_list = [("key", upload_dict.pop("key"))]
         for key, value in upload_dict.items():
@@ -1966,10 +1959,7 @@ class Zupload(object):
             upload = requests.post(
                 url=authdata["url"],
                 files=upload_pairs,
-                headers={
-                    "User-Agent": "Pyzotero/%s"
-                    % __version__
-                },
+                headers={"User-Agent": "Pyzotero/%s" % __version__},
             )
         except (requests.exceptions.ConnectionError):
             raise ze.UploadError("ConnectionError")
