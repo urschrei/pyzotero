@@ -35,7 +35,10 @@ import time
 import httpretty
 from dateutil import parser
 from httpretty import HTTPretty
-from pyzotero.pyzotero import zotero as z
+try:
+    from pyzotero.pyzotero import zotero as z
+except ModuleNotFoundError:
+    from pyzotero import zotero as z
 
 # Python 3 compatibility faffing
 try:
