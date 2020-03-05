@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.13"
+__version__ = "1.4.14"
 __api_version__ = "3"
 
 import sys
@@ -994,7 +994,7 @@ class Zotero(object):
         """ Get a template for a new item
         """
         # if we have a template and it hasn't been updated since we stored it
-        template_name = "item_template_" + itemtype
+        template_name = "{}_{}_{}".format(*["item_template", itemtype, linkmode or ""])
         query_string = "/items/new?itemType={i}".format(i=itemtype)
         if self.templates.get(template_name) and not self._updated(
             query_string, self.templates[template_name], template_name
