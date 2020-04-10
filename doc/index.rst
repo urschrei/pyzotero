@@ -1001,7 +1001,7 @@ Collection Methods
 
         Create a new collection in the Zotero library
 
-        :param list dicts: list of dicts each containing the key ``name``, with each value being a new collection name you wish to create. Each dict may optionally contain a ``parent`` key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.
+        :param list dicts: list of dicts each containing the key ``name``, with each value being a new collection name you wish to create. Each dict may optionally contain a ``parentCollection`` key, the value of which is the ID of an existing collection. If this is set, the collection will be created as a child of that collection.
         :param str/int last_modified: If not None will set the value of the If-Unmodified-Since-Version header. 
         :rtype: list of dicts
         :rtype: Boolean
