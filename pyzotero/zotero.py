@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.15"
+__version__ = "1.4.16"
 __api_version__ = "3"
 
 import sys
@@ -882,18 +882,17 @@ class Zotero(object):
         if self.links.get("next"):
             return self.links.get("next")
         else:
-            raise StopIteration
+            return
 
     def iterfollow(self):
         """ Generator for self.follow()
         """
         # use same criterion as self.follow()
-        if self.links is None:
-            return
-        if self.links.get("next"):
-            yield self.follow()
-        else:
-            raise StopIteration
+        while True:
+            if self.links.get("next"):
+                yield self.follow()
+            else:
+                return
 
     def makeiter(self, func):
         """ Return a generator of func's results
