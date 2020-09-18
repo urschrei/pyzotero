@@ -79,10 +79,30 @@ timeout = 30
 socket.setdefaulttimeout(timeout)
 
 
+def ib64_patched(self, attrsD, contentparams):
+    """ Patch isBase64 to prevent Base64 encoding of JSON content
+    """
+    if attrsD.get("mode", "") == "base64":
+        return 0
+    if self.contentparams["type"].startswith("text/"):
+        return 0
+    if self.contentparams["type"].endswith("+xml"):
+        return 0
+    if self.contentparams["type"].endswith("/xml"):
+        return 0
+    if self.contentparams["type"].endswith("/json"):
+        return 0
+    return 0
+
+
 def token():
     """ Return a unique 32-char write-token
     """
     return str(uuid.uuid4().hex)
+
+
+# Override feedparser's buggy isBase64 method until they fix it
+feedparser._FeedParserMixin._isBase64 = ib64_patched
 
 
 def cleanwrap(func):
