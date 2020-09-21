@@ -301,7 +301,10 @@ class Zotero(object):
             self.library_id = library_id
             # library_type determines whether query begins w. /users or /groups
             self.library_type = library_type + "s"
-        else:
+        elif not api_key:
+            # don't raise an exception if library_id and library_tpye are None
+            # if an api_key has been provided, as this is likely intended, for
+            # example to inspect an api key and the libraries it has access to.
             raise ze.MissingCredentials(
                 "Please provide both the library ID and the library type"
             )
