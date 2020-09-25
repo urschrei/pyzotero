@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.5.0"
+__version__ = "1.4.19"
 __api_version__ = "3"
 
 import sys
@@ -670,7 +670,7 @@ class Zotero(object):
 
     def collection_versions(self, **kwargs):
         """
-        Returns dict  associating collection keys (all no limit by default) to versions.
+        Returns dict associating collection keys (all no limit by default) to versions.
         Accepts a since= parameter in kwargs to limit the data to those updated since since=
         """
         if "limit" not in kwargs:
@@ -679,10 +679,12 @@ class Zotero(object):
         return self.collections(**kwargs)
 
     def last_modified_version(self, **kwargs):
-        """ Get the last modified version
+        """ Get the last modified user or group library version
         """
-        self.items(**kwargs)
-        return int(self.request.headers.get("last-modified-version", 0))
+        # This MUST be a multiple-object request, limit param notwithstanding
+        self.items(limit=1)
+        lmv = self.request.headers.get("last-modified-version", 0)
+        return int(lmv)
 
     @retrieve
     def top(self, **kwargs):
