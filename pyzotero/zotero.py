@@ -40,8 +40,11 @@ import sys
 import requests
 from requests import Request
 import socket
-import base64
-base64.decodestring = base64.decodebytes
+# horrible monkeypatching for Feedparser < 6 compat
+# Python 3.9 removed decodestring, so we need it FOR NOW
+if sys.version_info[0] > 2 and sys.version_info[1] > 8:
+    import base64
+    base64.decodestring = base64.decodebytes
 import feedparser
 import bibtexparser
 import json
