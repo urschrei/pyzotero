@@ -33,13 +33,15 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.19"
+__version__ = "1.4.20"
 __api_version__ = "3"
 
 import sys
 import requests
 from requests import Request
 import socket
+import base64
+base64.decodestring = base64.decodebytes
 import feedparser
 import bibtexparser
 import json
