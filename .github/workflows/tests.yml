@@ -26,12 +26,10 @@ jobs:
 
   finish:
     needs: build
-    finish:
-      needs: test
-      runs-on: ubuntu-latest
-      steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.github_token }}
-          parallel-finished: true
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
