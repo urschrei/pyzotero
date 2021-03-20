@@ -1,7 +1,5 @@
 [![Wheel Status](https://img.shields.io/pypi/wheel/Pyzotero.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Supported Python versions](https://img.shields.io/pypi/pyversions/Pyzotero.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Docs](https://readthedocs.org/projects/pyzotero/badge/?version=latest)](http://pyzotero.readthedocs.org/en/latest/?badge=latest) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt) [![PyPI Version](https://img.shields.io/pypi/v/Pyzotero.svg)](https://pypi.python.org/pypi/Pyzotero)  
 
-# Blah
-
 # Pyzotero: An API Client for the Zotero API
 
 # Quickstart
