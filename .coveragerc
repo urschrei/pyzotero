@@ -1,2 +1,3 @@
 [run]
 omit = pyzotero/zotero_errors.py, pyzotero/test.py, test/test_zotero.py
+relative_files = True
