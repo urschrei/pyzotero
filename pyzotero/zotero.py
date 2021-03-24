@@ -240,7 +240,6 @@ def retrieve(func):
         }
         # select format, or assume JSON
         content_type_header = self.request.headers["Content-Type"].lower() + ";"
-        re.compile("\s+")
         fmt = formats.get(
             # strip "; charset=..." segment
             content_type_header[0 : content_type_header.index(";")],
