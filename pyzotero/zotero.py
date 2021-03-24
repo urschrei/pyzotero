@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.20"
+__version__ = "1.4.21"
 __api_version__ = "3"
 
 import sys
@@ -262,7 +262,7 @@ def retrieve(func):
             # we need to dump as a zip!
             self.snapshot = True
         if fmt == "bibtex":
-            parser = bibtexparser.bparser.BibTexParser(common_strings=True)
+            parser = bibtexparser.bparser.BibTexParser(common_strings=True, ignore_nonstandard_types=False)
             return parser.parse(retrieved.text)
         # it's binary, so return raw content
         elif fmt != "json":
