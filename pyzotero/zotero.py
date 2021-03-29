@@ -428,8 +428,9 @@ class Zotero(object):
         self.self_link = request
         # ensure that we wait if there's an active backoff
         self._check_backoff()
+        # include "verify = False" to avoid getting SSL CERTIFICATE_VERIFY_FAILED
         self.request = requests.get(
-            url=full_url, headers=self.default_headers(), params=params
+            url=full_url, headers=self.default_headers(), params=params, verify = False
         )
         self.request.encoding = "utf-8"
         try:
