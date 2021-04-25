@@ -222,6 +222,7 @@ def retrieve(func):
             "application/msword": "doc",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
             "application/zip": "zip",
             "application/epub+zip": "zip",
             "audio/mpeg": "mp3",
