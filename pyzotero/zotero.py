@@ -642,13 +642,13 @@ class Zotero(object):
             data=json.dumps(payload),
         )
 
-    def new_fulltext(self, version):
+    def new_fulltext(self, since):
         """
         Retrieve list of full-text content items and versions which are newer
-        than <version>
+        than <since>
         """
-        query_string = "/{t}/{u}/fulltext?since={v}".format(
-            t=self.library_type, u=self.library_id, v=version
+        query_string = "/{t}/{u}/fulltext?since={version}".format(
+            t=self.library_type, u=self.library_id, version=since
         )
         headers = self.default_headers()
         self._check_backoff()
