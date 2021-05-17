@@ -647,11 +647,10 @@ class Zotero(object):
         Retrieve list of full-text content items and versions which are newer
         than <version>
         """
-        query_string = "/{t}/{u}/fulltext".format(
-            t=self.library_type, u=self.library_id
+        query_string = "/{t}/{u}/fulltext?since={v}".format(
+            t=self.library_type, u=self.library_id, v=version
         )
-        headers = {"since": str(version)}
-        headers.update(self.default_headers())
+        headers = self.default_headers()
         self._check_backoff()
         resp = requests.get(self.endpoint + query_string, headers=headers)
         try:
