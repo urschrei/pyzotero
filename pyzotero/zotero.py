@@ -1172,6 +1172,7 @@ class Zotero(object):
                 "contentType",
                 "md5",
                 "filename",
+                "inPublications"
             ]
         )
         template = template | set(self.temp_keys)
