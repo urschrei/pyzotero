@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.22"
+__version__ = "1.4.23"
 __api_version__ = "3"
 
 import sys
@@ -1445,7 +1445,7 @@ class Zotero(object):
             backoff = req.headers.get("backoff")
             if backoff:
                 self._set_backoff(backoff)
-            return True
+        return True
 
     def update_collections(self, payload):
         """
@@ -1475,7 +1475,7 @@ class Zotero(object):
             backoff = req.headers.get("backoff")
             if backoff:
                 self._set_backoff(backoff)
-            return True
+        return True
 
     @backoff_check
     def addto_collection(self, collection, payload):
