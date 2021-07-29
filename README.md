@@ -69,7 +69,7 @@ As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); ve
 
 Pyzotero has a DOI:  
 [![DOI](https://zenodo.org/badge/1423403.svg)](https://zenodo.org/badge/latestdoi/1423403)  
-You may also cite Pyzotero using [CITATION.bib](CITATION.bib).  
+You may also cite Pyzotero using [CITATION.cff](CITATION.cff).  
 A sample citation (APA 6th edition) might look like:  
 > Stephan Hügel, The Pyzotero Authors (2019, May 18). urschrei/pyzotero: Version v1.3.15. http://doi.org/10.5281/zenodo.2917290
 
