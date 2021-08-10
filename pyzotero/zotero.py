@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.24"
+__version__ = "1.4.25"
 __api_version__ = "3"
 
 import sys
@@ -936,7 +936,7 @@ class Zotero(object):
         params = self.url_params
         retr = []
         for itm in subset:
-            retr.extend(self.item(itm))
+            retr.append(self.item(itm))
             self.url_params = params
         # clean up URL params when we're finished
         self.url_params = None
