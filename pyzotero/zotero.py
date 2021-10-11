@@ -33,7 +33,7 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.25"
+__version__ = "1.4.26"
 __api_version__ = "3"
 
 import sys
@@ -106,8 +106,8 @@ def token():
     return str(uuid.uuid4().hex)
 
 if sys.version_info[0] == 2:
-    # Override feedparser's buggy isBase64 method until they fix it
-    # Note: this is fixed in v6.x, but we can't switch to it because it doesn't support Python 2.7
+    # Override feedparser 5's buggy isBase64 method
+    # Note: this is fixed in v6.x, so we only apply the patch in Python 2.7
     feedparser._FeedParserMixin._isBase64 = ib64_patched
 
 
