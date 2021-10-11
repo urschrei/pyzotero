@@ -105,10 +105,10 @@ def token():
     """
     return str(uuid.uuid4().hex)
 
-
-# Override feedparser's buggy isBase64 method until they fix it
-# Note: this is fixed in v6.x, but we can't switch to it because it doesn't support Python 2.7
-feedparser._FeedParserMixin._isBase64 = ib64_patched
+if sys.version_info[0] == 2:
+    # Override feedparser's buggy isBase64 method until they fix it
+    # Note: this is fixed in v6.x, but we can't switch to it because it doesn't support Python 2.7
+    feedparser._FeedParserMixin._isBase64 = ib64_patched
 
 
 def cleanwrap(func):

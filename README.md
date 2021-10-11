@@ -30,7 +30,7 @@ Full documentation of available Pyzotero methods, code examples, and sample outp
 
 # Installation
 
-* Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7, 3.5, 3.6, 3.7, and 3.8)
+* Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 2.7 and Python 3.6 and up)
 * Using Anaconda:`conda config --add channels conda-forge && conda install pyzotero`
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
