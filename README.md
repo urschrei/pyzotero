@@ -45,7 +45,7 @@ pip install .
 
 ## Testing
 
-Run `test_zotero.py` in the [pyzotero/test](test) directory, or, using [Nose2][7], `nose2` from the top-level directory.
+Run `python -m unittest` from the top-level directory.
 
 ## Issues
 

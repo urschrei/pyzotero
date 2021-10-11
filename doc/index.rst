@@ -75,9 +75,9 @@ Pyzotero remains in development as of February 2018. Unstable development versio
 =======
 Testing
 =======
-Testing requires the ``Nose2``, ``HTTPretty``, and ``Python-Dateutil`` packages.
+Testing requires the ``HTTPretty``, and ``Python-Dateutil`` packages.
 
-Run ``test_zotero.py`` in the ``pyzotero/test`` directory, or, using `Nose 2 <http://readthedocs.org/docs/nose2/en/latest/>`_, ``nose2`` from the top-level directory. If you wish to see coverage statistics, run ``nosetests --with-coverage --cover-package=pyzotero``.
+Run ``python -m unittest`` from the top-level directory.
 
 
 ======================
