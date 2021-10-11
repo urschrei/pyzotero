@@ -64,7 +64,7 @@ setup(
         'feedparser >= 6; python_version >= "3.6.0"',
         'pytz',
         'requests >= 2.21.0',
-        'pathlib',
+        'pathlib; python_version < "3.5.0"',
         'bibtexparser',
     ],
     extras_require={"ordereddict": ["ordereddict==1.1"]},
