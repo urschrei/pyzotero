@@ -136,7 +136,7 @@ Read API Methods
     All search/request parameters inside square brackets are **optional**. Methods such as :py:meth:`Zotero.top()`, :py:meth:`Zotero.items()` etc. can be called with no additional parameters if you wish.
 
 .. tip::
-    The Read API returns 25 results by default (the API documentation claims 50). In the interests of usability, Pyzotero returns 100 items by default, by setting the API ``limit`` parameter to 100, unless it's set by the user. If you wish to retrieve e.g. all top-level items without specifiying a ``limit`` parameter, you'll have to wrap your call with :py:meth:`Zotero.everything()`: ``results = zot.everything(zot.top())``.
+    The Read API returns 25 results by default (the API documentation claims 50). In the interests of usability, Pyzotero returns 100 items by default, by setting the API ``limit`` parameter to 100, unless it's set by the user. If you wish to retrieve e.g. all top-level items without specifying a ``limit`` parameter, you'll have to wrap your call with :py:meth:`Zotero.everything()`: ``results = zot.everything(zot.top())``.
 
 
 .. py:method:: Zotero.key_info()
@@ -461,7 +461,7 @@ Retrieving Version Information
 
 The `Zotero API <https://www.zotero.org/support/dev/web_api/v3/syncing>`_ recommends requesting version information for all (or all changed) items and collections when implementing syncing.  The following convenience methods (which by default return an unlimited number of responses) simplify this process.
 
-The return values of these methods associate each item / collection with the last version (or greater) at which the item / collection was modified.  By passing the keyword argument ``since=versionNum`` only items / collections which have been modified since ``versionNum`` are included in the response. Thus, an application which previously sucessfully synced with the server at ``versionNum`` can use these methods to determine which items / collections need to be retrieved from the server.
+The return values of these methods associate each item / collection with the last version (or greater) at which the item / collection was modified.  By passing the keyword argument ``since=versionNum`` only items / collections which have been modified since ``versionNum`` are included in the response. Thus, an application which previously successfully synced with the server at ``versionNum`` can use these methods to determine which items / collections need to be retrieved from the server.
 
     .. py:method:: Zotero.item_versions([search/request parameters])
 
