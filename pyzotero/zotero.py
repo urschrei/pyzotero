@@ -31,9 +31,11 @@ THE SOFTWARE.
 
 """
 from __future__ import unicode_literals
+from . import version.__version__ as pzv
 
 __author__ = "Stephan Hügel"
 __api_version__ = "3"
+__version__ = pzv
 
 import sys
 import requests
