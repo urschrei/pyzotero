@@ -20,7 +20,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install .
-        pip install python-dateutil httpretty python-coveralls
+        pip install wheel python-dateutil httpretty python-coveralls
     - name: Test with pytest
       run: |
         python -m unittest
