@@ -33,7 +33,6 @@ THE SOFTWARE.
 from __future__ import unicode_literals
 
 __author__ = "Stephan Hügel"
-__version__ = "1.4.26"
 __api_version__ = "3"
 
 import sys
