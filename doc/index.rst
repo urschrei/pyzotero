@@ -63,7 +63,6 @@ From a local clone, if you wish to install Pyzotero from a specific branch:
 
 The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org/pypi/Pyzotero>`_
 
-For versions of Python below 2.7, the `ordereddict <http://pypi.python.org/pypi/ordereddict>`_ module required. This optional dependency can be included with Pyzotero with the command ``pip install pyzotero[ordereddict]``.
 
 
 ===============================

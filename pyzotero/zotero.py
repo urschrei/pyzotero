@@ -37,15 +37,9 @@ __author__ = "Stephan Hügel"
 __api_version__ = "3"
 __version__ = pzv.__version__
 
-import sys
 import requests
 from requests import Request
 import socket
-# horrible monkeypatching for Feedparser < 6 compat
-# Python 3.9 removed decodestring, so we need it FOR NOW
-if sys.version_info[0] > 2 and sys.version_info[1] > 8:
-    import base64
-    base64.decodestring = base64.decodebytes
 import feedparser
 import bibtexparser
 import json
@@ -65,40 +59,18 @@ from . import zotero_errors as ze
 
 from functools import wraps
 
-# Python 3 compatibility faffing
-if sys.version_info[0] == 2:
-    from urllib import urlencode
-    from urllib import quote
-    from urlparse import urlparse, urlunparse, parse_qsl, urlunsplit
-else:
-    from urllib.parse import urlencode
-    from urllib.parse import urlparse, urlunparse, parse_qsl, urlunsplit
-    from urllib.parse import quote
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
+from urllib.parse import urlencode
+from urllib.parse import urlparse, urlunparse, parse_qsl
+from urllib.parse import quote
+
+from collections import OrderedDict
+
 
 # Avoid hanging the application if there's no server response
 timeout = 30
 socket.setdefaulttimeout(timeout)
 
-
-def ib64_patched(self, attrsD, contentparams):
-    """ Patch isBase64 to prevent Base64 encoding of JSON content
-    """
-    if attrsD.get("mode", "") == "base64":
-        return 0
-    if self.contentparams["type"].startswith("text/"):
-        return 0
-    if self.contentparams["type"].endswith("+xml"):
-        return 0
-    if self.contentparams["type"].endswith("/xml"):
-        return 0
-    if self.contentparams["type"].endswith("/json"):
-        return 0
-    return 0
 
 
 def token():
@@ -106,10 +78,6 @@ def token():
     """
     return str(uuid.uuid4().hex)
 
-if sys.version_info[0] == 2:
-    # Override feedparser 5's buggy isBase64 method
-    # Note: this is fixed in v6.x, so we only apply the patch in Python 2.7
-    feedparser._FeedParserMixin._isBase64 = ib64_patched
 
 
 def cleanwrap(func):
