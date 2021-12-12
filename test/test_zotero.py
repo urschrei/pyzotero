@@ -41,22 +41,11 @@ try:
 except ModuleNotFoundError:
     from pyzotero import zotero as z
 
-# Python 3 compatibility faffing
-try:
-    from urllib import urlencode
-    from urllib import quote
-    from urlparse import urlparse
-    from urlparse import parse_qs
-except ImportError:
-    from urllib.parse import urlencode
-    from urllib.parse import urlparse
-    from urllib.parse import parse_qs
-    from urllib.parse import quote
+from urllib.parse import parse_qs
 
 
 class ZoteroTests(unittest.TestCase):
-    """ Tests for pyzotero
-    """
+    """Tests for pyzotero"""
 
     cwd = os.path.dirname(os.path.realpath(__file__))
 
@@ -66,8 +55,7 @@ class ZoteroTests(unittest.TestCase):
             return f.read()
 
     def setUp(self):
-        """ Set stuff up
-        """
+        """Set stuff up"""
         self.item_doc = self.get_doc("item_doc.json")
         self.items_doc = self.get_doc("items_doc.json")
         self.item_versions = self.get_doc("item_versions.json")
@@ -98,16 +86,15 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testFailWithoutCredentials(self):
-        """ Instance creation should fail, because we're leaving out a
-            credential
+        """Instance creation should fail, because we're leaving out a
+        credential
         """
         with self.assertRaises(z.ze.MissingCredentials):
             z.Zotero("myuserID")
 
     @httpretty.activate
     def testRequestBuilder(self):
-        """ Should url-encode all added parameters
-        """
+        """Should url-encode all added parameters"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         zot.add_parameters(limit=0, start=7)
         self.assertEqual(
@@ -116,16 +103,14 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testRequestBuilderLimitNone(self):
-        """ Should skip limit = 100 param if limit is set to None
-        """
+        """Should skip limit = 100 param if limit is set to None"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         zot.add_parameters(limit=None, start=7)
         self.assertEqual(parse_qs("start=7&format=json"), parse_qs(zot.url_params))
 
     @httpretty.activate
     def testRequestBuilderLimitNegativeOne(self):
-        """ Should skip limit = 100 param if limit is set to -1
-        """
+        """Should skip limit = 100 param if limit is set to -1"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         zot.add_parameters(limit=-1, start=7)
         self.assertEqual(parse_qs("start=7&format=json"), parse_qs(zot.url_params))
@@ -146,9 +131,9 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseItemJSONDoc(self):
-        """ Should successfully return a list of item dicts, key should match
-            input doc's zapi:key value, and author should have been correctly
-            parsed out of the XHTML payload
+        """Should successfully return a list of item dicts, key should match
+        input doc's zapi:key value, and author should have been correctly
+        parsed out of the XHTML payload
         """
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
@@ -170,8 +155,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testBackoff(self):
-        """ Test that backoffs are correctly processed
-        """
+        """Test that backoffs are correctly processed"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -273,8 +257,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testCitUTF8(self):
-        """ Ensure that unicode citations are correctly processed by Pyzotero
-        """
+        """Ensure that unicode citations are correctly processed by Pyzotero"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         url = "https://api.zotero.org/users/myuserID/items/GW8V2CK7"
         HTTPretty.register_uri(
@@ -305,8 +288,8 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseCollectionJSONDoc(self):
-        """ Should successfully return a single collection dict,
-            'name' key value should match input doc's name value
+        """Should successfully return a single collection dict,
+        'name' key value should match input doc's name value
         """
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
@@ -320,8 +303,8 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseCollectionTagsJSONDoc(self):
-        """ Should successfully return a list of tags,
-            which should match input doc's number of tag items and 'tag' values
+        """Should successfully return a list of tags,
+        which should match input doc's number of tag items and 'tag' values
         """
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
@@ -337,9 +320,9 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseCollectionsJSONDoc(self):
-        """ Should successfully return a list of collection dicts, key should
-            match input doc's zapi:key value, and 'title' value should match
-            input doc's title value
+        """Should successfully return a list of collection dicts, key should
+        match input doc's zapi:key value, and 'title' value should match
+        input doc's title value
         """
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
@@ -353,8 +336,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseTagsJSON(self):
-        """ Should successfully return a list of tags
-        """
+        """Should successfully return a list of tags"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -367,9 +349,9 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseGroupsJSONDoc(self):
-        """ Should successfully return a list of group dicts, ID should match
-            input doc's zapi:key value, and 'total_items' value should match
-            input doc's zapi:numItems value
+        """Should successfully return a list of group dicts, ID should match
+        input doc's zapi:key value, and 'total_items' value should match
+        input doc's zapi:numItems value
         """
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
@@ -382,8 +364,8 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual("smart_cities", groups_data[0]["data"]["name"])
 
     def testParamsReset(self):
-        """ Should successfully reset URL parameters after a query string
-            is built
+        """Should successfully reset URL parameters after a query string
+        is built
         """
         zot = z.Zotero("myuserID", "user", "myuserkey")
         zot.add_parameters(start=5, limit=10)
@@ -395,8 +377,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParamsBlankAfterCall(self):
-        """ self.url_params should be blank after an API call
-        """
+        """self.url_params should be blank after an API call"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -409,8 +390,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testResponseForbidden(self):
-        """ Ensure that an error is properly raised for 403
-        """
+        """Ensure that an error is properly raised for 403"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -424,8 +404,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testResponseUnsupported(self):
-        """ Ensure that an error is properly raised for 400
-        """
+        """Ensure that an error is properly raised for 400"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -439,8 +418,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testResponseNotFound(self):
-        """ Ensure that an error is properly raised for 404
-        """
+        """Ensure that an error is properly raised for 404"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -454,8 +432,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testResponseMiscError(self):
-        """ Ensure that an error is properly raised for unspecified errors
-        """
+        """Ensure that an error is properly raised for unspecified errors"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -482,8 +459,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testGetTemplate(self):
-        """ Ensure that item templates are retrieved and converted into dicts
-        """
+        """Ensure that item templates are retrieved and converted into dicts"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -495,8 +471,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual("book", t["itemType"])
 
     def testCreateCollectionError(self):
-        """ Ensure that collection creation fails with the wrong dict
-        """
+        """Ensure that collection creation fails with the wrong dict"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         t = [{"foo": "bar"}]
         with self.assertRaises(z.ze.ParamNotPassed):
@@ -504,8 +479,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testNoApiKey(self):
-        """ Ensure that pyzotero works when api_key is not set
-        """
+        """Ensure that pyzotero works when api_key is not set"""
         zot = z.Zotero("myuserID", "user")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -536,8 +510,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testCollectionCreation(self):
-        """ Tests creation of a new collection
-        """
+        """Tests creation of a new collection"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.POST,
@@ -554,8 +527,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testCollectionCreationLastModified(self):
-        """ Tests creation of a new collection with last_modified param
-        """
+        """Tests creation of a new collection with last_modified param"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.POST,
@@ -574,8 +546,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testCollectionUpdate(self):
-        """ Tests update of a collection
-        """
+        """Tests update of a collection"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.PUT,
@@ -592,8 +563,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testCollectionUpdateLastModified(self):
-        """ Tests update of a collection with last_modified set
-        """
+        """Tests update of a collection with last_modified set"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.PUT,
@@ -612,8 +582,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testItemCreation(self):
-        """ Tests creation of a new item using a template
-        """
+        """Tests creation of a new item using a template"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -638,8 +607,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testItemCreationLastModified(self):
-        """ Checks 'If-Unmodified-Since-Version' header correctly set on create_items
-        """
+        """Checks 'If-Unmodified-Since-Version' header correctly set on create_items"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.POST,
@@ -655,8 +623,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testItemUpdate(self):
-        """ Tests item update using update_item
-        """
+        """Tests item update using update_item"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         update = {"key": "ABC123", "version": 3, "itemType": "book"}
         HTTPretty.register_uri(
@@ -680,8 +647,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testItemUpdateLastModified(self):
-        """ Tests item update using update_item with last_modified parameter
-        """
+        """Tests item update using update_item with last_modified parameter"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         update = {"key": "ABC123", "version": 3, "itemType": "book"}
         HTTPretty.register_uri(
@@ -704,8 +670,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(request.headers["If-Unmodified-Since-Version"], "5")
 
     def testTooManyItems(self):
-        """ Should fail because we're passing too many items
-        """
+        """Should fail because we're passing too many items"""
         itms = [i for i in range(51)]
         zot = z.Zotero("myuserID", "user", "myuserkey")
         with self.assertRaises(z.ze.TooManyItems):
@@ -713,8 +678,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testRateLimitWithBackoff(self):
-        """ Test 429 response handling when a backoff header is received
-        """
+        """Test 429 response handling when a backoff header is received"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -726,8 +690,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertTrue(zot.backoff)
 
     def tearDown(self):
-        """ Tear stuff down
-        """
+        """Tear stuff down"""
         HTTPretty.disable()
 
 
