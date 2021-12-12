@@ -45,7 +45,7 @@ pip install .
 
 ## Testing
 
-Run `python -m unittest` from the top-level directory.
+Run `pytest .` from the top-level directory.
 
 ## Issues
 

@@ -76,7 +76,7 @@ Testing
 =======
 Testing requires the ``HTTPretty``, and ``Python-Dateutil`` packages.
 
-Run ``python -m unittest`` from the top-level directory.
+Run ``pytest .`` from the top-level directory.
 
 
 ======================
