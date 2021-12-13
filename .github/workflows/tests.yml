@@ -24,7 +24,7 @@ jobs:
         pip install python-dateutil httpretty pytest pytest-cov
     - name: Test with pytest
       run: |
-        pytest --cov-report= --cov=. tests/
+        pytest --cov-report= --cov=pyzotero tests/
     - name: Coveralls
       uses: AndreMiras/coveralls-python-action@develop
       with:
