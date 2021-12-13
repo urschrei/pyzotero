@@ -684,7 +684,7 @@ class ZoteroTests(unittest.TestCase):
             HTTPretty.GET,
             "https://api.zotero.org/users/myuserID/items",
             status=429,
-            adding_headers={"backoff": 10},
+            adding_headers={"backoff": 0.1},
         )
         zot.items()
         self.assertTrue(zot.backoff)
