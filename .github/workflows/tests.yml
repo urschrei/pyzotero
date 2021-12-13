@@ -21,10 +21,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install wheel
         pip install .
-        pip install python-dateutil httpretty python-coveralls pytest
+        pip install python-dateutil httpretty pytest pytest-cov
     - name: Test with pytest
       run: |
-        pytest .
+        pytest --cov-report= --cov=.
     - name: Coveralls
       uses: AndreMiras/coveralls-python-action@develop
       with:
