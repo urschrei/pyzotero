@@ -50,7 +50,7 @@ class ZoteroTests(unittest.TestCase):
     cwd = os.path.dirname(os.path.realpath(__file__))
 
     def get_doc(self, doc_name, cwd=cwd):
-        """ return the requested test document """
+        """return the requested test document"""
         with open(os.path.join(cwd, "api_responses", "%s" % doc_name), "r") as f:
             return f.read()
 
@@ -187,7 +187,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseAttachmentsJSONDoc(self):
-        """ Ensure that attachments are being correctly parsed """
+        """Ensure that attachments are being correctly parsed"""
         zot = z.Zotero("myuserid", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -200,7 +200,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseKeysResponse(self):
-        """ Check that parsing plain keys returned by format = keys works """
+        """Check that parsing plain keys returned by format = keys works"""
         zot = z.Zotero("myuserid", "user", "myuserkey")
         zot.url_params = "format=keys"
         HTTPretty.register_uri(
@@ -214,7 +214,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseItemVersionsResponse(self):
-        """ Check that parsing version dict returned by format = versions works """
+        """Check that parsing version dict returned by format = versions works"""
         zot = z.Zotero("myuserid", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -229,7 +229,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseCollectionVersionsResponse(self):
-        """ Check that parsing version dict returned by format = versions works """
+        """Check that parsing version dict returned by format = versions works"""
         zot = z.Zotero("myuserid", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -244,7 +244,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testParseChildItems(self):
-        """ Try and parse child items """
+        """Try and parse child items"""
         zot = z.Zotero("myuserid", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -446,7 +446,7 @@ class ZoteroTests(unittest.TestCase):
 
     @httpretty.activate
     def testGetItems(self):
-        """ Ensure that we can retrieve a list of all items """
+        """Ensure that we can retrieve a list of all items"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         HTTPretty.register_uri(
             HTTPretty.GET,

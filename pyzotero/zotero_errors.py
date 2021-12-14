@@ -33,43 +33,37 @@ THE SOFTWARE.
 
 # Define some exceptions
 class PyZoteroError(Exception):
-    """ Generic parent exception
-    """
+    """Generic parent exception"""
 
     pass
 
 
 class ParamNotPassed(PyZoteroError):
-    """ Raised if a parameter which is required isn't passed
-    """
+    """Raised if a parameter which is required isn't passed"""
 
     pass
 
 
 class CallDoesNotExist(PyZoteroError):
-    """ Raised if the specified API call doesn't exist
-    """
+    """Raised if the specified API call doesn't exist"""
 
     pass
 
 
 class UnsupportedParams(PyZoteroError):
-    """ Raised when unsupported parameters are passed
-    """
+    """Raised when unsupported parameters are passed"""
 
     pass
 
 
 class UserNotAuthorised(PyZoteroError):
-    """ Raised when the user is not allowed to retrieve the resource
-    """
+    """Raised when the user is not allowed to retrieve the resource"""
 
     pass
 
 
 class TooManyItems(PyZoteroError):
-    """ Raised when too many items are passed to a Write API method
-    """
+    """Raised when too many items are passed to a Write API method"""
 
     pass
 
@@ -84,36 +78,31 @@ class MissingCredentials(PyZoteroError):
 
 
 class InvalidItemFields(PyZoteroError):
-    """ Raised when an attempt is made to create/update items w/invalid fields
-    """
+    """Raised when an attempt is made to create/update items w/invalid fields"""
 
     pass
 
 
 class ResourceNotFound(PyZoteroError):
-    """ Raised when a resource (item, collection etc.) could not be found
-    """
+    """Raised when a resource (item, collection etc.) could not be found"""
 
     pass
 
 
 class HTTPError(PyZoteroError):
-    """ Raised for miscellaneous URLLib errors
-    """
+    """Raised for miscellaneous URLLib errors"""
 
     pass
 
 
 class CouldNotReachURL(PyZoteroError):
-    """ Raised when we can't reach a URL
-    """
+    """Raised when we can't reach a URL"""
 
     pass
 
 
 class Conflict(PyZoteroError):
-    """ 409 - Raised when the target library is locked
-    """
+    """409 - Raised when the target library is locked"""
 
     pass
 
