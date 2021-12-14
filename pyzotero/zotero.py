@@ -87,10 +87,10 @@ def cleanwrap(func):
     return enc
 
 
-def chunks(l, n):
+def chunks(iterable, n):
     """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i : i + n]
+    for i in range(0, len(iterable), n):
+        yield iterable[i : i + n]
 
 
 def tcache(func):
