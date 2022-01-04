@@ -30,7 +30,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-from __future__ import unicode_literals
 from . import version as pzv
 
 __author__ = "Stephan Hügel"
@@ -252,7 +251,7 @@ def ss_wrap(func):
     return wrapper
 
 
-class Zotero(object):
+class Zotero:
     """
     Zotero API methods
     A full list of methods can be found here:
@@ -1577,7 +1576,7 @@ def error_handler(zot, req):
         raise ze.HTTPError(err_msg(req))
 
 
-class SavedSearch(object):
+class SavedSearch:
     """Saved search functionality"""
 
     def __init__(self, zinstance):
@@ -1743,7 +1742,7 @@ class SavedSearch(object):
                 )
 
 
-class Zupload(object):
+class Zupload:
     """
     Zotero file attachment helper
     Receives a Zotero instance, file(s) to upload, and optional parent ID
