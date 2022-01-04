@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 pre-deploy.py
 
@@ -36,9 +35,11 @@ def find_version(*file_paths):
 
 
 def check():
-    git_version = subprocess.check_output(
-        ["git", "describe", "--abbrev=0", "--tags"]
-    ).decode('utf-8').strip()
+    git_version = (
+        subprocess.check_output(["git", "describe", "--abbrev=0", "--tags"])
+        .decode("utf-8")
+        .strip()
+    )
     library_version = unicode("v" + find_version("pyzotero/zotero.py")).strip()
     # invert the boolean because 1 (True) == Bash error exit code
     print("Git version: %s\nLibrary version: %s" % (git_version, library_version))
