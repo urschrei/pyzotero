@@ -70,6 +70,17 @@ timeout = 30
 socket.setdefaulttimeout(timeout)
 
 
+def build_url(base_url, path, args_dict=None):
+    """Build a valid URL so we don't have to worry about string concatenation errors and
+    leading / trailing slashes etc"""
+    # Returns a list in the structure of urlparse.ParseResult"""
+    url_parts = list(urlparse(base_url))
+    url_parts[2] = path
+    if args_dict:
+        url_parts[4] = urlencode(args_dict)
+    return urlunparse(url_parts)
+
+
 def token():
     """Return a unique 32-char write-token"""
     return str(uuid.uuid4().hex)
@@ -100,7 +111,9 @@ def tcache(func):
         builds URL, retrieves template, caches result, and returns template
         """
         query_string, params = func(self, *args, **kwargs)
-        r = Request("GET", self.endpoint + query_string, params=params).prepare()
+        r = Request(
+            "GET", build_url(self.endpoint, query_string), params=params
+        ).prepare()
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
@@ -387,7 +400,7 @@ class Zotero:
         Combine endpoint and request to access the specific resource
         Returns a JSON document
         """
-        full_url = "%s%s" % (self.endpoint, request)
+        full_url = build_url(self.endpoint, request)
         # The API doesn't return this any more, so we have to cheat
         self.self_link = request
         # ensure that we wait if there's an active backoff
@@ -453,8 +466,9 @@ class Zotero:
             ).seconds
             > 3600
         ):
-            query = self.endpoint + url.format(
-                u=self.library_id, t=self.library_type, **payload
+            query = build_url(
+                self.endpoint,
+                url.format(u=self.library_id, t=self.library_type, **payload),
             )
             headers = {
                 "If-Modified-Since": payload["updated"].strftime(
@@ -591,9 +605,11 @@ class Zotero:
         headers = self.default_headers()
         headers.update({"Content-Type": "application/json"})
         return requests.put(
-            url=self.endpoint
-            + "/{t}/{u}/items/{k}/fulltext".format(
-                t=self.library_type, u=self.library_id, k=itemkey
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/items/{k}/fulltext".format(
+                    t=self.library_type, u=self.library_id, k=itemkey
+                ),
             ),
             headers=headers,
             data=json.dumps(payload),
@@ -609,7 +625,7 @@ class Zotero:
         )
         headers = self.default_headers()
         self._check_backoff()
-        resp = requests.get(self.endpoint + query_string, headers=headers)
+        resp = requests.get(build_url(self.endpoint, query_string), headers=headers)
         try:
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -989,7 +1005,7 @@ class Zotero:
     @ss_wrap
     def saved_search(self, name, conditions):
         """Create a saved search. conditions is a list of dicts
-        containing search conditions, and must contain the following str keys:
+        containing search conditions and must contain the following str keys:
         condition, operator, value
         """
         self.savedsearch._validate(conditions)
@@ -998,8 +1014,10 @@ class Zotero:
         headers.update(self.default_headers())
         self._check_backoff()
         req = requests.post(
-            url=self.endpoint
-            + "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
+            ),
             headers=headers,
             data=json.dumps(payload),
         )
@@ -1022,8 +1040,10 @@ class Zotero:
         headers.update(self.default_headers())
         self._check_backoff()
         req = requests.delete(
-            url=self.endpoint
-            + "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
+            ),
             headers=headers,
             params={"searchKey": ",".join(keys)},
         )
@@ -1067,7 +1087,9 @@ class Zotero:
         """
         params = {"locale": self.locale}
         query_string = "/itemFields"
-        r = Request("GET", self.endpoint + query_string, params=params).prepare()
+        r = Request(
+            "GET", build_url(self.endpoint, query_string), params=params
+        ).prepare()
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
@@ -1181,8 +1203,10 @@ class Zotero:
         headers.update(self.default_headers())
         self._check_backoff()
         req = requests.post(
-            url=self.endpoint
-            + "/{t}/{u}/items".format(t=self.library_type, u=self.library_id),
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/items".format(t=self.library_type, u=self.library_id),
+            ),
             data=to_send,
             headers=dict(headers),
         )
@@ -1207,9 +1231,11 @@ class Zotero:
                 payload = json.dumps({"parentItem": parentid})
                 self._check_backoff()
                 presp = requests.patch(
-                    url=self.endpoint
-                    + "/{t}/{u}/items/{v}".format(
-                        t=self.library_type, u=self.library_id, v=value
+                    url=build_url(
+                        self.endpoint,
+                        "/{t}/{u}/items/{v}".format(
+                            t=self.library_type, u=self.library_id, v=value
+                        ),
                     ),
                     data=payload,
                     headers=dict(uheaders),
@@ -1249,8 +1275,10 @@ class Zotero:
         headers.update(self.default_headers())
         self._check_backoff()
         req = requests.post(
-            url=self.endpoint
-            + "/{t}/{u}/collections".format(t=self.library_type, u=self.library_id),
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/collections".format(t=self.library_type, u=self.library_id),
+            ),
             headers=headers,
             data=json.dumps(payload),
         )
@@ -1279,9 +1307,11 @@ class Zotero:
         headers.update(self.default_headers())
         headers.update({"Content-Type": "application/json"})
         return requests.put(
-            url=self.endpoint
-            + "/{t}/{u}/collections/{c}".format(
-                t=self.library_type, u=self.library_id, c=key
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/collections/{c}".format(
+                    t=self.library_type, u=self.library_id, c=key
+                ),
             ),
             headers=headers,
             data=json.dumps(payload),
@@ -1336,9 +1366,11 @@ class Zotero:
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
         return requests.patch(
-            url=self.endpoint
-            + "/{t}/{u}/items/{id}".format(
-                t=self.library_type, u=self.library_id, id=ident
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/items/{id}".format(
+                    t=self.library_type, u=self.library_id, id=ident
+                ),
             ),
             headers=headers,
             data=json.dumps(to_send),
@@ -1357,8 +1389,10 @@ class Zotero:
         for chunk in chunks(to_send, 50):
             self._check_backoff()
             req = requests.post(
-                url=self.endpoint
-                + "/{t}/{u}/items/".format(t=self.library_type, u=self.library_id),
+                url=build_url(
+                    self.endpoint,
+                    "/{t}/{u}/items/".format(t=self.library_type, u=self.library_id),
+                ),
                 headers=headers,
                 data=json.dumps(chunk),
             )
@@ -1385,9 +1419,11 @@ class Zotero:
         for chunk in chunks(to_send, 50):
             self._check_backoff()
             req = requests.post(
-                url=self.endpoint
-                + "/{t}/{u}/collections/".format(
-                    t=self.library_type, u=self.library_id
+                url=build_url(
+                    self.endpoint,
+                    "/{t}/{u}/collections/".format(
+                        t=self.library_type, u=self.library_id
+                    ),
                 ),
                 headers=headers,
                 data=json.dumps(chunk),
@@ -1416,9 +1452,11 @@ class Zotero:
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
         return requests.patch(
-            url=self.endpoint
-            + "/{t}/{u}/items/{i}".format(
-                t=self.library_type, u=self.library_id, i=ident
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/items/{i}".format(
+                    t=self.library_type, u=self.library_id, i=ident
+                ),
             ),
             data=json.dumps({"collections": modified_collections}),
             headers=headers,
@@ -1440,9 +1478,11 @@ class Zotero:
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
         return requests.patch(
-            url=self.endpoint
-            + "/{t}/{u}/items/{i}".format(
-                t=self.library_type, u=self.library_id, i=ident
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/items/{i}".format(
+                    t=self.library_type, u=self.library_id, i=ident
+                ),
             ),
             data=json.dumps({"collections": modified_collections}),
             headers=headers,
@@ -1465,8 +1505,10 @@ class Zotero:
         }
         headers.update(self.default_headers())
         return requests.delete(
-            url=self.endpoint
-            + "/{t}/{u}/tags".format(t=self.library_type, u=self.library_id),
+            url=build_url(
+                self.endpoint,
+                "/{t}/{u}/tags".format(t=self.library_type, u=self.library_id),
+            ),
             params={"tag": modified_tags},
             headers=headers,
         )
@@ -1486,8 +1528,9 @@ class Zotero:
                 modified = last_modified
             else:
                 modified = payload[0]["version"]
-            url = self.endpoint + "/{t}/{u}/items".format(
-                t=self.library_type, u=self.library_id
+            url = build_url(
+                self.endpoint,
+                "/{t}/{u}/items".format(t=self.library_type, u=self.library_id),
             )
         else:
             ident = payload["key"]
@@ -1495,8 +1538,11 @@ class Zotero:
                 modified = last_modified
             else:
                 modified = payload["version"]
-            url = self.endpoint + "/{t}/{u}/items/{c}".format(
-                t=self.library_type, u=self.library_id, c=ident
+            url = build_url(
+                self.endpoint,
+                "/{t}/{u}/items/{c}".format(
+                    t=self.library_type, u=self.library_id, c=ident
+                ),
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
@@ -1517,8 +1563,9 @@ class Zotero:
                 modified = last_modified
             else:
                 modified = payload[0]["version"]
-            url = self.endpoint + "/{t}/{u}/collections".format(
-                t=self.library_type, u=self.library_id
+            url = build_url(
+                self.endpoint,
+                "/{t}/{u}/collections".format(t=self.library_type, u=self.library_id),
             )
         else:
             ident = payload["key"]
@@ -1526,8 +1573,11 @@ class Zotero:
                 modified = last_modified
             else:
                 modified = payload["version"]
-            url = self.endpoint + "/{t}/{u}/collections/{c}".format(
-                t=self.library_type, u=self.library_id, c=ident
+            url = build_url(
+                self.endpoint,
+                "/{t}/{u}/collections/{c}".format(
+                    t=self.library_type, u=self.library_id, c=ident
+                ),
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
@@ -1807,9 +1857,11 @@ class Zupload:
         to_send = json.dumps(self.payload)
         self.zinstance._check_backoff()
         req = requests.post(
-            url=self.zinstance.endpoint
-            + liblevel.format(
-                t=self.zinstance.library_type, u=self.zinstance.library_id
+            url=build_url(
+                self.zinstance.endpoint,
+                liblevel.format(
+                    t=self.zinstance.library_type, u=self.zinstance.library_id
+                ),
             ),
             data=to_send,
             headers=headers,
@@ -1853,9 +1905,13 @@ class Zupload:
         }
         self.zinstance._check_backoff()
         auth_req = requests.post(
-            url=self.zinstance.endpoint
-            + "/{t}/{u}/items/{i}/file".format(
-                t=self.zinstance.library_type, u=self.zinstance.library_id, i=reg_key
+            url=build_url(
+                self.zinstance.endpoint,
+                "/{t}/{u}/items/{i}/file".format(
+                    t=self.zinstance.library_type,
+                    u=self.zinstance.library_id,
+                    i=reg_key,
+                ),
             ),
             data=data,
             headers=auth_headers,
@@ -1914,9 +1970,13 @@ class Zupload:
         reg_data = {"upload": authdata.get("uploadKey")}
         self.zinstance._check_backoff()
         upload_reg = requests.post(
-            url=self.zinstance.endpoint
-            + "/{t}/{u}/items/{i}/file".format(
-                t=self.zinstance.library_type, u=self.zinstance.library_id, i=reg_key
+            url=build_url(
+                self.zinstance.endpoint,
+                "/{t}/{u}/items/{i}/file".format(
+                    t=self.zinstance.library_type,
+                    u=self.zinstance.library_id,
+                    i=reg_key,
+                ),
             ),
             data=reg_data,
             headers=dict(reg_headers),
