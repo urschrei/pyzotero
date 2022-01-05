@@ -132,7 +132,7 @@ class PreConditionRequired(PyZoteroError):
 
 class TooManyRequests(PyZoteroError):
     """
-    429 - Raised when Too many unfinished uploads.
+    429 - Raised when there are too many unfinished uploads.
     Try again after the number of seconds specified in the Retry-After header.
     """
 
@@ -157,7 +157,7 @@ class TooManyRetries(PyZoteroError):
 
 class UploadError(PyZoteroError):
     """
-    Raise if connection dropped during upload or other non HTTP error code is returned
+    Raise if the connection drops during upload or some other non-HTTP error code is returned
     """
 
     pass
