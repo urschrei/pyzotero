@@ -52,17 +52,13 @@ import re
 import pytz
 import mimetypes
 from pathlib import Path
-
-from . import zotero_errors as ze
-
+from collections import OrderedDict
 from functools import wraps
-
-
 from urllib.parse import urlencode
 from urllib.parse import urlparse, urlunparse, parse_qsl
 from urllib.parse import quote
 
-from collections import OrderedDict
+from . import zotero_errors as ze
 
 
 # Avoid hanging the application if there's no server response
