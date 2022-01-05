@@ -1622,7 +1622,8 @@ def error_handler(zot, req):
 
 
 class SavedSearch:
-    """Saved search functionality"""
+    """Saved search functionality
+    See https://github.com/zotero/zotero/blob/master/chrome/content/zotero/xpcom/data/searchConditions.js"""
 
     def __init__(self, zinstance):
         super(SavedSearch, self).__init__()
