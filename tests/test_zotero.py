@@ -346,6 +346,24 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(u"Community / Economic Development", tags_data[0])
 
     @httpretty.activate
+    def testParseLinkHeaders(self):
+        """Should successfully parse link headers"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/tags?limit=1",
+            content_type="application/json",
+            body=self.tags_doc,
+            adding_headers={
+                "Link": '<https://api.zotero.org/users/436/items/top?limit=1&start=1>; rel="next", <https://api.zotero.org/users/436/items/top?limit=1&start=2319>; rel="last", <https://www.zotero.org/users/436/items/top>; rel="alternate"'
+            },
+        )
+        zot.tags()
+        self.assertEqual(zot.links["next"], "/users/436/items/top?limit=1&start=1")
+        self.assertEqual(zot.links["last"], "/users/436/items/top?limit=1&start=2319")
+        self.assertEqual(zot.links["alternate"], "/users/436/items/top?")
+
+    @httpretty.activate
     def testParseGroupsJSONDoc(self):
         """Should successfully return a list of group dicts, ID should match
         input doc's zapi:key value, and 'total_items' value should match

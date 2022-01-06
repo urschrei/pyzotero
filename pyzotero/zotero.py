@@ -430,11 +430,7 @@ class Zotero:
             parsed = list(urlparse(self.self_link))
             # strip 'format' query parameter
             stripped = "&".join(
-                [
-                    "%s=%s" % (p[0], p[1])
-                    for p in parse_qsl(parsed[4])
-                    if p[0] != "format"
-                ]
+                ["=".join(p) for p in parse_qsl(parsed[4])[:2] if p[0] != "format"]
             )
             # rebuild url fragment
             # this is a death march
