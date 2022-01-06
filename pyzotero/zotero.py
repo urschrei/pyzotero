@@ -147,7 +147,7 @@ def backoff_check(func):
         except requests.exceptions.HTTPError:
             error_handler(self, resp)
         self.request = resp
-        backoff = resp.headers.get("backoff")
+        backoff = resp.headers.get("backoff") or resp.headers.get("retry-after")
         if backoff:
             self._set_backoff(backoff)
 
@@ -409,7 +409,9 @@ class Zotero:
             self.request.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, self.request)
-        backoff = self.request.headers.get("backoff")
+        backoff = self.request.headers.get("backoff") or self.request.headers.get(
+            "retry-after"
+        )
         if backoff:
             self._set_backoff(backoff)
         return self.request
@@ -479,7 +481,9 @@ class Zotero:
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(self, req)
-            backoff = self.request.headers.get("backoff")
+            backoff = self.request.headers.get("backoff") or self.request.headers.get(
+                "retry-after"
+            )
             if backoff:
                 self._set_backoff(backoff)
             return req.status_code == 304
@@ -626,7 +630,9 @@ class Zotero:
             resp.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, resp)
-        backoff = self.request.headers.get("backoff")
+        backoff = self.request.headers.get("backoff") or self.request.headers.get(
+            "retry-after"
+        )
         if backoff:
             self._set_backoff(backoff)
         return resp.json()
@@ -1022,7 +1028,9 @@ class Zotero:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, req)
-        backoff = self.request.headers.get("backoff")
+        backoff = self.request.headers.get("backoff") or self.request.headers.get(
+            "retry-after"
+        )
         if backoff:
             self._set_backoff(backoff)
         return req.json()
@@ -1048,7 +1056,9 @@ class Zotero:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, req)
-        backoff = self.request.headers.get("backoff")
+        backoff = self.request.headers.get("backoff") or self.request.headers.get(
+            "retry-after"
+        )
         if backoff:
             self._set_backoff(backoff)
         return req.status_code
@@ -1212,7 +1222,9 @@ class Zotero:
         except requests.exceptions.HTTPError:
             error_handler(self, req)
         resp = req.json()
-        backoff = self.request.headers.get("backoff")
+        backoff = self.request.headers.get("backoff") or self.request.headers.get(
+            "retry-after"
+        )
         if backoff:
             self._set_backoff(backoff)
         if parentid:
@@ -1241,7 +1253,9 @@ class Zotero:
                     presp.raise_for_status()
                 except requests.exceptions.HTTPError:
                     error_handler(self, presp)
-                backoff = presp.headers.get("backoff")
+                backoff = presp.headers.get("backoff") or presp.headers.get(
+                    "retry-after"
+                )
                 if backoff:
                     self._set_backoff(backoff)
         return resp
@@ -1283,7 +1297,7 @@ class Zotero:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self, req)
-        backoff = req.headers.get("backoff")
+        backoff = req.headers.get("backoff") or req.headers.get("retry-after")
         if backoff:
             self._set_backoff(backoff)
         return req.json()
@@ -1397,7 +1411,7 @@ class Zotero:
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(self, req)
-            backoff = req.headers.get("backoff")
+            backoff = req.headers.get("backoff") or req.headers.get("retry-after")
             if backoff:
                 self._set_backoff(backoff)
         return True
@@ -1429,7 +1443,7 @@ class Zotero:
                 req.raise_for_status()
             except requests.exceptions.HTTPError:
                 error_handler(self, req)
-            backoff = req.headers.get("backoff")
+            backoff = req.headers.get("backoff") or req.headers.get("retry-after")
             if backoff:
                 self._set_backoff(backoff)
         return True
@@ -1869,7 +1883,7 @@ class Zupload:
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.zinstance, req)
-        backoff = req.headers.get("backoff")
+        backoff = req.headers.get("backoff") or req.headers.get("retry-after")
         if backoff:
             self.zinstance._set_backoff(backoff)
         data = req.json()
@@ -1919,7 +1933,7 @@ class Zupload:
             auth_req.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.zinstance, auth_req)
-        backoff = auth_req.headers.get("backoff")
+        backoff = auth_req.headers.get("backoff") or auth_req.headers.get("retry-after")
         if backoff:
             self.zinstance._set_backoff(backoff)
         return auth_req.json()
@@ -1951,7 +1965,7 @@ class Zupload:
             upload.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.zinstance, upload)
-        backoff = upload.headers.get("backoff")
+        backoff = upload.headers.get("backoff") or upload.headers.get("retry-after")
         if backoff:
             self.zinstance._set_backoff(backoff)
         # now check the responses
@@ -1984,7 +1998,9 @@ class Zupload:
             upload_reg.raise_for_status()
         except requests.exceptions.HTTPError:
             error_handler(self.zinstance, upload_reg)
-        backoff = upload_reg.headers.get("backoff")
+        backoff = upload_reg.headers.get("backoff") or upload_reg.headers.get(
+            "retry-after"
+        )
         if backoff:
             self._set_backoff(backoff)
 
