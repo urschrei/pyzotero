@@ -1607,14 +1607,11 @@ def error_handler(zot, req):
     if error_codes.get(req.status_code):
         # check to see whether its 429
         if req.status_code == 429:
-            # try to get backoff duration
-            delay = req.headers.get("backoff")
-            if not delay:
-                # try to get a retry-after duration instead
-                delay = req.headers.get("retry-after")
+            # try to get backoff or delay duration
+            delay = req.headers.get("backoff") or req.headers.get("retry-after")
             if not delay:
                 raise ze.TooManyRetries(
-                    "You are being rate-limited and no backoff duration has been received from the server. Try again later"
+                    "You are being rate-limited and no backoff or retry duration has been received from the server. Try again later"
                 )
             else:
                 zot._set_backoff(delay)
