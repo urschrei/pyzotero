@@ -107,7 +107,10 @@ def tcache(func):
         """
         query_string, params = func(self, *args, **kwargs)
         r = Request(
-            "GET", build_url(self.endpoint, query_string), params=params, timeout=timeout
+            "GET",
+            build_url(self.endpoint, query_string),
+            params=params,
+            timeout=timeout,
         ).prepare()
         # now split up the URL
         result = urlparse(r.url)
@@ -1089,7 +1092,10 @@ class Zotero:
         params = {"locale": self.locale}
         query_string = "/itemFields"
         r = Request(
-            "GET", build_url(self.endpoint, query_string), params=params, timeout=timeout
+            "GET",
+            build_url(self.endpoint, query_string),
+            params=params,
+            timeout=timeout,
         ).prepare()
         # now split up the URL
         result = urlparse(r.url)
