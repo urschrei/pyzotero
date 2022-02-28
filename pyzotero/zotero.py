@@ -63,7 +63,6 @@ from . import zotero_errors as ze
 
 # Avoid hanging the application if there's no server response
 timeout = 30
-socket.setdefaulttimeout(timeout)
 
 
 def build_url(base_url, path, args_dict=None):
@@ -108,7 +107,7 @@ def tcache(func):
         """
         query_string, params = func(self, *args, **kwargs)
         r = Request(
-            "GET", build_url(self.endpoint, query_string), params=params
+            "GET", build_url(self.endpoint, query_string), params=params, timeout=timeout
         ).prepare()
         # now split up the URL
         result = urlparse(r.url)
@@ -1090,7 +1089,7 @@ class Zotero:
         params = {"locale": self.locale}
         query_string = "/itemFields"
         r = Request(
-            "GET", build_url(self.endpoint, query_string), params=params
+            "GET", build_url(self.endpoint, query_string), params=params, timeout=timeout
         ).prepare()
         # now split up the URL
         result = urlparse(r.url)
