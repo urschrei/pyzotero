@@ -40,10 +40,12 @@ import sys
 import requests
 from requests import Request
 import socket
+
 # horrible monkeypatching for Feedparser < 6 compat
 # Python 3.9 removed decodestring, so we need it FOR NOW
 if sys.version_info[0] > 2 and sys.version_info[1] > 8:
     import base64
+
     base64.decodestring = base64.decodebytes
 import feedparser
 import bibtexparser
@@ -81,12 +83,10 @@ except ImportError:
 
 # Avoid hanging the application if there's no server response
 timeout = 30
-socket.setdefaulttimeout(timeout)
 
 
 def ib64_patched(self, attrsD, contentparams):
-    """ Patch isBase64 to prevent Base64 encoding of JSON content
-    """
+    """Patch isBase64 to prevent Base64 encoding of JSON content"""
     if attrsD.get("mode", "") == "base64":
         return 0
     if self.contentparams["type"].startswith("text/"):
@@ -101,8 +101,7 @@ def ib64_patched(self, attrsD, contentparams):
 
 
 def token():
-    """ Return a unique 32-char write-token
-    """
+    """Return a unique 32-char write-token"""
     return str(uuid.uuid4().hex)
 
 
@@ -112,11 +111,10 @@ feedparser._FeedParserMixin._isBase64 = ib64_patched
 
 
 def cleanwrap(func):
-    """ Wrapper for Zotero._cleanup
-    """
+    """Wrapper for Zotero._cleanup"""
 
     def enc(self, *args, **kwargs):
-        """ Send each item to _cleanup() """
+        """Send each item to _cleanup()"""
         return (func(self, item, **kwargs) for item in args)
 
     return enc
@@ -129,15 +127,17 @@ def chunks(l, n):
 
 
 def tcache(func):
-    """ Take care of the URL building and caching for template functions """
+    """Take care of the URL building and caching for template functions"""
 
     @wraps(func)
     def wrapped_f(self, *args, **kwargs):
-        """ Calls the decorated function to get query string and params,
+        """Calls the decorated function to get query string and params,
         builds URL, retrieves template, caches result, and returns template
         """
         query_string, params = func(self, *args, **kwargs)
-        r = Request("GET", self.endpoint + query_string, params=params).prepare()
+        r = Request(
+            "GET", self.endpoint + query_string, params=params, timeout=timeout
+        ).prepare()
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
@@ -262,7 +262,9 @@ def retrieve(func):
             # we need to dump as a zip!
             self.snapshot = True
         if fmt == "bibtex":
-            parser = bibtexparser.bparser.BibTexParser(common_strings=True, ignore_nonstandard_types=False)
+            parser = bibtexparser.bparser.BibTexParser(
+                common_strings=True, ignore_nonstandard_types=False
+            )
             return parser.parse(retrieved.text)
         # it's binary, so return raw content
         elif fmt != "json":
@@ -275,7 +277,7 @@ def retrieve(func):
 
 
 def ss_wrap(func):
-    """ ensure that a SavedSearch object exists """
+    """ensure that a SavedSearch object exists"""
 
     def wrapper(self, *args, **kwargs):
         if not self.savedsearch:
@@ -300,8 +302,7 @@ class Zotero(object):
         preserve_json_order=False,
         locale="en-US",
     ):
-        """ Store Zotero credentials
-        """
+        """Store Zotero credentials"""
         self.endpoint = "https://api.zotero.org"
         if library_id and library_type:
             self.library_id = library_id
@@ -404,8 +405,7 @@ class Zotero(object):
 
     @cleanwrap
     def _cleanup(self, to_clean, allow=()):
-        """ Remove keys we added for internal use
-        """
+        """Remove keys we added for internal use"""
         # this item's been retrieved from the API, we only need the 'data'
         # entry
         if to_clean.keys() == ["links", "library", "version", "meta", "key", "data"]:
@@ -556,8 +556,7 @@ class Zotero(object):
 
     @retrieve
     def publications(self):
-        """ Return the contents of My Publications
-        """
+        """Return the contents of My Publications"""
         if self.library_type != "users":
             raise ze.CallDoesNotExist(
                 "This API call does not exist for group libraries"
@@ -567,28 +566,24 @@ class Zotero(object):
 
     # The following methods are Zotero Read API calls
     def num_items(self):
-        """ Return the total number of top-level items in the library
-        """
+        """Return the total number of top-level items in the library"""
         query = "/{t}/{u}/items/top"
         return self._totals(query)
 
     def count_items(self):
-        """ Return the count of all items in a group / library
-        """
+        """Return the count of all items in a group / library"""
         query = "/{t}/{u}/items"
         return self._totals(query)
 
     def num_collectionitems(self, collection):
-        """ Return the total number of items in the specified collection
-        """
+        """Return the total number of items in the specified collection"""
         query = "/{t}/{u}/collections/{c}/items".format(
             u=self.library_id, t=self.library_type, c=collection.upper()
         )
         return self._totals(query)
 
     def _totals(self, query):
-        """ General method for returning total counts
-        """
+        """General method for returning total counts"""
         self.add_parameters(limit=1)
         query = self._build_query(query)
         self._retrieve_data(query)
@@ -607,14 +602,13 @@ class Zotero(object):
 
     @retrieve
     def items(self, **kwargs):
-        """ Get user items
-        """
+        """Get user items"""
         query_string = "/{t}/{u}/items"
         return self._build_query(query_string)
 
     @retrieve
     def fulltext_item(self, itemkey, **kwargs):
-        """ Get full-text content for an item"""
+        """Get full-text content for an item"""
         query_string = "/{t}/{u}/items/{itemkey}/fulltext".format(
             t=self.library_type, u=self.library_id, itemkey=itemkey
         )
@@ -622,7 +616,7 @@ class Zotero(object):
 
     @backoff_check
     def set_fulltext(self, itemkey, payload):
-        """"
+        """ "
         Set full-text data for an item
         <itemkey> should correspond to an existing attachment item.
         payload should be a dict containing three keys:
@@ -683,8 +677,7 @@ class Zotero(object):
         return self.collections(**kwargs)
 
     def last_modified_version(self, **kwargs):
-        """ Get the last modified user or group library version
-        """
+        """Get the last modified user or group library version"""
         # This MUST be a multiple-object request, limit param notwithstanding
         self.items(limit=1)
         lmv = self.request.headers.get("last-modified-version", 0)
@@ -692,29 +685,25 @@ class Zotero(object):
 
     @retrieve
     def top(self, **kwargs):
-        """ Get user top-level items
-        """
+        """Get user top-level items"""
         query_string = "/{t}/{u}/items/top"
         return self._build_query(query_string)
 
     @retrieve
     def trash(self, **kwargs):
-        """ Get all items in the trash
-        """
+        """Get all items in the trash"""
         query_string = "/{t}/{u}/items/trash"
         return self._build_query(query_string)
 
     @retrieve
     def searches(self, **kwargs):
-        """ Get saved searches
-        """
+        """Get saved searches"""
         query_string = "/{t}/{u}/searches"
         return self._build_query(query_string)
 
     @retrieve
     def deleted(self, **kwargs):
-        """ Get all deleted items (requires since= parameter)
-        """
+        """Get all deleted items (requires since= parameter)"""
         if "limit" not in kwargs:
             # Currently deleted API doesn't respect limit leaving it out by
             # default preserves compat
@@ -724,8 +713,7 @@ class Zotero(object):
 
     @retrieve
     def item(self, item, **kwargs):
-        """ Get a specific item
-        """
+        """Get a specific item"""
         query_string = "/{t}/{u}/items/{i}".format(
             u=self.library_id, t=self.library_type, i=item.upper()
         )
@@ -733,8 +721,7 @@ class Zotero(object):
 
     @retrieve
     def file(self, item, **kwargs):
-        """ Get the file from an specific item
-        """
+        """Get the file from an specific item"""
         query_string = "/{t}/{u}/items/{i}/file".format(
             u=self.library_id, t=self.library_type, i=item.upper()
         )
@@ -759,8 +746,7 @@ class Zotero(object):
 
     @retrieve
     def children(self, item, **kwargs):
-        """ Get a specific item's child items
-        """
+        """Get a specific item's child items"""
         query_string = "/{t}/{u}/items/{i}/children".format(
             u=self.library_id, t=self.library_type, i=item.upper()
         )
@@ -768,8 +754,7 @@ class Zotero(object):
 
     @retrieve
     def collection_items(self, collection, **kwargs):
-        """ Get a specific collection's items
-        """
+        """Get a specific collection's items"""
         query_string = "/{t}/{u}/collections/{c}/items".format(
             u=self.library_id, t=self.library_type, c=collection.upper()
         )
@@ -777,8 +762,7 @@ class Zotero(object):
 
     @retrieve
     def collection_items_top(self, collection, **kwargs):
-        """ Get a specific collection's top-level items
-        """
+        """Get a specific collection's top-level items"""
         query_string = "/{t}/{u}/collections/{c}/items/top".format(
             u=self.library_id, t=self.library_type, c=collection.upper()
         )
@@ -786,8 +770,7 @@ class Zotero(object):
 
     @retrieve
     def collection_tags(self, collection, **kwargs):
-        """ Get a specific collection's tags
-        """
+        """Get a specific collection's tags"""
         query_string = "/{t}/{u}/collections/{c}/tags".format(
             u=self.library_id, t=self.library_type, c=collection.upper()
         )
@@ -795,8 +778,7 @@ class Zotero(object):
 
     @retrieve
     def collection(self, collection, **kwargs):
-        """ Get user collection
-        """
+        """Get user collection"""
         query_string = "/{t}/{u}/collections/{c}".format(
             u=self.library_id, t=self.library_type, c=collection.upper()
         )
@@ -804,8 +786,7 @@ class Zotero(object):
 
     @retrieve
     def collections(self, **kwargs):
-        """ Get user collections
-        """
+        """Get user collections"""
         query_string = "/{t}/{u}/collections"
         return self._build_query(query_string)
 
@@ -817,7 +798,7 @@ class Zotero(object):
         all_collections = []
 
         def subcoll(clct):
-            """ recursively add collections to a flat master list """
+            """recursively add collections to a flat master list"""
             all_collections.append(clct)
             if clct["meta"].get("numCollections", 0) > 0:
                 # add collection to master list & recur with all child
@@ -838,15 +819,13 @@ class Zotero(object):
 
     @retrieve
     def collections_top(self, **kwargs):
-        """ Get top-level user collections
-        """
+        """Get top-level user collections"""
         query_string = "/{t}/{u}/collections/top"
         return self._build_query(query_string)
 
     @retrieve
     def collections_sub(self, collection, **kwargs):
-        """ Get subcollections for a specific collection
-        """
+        """Get subcollections for a specific collection"""
         query_string = "/{t}/{u}/collections/{c}/collections".format(
             u=self.library_id, t=self.library_type, c=collection.upper()
         )
@@ -854,23 +833,20 @@ class Zotero(object):
 
     @retrieve
     def groups(self, **kwargs):
-        """ Get user groups
-        """
+        """Get user groups"""
         query_string = "/users/{u}/groups"
         return self._build_query(query_string)
 
     @retrieve
     def tags(self, **kwargs):
-        """ Get tags
-        """
+        """Get tags"""
         query_string = "/{t}/{u}/tags"
         self.tag_data = True
         return self._build_query(query_string)
 
     @retrieve
     def item_tags(self, item, **kwargs):
-        """ Get tags for a specific item
-        """
+        """Get tags for a specific item"""
         query_string = "/{t}/{u}/items/{i}/tags".format(
             u=self.library_id, t=self.library_type, i=item.upper()
         )
@@ -878,22 +854,19 @@ class Zotero(object):
         return self._build_query(query_string)
 
     def all_top(self, **kwargs):
-        """ Retrieve all top-level items
-        """
+        """Retrieve all top-level items"""
         return self.everything(self.top(**kwargs))
 
     @retrieve
     def follow(self):
-        """ Return the result of the call to the URL in the 'Next' link
-        """
+        """Return the result of the call to the URL in the 'Next' link"""
         if self.links.get("next"):
             return self.links.get("next")
         else:
             return
 
     def iterfollow(self):
-        """ Generator for self.follow()
-        """
+        """Generator for self.follow()"""
         # use same criterion as self.follow()
         while True:
             if self.links.get("next"):
@@ -902,8 +875,7 @@ class Zotero(object):
                 return
 
     def makeiter(self, func):
-        """ Return a generator of func's results
-        """
+        """Return a generator of func's results"""
         # reset the link. This results in an extra API call, yes
         self.links["next"] = self.links["self"]
         return self.iterfollow()
@@ -944,8 +916,7 @@ class Zotero(object):
 
     # The following methods process data returned by Read API calls
     def _json_processor(self, retrieved):
-        """ Format and return data from API calls which return Items
-        """
+        """Format and return data from API calls which return Items"""
         json_kwargs = {}
         if self.preserve_json_order:
             json_kwargs["object_pairs_hook"] = OrderedDict
@@ -960,8 +931,7 @@ class Zotero(object):
         return items
 
     def _csljson_processor(self, retrieved):
-        """ Return a list of dicts which are dumped CSL JSON
-        """
+        """Return a list of dicts which are dumped CSL JSON"""
         items = []
         json_kwargs = {}
         if self.preserve_json_order:
@@ -972,8 +942,7 @@ class Zotero(object):
         return items
 
     def _bib_processor(self, retrieved):
-        """ Return a list of strings formatted as HTML bibliography entries
-        """
+        """Return a list of strings formatted as HTML bibliography entries"""
         items = []
         for bib in retrieved.entries:
             items.append(bib["content"][0]["value"])
@@ -981,8 +950,7 @@ class Zotero(object):
         return items
 
     def _citation_processor(self, retrieved):
-        """ Return a list of strings formatted as HTML citation entries
-        """
+        """Return a list of strings formatted as HTML citation entries"""
         items = []
         for cit in retrieved.entries:
             items.append(cit["content"][0]["value"])
@@ -990,15 +958,13 @@ class Zotero(object):
         return items
 
     def _tags_data(self, retrieved):
-        """ Format and return data from API calls which return Tags
-        """
+        """Format and return data from API calls which return Tags"""
         self.url_params = None
         return [t["tag"] for t in retrieved]
 
     # The following methods are Write API calls
     def item_template(self, itemtype, linkmode=None):
-        """ Get a template for a new item
-        """
+        """Get a template for a new item"""
         # if we have a template and it hasn't been updated since we stored it
         template_name = "{}_{}_{}".format(*["item_template", itemtype, linkmode or ""])
         query_string = "/items/new?itemType={i}".format(i=itemtype)
@@ -1038,17 +1004,17 @@ class Zotero(object):
 
     @ss_wrap
     def show_operators(self):
-        """ Show available saved search operators """
+        """Show available saved search operators"""
         return self.savedsearch.operators
 
     @ss_wrap
     def show_conditions(self):
-        """ Show available saved search conditions """
+        """Show available saved search conditions"""
         return self.savedsearch.conditions_operators.keys()
 
     @ss_wrap
     def show_condition_operators(self, condition):
-        """ Show available operators for a given saved search condition """
+        """Show available operators for a given saved search condition"""
         # dict keys of allowed operators for the current condition
         permitted_operators = self.savedsearch.conditions_operators.get(condition)
         # transform these into values
@@ -1059,7 +1025,7 @@ class Zotero(object):
 
     @ss_wrap
     def saved_search(self, name, conditions):
-        """ Create a saved search. conditions is a list of dicts
+        """Create a saved search. conditions is a list of dicts
         containing search conditions, and must contain the following str keys:
         condition, operator, value
         """
@@ -1086,7 +1052,7 @@ class Zotero(object):
 
     @ss_wrap
     def delete_saved_search(self, keys):
-        """ Delete one or more saved searches by passing a list of one or more
+        """Delete one or more saved searches by passing a list of one or more
         unique search keys
         """
         headers = {"Zotero-Write-Token": token()}
@@ -1138,7 +1104,9 @@ class Zotero(object):
         """
         params = {"locale": self.locale}
         query_string = "/itemFields"
-        r = Request("GET", self.endpoint + query_string, params=params).prepare()
+        r = Request(
+            "GET", self.endpoint + query_string, params=params, timeout=timeout
+        ).prepare()
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
@@ -1172,7 +1140,7 @@ class Zotero(object):
                 "contentType",
                 "md5",
                 "filename",
-                "inPublications"
+                "inPublications",
             ]
         )
         template = template | set(self.temp_keys)
@@ -1191,8 +1159,7 @@ class Zotero(object):
 
     @tcache
     def item_types(self):
-        """ Get all available item types
-        """
+        """Get all available item types"""
         # Check for a valid cached version
         params = {"locale": self.locale}
         query_string = "/itemTypes"
@@ -1200,8 +1167,7 @@ class Zotero(object):
 
     @tcache
     def creator_fields(self):
-        """ Get localised creator fields
-        """
+        """Get localised creator fields"""
         # Check for a valid cached version
         params = {"locale": self.locale}
         query_string = "/creatorFields"
@@ -1209,31 +1175,28 @@ class Zotero(object):
 
     @tcache
     def item_type_fields(self, itemtype):
-        """ Get all valid fields for an item
-        """
+        """Get all valid fields for an item"""
         params = {"itemType": itemtype, "locale": self.locale}
         query_string = "/itemTypeFields"
         return query_string, params
 
     @tcache
     def item_creator_types(self, itemtype):
-        """ Get all available creator types for an item
-        """
+        """Get all available creator types for an item"""
         params = {"itemType": itemtype, "locale": self.locale}
         query_string = "/itemTypeCreatorTypes"
         return query_string, params
 
     @tcache
     def item_fields(self):
-        """ Get all available item fields
-        """
+        """Get all available item fields"""
         # Check for a valid cached version
         params = {"locale": self.locale}
         query_string = "/itemFields"
         return query_string, params
 
     def item_attachment_link_modes(self):
-        """ Get all available link mode types.
+        """Get all available link mode types.
         Note: No viable REST API route was found for this, so I tested and built a list from documentation found
         here - https://www.zotero.org/support/dev/web_api/json
         """
@@ -1611,8 +1574,7 @@ class Zotero(object):
 
 
 def error_handler(zot, req):
-    """ Error handler for HTTP requests
-    """
+    """Error handler for HTTP requests"""
     error_codes = {
         400: ze.UnsupportedParams,
         401: ze.UserNotAuthorised,
@@ -1626,8 +1588,7 @@ def error_handler(zot, req):
     }
 
     def err_msg(req):
-        """ Return a nicely-formatted error message
-        """
+        """Return a nicely-formatted error message"""
         return "\nCode: %s\nURL: %s\nMethod: %s\nResponse: %s" % (
             req.status_code,
             # error.msg,
@@ -1654,7 +1615,7 @@ def error_handler(zot, req):
 
 
 class SavedSearch(object):
-    """ Saved search functionality """
+    """Saved search functionality"""
 
     def __init__(self, zinstance):
         super(SavedSearch, self).__init__()
@@ -1787,7 +1748,7 @@ class SavedSearch(object):
             self.conditions_operators[itf] = self.conditions_operators.get("field")
 
     def _validate(self, conditions):
-        """ Validate saved search conditions, raising an error if any contain invalid operators """
+        """Validate saved search conditions, raising an error if any contain invalid operators"""
         allowed_keys = set(self.searchkeys)
         operators_set = set(self.operators.keys())
         for condition in conditions:
