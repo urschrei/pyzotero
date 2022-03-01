@@ -40,7 +40,7 @@ def check():
         .decode("utf-8")
         .strip()
     )
-    library_version = unicode("v" + find_version("pyzotero/zotero.py")).strip()
+    library_version = unicode("v" + find_version("pyzotero/version.py")).strip()
     # invert the boolean because 1 (True) == Bash error exit code
     print("Git version: %s\nLibrary version: %s" % (git_version, library_version))
     return not library_version == git_version
