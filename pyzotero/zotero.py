@@ -1130,6 +1130,13 @@ class Zotero:
                 "md5",
                 "filename",
                 "inPublications",
+                # annotation fields
+                "annotationColor",
+                "annotationType",
+                "annotationPageLabel",
+                "annotationPosition",
+                "annotationSortIndex",
+                "annotationComment",
             ]
         )
         template = template | set(self.temp_keys)
