@@ -1131,6 +1131,7 @@ class Zotero:
                 "filename",
                 "inPublications",
                 # annotation fields
+                "annotationText",
                 "annotationColor",
                 "annotationType",
                 "annotationPageLabel",
