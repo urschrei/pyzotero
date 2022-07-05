@@ -1138,6 +1138,7 @@ class Zotero:
                 "annotationPosition",
                 "annotationSortIndex",
                 "annotationComment",
+                "annotationAuthorName",
             ]
         )
         template = template | set(self.temp_keys)
