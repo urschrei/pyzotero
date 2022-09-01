@@ -666,7 +666,7 @@ The following two examples produce the same result:
         zot.add_parameters(limit=7, start=3)
         z = zot.top()
 
-The following parameters are are **optional**.
+The following parameters are **optional**.
 
 **You may also set a search term here, using the 'itemType', 'q', 'qmode', or 'tag' parameters**.
 
