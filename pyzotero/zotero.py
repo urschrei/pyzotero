@@ -37,7 +37,6 @@ __version__ = pzv.__version__
 
 import requests
 from requests import Request
-import socket
 import feedparser
 import bibtexparser
 import json
