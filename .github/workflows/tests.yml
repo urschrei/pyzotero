@@ -57,7 +57,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build wheels
       run: |
-        pip wheel -w dist
+        pip wheel --no-deps . -w dist
     - name: Create release and upload wheels
       uses: ncipollo/release-action@v1
       with:
