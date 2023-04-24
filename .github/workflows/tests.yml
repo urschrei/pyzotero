@@ -55,15 +55,29 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Build wheels
       run: |
-        pip wheel --no-deps .
+        pip wheel --no-deps . -w dist
+
+    - uses: actions/upload-artifact@v3
+      with:
+        path: dist/*.whl
+
+    - name: Download compressed artifacts
+      id: download
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+
     - name: Create release and upload wheels
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: "dist/**/*.whl,dist/**/*.gz"
+        artifacts: "${{ steps.download.outputs.download-path }}/**/*.whl,${{ steps.download.outputs.download-path }}/**/*.gz,${{ steps.download.outputs.download-path }}/**/*.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: PyPI Publish
       uses: pypa/gh-action-pypi-publish@v1.8.5
+      with:
+        packages-dir: ${{ steps.download.outputs.download-path }}/**/
