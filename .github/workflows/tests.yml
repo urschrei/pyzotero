@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, 3.10.9]
+        python-version: [3.7, 3.8, 3.9, 3.10.9, 3.11]
 
     steps:
     - uses: actions/checkout@v3
@@ -21,21 +21,51 @@ jobs:
         python -m pip install --upgrade pip
         pip install wheel
         pip install .
-        pip install python-dateutil httpretty pytest pytest-cov
+        pip install python-dateutil httpretty pytest
     - name: Test with pytest
       run: |
-        pytest --cov-report= --cov=pyzotero tests/
-    - name: Coveralls
-      uses: AndreMiras/coveralls-python-action@develop
-      with:
-        parallel: true
-        flag-name: Unit Test
+        pytest
 
-  coveralls_finish:
-    needs: build
+  make_sdist:
+    name: Make SDist
     runs-on: ubuntu-latest
     steps:
-    - name: Coveralls Finished
-      uses: AndreMiras/coveralls-python-action@develop
+    - uses: actions/checkout@v3
       with:
-        parallel-finished: true
+        fetch-depth: 0  # Optional, use if you use setuptools_scm
+        submodules: true  # Optional, use if you have submodules
+
+    - name: Build SDist
+      run: pipx run build --sdist
+
+    - uses: actions/upload-artifact@v3
+      with:
+        path: dist/*.tar.gz
+
+  release_artifacts:
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    name: Release repaired and tested wheels
+    needs: build
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build wheels
+      run: |
+        pip wheel -w dist
+    - name: Create release and upload wheels
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        artifacts: "dist/**/*.whl,dist/**/*.gz"
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: PyPI Publish
+      uses: pypa/gh-action-pypi-publish@v1.8.5
+      with:
+        packages-dir: dist/**/
