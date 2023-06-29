@@ -1645,7 +1645,8 @@ def error_handler(zot, req):
 
 class SavedSearch:
     """Saved search functionality
-    See https://github.com/zotero/zotero/blob/master/chrome/content/zotero/xpcom/data/searchConditions.js"""
+    See https://github.com/zotero/zotero/blob/master/chrome/content/zotero/xpcom/data/searchConditions.js
+    """
 
     def __init__(self, zinstance):
         super(SavedSearch, self).__init__()
@@ -1967,7 +1968,7 @@ class Zupload:
                 files=upload_pairs,
                 headers={"User-Agent": "Pyzotero/%s" % __version__},
             )
-        except (requests.exceptions.ConnectionError):
+        except requests.exceptions.ConnectionError:
             raise ze.UploadError("ConnectionError")
         try:
             upload.raise_for_status()

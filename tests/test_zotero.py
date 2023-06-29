@@ -141,12 +141,12 @@ class ZoteroTests(unittest.TestCase):
             body=self.item_doc,
         )
         items_data = zot.items()
-        self.assertEqual(u"X42A7DEE", items_data["data"]["key"])
+        self.assertEqual("X42A7DEE", items_data["data"]["key"])
         self.assertEqual(
-            u"Institute of Physics (Great Britain)",
+            "Institute of Physics (Great Britain)",
             items_data["data"]["creators"][0]["name"],
         )
-        self.assertEqual(u"book", items_data["data"]["itemType"])
+        self.assertEqual("book", items_data["data"]["itemType"])
         test_dt = parser.parse("2011-01-13T03:37:29Z")
         incoming_dt = parser.parse(items_data["data"]["dateModified"])
         self.assertEqual(test_dt, incoming_dt)
@@ -194,7 +194,7 @@ class ZoteroTests(unittest.TestCase):
             body=self.attachments_doc,
         )
         attachments_data = zot.items()
-        self.assertEqual(u"1641 Depositions", attachments_data["data"]["title"])
+        self.assertEqual("1641 Depositions", attachments_data["data"]["title"])
 
     @httpretty.activate
     def testParseKeysResponse(self):
@@ -251,7 +251,7 @@ class ZoteroTests(unittest.TestCase):
             body=self.items_doc,
         )
         items_data = zot.children("ABC123")
-        self.assertEqual(u"NM66T6EF", items_data[0]["key"])
+        self.assertEqual("NM66T6EF", items_data[0]["key"])
 
     @httpretty.activate
     def testCitUTF8(self):
@@ -265,7 +265,7 @@ class ZoteroTests(unittest.TestCase):
             body=self.citation_doc,
         )
         cit = zot.item("GW8V2CK7", content="citation", style="chicago-author-date")
-        self.assertEqual(cit[0], u"<span>(Ans\\xe6lm and Tka\\u010dik 2014)</span>")
+        self.assertEqual(cit[0], "<span>(Ans\\xe6lm and Tka\\u010dik 2014)</span>")
 
     # @httpretty.activate
     # def testParseItemAtomBibDoc(self):
@@ -343,7 +343,7 @@ class ZoteroTests(unittest.TestCase):
             body=self.tags_doc,
         )
         tags_data = zot.tags()
-        self.assertEqual(u"Community / Economic Development", tags_data[0])
+        self.assertEqual("Community / Economic Development", tags_data[0])
 
     @httpretty.activate
     def testParseLinkHeaders(self):
