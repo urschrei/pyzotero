@@ -145,8 +145,8 @@ def backoff_check(func):
         resp = func(self, *args, **kwargs)
         try:
             resp.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, resp)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self, resp, exc)
         self.request = resp
         backoff = resp.headers.get("backoff") or resp.headers.get("retry-after")
         if backoff:
@@ -408,8 +408,8 @@ class Zotero:
         self.request.encoding = "utf-8"
         try:
             self.request.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, self.request)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self, self.request, exc)
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
             "retry-after"
         )
@@ -476,8 +476,8 @@ class Zotero:
             req = requests.get(query, headers=headers)
             try:
                 req.raise_for_status()
-            except requests.exceptions.HTTPError:
-                error_handler(self, req)
+            except requests.exceptions.HTTPError as exc:
+                error_handler(self, req, exc)
             backoff = self.request.headers.get("backoff") or self.request.headers.get(
                 "retry-after"
             )
@@ -625,8 +625,8 @@ class Zotero:
         resp = requests.get(build_url(self.endpoint, query_string), headers=headers)
         try:
             resp.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, resp)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self, resp, exc)
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
             "retry-after"
         )
@@ -1023,8 +1023,8 @@ class Zotero:
         self.request = req
         try:
             req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self, req, exc)
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
             "retry-after"
         )
@@ -1051,8 +1051,8 @@ class Zotero:
         self.request = req
         try:
             req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self, req, exc)
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
             "retry-after"
         )
@@ -1227,8 +1227,8 @@ class Zotero:
         self.request = req
         try:
             req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self, req, exc)
         resp = req.json()
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
             "retry-after"
@@ -1259,8 +1259,8 @@ class Zotero:
                 self.request = presp
                 try:
                     presp.raise_for_status()
-                except requests.exceptions.HTTPError:
-                    error_handler(self, presp)
+                except requests.exceptions.HTTPError as exc:
+                    error_handler(self, presp, exc)
                 backoff = presp.headers.get("backoff") or presp.headers.get(
                     "retry-after"
                 )
@@ -1303,8 +1303,8 @@ class Zotero:
         self.request = req
         try:
             req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self, req)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self, req, exc)
         backoff = req.headers.get("backoff") or req.headers.get("retry-after")
         if backoff:
             self._set_backoff(backoff)
@@ -1417,8 +1417,8 @@ class Zotero:
             self.request = req
             try:
                 req.raise_for_status()
-            except requests.exceptions.HTTPError:
-                error_handler(self, req)
+            except requests.exceptions.HTTPError as exc:
+                error_handler(self, req, exc)
             backoff = req.headers.get("backoff") or req.headers.get("retry-after")
             if backoff:
                 self._set_backoff(backoff)
@@ -1449,8 +1449,8 @@ class Zotero:
             self.request = req
             try:
                 req.raise_for_status()
-            except requests.exceptions.HTTPError:
-                error_handler(self, req)
+            except requests.exceptions.HTTPError as exc:
+                error_handler(self, req, exc)
             backoff = req.headers.get("backoff") or req.headers.get("retry-after")
             if backoff:
                 self._set_backoff(backoff)
@@ -1602,7 +1602,7 @@ class Zotero:
         return requests.delete(url=url, params=params, headers=headers)
 
 
-def error_handler(zot, req):
+def error_handler(zot, req, exc=None):
     """Error handler for HTTP requests"""
     error_codes = {
         400: ze.UnsupportedParams,
@@ -1638,9 +1638,15 @@ def error_handler(zot, req):
             else:
                 zot._set_backoff(delay)
         else:
-            raise error_codes.get(req.status_code)(err_msg(req))
+            if not exc:
+                raise error_codes.get(req.status_code)(err_msg(req))
+            else:
+                raise error_codes.get(req.status_code)(err_msg(req)) from exc
     else:
-        raise ze.HTTPError(err_msg(req))
+        if not exc:
+            raise ze.HTTPError(err_msg(req))
+        else:
+            raise ze.HTTPError(err_msg(req)) from exc
 
 
 class SavedSearch:
@@ -1890,8 +1896,8 @@ class Zupload:
         )
         try:
             req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self.zinstance, req)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self.zinstance, req, exc)
         backoff = req.headers.get("backoff") or req.headers.get("retry-after")
         if backoff:
             self.zinstance._set_backoff(backoff)
@@ -1940,8 +1946,8 @@ class Zupload:
         )
         try:
             auth_req.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self.zinstance, auth_req)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self.zinstance, auth_req, exc)
         backoff = auth_req.headers.get("backoff") or auth_req.headers.get("retry-after")
         if backoff:
             self.zinstance._set_backoff(backoff)
@@ -1972,8 +1978,8 @@ class Zupload:
             raise ze.UploadError("ConnectionError")
         try:
             upload.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self.zinstance, upload)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self.zinstance, upload, exc)
         backoff = upload.headers.get("backoff") or upload.headers.get("retry-after")
         if backoff:
             self.zinstance._set_backoff(backoff)
@@ -2005,8 +2011,8 @@ class Zupload:
         )
         try:
             upload_reg.raise_for_status()
-        except requests.exceptions.HTTPError:
-            error_handler(self.zinstance, upload_reg)
+        except requests.exceptions.HTTPError as exc:
+            error_handler(self.zinstance, upload_reg, exc)
         backoff = upload_reg.headers.get("backoff") or upload_reg.headers.get(
             "retry-after"
         )

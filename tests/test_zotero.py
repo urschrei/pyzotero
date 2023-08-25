@@ -419,6 +419,20 @@ class ZoteroTests(unittest.TestCase):
             zot.items()
 
     @httpretty.activate
+    def testTimeout(self):
+        """Ensure that an error is properly raised for 503"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/items",
+            content_type="application/json",
+            body=self.items_doc,
+            status=503,
+        )
+        with self.assertRaises(z.ze.HTTPError):
+            zot.items()
+
+    @httpretty.activate
     def testResponseUnsupported(self):
         """Ensure that an error is properly raised for 400"""
         zot = z.Zotero("myuserID", "user", "myuserkey")

@@ -128,6 +128,11 @@ Example:
 
 .. _read:
 
+Errors
+=======
+Where possible, any ``ZoteroError`` which is raised will preserve the underlying error in its ``__cause__`` and ``__context__`` properties, should you wish to work with these directly.
+
+
 Read API Methods
 ====================
 
