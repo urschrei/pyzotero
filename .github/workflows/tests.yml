@@ -54,8 +54,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      fetch-depth: 0  # Optional, use if you use setuptools_scm
-      submodules: false  # Optional, use if you have submodules
+      with:
+        fetch-depth: 0  # Optional, use if you use setuptools_scm
+        submodules: false  # Optional, use if you have submodules
 
     - name: Build wheels
       run: |
