@@ -60,6 +60,8 @@ jobs:
 
     - name: Build wheels
       run: |
+        pip install pip -U
+        pip install setuptools -U
         pwd
         ls -la
         pip wheel . -w dist --no-deps --use-pep517
