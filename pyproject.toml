@@ -1,10 +1,60 @@
-[build-system]
-requires = [
-    "setuptools >= 40.6.0",
-    "wheel >= 0.29.0",
-    "setuptools_scm[toml] >= 4, <6",
+[project]
+name = "pyzotero"
+dynamic = ["version", "readme"]
+description = "Python wrapper for the Zotero API"
+requires-python = ">=3.8"
+dependencies = [
+    "feedparser >= 6",
+    "pytz",
+    "requests >= 2.21.0",
+    "bibtexparser"
 ]
-build-backend = "setuptools.build_meta"
+authors = [{ name = "Stephan Hügel", email = "urschrei@gmail.com" }]
+license = {file = "license.txt"}
+keywords = ["Zotero", "DH"]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+[project.urls]
+Repository = "https://github.com/urschrei/pyzotero"
+Tracker = "https://github.com/urschrei/pyzotero/issues"
 
-[tool.ruff]
-ignore = ["E501"]
+[project.optional-dependencies]
+test = [
+    "pytest >= 7.4.2",
+    "httpretty",
+    "python-dateutil"
+]
+
+[tool.setuptools.dynamic]
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools >= 45",
+    "setuptools-scm[toml] >= 6.2",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.2.2"
+addopts = [
+    "--import-mode=importlib",
+]
+testpaths = [
+    "tests",
+]
+
+[tool.setuptools_scm]
+write_to = "src/_version.py"

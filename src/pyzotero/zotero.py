@@ -29,11 +29,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 """
-from . import version as pzv
 
 __author__ = "Stephan Hügel"
 __api_version__ = "3"
-__version__ = pzv.__version__
 
 import requests
 from requests import Request
@@ -58,6 +56,7 @@ from urllib.parse import urlparse, urlunparse, parse_qsl
 from urllib.parse import quote
 
 from . import zotero_errors as ze
+import pyzotero as pz
 
 
 # Avoid hanging the application if there's no server response
@@ -358,7 +357,7 @@ class Zotero:
         It's always OK to include these headers
         """
         _headers = {
-            "User-Agent": "Pyzotero/%s" % __version__,
+            "User-Agent": "Pyzotero/%s" % pz.__version__,
             "Zotero-API-Version": "%s" % __api_version__,
         }
         if self.api_key:
