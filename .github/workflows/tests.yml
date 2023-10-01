@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, 3.10.9, 3.11]
+        python-version: [3.8, 3.9, 3.10.9, 3.11]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
@@ -20,8 +20,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install wheel
-        pip install .
-        pip install python-dateutil httpretty pytest
+        pip install .[test] --use-pep517
     - name: Test with pytest
       run: |
         pytest
