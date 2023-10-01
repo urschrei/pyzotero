@@ -82,6 +82,6 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: PyPI Publish
-      uses: pypa/gh-action-pypi-publish@v1.8.5
+      uses: pypa/gh-action-pypi-publish@v1.8.10
       with:
         packages-dir: ${{ steps.download.outputs.download-path }}/**/
