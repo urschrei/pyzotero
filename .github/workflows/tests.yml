@@ -29,7 +29,7 @@ jobs:
     name: Make SDist
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Optional, use if you use setuptools_scm
         submodules: true  # Optional, use if you have submodules
@@ -53,11 +53,15 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      fetch-depth: 0  # Optional, use if you use setuptools_scm
+      submodules: false  # Optional, use if you have submodules
 
     - name: Build wheels
       run: |
-        pip wheel --no-deps . -w dist
+        pwd
+        ls -la
+        pip wheel . -w dist --no-deps --use-pep517
 
     - uses: actions/upload-artifact@v3
       with:
