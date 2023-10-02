@@ -8,6 +8,7 @@
 | 2 | [ptgolden](https://github.com/urschrei/pyzotero/commits?author=ptgolden) |
 | 2 | [bemuzie](https://github.com/urschrei/pyzotero/commits?author=bemuzie) |
 | 2 | [skybristol](https://github.com/urschrei/pyzotero/commits?author=skybristol) |
+| 1 | [akx](https://github.com/urschrei/pyzotero/commits?author=akx) |
 | 1 | [alee](https://github.com/urschrei/pyzotero/commits?author=alee) |
 | 1 | [avram](https://github.com/urschrei/pyzotero/commits?author=avram) |
 | 1 | [christianbrodbeck](https://github.com/urschrei/pyzotero/commits?author=christianbrodbeck) |
@@ -16,5 +17,4 @@
 | 1 | [porduna](https://github.com/urschrei/pyzotero/commits?author=porduna) |
 | 1 | [stakats](https://github.com/urschrei/pyzotero/commits?author=stakats) |
 | 1 | [epistemery](https://github.com/urschrei/pyzotero/commits?author=epistemery) |
-| 1 | [ba-tno](https://github.com/urschrei/pyzotero/commits?author=ba-tno) |
 | 1 | [jghauser](https://github.com/urschrei/pyzotero/commits?author=jghauser) |
