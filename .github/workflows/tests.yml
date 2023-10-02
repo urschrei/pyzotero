@@ -24,6 +24,17 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+    - name: Build wheel
+      run: |
+        python -m pip install --upgrade pip
+        pip wheel . -w dist --no-deps --use-pep517
+
+    - uses: actions/upload-artifact@v3
+      name: Upload wheel as artifact
+      with:
+        name: wheels
+        path: |
+          ./dist/*.whl
 
   make_sdist:
     name: Make SDist
@@ -54,21 +65,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Optional, use if you use setuptools_scm
-        submodules: false  # Optional, use if you have submodules
-
-    - name: Build wheels
-      run: |
-        pip install pip -U
-        pip install setuptools -U
-        pwd
-        ls -la
-        pip wheel . -w dist --no-deps --use-pep517
-
-    - uses: actions/upload-artifact@v3
-      with:
-        path: dist/*.whl
 
     - name: Download compressed artifacts
       id: download
@@ -76,11 +72,14 @@ jobs:
       with:
         path: ./artifacts
 
+    - name: 'List downloaded files'
+      run: ls ${{ steps.download.outputs.download-path }}/**/*.*
+
     - name: Create release and upload wheels
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: "${{ steps.download.outputs.download-path }}/**/*.whl,${{ steps.download.outputs.download-path }}/**/*.gz,${{ steps.download.outputs.download-path }}/**/*.zip"
+        artifacts: "${{ steps.download.outputs.download-path }}/**/*.whl,${{ steps.download.outputs.download-path }}/**/*.gz,${{ steps.download.outputs.download-path }}/**/*.so,${{ steps.download.outputs.download-path }}/**/*.dylib,${{ steps.download.outputs.download-path }}/**/*.lib,${{ steps.download.outputs.download-path }}/**/*.dll"
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: PyPI Publish
