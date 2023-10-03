@@ -222,6 +222,12 @@ def retrieve(func):
         )
         # clear all query parameters
         self.url_params = None
+        # Zotero API currently returns plain-text attachments as zipped content
+        if fmt == "plain":
+            z = zipfile.ZipFile(io.BytesIO(retrieved.content))
+            namelist = z.namelist()
+            file = z.read(namelist[0])
+            return file
         # check to see whether it's tag data
         if "tags" in self.request.url:
             self.tag_data = False
@@ -720,12 +726,6 @@ class Zotero:
         if self.snapshot:
             self.snapshot = False
             pth = pth + ".zip"
-        # Zotero API currently returns plain-text attachments as zipped content
-        mtype = mimetypes.guess_type(filename)
-        if mtype[0] == "text/plain":
-            z = zipfile.ZipFile(io.BytesIO(file))
-            namelist = z.namelist()
-            file = z.read(namelist[0])
         with open(pth, "wb") as f:
             f.write(file)
 
