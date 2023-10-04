@@ -12,6 +12,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Optional, use if you use setuptools_scm
+        submodules: false  # Optional, use if you have submodules
+      name: Check out repo
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
