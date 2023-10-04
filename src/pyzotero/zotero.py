@@ -1995,7 +1995,7 @@ class Zupload:
             upload = requests.post(
                 url=authdata["url"],
                 files=upload_pairs,
-                headers={"User-Agent": "Pyzotero/%s" % __version__},
+                headers={"User-Agent": "Pyzotero/%s" % pz.__version__},
             )
         except requests.exceptions.ConnectionError:
             raise ze.UploadError("ConnectionError")
