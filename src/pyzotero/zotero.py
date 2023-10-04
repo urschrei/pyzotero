@@ -53,8 +53,9 @@ import io
 from pathlib import Path
 from collections import OrderedDict
 from functools import wraps
+from pathlib import PurePosixPath
 from urllib.parse import urlencode
-from urllib.parse import urlparse, urlunparse, parse_qsl
+from urllib.parse import unquote, urlparse, urlunparse, parse_qsl
 from urllib.parse import quote
 
 from . import zotero_errors as ze
@@ -222,11 +223,26 @@ def retrieve(func):
         )
         # clear all query parameters
         self.url_params = None
-        # Zotero API currently returns plain-text attachments as zipped content
-        if fmt == "plain":
-            z = zipfile.ZipFile(io.BytesIO(retrieved.content))
-            namelist = z.namelist()
-            file = z.read(namelist[0])
+        # Zotero API returns plain-text attachments as zipped content
+        if fmt == "zip":
+            # we need to check whether it was originally zipped, or zipped plain text
+            # 1. get request path
+            url_path = PurePosixPath(unquote(urlparse(self.self_link).path))
+            # 2. we don't want the file again: we want the item
+            if url_path.parts[-1] == "file":
+                fixed_path = str(Path(*url_path.parts[:-1]))
+            else:
+                fixed_path = str(Path(*url_path.parts))
+            # 3. Get the item
+            item = self._retrieve_data(fixed_path)
+            itemtype = item.json()["data"]["contentType"]
+            if itemtype == "text/plain":
+                # Mismatch! decompress it transparently
+                z = zipfile.ZipFile(io.BytesIO(retrieved.content))
+                namelist = z.namelist()
+                file = z.read(namelist[0])
+            else:
+                file = retrieved.content
             return file
         # check to see whether it's tag data
         if "tags" in self.request.url:
