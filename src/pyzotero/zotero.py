@@ -224,20 +224,13 @@ def retrieve(func):
         # clear all query parameters
         self.url_params = None
         # Zotero API returns plain-text attachments as zipped content
+        # We can inspect the redirect header to check whether Zotero compressed the file
         if fmt == "zip":
-            # we need to check whether it was originally zipped, or zipped plain text
-            # 1. get request path
-            url_path = PurePosixPath(unquote(urlparse(self.self_link).path))
-            # 2. we don't want the file again: we want the item
-            if url_path.parts[-1] == "file":
-                fixed_path = str(Path(*url_path.parts[:-1]))
-            else:
-                fixed_path = str(Path(*url_path.parts))
-            # 3. Get the item
-            item = self._retrieve_data(fixed_path)
-            itemtype = item.json()["data"]["contentType"]
-            if itemtype == "text/plain":
-                # Mismatch! decompress it transparently
+            if (
+                self.request.history
+                and self.request.history[0].headers.get("Zotero-File-Compressed")
+                == "Yes"
+            ):
                 z = zipfile.ZipFile(io.BytesIO(retrieved.content))
                 namelist = z.namelist()
                 file = z.read(namelist[0])
