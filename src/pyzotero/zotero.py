@@ -33,34 +33,32 @@ THE SOFTWARE.
 __author__ = "Stephan Hügel"
 __api_version__ = "3"
 
-import requests
-from requests import Request
-import feedparser
-import bibtexparser
-import json
 import copy
-import uuid
-import time
-import threading
-import os
-import hashlib
 import datetime
-import re
-import pytz
-import mimetypes
-import zipfile
+import hashlib
 import io
-from pathlib import Path
+import json
+import mimetypes
+import os
+import re
+import threading
+import time
+import uuid
+import zipfile
 from collections import OrderedDict
 from functools import wraps
-from pathlib import PurePosixPath
-from urllib.parse import urlencode
-from urllib.parse import unquote, urlparse, urlunparse, parse_qsl
-from urllib.parse import quote
+from pathlib import Path
+from urllib.parse import parse_qsl, quote, urlencode, urlparse, urlunparse
 
-from . import zotero_errors as ze
+import bibtexparser
+import feedparser
+import pytz
+import requests
+from requests import Request
+
 import pyzotero as pz
 
+from . import zotero_errors as ze
 
 # Avoid hanging the application if there's no server response
 timeout = 30
