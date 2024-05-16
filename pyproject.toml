@@ -4,7 +4,7 @@ dynamic = ["version", "readme"]
 description = "Python wrapper for the Zotero API"
 requires-python = ">=3.8"
 dependencies = [
-    "feedparser >= 6",
+    "feedparser >= 6.0.11",
     "pytz",
     "requests >= 2.21.0",
     "bibtexparser"
@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
