@@ -265,6 +265,7 @@ class Zotero:
         api_key=None,
         preserve_json_order=False,
         locale="en-US",
+        session=None,
     ):
         """Store Zotero credentials"""
         self.endpoint = "https://api.zotero.org"
@@ -280,6 +281,7 @@ class Zotero:
         self.api_key = api_key
         self.preserve_json_order = preserve_json_order
         self.locale = locale
+        self.s = session or requests.Session()
         self.url_params = None
         self.tag_data = False
         self.request = None
@@ -393,7 +395,7 @@ class Zotero:
         self.self_link = request
         # ensure that we wait if there's an active backoff
         self._check_backoff()
-        self.request = requests.get(
+        self.request = self.s.get(
             url=full_url, headers=self.default_headers(), params=params
         )
         self.request.encoding = "utf-8"
@@ -464,7 +466,7 @@ class Zotero:
             headers.update(self.default_headers())
             # perform the request, and check whether the response returns 304
             self._check_backoff()
-            req = requests.get(query, headers=headers)
+            req = self.s.get(query, headers=headers)
             try:
                 req.raise_for_status()
             except requests.exceptions.HTTPError as exc:
@@ -592,7 +594,7 @@ class Zotero:
         """
         headers = self.default_headers()
         headers.update({"Content-Type": "application/json"})
-        return requests.put(
+        return self.s.put(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items/{k}/fulltext".format(
@@ -613,7 +615,7 @@ class Zotero:
         )
         headers = self.default_headers()
         self._check_backoff()
-        resp = requests.get(build_url(self.endpoint, query_string), headers=headers)
+        resp = self.s.get(build_url(self.endpoint, query_string), headers=headers)
         try:
             resp.raise_for_status()
         except requests.exceptions.HTTPError as exc:
@@ -1003,7 +1005,7 @@ class Zotero:
         headers = {"Zotero-Write-Token": token()}
         headers.update(self.default_headers())
         self._check_backoff()
-        req = requests.post(
+        req = self.s.post(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
@@ -1031,7 +1033,7 @@ class Zotero:
         headers = {"Zotero-Write-Token": token()}
         headers.update(self.default_headers())
         self._check_backoff()
-        req = requests.delete(
+        req = self.s.delete(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
@@ -1207,7 +1209,7 @@ class Zotero:
         to_send = json.dumps([i for i in self._cleanup(*payload, allow=("key"))])
         headers.update(self.default_headers())
         self._check_backoff()
-        req = requests.post(
+        req = self.s.post(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items".format(t=self.library_type, u=self.library_id),
@@ -1237,7 +1239,7 @@ class Zotero:
             for value in resp["success"].values():
                 payload = json.dumps({"parentItem": parentid})
                 self._check_backoff()
-                presp = requests.patch(
+                presp = self.s.patch(
                     url=build_url(
                         self.endpoint,
                         "/{t}/{u}/items/{v}".format(
@@ -1283,7 +1285,7 @@ class Zotero:
             headers["If-Unmodified-Since-Version"] = str(last_modified)
         headers.update(self.default_headers())
         self._check_backoff()
-        req = requests.post(
+        req = self.s.post(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/collections".format(t=self.library_type, u=self.library_id),
@@ -1315,7 +1317,7 @@ class Zotero:
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
         headers.update({"Content-Type": "application/json"})
-        return requests.put(
+        return self.s.put(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/collections/{c}".format(
@@ -1374,7 +1376,7 @@ class Zotero:
         ident = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        return requests.patch(
+        return self.s.patch(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items/{id}".format(
@@ -1397,7 +1399,7 @@ class Zotero:
         # anything longer
         for chunk in chunks(to_send, 50):
             self._check_backoff()
-            req = requests.post(
+            req = self.s.post(
                 url=build_url(
                     self.endpoint,
                     "/{t}/{u}/items/".format(t=self.library_type, u=self.library_id),
@@ -1427,7 +1429,7 @@ class Zotero:
         # anything longer
         for chunk in chunks(to_send, 50):
             self._check_backoff()
-            req = requests.post(
+            req = self.s.post(
                 url=build_url(
                     self.endpoint,
                     "/{t}/{u}/collections/".format(
@@ -1460,7 +1462,7 @@ class Zotero:
         modified_collections = payload["data"]["collections"] + [collection]
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        return requests.patch(
+        return self.s.patch(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items/{i}".format(
@@ -1486,7 +1488,7 @@ class Zotero:
         ]
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        return requests.patch(
+        return self.s.patch(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items/{i}".format(
@@ -1513,7 +1515,7 @@ class Zotero:
             "If-Unmodified-Since-Version": self.request.headers["last-modified-version"]
         }
         headers.update(self.default_headers())
-        return requests.delete(
+        return self.s.delete(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/tags".format(t=self.library_type, u=self.library_id),
@@ -1555,7 +1557,7 @@ class Zotero:
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        return requests.delete(url=url, params=params, headers=headers)
+        return self.s.delete(url=url, params=params, headers=headers)
 
     @backoff_check
     def delete_collection(self, payload, last_modified=None):
@@ -1590,7 +1592,7 @@ class Zotero:
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update(self.default_headers())
-        return requests.delete(url=url, params=params, headers=headers)
+        return self.s.delete(url=url, params=params, headers=headers)
 
 
 def error_handler(zot, req, exc=None):
@@ -1875,7 +1877,7 @@ class Zupload:
                 child["parentItem"] = self.parentid
         to_send = json.dumps(self.payload)
         self.zinstance._check_backoff()
-        req = requests.post(
+        req = self.s.post(
             url=build_url(
                 self.zinstance.endpoint,
                 liblevel.format(
@@ -1923,7 +1925,7 @@ class Zupload:
             "params": 1,
         }
         self.zinstance._check_backoff()
-        auth_req = requests.post(
+        auth_req = self.s.post(
             url=build_url(
                 self.zinstance.endpoint,
                 "/{t}/{u}/items/{i}/file".format(
@@ -1960,7 +1962,7 @@ class Zupload:
         upload_pairs = tuple(upload_list)
         try:
             self.zinstance._check_backoff()
-            upload = requests.post(
+            upload = self.s.post(
                 url=authdata["url"],
                 files=upload_pairs,
                 headers={"User-Agent": "Pyzotero/%s" % pz.__version__},
@@ -1988,7 +1990,7 @@ class Zupload:
         reg_headers.update(self.zinstance.default_headers())
         reg_data = {"upload": authdata.get("uploadKey")}
         self.zinstance._check_backoff()
-        upload_reg = requests.post(
+        upload_reg = self.s.post(
             url=build_url(
                 self.zinstance.endpoint,
                 "/{t}/{u}/items/{i}/file".format(
