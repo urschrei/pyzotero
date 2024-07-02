@@ -1,4 +1,4 @@
-[![Supported Python versions](https://img.shields.io/pypi/pyversions/Pyzotero.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Docs](https://readthedocs.org/projects/pyzotero/badge/?version=latest)](http://pyzotero.readthedocs.org/en/latest/?badge=latest) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt) [![PyPI Version](https://img.shields.io/pypi/v/Pyzotero.svg)](https://pypi.python.org/pypi/Pyzotero) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyzotero/badges/version.svg)](https://anaconda.org/conda-forge/pyzotero) [![Downloads](https://pepy.tech/badge/pyzotero)](https://pepy.tech/project/pyzotero)  
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/Pyzotero.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Docs](https://readthedocs.org/projects/pyzotero/badge/?version=latest)](http://pyzotero.readthedocs.org/en/latest/?badge=latest) [![PyPI Version](https://img.shields.io/pypi/v/Pyzotero.svg)](https://pypi.python.org/pypi/Pyzotero) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyzotero/badges/version.svg)](https://anaconda.org/conda-forge/pyzotero) [![Downloads](https://pepy.tech/badge/pyzotero)](https://pepy.tech/project/pyzotero)  
 
 # Pyzotero: An API Client for the Zotero API
 
@@ -75,13 +75,13 @@ A sample citation (APA 6th edition) might look like:
 
 # License
 
-Pyzotero is licensed under the [MIT license][8]. See [license.txt](license.txt) for details.  
+Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENCE.md](LICENCE.md) for details.  
 
 [1]: https://www.zotero.org/support/dev/web_api/v3/start
 [2]: https://www.zotero.org/settings/keys/new
 [3]: http://pyzotero.readthedocs.org/en/latest/
 [7]: https://nose2.readthedocs.io/en/latest/
-[8]: http://opensource.org/licenses/MIT
+[8]: https://opensource.org/license/blue-oak-model-license
 [9]: https://github.com/urschrei/pyzotero/tree/dev
 [10]: http://www.pip-installer.org/en/latest/index.html
 † This isn't strictly true: you only need an API key for personal libraries and non-public group libraries.
