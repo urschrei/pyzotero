@@ -1087,7 +1087,7 @@ Most Read API methods return **lists** of **dicts** or, in the case of tag metho
 
 License
 =======
-Pyzotero is licensed under the `MIT <http://opensource.org/licenses/MIT>`_  license.
+Pyzotero is licensed under the `Blue Oak Model Licence <https://opensource.org/license/blue-oak-model-license>`_  license.
 
 
 Cat Picture
