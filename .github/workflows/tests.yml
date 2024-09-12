@@ -72,12 +72,9 @@ jobs:
 
     - name: Download compressed artifacts
       id: download
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v4.1.8
       with:
         path: ./artifacts
-
-    - name: 'List downloaded files'
-      run: ls ${{ steps.download.outputs.download-path }}/**/*.*
 
     - name: Create release and upload wheels
       uses: ncipollo/release-action@v1
