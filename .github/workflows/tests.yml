@@ -36,8 +36,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       name: Upload wheel as artifact
       with:
-        with:
-          name: wheels-${{ strategy.job-index }}
+        name: wheels-${{ strategy.job-index }}
         path: |
           ./dist/*.whl
 
