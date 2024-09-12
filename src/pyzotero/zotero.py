@@ -393,6 +393,10 @@ class Zotero:
         self.self_link = request
         # ensure that we wait if there's an active backoff
         self._check_backoff()
+        if params:
+            params["locale"] = self.locale
+        if not params:
+            params = {"locale": self.locale}
         self.request = requests.get(
             url=full_url, headers=self.default_headers(), params=params
         )
