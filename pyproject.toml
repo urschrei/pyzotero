@@ -10,7 +10,7 @@ dependencies = [
     "bibtexparser"
 ]
 authors = [{ name = "Stephan Hügel", email = "urschrei@gmail.com" }]
-license = {file = "license.txt"}
+license = {file = "LICENSE.md"}
 keywords = ["Zotero", "DH"]
 classifiers = [
     "Programming Language :: Python",
