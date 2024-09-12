@@ -17,7 +17,7 @@ jobs:
         submodules: false  # Optional, use if you have submodules
       name: Check out repo
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -33,7 +33,7 @@ jobs:
         python -m pip install --upgrade pip
         pip wheel . -w dist --no-deps --use-pep517
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@4
       name: Upload wheel as artifact
       with:
         name: wheels
@@ -52,7 +52,7 @@ jobs:
     - name: Build SDist
       run: pipx run build --sdist
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         path: dist/*.tar.gz
 
