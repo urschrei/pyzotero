@@ -33,7 +33,7 @@ jobs:
         python -m pip install --upgrade pip
         pip wheel . -w dist --no-deps --use-pep517
 
-    - uses: actions/upload-artifact@4
+    - uses: actions/upload-artifact@3
       name: Upload wheel as artifact
       with:
         name: wheels
@@ -52,7 +52,7 @@ jobs:
     - name: Build SDist
       run: pipx run build --sdist
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v3
       with:
         path: dist/*.tar.gz
 
