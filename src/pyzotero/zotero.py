@@ -25,7 +25,7 @@ import zipfile
 from collections import OrderedDict
 from functools import wraps
 from pathlib import Path
-from urllib.parse import parse_qsl, quote, urlencode, urlparse, urlunparse
+from urllib.parse import parse_qs, parse_qsl, quote, urlencode, urlparse, urlunparse
 
 import bibtexparser
 import feedparser
@@ -151,6 +151,11 @@ def retrieve(func):
         """
         if kwargs:
             self.add_parameters(**kwargs)
+        res = func(self, *args)
+        parsed = urlparse(res)
+        querydict = parse_qs(parsed.query)
+        if not querydict.get("locale"):
+            self.add_parameters(locale=self.locale)
         retrieved = self._retrieve_data(func(self, *args))
         # we now always have links in the header response
         self.links = self._extract_links()
@@ -393,10 +398,6 @@ class Zotero:
         self.self_link = request
         # ensure that we wait if there's an active backoff
         self._check_backoff()
-        if params:
-            params["locale"] = self.locale
-        if not params:
-            params = {"locale": self.locale}
         self.request = requests.get(
             url=full_url, headers=self.default_headers(), params=params
         )
