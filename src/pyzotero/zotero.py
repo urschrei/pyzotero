@@ -368,7 +368,9 @@ class Zotero:
         to self.templates as a new dict using the specified key
         """
         # cache template and retrieval time for subsequent calls
-        thetime = datetime.datetime.utcnow().replace(tzinfo=pytz.timezone("GMT"))
+        thetime = datetime.datetime.now(datetime.UTC).replace(
+            tzinfo=pytz.timezone("GMT")
+        )
         self.templates[key] = {"tmplt": response.json(), "updated": thetime}
         return copy.deepcopy(response.json())
 
