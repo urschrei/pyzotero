@@ -593,14 +593,13 @@ class Zotero:
 
     @backoff_check
     def set_fulltext(self, itemkey, payload):
-        """ "
+        """
         Set full-text data for an item
         <itemkey> should correspond to an existing attachment item.
         payload should be a dict containing three keys:
         'content': the full-text content and either
         For text documents, 'indexedChars' and 'totalChars' OR
         For PDFs, 'indexedPages' and 'totalPages'.
-
         """
         headers = self.default_headers()
         headers.update({"Content-Type": "application/json"})
