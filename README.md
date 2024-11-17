@@ -2,54 +2,66 @@
 
 # Pyzotero: An API Client for the Zotero API
 
-# Quickstart
+## Project Overview
 
-1. `pip install pyzotero` **or** `conda config --add channels conda-forge && conda install pyzotero`
-2. You'll need the ID of the personal or group library you want to access:
-    - Your **personal library ID** is available [here](https://www.zotero.org/settings/keys), in the section `Your userID for use in API calls`
-    - For **group libraries**, the ID can be found by opening the group's page: `https://www.zotero.org/groups/groupname`, and hovering over the `group settings` link. The ID is the integer after `/groups/`
-3. You'll also need<sup>†</sup> to get an **API key** [here][2]
-4. Are you accessing your own Zotero library? `library_type` is `'user'`
-5. Are you accessing a shared group library? `library_type` is `'group'`.  
+Pyzotero is a Python client for the Zotero API.
 
-Then:
+## Prerequisites
 
-``` python
-from pyzotero import zotero
-zot = zotero.Zotero(library_id, library_type, api_key)
-items = zot.top(limit=5)
-# we've retrieved the latest five top-level items in our library
-# we can print each item's item type and ID
-for item in items:
-    print('Item: %s | Key: %s' % (item['data']['itemType'], item['data']['key']))
+This project is built using Python 3.7 and up. Ensure you have Python installed before proceeding.
+
+## Installation Steps:
+
+### Option 1: Using pip
+
+```bash
+pip install pyzotero
 ```
 
-# Documentation
+### Option 2: Using Anaconda
 
-Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
+```bash
+conda config --add channels conda-forge && conda install pyzotero
+```
 
-# Installation
+### Option 3: From a local clone
 
-* Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 3.7 and up)
-* Using Anaconda:`conda config --add channels conda-forge && conda install pyzotero`
-* From a local clone, if you wish to install Pyzotero from a specific branch: 
-
-Example:
-
-``` bash
+```bash
 git clone git://github.com/urschrei/pyzotero.git
 cd pyzotero
 git checkout dev
 pip install .
 ```
 
+## Quickstart
+
+1. You'll need the ID of the personal or group library you want to access:
+    - Your **personal library ID** is available [here](https://www.zotero.org/settings/keys), in the section `Your userID for use in API calls`
+    - For **group libraries**, the ID can be found by opening the group's page: `https://www.zotero.org/groups/groupname`, and hovering over the `group settings` link. The ID is the integer after `/groups/`
+2. You'll also need<sup>†</sup>  an **API key** [here][2].
+3. Determine the `library_type`: `'user'` for personal libraries, `'group'` for shared group libraries.
+
+Example usage:
+
+```python
+from pyzotero import zotero
+zot = zotero.Zotero(library_id, library_type, api_key)
+items = zot.top(limit=5)
+for item in items:
+    print('Item: %s | Key: %s' % (item['data']['itemType'], item['data']['key']))
+```
+
+## Documentation
+
+Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
+
 ## Testing
 
-Run `pytest .` from the top-level directory.
+Run `pytest .` from the top-level directory to execute tests.
 
 ## Issues
 
-The latest commits can be found on the [dev branch][9], although new features are currently rare. If you encounter an error, please open an issue.
+The latest commits can be found on the [dev branch][9]. If you encounter an error, please open an issue.
 
 ## Pull Requests
 
@@ -57,25 +69,22 @@ Pull requests are welcomed. Please read the [contribution guidelines](CONTRIBUTI
 
 ## Versioning
 
-As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); version increments are performed as follows:  
+Pyzotero follows [Semver](http://semver.org):
+1. MAJOR version increments with incompatible API changes,
+2. MINOR version increments with added functionality (backwards-compatible),
+3. PATCH version increments with backwards-compatible bug fixes.
 
+## License
 
+Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENCE.md](LICENCE.md) for details.
 
-1. MAJOR version will increment with incompatible API changes,
-2. MINOR version will increment when functionality is added in a backwards-compatible manner, and
-3. PATCH version will increment with backwards-compatible bug fixes.
+## Citation
 
-# Citation
+Pyzotero has a DOI: [![DOI](https://zenodo.org/badge/1423403.svg)](https://zenodo.org/badge/latestdoi/1423403).
+Sample citation:
 
-Pyzotero has a DOI:  
-[![DOI](https://zenodo.org/badge/1423403.svg)](https://zenodo.org/badge/latestdoi/1423403)  
-You may also cite Pyzotero using [CITATION.cff](CITATION.cff).  
-A sample citation (APA 6th edition) might look like:  
 > Stephan Hügel, The Pyzotero Authors (2019, May 18). urschrei/pyzotero: Version v1.3.15. http://doi.org/10.5281/zenodo.2917290
 
-# License
-
-Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENCE.md](LICENCE.md) for details.  
 
 [1]: https://www.zotero.org/support/dev/web_api/v3/start
 [2]: https://www.zotero.org/settings/keys/new
