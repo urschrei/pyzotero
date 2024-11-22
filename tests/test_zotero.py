@@ -59,6 +59,13 @@ class ZoteroTests(unittest.TestCase):
             content_type="application/json",
             body=self.items_doc,
         )
+    
+    def testBuildUrlCorrectHandleEndpoint(self):
+        """url should be concat correctly by build_url"""
+        url = z.build_url("http://localhost:23119/api", "/users/0")
+        self.assertEqual(url, "http://localhost:23119/api/users/0")
+        url = z.build_url("http://localhost:23119/api/", "/users/0")
+        self.assertEqual(url, "http://localhost:23119/api/users/0")
 
     @httpretty.activate
     def testFailWithoutCredentials(self):
