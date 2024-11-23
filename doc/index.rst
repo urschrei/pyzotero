@@ -105,13 +105,14 @@ General Usage
 First, create a new Zotero instance:
 
 
-    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order, locale])
+    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order, locale, session])
 
         :param str library_id: a valid Zotero API user ID
         :param str library_type: a valid Zotero API library type: **user** or **group**
         :param str api_key: a valid Zotero API user key
         :param bool preserve_json_order: Load JSON returns with OrderedDict to preserve their order
         :param str locale: Set the `locale <https://www.zotero.org/support/dev/web_api/v3/types_and_fields#zotero_web_api_item_typefield_requests>`_, allowing retrieval of localised item types, field types, and creator types. Defaults to "en-US".
+        :param requests.Session session: a custom requests session, for example to use `requests-cache <https://pypi.org/project/requests-cache/>`_
 
 
 Example:
