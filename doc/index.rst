@@ -23,7 +23,7 @@ Getting started (short version)
 3. You'll also need [*]_ to get an **API key** from the Zotero `site <https://www.zotero.org/settings/keys/new>`_
 4. Are you accessing your own Zotero library? Set``library_type`` to ``'user'``
 5. Are you accessing a shared group library? Set``library_type`` to ``'group'``
-6. **Read-only** access to your local Zotero library is available: set ``local=True`
+6. **Read-only** access to your local Zotero library is available: set ``local=True``
 
 
 .. _hello-world:
