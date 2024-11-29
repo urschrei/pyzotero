@@ -43,10 +43,12 @@ timeout = 30
 
 def build_url(base_url, path, args_dict=None):
     """Build a valid URL so we don't have to worry about string concatenation errors and
-    leading / trailing slashes etc"""
-    # Returns a list in the structure of urlparse.ParseResult"""
+    leading / trailing slashes etc.
+    Returns a list in the structure of urlparse.ParseResult"""
+    if base_url.endswith("/"):
+        base_url = base_url[:-1]
     url_parts = list(urlparse(base_url))
-    url_parts[2] = path
+    url_parts[2] += path
     if args_dict:
         url_parts[4] = urlencode(args_dict)
     return urlunparse(url_parts)
@@ -270,9 +272,13 @@ class Zotero:
         api_key=None,
         preserve_json_order=False,
         locale="en-US",
+        local=False,
     ):
         """Store Zotero credentials"""
-        self.endpoint = "https://api.zotero.org"
+        if not local:
+            self.endpoint = "https://api.zotero.org"
+        else:
+            self.endpoint = "http://localhost:23119/api"
         if library_id and library_type:
             self.library_id = library_id
             # library_type determines whether query begins w. /users or /groups
@@ -405,6 +411,10 @@ class Zotero:
         self.self_link = request
         # ensure that we wait if there's an active backoff
         self._check_backoff()
+        if params:
+            params["locale"] = self.locale
+        if not params:
+            params = {"locale": self.locale}
         self.request = requests.get(
             url=full_url, headers=self.default_headers(), params=params
         )
