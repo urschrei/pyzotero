@@ -1,14 +1,6 @@
 name: Build wheel, release and publish on new tag
 
-on:
-  push:
-    branches:
-      - master
-      - dev
-  pull_request:
-    types:
-      - opened
-      - reopened
+on: [push, pull_request]
 
 jobs:
   build:
