@@ -267,9 +267,13 @@ class Zotero:
         api_key=None,
         preserve_json_order=False,
         locale="en-US",
+        local=False,
     ):
         """Store Zotero credentials"""
-        self.endpoint = "https://api.zotero.org"
+        if not local:
+            self.endpoint = "https://api.zotero.org"
+        else:
+            self.endpoint = "http://localhost:23119/api"
         if library_id and library_type:
             self.library_id = library_id
             # library_type determines whether query begins w. /users or /groups

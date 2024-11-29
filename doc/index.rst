@@ -23,6 +23,7 @@ Getting started (short version)
 3. You'll also need [*]_ to get an **API key** from the Zotero `site <https://www.zotero.org/settings/keys/new>`_
 4. Are you accessing your own Zotero library? Set``library_type`` to ``'user'``
 5. Are you accessing a shared group library? Set``library_type`` to ``'group'``
+6. **Read-only** access to your local Zotero library is available: set ``local=True`
 
 
 .. _hello-world:
@@ -68,7 +69,7 @@ The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org
 ===============================
 Installing development versions
 ===============================
-Pyzotero remains in development as of February 2018. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
+Pyzotero remains in development as of November 2024. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
 
 
 =======
@@ -112,6 +113,7 @@ First, create a new Zotero instance:
         :param str api_key: a valid Zotero API user key
         :param bool preserve_json_order: Load JSON returns with OrderedDict to preserve their order
         :param str locale: Set the `locale <https://www.zotero.org/support/dev/web_api/v3/types_and_fields#zotero_web_api_item_typefield_requests>`_, allowing retrieval of localised item types, field types, and creator types. Defaults to "en-US".
+        :param str local: use the local Zotero http server instead of the remote API. Note that the local server currently (November 2024) only allows **read** requests
 
 
 Example:
