@@ -43,8 +43,8 @@ timeout = 30
 
 def build_url(base_url, path, args_dict=None):
     """Build a valid URL so we don't have to worry about string concatenation errors and
-    leading / trailing slashes etc"""
-    # Returns a list in the structure of urlparse.ParseResult"""
+    leading / trailing slashes etc.
+    Returns a list in the structure of urlparse.ParseResult"""
     if base_url.endswith("/"):
         base_url = base_url[:-1]
     url_parts = list(urlparse(base_url))
