@@ -75,7 +75,7 @@ A sample citation (APA 6th edition) might look like:
 
 # License
 
-Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENCE.md](LICENCE.md) for details.  
+Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENSE.md](LICENSE.md) for details.  
 
 [1]: https://www.zotero.org/support/dev/web_api/v3/start
 [2]: https://www.zotero.org/settings/keys/new
