@@ -153,11 +153,6 @@ def retrieve(func):
         """
         if kwargs:
             self.add_parameters(**kwargs)
-        res = func(self, *args)
-        parsed = urlparse(res)
-        querydict = parse_qs(parsed.query)
-        if not querydict.get("locale"):
-            self.add_parameters(locale=self.locale)
         retrieved = self._retrieve_data(func(self, *args))
         # we now always have links in the header response
         self.links = self._extract_links()
