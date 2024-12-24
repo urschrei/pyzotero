@@ -24,8 +24,16 @@ import uuid
 import zipfile
 from collections import OrderedDict
 from functools import wraps
-from pathlib import Path
-from urllib.parse import parse_qs, parse_qsl, quote, urlencode, urlparse, urlunparse
+from pathlib import Path, PurePosixPath
+from urllib.parse import (
+    parse_qs,
+    parse_qsl,
+    quote,
+    unquote,
+    urlencode,
+    urlparse,
+    urlunparse,
+)
 
 import bibtexparser
 import feedparser
@@ -272,8 +280,10 @@ class Zotero:
         """Store Zotero credentials"""
         if not local:
             self.endpoint = "https://api.zotero.org"
+            self.local = False
         else:
             self.endpoint = "http://localhost:23119/api"
+            self.local = True
         if library_id and library_type:
             self.library_id = library_id
             # library_type determines whether query begins w. /users or /groups
@@ -320,6 +330,15 @@ class Zotero:
         # these are required for backoff handling
         self.backoff = False
         self.backoff_duration = 0.0
+
+    def _striplocal(self, url):
+        if self.local:
+            parsed = urlparse(url)
+            purepath = PurePosixPath(unquote(parsed.path))
+            newpath = "/".join(purepath.parts[2:])
+            replaced = parsed._replace(path="/" + newpath)
+            return urlunparse(replaced)
+        return url
 
     def _set_backoff(self, duration):
         """
@@ -845,10 +864,10 @@ class Zotero:
     @retrieve
     def follow(self):
         """Return the result of the call to the URL in the 'Next' link"""
-        if self.links.get("next"):
-            return self.links.get("next")
-        else:
-            return
+        if n := self.links.get("next"):
+            newurl = self._striplocal(n)
+            return newurl
+        return
 
     def iterfollow(self):
         """Generator for self.follow()"""
