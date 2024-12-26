@@ -338,6 +338,7 @@ class Zotero:
         return False
 
     def _striplocal(self, url):
+        """We need to remve the leading "/api" substring from urls if we're running in local mode"""
         if self.local:
             parsed = urlparse(url)
             purepath = PurePosixPath(unquote(parsed.path))
