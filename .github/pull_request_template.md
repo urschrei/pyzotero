@@ -14,5 +14,5 @@ Thanks for opening a PR. Please read the following:
 - If in doubt, comment your code.
 
 ## License of Contributed Code
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be MIT licensed, without any additional terms or conditions.  
-Please note that pull requests with licenses that are more restrictive than or otherwise incompatible with the MIT license will not be accepted.
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be licensed under the Blua Oak Model License 1.0, without any additional terms or conditions.  
+Please note that pull requests with licenses that are more restrictive than or otherwise incompatible with the license will not be accepted.
