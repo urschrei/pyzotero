@@ -59,7 +59,7 @@ class ZoteroTests(unittest.TestCase):
             content_type="application/json",
             body=self.items_doc,
         )
-    
+
     def testBuildUrlCorrectHandleEndpoint(self):
         """url should be concat correctly by build_url"""
         url = z.build_url("http://localhost:23119/api", "/users/0")
@@ -83,6 +83,20 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(
             parse_qs("start=7&limit=100&format=json"), parse_qs(zot.url_params)
         )
+
+    @httpretty.activate
+    def testLocale(self):
+        """Should correctly add locale to request because it's an initial request"""
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/items",
+            content_type="application/json",
+            body=self.item_doc,
+        )
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        _ = zot.items()
+        req = zot.request
+        self.assertEqual(req.url.find("locale"), 66)
 
     @httpretty.activate
     def testRequestBuilderLimitNone(self):

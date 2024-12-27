@@ -433,14 +433,15 @@ class Zotero:
         # ensure that we wait if there's an active backoff
         self._check_backoff()
         # don't set locale if the url already contains it
-        if params and self.links:
-            if not self._check_for_component(self.links.get("next"), "locale"):
+        # we always add a locale if it's a "standalone" or first call
+        needs_locale = not self.links or not self._check_for_component(
+            self.links.get("next"), "locale"
+        )
+        if needs_locale:
+            if params:
                 params["locale"] = self.locale
-        if not params and self.links:
-            if not self._check_for_component(self.links.get("next"), "locale"):
-                params = {"locale": self.locale}
             else:
-                params = {}
+                params = {"locale": self.locale}
         self.request = requests.get(
             url=full_url, headers=self.default_headers(), params=params
         )
@@ -878,6 +879,7 @@ class Zotero:
         """Return the result of the call to the URL in the 'Next' link"""
         if n := self.links.get("next"):
             newurl = self._striplocal(n)
+            print(newurl)
             return newurl
         return
 
