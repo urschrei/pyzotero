@@ -101,7 +101,7 @@ def tcache(func):
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
-        cachekey = result.path + "_" + result.query
+        cachekey = f"{result.path}_{result.query}"
         if self.templates.get(cachekey) and not self._updated(
             query_string, self.templates[cachekey], cachekey
         ):
@@ -984,7 +984,7 @@ class Zotero:
     def item_template(self, itemtype, linkmode=None):
         """Get a template for a new item"""
         # if we have a template and it hasn't been updated since we stored it
-        template_name = "{}_{}_{}".format(*["item_template", itemtype, linkmode or ""])
+        template_name = f"item_template_{itemtype}_{linkmode or ''}"
         query_string = f"/items/new?itemType={itemtype}"
         if self.templates.get(template_name) and not self._updated(
             query_string, self.templates[template_name], template_name
