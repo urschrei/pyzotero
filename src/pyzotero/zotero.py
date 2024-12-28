@@ -465,7 +465,7 @@ class Zotero:
         try:
             for key, value in self.request.links.items():
                 parsed = urlparse(value["url"])
-                fragment = "{path}?{query}".format(path=parsed[2], query=parsed[4])
+                fragment = f"{parsed[2]}?{parsed[4]}"
                 extracted[key] = fragment
             # add a 'self' link
             parsed = list(urlparse(self.self_link))
@@ -985,7 +985,7 @@ class Zotero:
         """Get a template for a new item"""
         # if we have a template and it hasn't been updated since we stored it
         template_name = "{}_{}_{}".format(*["item_template", itemtype, linkmode or ""])
-        query_string = "/items/new?itemType={i}".format(i=itemtype)
+        query_string = f"/items/new?itemType={itemtype}"
         if self.templates.get(template_name) and not self._updated(
             query_string, self.templates[template_name], template_name
         ):
@@ -993,7 +993,7 @@ class Zotero:
 
         # Set linkMode parameter for API request if itemtype is attachment
         if itemtype == "attachment":
-            query_string = "{}&linkMode={}".format(query_string, linkmode)
+            query_string = f"{query_string}&linkMode={linkmode}"
 
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
