@@ -101,7 +101,7 @@ def tcache(func):
         # now split up the URL
         result = urlparse(r.url)
         # construct cache key
-        cachekey = result.path + "_" + result.query
+        cachekey = f"{result.path}_{result.query}"
         if self.templates.get(cachekey) and not self._updated(
             query_string, self.templates[cachekey], cachekey
         ):
@@ -381,11 +381,11 @@ class Zotero:
         It's always OK to include these headers
         """
         _headers = {
-            "User-Agent": "Pyzotero/%s" % pz.__version__,
-            "Zotero-API-Version": "%s" % __api_version__,
+            "User-Agent": f"Pyzotero/{pz.__version__}",
+            "Zotero-API-Version": f"{__api_version__}",
         }
         if self.api_key:
-            _headers["Authorization"] = "Bearer %s" % self.api_key
+            _headers["Authorization"] = f"Bearer {self.api_key}"
         return _headers
 
     def _cache(self, response, key):
@@ -465,7 +465,7 @@ class Zotero:
         try:
             for key, value in self.request.links.items():
                 parsed = urlparse(value["url"])
-                fragment = "{path}?{query}".format(path=parsed[2], query=parsed[4])
+                fragment = f"{parsed[2]}?{parsed[4]}"
                 extracted[key] = fragment
             # add a 'self' link
             parsed = list(urlparse(self.self_link))
@@ -560,12 +560,12 @@ class Zotero:
         try:
             query = quote(query_string.format(u=self.library_id, t=self.library_type))
         except KeyError as err:
-            raise ze.ParamNotPassed("There's a request parameter missing: %s" % err)
+            raise ze.ParamNotPassed(f"There's a request parameter missing: {err}")
         # Add the URL parameters and the user key, if necessary
         if no_params is False:
             if not self.url_params:
                 self.add_parameters()
-            query = "%s?%s" % (query, self.url_params)
+            query = f"{query}?{self.url_params}"
         return query
 
     @retrieve
@@ -984,8 +984,8 @@ class Zotero:
     def item_template(self, itemtype, linkmode=None):
         """Get a template for a new item"""
         # if we have a template and it hasn't been updated since we stored it
-        template_name = "{}_{}_{}".format(*["item_template", itemtype, linkmode or ""])
-        query_string = "/items/new?itemType={i}".format(i=itemtype)
+        template_name = f"item_template_{itemtype}_{linkmode or ''}"
+        query_string = f"/items/new?itemType={itemtype}"
         if self.templates.get(template_name) and not self._updated(
             query_string, self.templates[template_name], template_name
         ):
@@ -993,7 +993,7 @@ class Zotero:
 
         # Set linkMode parameter for API request if itemtype is attachment
         if itemtype == "attachment":
-            query_string = "{}&linkMode={}".format(query_string, linkmode)
+            query_string = f"{query_string}&linkMode={linkmode}"
 
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
@@ -1117,7 +1117,7 @@ class Zotero:
         except AssertionError:
             item["data"]["tags"] = list()
         for tag in tags:
-            item["data"]["tags"].append({"tag": "%s" % tag})
+            item["data"]["tags"].append({"tag": f"{tag}"})
         # make sure everything's OK
         assert self.check_items([item])
         return self.update_item(item)
@@ -1189,8 +1189,7 @@ class Zotero:
             difference = to_check.difference(template)
             if difference:
                 raise ze.InvalidItemFields(
-                    "Invalid keys present in item %s: %s"
-                    % (pos + 1, " ".join(i for i in difference))
+                    f"Invalid keys present in item {pos + 1}: {' '.join(i for i in difference)}"
                 )
         return items
 
@@ -1658,13 +1657,7 @@ def error_handler(zot, req, exc=None):
 
     def err_msg(req):
         """Return a nicely-formatted error message"""
-        return "\nCode: %s\nURL: %s\nMethod: %s\nResponse: %s" % (
-            req.status_code,
-            # error.msg,
-            req.url,
-            req.request.method,
-            req.text,
-        )
+        return f"\nCode: {req.status_code}\nURL: {req.url}\nMethod: {req.request.method}\nResponse: {req.text}"
 
     if error_codes.get(req.status_code):
         # check to see whether its 429
@@ -1833,12 +1826,11 @@ class SavedSearch:
         for condition in conditions:
             if set(condition.keys()) != allowed_keys:
                 raise ze.ParamNotPassed(
-                    "Keys must be all of: %s" % ", ".join(self.searchkeys)
+                    f"Keys must be all of: {', '.join(self.searchkeys)}"
                 )
             if condition.get("operator") not in operators_set:
                 raise ze.ParamNotPassed(
-                    "You have specified an unknown operator: %s"
-                    % condition.get("operator")
+                    f"You have specified an unknown operator: {condition.get('operator')}"
                 )
             # dict keys of allowed operators for the current condition
             permitted_operators = self.conditions_operators.get(
@@ -1850,12 +1842,7 @@ class SavedSearch:
             )
             if condition.get("operator") not in permitted_operators_list:
                 raise ze.ParamNotPassed(
-                    "You may not use the '%s' operator when selecting the '%s' condition. \nAllowed operators: %s"
-                    % (
-                        condition.get("operator"),
-                        condition.get("condition"),
-                        ", ".join(list(permitted_operators_list)),
-                    )
+                    f"You may not use the '{condition.get('operator')}' operator when selecting the '{condition.get('condition')}' condition. \nAllowed operators: {', '.join(list(permitted_operators_list))}"
                 )
 
 
@@ -1893,14 +1880,12 @@ class Zupload:
                         pass
                 except IOError:
                     raise ze.FileDoesNotExist(
-                        "The file at %s couldn't be opened or found."
-                        % str(self.basedir.joinpath(templt["filename"]))
+                        f"The file at {str(self.basedir.joinpath(templt['filename']))} couldn't be opened or found."
                     )
             # no point in continuing if the file isn't a file
             else:
                 raise ze.FileDoesNotExist(
-                    "The file at %s couldn't be opened or found."
-                    % str(self.basedir.joinpath(templt["filename"]))
+                    f"The file at {str(self.basedir.joinpath(templt['filename']))} couldn't be opened or found."
                 )
 
     def _create_prelim(self):
@@ -2012,7 +1997,7 @@ class Zupload:
             upload = requests.post(
                 url=authdata["url"],
                 files=upload_pairs,
-                headers={"User-Agent": "Pyzotero/%s" % pz.__version__},
+                headers={"User-Agent": f"Pyzotero/{pz.__version__}"},
             )
         except requests.exceptions.ConnectionError:
             raise ze.UploadError("ConnectionError")
