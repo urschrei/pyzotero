@@ -35,7 +35,8 @@ Tracker = "https://github.com/urschrei/pyzotero/issues"
 test = [
     "pytest >= 7.4.2",
     "httpretty",
-    "python-dateutil"
+    "python-dateutil",
+    "ipython"
 ]
 
 [tool.setuptools.dynamic]
