@@ -96,7 +96,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero("myuserID", "user", "myuserkey")
         _ = zot.items()
         req = zot.request
-        self.assertEqual(req.url.find("locale"), 66)
+        self.assertEqual(str(req.url).find("locale"), 44)
 
     @httpretty.activate
     def testRequestBuilderLimitNone(self):
