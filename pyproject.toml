@@ -6,8 +6,8 @@ requires-python = ">=3.8"
 dependencies = [
     "feedparser >= 6.0.11",
     "pytz",
-    "requests >= 2.21.0",
-    "bibtexparser"
+    "bibtexparser",
+    "httpx>=0.28.1",
 ]
 authors = [{ name = "Stephan Hügel", email = "urschrei@gmail.com" }]
 license = {file = "LICENSE.md"}
