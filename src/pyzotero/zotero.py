@@ -280,6 +280,7 @@ class Zotero:
         locale="en-US",
         local=False,
     ):
+        self.client = None
         """Store Zotero credentials"""
         if not local:
             self.endpoint = "https://api.zotero.org"
@@ -303,6 +304,7 @@ class Zotero:
         self.tag_data = False
         self.request = None
         self.snapshot = False
+        self.client = httpx.Client(headers=self.default_headers())
         # these aren't valid item fields, so never send them to the server
         self.temp_keys = set(["key", "etag", "group_id", "updated"])
         # determine which processor to use for the parsed content
@@ -333,6 +335,11 @@ class Zotero:
         # these are required for backoff handling
         self.backoff = False
         self.backoff_duration = 0.0
+
+    def __del__(self):
+        # this isn't guaranteed to run, but that's OK
+        if c := self.client:
+            c.close()
 
     def _check_for_component(self, url, component):
         """Check a url path query fragment for a specific query parameter"""
@@ -445,9 +452,7 @@ class Zotero:
                 params["locale"] = self.locale
             else:
                 params = {"locale": self.locale}
-        self.request = httpx.get(
-            url=full_url, headers=self.default_headers(), params=params
-        )
+        self.request = self.client.get(url=full_url, params=params)
         self.request.encoding = "utf-8"
         try:
             self.request.raise_for_status()
@@ -513,10 +518,9 @@ class Zotero:
                     "%a, %d %b %Y %H:%M:%S %Z"
                 )
             }
-            headers.update(self.default_headers())
             # perform the request, and check whether the response returns 304
             self._check_backoff()
-            req = httpx.get(query, headers=headers)
+            req = self.client.get(query, headers=headers)
             try:
                 req.raise_for_status()
             except httpx.HTTPError as exc:
@@ -641,9 +645,9 @@ class Zotero:
         For text documents, 'indexedChars' and 'totalChars' OR
         For PDFs, 'indexedPages' and 'totalPages'.
         """
-        headers = self.default_headers()
+        headers = {}
         headers.update({"Content-Type": "application/json"})
-        return httpx.put(
+        return self.client.put(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items/{k}/fulltext".format(
@@ -662,9 +666,9 @@ class Zotero:
         query_string = "/{t}/{u}/fulltext?since={version}".format(
             t=self.library_type, u=self.library_id, version=since
         )
-        headers = self.default_headers()
+        headers = {}
         self._check_backoff()
-        resp = httpx.get(build_url(self.endpoint, query_string), headers=headers)
+        resp = self.client.get(build_url(self.endpoint, query_string), headers=headers)
         try:
             resp.raise_for_status()
         except httpx.HTTPError as exc:
@@ -1053,9 +1057,8 @@ class Zotero:
         self.savedsearch._validate(conditions)
         payload = [{"name": name, "conditions": conditions}]
         headers = {"Zotero-Write-Token": token()}
-        headers.update(self.default_headers())
         self._check_backoff()
-        req = httpx.post(
+        req = self.client.post(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
@@ -1081,9 +1084,8 @@ class Zotero:
         unique search keys
         """
         headers = {"Zotero-Write-Token": token()}
-        headers.update(self.default_headers())
         self._check_backoff()
-        req = httpx.delete(
+        req = self.client.delete(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
@@ -1258,9 +1260,8 @@ class Zotero:
         if last_modified is not None:
             headers["If-Unmodified-Since-Version"] = str(last_modified)
         to_send = json.dumps([i for i in self._cleanup(*payload, allow=("key"))])
-        headers.update(self.default_headers())
         self._check_backoff()
-        req = httpx.post(
+        req = self.client.post(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items".format(t=self.library_type, u=self.library_id),
@@ -1286,11 +1287,10 @@ class Zotero:
             uheaders = {
                 "If-Unmodified-Since-Version": req.headers["last-modified-version"]
             }
-            uheaders.update(self.default_headers())
             for value in resp["success"].values():
                 payload = json.dumps({"parentItem": parentid})
                 self._check_backoff()
-                presp = httpx.patch(
+                presp = self.client.patch(
                     url=build_url(
                         self.endpoint,
                         "/{t}/{u}/items/{v}".format(
@@ -1334,9 +1334,8 @@ class Zotero:
         headers = {"Zotero-Write-Token": token()}
         if last_modified is not None:
             headers["If-Unmodified-Since-Version"] = str(last_modified)
-        headers.update(self.default_headers())
         self._check_backoff()
-        req = httpx.post(
+        req = self.client.post(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/collections".format(t=self.library_type, u=self.library_id),
@@ -1366,9 +1365,8 @@ class Zotero:
             modified = last_modified
         key = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        headers.update(self.default_headers())
         headers.update({"Content-Type": "application/json"})
-        return httpx.put(
+        return self.client.put(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/collections/{c}".format(
@@ -1426,8 +1424,7 @@ class Zotero:
             modified = last_modified
         ident = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        headers.update(self.default_headers())
-        return httpx.patch(
+        return self.client.patch(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items/{id}".format(
@@ -1444,18 +1441,15 @@ class Zotero:
         Accepts one argument, a list of dicts containing Item data
         """
         to_send = [self.check_items([p])[0] for p in payload]
-        headers = {}
-        headers.update(self.default_headers())
         # the API only accepts 50 items at a time, so we have to split
         # anything longer
         for chunk in chunks(to_send, 50):
             self._check_backoff()
-            req = httpx.post(
+            req = self.client.post(
                 url=build_url(
                     self.endpoint,
                     "/{t}/{u}/items/".format(t=self.library_type, u=self.library_id),
                 ),
-                headers=headers,
                 content=json.dumps(chunk),
             )
             self.request = req
@@ -1474,20 +1468,17 @@ class Zotero:
         Accepts one argument, a list of dicts containing Collection data
         """
         to_send = [self.check_items([p])[0] for p in payload]
-        headers = {}
-        headers.update(self.default_headers())
         # the API only accepts 50 items at a time, so we have to split
         # anything longer
         for chunk in chunks(to_send, 50):
             self._check_backoff()
-            req = httpx.post(
+            req = self.client.post(
                 url=build_url(
                     self.endpoint,
                     "/{t}/{u}/collections/".format(
                         t=self.library_type, u=self.library_id
                     ),
                 ),
-                headers=headers,
                 content=json.dumps(chunk),
             )
             self.request = req
@@ -1512,8 +1503,7 @@ class Zotero:
         # add the collection data from the item
         modified_collections = payload["data"]["collections"] + [collection]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        headers.update(self.default_headers())
-        return httpx.patch(
+        return self.client.patch(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items/{i}".format(
@@ -1538,8 +1528,7 @@ class Zotero:
             c for c in payload["data"]["collections"] if c != collection
         ]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        headers.update(self.default_headers())
-        return httpx.patch(
+        return self.client.patch(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items/{i}".format(
@@ -1565,8 +1554,7 @@ class Zotero:
         headers = {
             "If-Unmodified-Since-Version": self.request.headers["last-modified-version"]
         }
-        headers.update(self.default_headers())
-        return httpx.delete(
+        return self.client.delete(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/tags".format(t=self.library_type, u=self.library_id),
@@ -1607,8 +1595,7 @@ class Zotero:
                 ),
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        headers.update(self.default_headers())
-        return httpx.delete(url=url, params=params, headers=headers)
+        return self.client.delete(url=url, params=params, headers=headers)
 
     @backoff_check
     def delete_collection(self, payload, last_modified=None):
@@ -1642,8 +1629,7 @@ class Zotero:
                 ),
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        headers.update(self.default_headers())
-        return httpx.delete(url=url, params=params, headers=headers)
+        return self.client.delete(url=url, params=params, headers=headers)
 
 
 def error_handler(zot, req, exc=None):
@@ -1907,14 +1893,13 @@ class Zupload:
         liblevel = "/{t}/{u}/items"
         # Create one or more new attachments
         headers = {"Zotero-Write-Token": token(), "Content-Type": "application/json"}
-        headers.update(self.zinstance.default_headers())
         # If we have a Parent ID, add it as a parentItem
         if self.parentid:
             for child in self.payload:
                 child["parentItem"] = self.parentid
         to_send = json.dumps(self.payload)
         self.zinstance._check_backoff()
-        req = httpx.post(
+        req = self.client.post(
             url=build_url(
                 self.zinstance.endpoint,
                 liblevel.format(
@@ -1951,7 +1936,6 @@ class Zupload:
         else:
             # docs specify that for existing file we use this
             auth_headers["If-Match"] = md5
-        auth_headers.update(self.zinstance.default_headers())
         data = {
             "md5": digest.hexdigest(),
             "filename": os.path.basename(attachment),
@@ -1962,7 +1946,7 @@ class Zupload:
             "params": 1,
         }
         self.zinstance._check_backoff()
-        auth_req = httpx.post(
+        auth_req = self.zinstance.client.post(
             url=build_url(
                 self.zinstance.endpoint,
                 "/{t}/{u}/items/{i}/file".format(
@@ -1999,7 +1983,7 @@ class Zupload:
         upload_pairs = tuple(upload_list)
         try:
             self.zinstance._check_backoff()
-            upload = httpx.post(
+            upload = self.client.post(
                 url=authdata["url"],
                 files=upload_pairs,
                 headers={"User-Agent": f"Pyzotero/{pz.__version__}"},
@@ -2024,10 +2008,9 @@ class Zupload:
             "Content-Type": "application/x-www-form-urlencoded",
             "If-None-Match": "*",
         }
-        reg_headers.update(self.zinstance.default_headers())
         reg_data = {"upload": authdata.get("uploadKey")}
         self.zinstance._check_backoff()
-        upload_reg = httpx.post(
+        upload_reg = self.zinstane.client.post(
             url=build_url(
                 self.zinstance.endpoint,
                 "/{t}/{u}/items/{i}/file".format(
