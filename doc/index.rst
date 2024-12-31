@@ -59,7 +59,7 @@ From a local clone, if you wish to install Pyzotero from a specific branch:
 
         git clone git://github.com/urschrei/pyzotero.git
         cd pyzotero
-        git checkout dev
+        git checkout main
         pip install .
 
 The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org/pypi/Pyzotero>`_
@@ -69,7 +69,7 @@ The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org
 ===============================
 Installing development versions
 ===============================
-Pyzotero remains in development as of November 2024. Unstable development versions can be found on the `Github dev branch <https://github.com/urschrei/pyzotero/tree/dev>`_, and installed directly from there using pip: ``pip install -e git+https://github.com/urschrei/pyzotero.git@dev#egg=pyzotero``, or from the checked-out ``dev`` branch on a local clone, as in the example above.
+Pyzotero remains in development as of November 2024. Unstable development versions can be found on the `Github main branch <https://github.com/urschrei/pyzotero/tree/main>`_, and installed directly from a checked-out ``main`` branch on a local clone, as in the example above.
 
 
 =======

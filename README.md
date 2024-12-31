@@ -39,7 +39,7 @@ Example:
 ``` bash
 git clone git://github.com/urschrei/pyzotero.git
 cd pyzotero
-git checkout dev
+git checkout main
 pip install .
 ```
 
@@ -49,7 +49,7 @@ Run `pytest .` from the top-level directory.
 
 ## Issues
 
-The latest commits can be found on the [dev branch][9], although new features are currently rare. If you encounter an error, please open an issue.
+The latest commits can be found on the [main branch][9], although new features are currently rare. If you encounter an error, please open an issue.
 
 ## Pull Requests
 
@@ -82,7 +82,7 @@ Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENSE.m
 [3]: http://pyzotero.readthedocs.org/en/latest/
 [7]: https://nose2.readthedocs.io/en/latest/
 [8]: https://opensource.org/license/blue-oak-model-license
-[9]: https://github.com/urschrei/pyzotero/tree/dev
+[9]: https://github.com/urschrei/pyzotero/tree/main
 [10]: http://www.pip-installer.org/en/latest/index.html
 † This isn't strictly true: you only need an API key for personal libraries and non-public group libraries.
 

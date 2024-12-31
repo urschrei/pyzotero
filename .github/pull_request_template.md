@@ -1,7 +1,7 @@
 Thanks for opening a PR. Please read the following:
 
-- **Base your changes on the `dev` branch**
-    - If necessary, rebase against `dev` before opening a pull request
+- **Base your changes on the `main` branch**
+    - If necessary, rebase against `main` before opening a pull request
 - Follow [PEP 8](http://www.python.org/dev/peps/pep-0008/). I run [`ruff`](https://docs.astral.sh/ruff/) against the codebase and perhaps you should, too
 - Use spaces for indentation, and ensure that all methods have a proper docstring. **Please don't use Doctest**
 - If at all possible, don't add dependencies
