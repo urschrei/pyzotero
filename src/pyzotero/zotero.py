@@ -38,6 +38,7 @@ from urllib.parse import (
 import bibtexparser
 import feedparser
 import httpx
+import ipdb
 import pytz
 from httpx import Request
 
@@ -452,7 +453,13 @@ class Zotero:
                 params["locale"] = self.locale
             else:
                 params = {"locale": self.locale}
-        self.request = self.client.get(url=full_url, params=params)
+        # we now have to merge self.url_params (default params, and those supplied by the user)
+        if not params:
+            params = {}
+        if not self.url_params:
+            self.url_params = {}
+        merged_params = params | self.url_params
+        self.request = self.client.get(url=full_url, params=merged_params)
         self.request.encoding = "utf-8"
         try:
             self.request.raise_for_status()
@@ -557,7 +564,7 @@ class Zotero:
         # bib format can't have a limit
         if params.get("format") == "bib":
             del params["limit"]
-        self.url_params = urlencode(params, doseq=True)
+        self.url_params = params
 
     def _build_query(self, query_string, no_params=False):
         """
@@ -572,7 +579,6 @@ class Zotero:
         if no_params is False:
             if not self.url_params:
                 self.add_parameters()
-            query = f"{query}?{self.url_params}"
         return query
 
     @retrieve
@@ -663,12 +669,15 @@ class Zotero:
         Retrieve list of full-text content items and versions which are newer
         than <since>
         """
-        query_string = "/{t}/{u}/fulltext?since={version}".format(
-            t=self.library_type, u=self.library_id, version=since
+        query_string = "/{t}/{u}/fulltext".format(
+            t=self.library_type, u=self.library_id
         )
         headers = {}
+        params = {"since": since}
         self._check_backoff()
-        resp = self.client.get(build_url(self.endpoint, query_string), headers=headers)
+        resp = self.client.get(
+            build_url(self.endpoint, query_string), params=params, headers=headers
+        )
         try:
             resp.raise_for_status()
         except httpx.HTTPError as exc:
@@ -992,16 +1001,16 @@ class Zotero:
         """Get a template for a new item"""
         # if we have a template and it hasn't been updated since we stored it
         template_name = f"item_template_{itemtype}_{linkmode or ''}"
-        query_string = f"/items/new?itemType={itemtype}"
+        params = {"itemType": itemtype}
+        # Set linkMode parameter for API request if itemtype is attachment
+        if itemtype == "attachment":
+            params["linkMode"] = linkmode
+        self.add_parameters(**params)
+        query_string = "/items/new"
         if self.templates.get(template_name) and not self._updated(
             query_string, self.templates[template_name], template_name
         ):
             return copy.deepcopy(self.templates[template_name]["tmplt"])
-
-        # Set linkMode parameter for API request if itemtype is attachment
-        if itemtype == "attachment":
-            query_string = f"{query_string}&linkMode={linkmode}"
-
         # otherwise perform a normal request and cache the response
         retrieved = self._retrieve_data(query_string)
         return self._cache(retrieved, template_name)

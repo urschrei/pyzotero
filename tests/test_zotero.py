@@ -17,7 +17,7 @@ try:
 except ModuleNotFoundError:
     from pyzotero import zotero as z
 
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlencode
 
 
 class ZoteroTests(unittest.TestCase):
@@ -81,7 +81,8 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero("myuserID", "user", "myuserkey")
         zot.add_parameters(limit=0, start=7)
         self.assertEqual(
-            parse_qs("start=7&limit=100&format=json"), parse_qs(zot.url_params)
+            parse_qs("start=7&limit=100&format=json"),
+            parse_qs(urlencode(zot.url_params, doseq=True)),
         )
 
     @httpretty.activate
@@ -103,14 +104,19 @@ class ZoteroTests(unittest.TestCase):
         """Should skip limit = 100 param if limit is set to None"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         zot.add_parameters(limit=None, start=7)
-        self.assertEqual(parse_qs("start=7&format=json"), parse_qs(zot.url_params))
+        self.assertEqual(
+            parse_qs("start=7&format=json"), parse_qs(urlencode(zot.url_params))
+        )
 
     @httpretty.activate
     def testRequestBuilderLimitNegativeOne(self):
         """Should skip limit = 100 param if limit is set to -1"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         zot.add_parameters(limit=-1, start=7)
-        self.assertEqual(parse_qs("start=7&format=json"), parse_qs(zot.url_params))
+        self.assertEqual(
+            parse_qs("start=7&format=json"),
+            parse_qs(urlencode(zot.url_params, doseq=True)),
+        )
 
     # @httpretty.activate
     # def testBuildQuery(self):
@@ -199,7 +205,7 @@ class ZoteroTests(unittest.TestCase):
     def testParseKeysResponse(self):
         """Check that parsing plain keys returned by format = keys works"""
         zot = z.Zotero("myuserid", "user", "myuserkey")
-        zot.url_params = "format=keys"
+        zot.url_params = {"format": "keys"}
         HTTPretty.register_uri(
             HTTPretty.GET,
             "https://api.zotero.org/users/myuserid/items?format=keys",
@@ -387,7 +393,8 @@ class ZoteroTests(unittest.TestCase):
         zot._build_query("/whatever")
         zot.add_parameters(start=2)
         self.assertEqual(
-            parse_qs("start=2&format=json&limit=100"), parse_qs(zot.url_params)
+            parse_qs("start=2&format=json&limit=100"),
+            parse_qs(urlencode(zot.url_params, doseq=True)),
         )
 
     @httpretty.activate
