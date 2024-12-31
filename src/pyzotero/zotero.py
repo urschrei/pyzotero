@@ -38,7 +38,6 @@ from urllib.parse import (
 import bibtexparser
 import feedparser
 import httpx
-import ipdb
 import pytz
 from httpx import Request
 
