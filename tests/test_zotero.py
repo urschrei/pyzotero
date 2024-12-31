@@ -351,6 +351,22 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual("Community / Economic Development", tags_data[0])
 
     @httpretty.activate
+    def testUrlBuild(self):
+        """Ensure that URL parameters are successfully encoded by the http library"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/tags?limit=1",
+            content_type="application/json",
+            body=self.tags_doc,
+        )
+        _ = zot.tags(limit=1)
+        self.assertEqual(
+            "https://api.zotero.org/users/myuserID/tags?locale=en-US&limit=1&format=json",
+            zot.request.url,
+        )
+
+    @httpretty.activate
     def testParseLinkHeaders(self):
         """Should successfully parse link headers"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
