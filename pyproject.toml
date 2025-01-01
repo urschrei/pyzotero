@@ -2,7 +2,7 @@
 name = "pyzotero"
 dynamic = ["version", "readme"]
 description = "Python wrapper for the Zotero API"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "feedparser >= 6.0.11",
     "pytz",
@@ -14,11 +14,11 @@ license = {file = "LICENSE.md"}
 keywords = ["Zotero", "DH"]
 classifiers = [
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
