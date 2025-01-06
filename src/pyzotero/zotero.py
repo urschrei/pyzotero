@@ -62,6 +62,23 @@ def build_url(base_url, path, args_dict=None):
     return urlunparse(url_parts)
 
 
+def merge_params(url, params):
+    """This function strips query parameters, extracting them into a dict, then merging it with
+    the "params" dict, returning the truncated url and merged query params dict"""
+    parsed = urlparse(url)
+    # Extract query parameters from URL
+    incoming = parse_qs(parsed.query)
+    incoming = {k: v[0] for k, v in incoming.items()}
+
+    # Create new params dict by merging
+    merged = {**incoming, **params}
+
+    # Get base URL by zeroing out the query component
+    base_url = urlunparse(parsed._replace(query=""))
+
+    return base_url, merged
+
+
 def token():
     """Return a unique 32-char write-token"""
     return str(uuid.uuid4().hex)
@@ -458,7 +475,16 @@ class Zotero:
         if not self.url_params:
             self.url_params = {}
         merged_params = params | self.url_params
-        self.request = self.client.get(url=full_url, params=merged_params)
+        # our incoming url might be from the "links" dict, in which case it will contain url parameters.
+        # Unfortunately, httpx doesn't like to merge query paramaters in the url string and passed params
+        # so we strip the url params, combining them with our existing url_params
+        final_url, final_params = merge_params(full_url, merged_params)
+        self.request = self.client.get(
+            url=final_url,
+            params=final_params,
+            headers=self.default_headers(),
+            timeout=timeout,
+        )
         self.request.encoding = "utf-8"
         try:
             self.request.raise_for_status()
@@ -894,7 +920,6 @@ class Zotero:
         """Return the result of the call to the URL in the 'Next' link"""
         if n := self.links.get("next"):
             newurl = self._striplocal(n)
-            print(newurl)
             return newurl
         return
 
