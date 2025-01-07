@@ -305,7 +305,7 @@ class Zotero:
         else:
             self.endpoint = "http://localhost:23119/api"
             self.local = True
-        if library_id and library_type:
+        if library_id is not None and library_type:
             self.library_id = library_id
             # library_type determines whether query begins w. /users or /groups
             self.library_type = library_type + "s"
