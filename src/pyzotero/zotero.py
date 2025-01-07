@@ -686,7 +686,7 @@ class Zotero:
                 ),
             ),
             headers=headers,
-            content=json.dumps(payload),
+            data=json.dumps(payload),
         )
 
     def new_fulltext(self, since):
@@ -1047,7 +1047,7 @@ class Zotero:
         linked_file
         linked_url
         """
-        return self.item_template("attachment&linkMode=" + attachment_type)
+        return self.item_template("attachment", linkmode=attachment_type)
 
     def _attachment(self, payload, parentid=None):
         """
@@ -1097,7 +1097,7 @@ class Zotero:
                 "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
             ),
             headers=headers,
-            content=json.dumps(payload),
+            data=json.dumps(payload),
         )
         self.request = req
         try:
@@ -1299,7 +1299,7 @@ class Zotero:
                 self.endpoint,
                 "/{t}/{u}/items".format(t=self.library_type, u=self.library_id),
             ),
-            content=to_send,
+            data=to_send,
             headers=dict(headers),
         )
         self.request = req
@@ -1330,7 +1330,7 @@ class Zotero:
                             t=self.library_type, u=self.library_id, v=value
                         ),
                     ),
-                    content=payload,
+                    data=payload,
                     headers=dict(uheaders),
                 )
                 self.request = presp
@@ -1374,7 +1374,7 @@ class Zotero:
                 "/{t}/{u}/collections".format(t=self.library_type, u=self.library_id),
             ),
             headers=headers,
-            content=json.dumps(payload),
+            data=json.dumps(payload),
         )
         self.request = req
         try:
@@ -1407,7 +1407,7 @@ class Zotero:
                 ),
             ),
             headers=headers,
-            content=json.dumps(payload),
+            data=json.dumps(payload),
         )
 
     def attachment_simple(self, files, parentid=None):
@@ -1465,7 +1465,7 @@ class Zotero:
                 ),
             ),
             headers=headers,
-            content=json.dumps(to_send),
+            data=json.dumps(to_send),
         )
 
     def update_items(self, payload):
@@ -1483,7 +1483,7 @@ class Zotero:
                     self.endpoint,
                     "/{t}/{u}/items/".format(t=self.library_type, u=self.library_id),
                 ),
-                content=json.dumps(chunk),
+                data=json.dumps(chunk),
             )
             self.request = req
             try:
@@ -1512,7 +1512,7 @@ class Zotero:
                         t=self.library_type, u=self.library_id
                     ),
                 ),
-                content=json.dumps(chunk),
+                data=json.dumps(chunk),
             )
             self.request = req
             try:
@@ -1543,7 +1543,7 @@ class Zotero:
                     t=self.library_type, u=self.library_id, i=ident
                 ),
             ),
-            content=json.dumps({"collections": modified_collections}),
+            data=json.dumps({"collections": modified_collections}),
             headers=headers,
         )
 
@@ -1568,7 +1568,7 @@ class Zotero:
                     t=self.library_type, u=self.library_id, i=ident
                 ),
             ),
-            content=json.dumps({"collections": modified_collections}),
+            data=json.dumps({"collections": modified_collections}),
             headers=headers,
         )
 
@@ -1932,14 +1932,14 @@ class Zupload:
                 child["parentItem"] = self.parentid
         to_send = json.dumps(self.payload)
         self.zinstance._check_backoff()
-        req = self.client.post(
+        req = self.zinstance.client.post(
             url=build_url(
                 self.zinstance.endpoint,
                 liblevel.format(
                     t=self.zinstance.library_type, u=self.zinstance.library_id
                 ),
             ),
-            content=to_send,
+            data=to_send,
             headers=headers,
         )
         try:
@@ -1988,7 +1988,7 @@ class Zupload:
                     i=reg_key,
                 ),
             ),
-            content=data,
+            data=data,
             headers=auth_headers,
         )
         try:
@@ -2052,7 +2052,7 @@ class Zupload:
                     i=reg_key,
                 ),
             ),
-            content=reg_data,
+            data=reg_data,
             headers=dict(reg_headers),
         )
         try:
