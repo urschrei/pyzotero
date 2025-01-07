@@ -937,6 +937,8 @@ Uploading files
 
         Upload files to their corresponding attachments.  If the attachments lack the ``key`` property they are assumed not to exist and will be created.  The ``parentid`` parameter is **not compatible** with existing attachments.  In order for uploads to succeed, the filename parameter of each attachment must resolve.
 
+        This method is really only required in cases where a sync has been interrupted, leaving your library with attachment items that don't have corresponding files attached. It *may* also work for uploading modified files, though **this is untested**.
+
         :param list attachments: A list of dicts representing zotero imported files which may or may not already have their key fields filled in.
         :param string parentid: a library Item ID. If this is specified and key fields are not included, attachments will be created as child items of this ID.
         :param string/path basedir: A string or path object to which the filenames specified in attachments will be evaluated relative to.  If unspecified the filenames are evaluated as they are.
