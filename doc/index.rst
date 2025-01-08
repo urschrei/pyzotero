@@ -106,7 +106,7 @@ General Usage
 First, create a new Zotero instance:
 
 
-    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order, locale])
+    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order, locale, local])
 
         :param str library_id: a valid Zotero API user ID
         :param str library_type: a valid Zotero API library type: **user** or **group**
