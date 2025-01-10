@@ -1,16 +1,16 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
+  - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
-    ignore:
-      # Optional: Official actions have moving tags like v1;
-      # if you use those, you don't need updates.
-      - dependency-name: "actions/*"
-
-  - package-ecosystem: pip
-    directory: "/"
-    schedule:
-      interval: daily
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 20
+    groups:
+      # Specify a name for the group, which will be used in pull request titles
+      # and branch names
+      python-dependencies:
+        # Define patterns to include dependencies in the group (based on
+        # dependency name)
+        applies-to: version-updates # Applies the group rule to version updates
+        patterns:
+          - "*"
