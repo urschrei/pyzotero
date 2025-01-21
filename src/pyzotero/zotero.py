@@ -2016,7 +2016,9 @@ class Zupload:
         upload_pairs = tuple(upload_list)
         try:
             self.zinstance._check_backoff()
-            upload = self.client.post(
+            # We use a fresh httpx POST because we don't want our existing Pyzotero headers
+            # for a call to the storage upload URL (currently S3)
+            upload = httpx.post(
                 url=authdata["url"],
                 files=upload_pairs,
                 headers={"User-Agent": f"Pyzotero/{pz.__version__}"},
@@ -2043,7 +2045,7 @@ class Zupload:
         }
         reg_data = {"upload": authdata.get("uploadKey")}
         self.zinstance._check_backoff()
-        upload_reg = self.zinstane.client.post(
+        upload_reg = self.zinstance.client.post(
             url=build_url(
                 self.zinstance.endpoint,
                 "/{t}/{u}/items/{i}/file".format(
