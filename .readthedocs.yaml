@@ -11,10 +11,15 @@ build:
   tools:
     python: "3.11"
 
+  jobs:
+    post_create_environment:
+      - python -m pip install sphinx_rtd_theme
+
 python:
   install:
     - method: pip
       path: .
+
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
