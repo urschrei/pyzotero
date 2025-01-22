@@ -27,6 +27,14 @@ if os.environ.get("READTHEDOCS", "") == "True":
 
 author = zot.__author__
 current_year = date.today().year
+
+html_context = {
+    "display_github": True,  # Integrate GitHub
+    "github_user": "urschrei",  # Username
+    "github_repo": "pyzotero",  # Repo name
+    "github_version": "main",  # Version
+    "conf_py_path": "/doc/",  # Path in the checkout to the docs root
+}
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
