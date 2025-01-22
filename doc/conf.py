@@ -11,12 +11,19 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import os
 import sys
 from datetime import date
 
 sys.path.insert(1, "..")
 import pyzotero
 from pyzotero import zotero as zot
+
+# Tell Jinja2 templates the build is running on Read the Docs
+if os.environ.get("READTHEDOCS", "") == "True":
+    if "html_context" not in globals():
+        html_context = {}
+    html_context["READTHEDOCS"] = True
 
 author = zot.__author__
 current_year = date.today().year

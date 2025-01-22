@@ -8,7 +8,6 @@ dependencies = [
     "pytz",
     "bibtexparser",
     "httpx>=0.28.1",
-    "sphinx-rtd-theme>=3.0.2",
 ]
 authors = [{ name = "Stephan Hügel", email = "urschrei@gmail.com" }]
 license = {file = "LICENSE.md"}
