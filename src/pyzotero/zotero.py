@@ -191,39 +191,9 @@ def retrieve(func):
             and self.content.search(str(self.request.url)).group(0)
             or "bib"
         )
-        # JSON by default
-        formats = {
-            "application/atom+xml": "atom",
-            "application/x-bibtex": "bibtex",
-            "application/json": "json",
-            "text/html": "snapshot",
-            "text/plain": "plain",
-            "text/markdown": "plain",
-            "application/pdf; charset=utf-8": "pdf",
-            "application/pdf": "pdf",
-            "application/msword": "doc",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
-            "application/zip": "zip",
-            "application/epub+zip": "zip",
-            "audio/mpeg": "mp3",
-            "video/mp4": "mp4",
-            "audio/x-wav": "wav",
-            "video/x-msvideo": "avi",
-            "application/octet-stream": "octet",
-            "application/x-tex": "tex",
-            "application/x-texinfo": "texinfo",
-            "image/jpeg": "jpeg",
-            "image/png": "png",
-            "image/gif": "gif",
-            "image/tiff": "tiff",
-            "application/postscript": "postscript",
-            "application/rtf": "rtf",
-        }
         # select format, or assume JSON
         content_type_header = self.request.headers["Content-Type"].lower() + ";"
-        fmt = formats.get(
+        fmt = self.formats.get(
             # strip "; charset=..." segment
             content_type_header[0 : content_type_header.index(";")],
             "json",
@@ -331,6 +301,36 @@ class Zotero:
         # determine which processor to use for the parsed content
         self.fmt = re.compile(r"(?<=format=)\w+")
         self.content = re.compile(r"(?<=content=)\w+")
+        # JSON by default
+        self.formats = {
+            "application/atom+xml": "atom",
+            "application/x-bibtex": "bibtex",
+            "application/json": "json",
+            "text/html": "snapshot",
+            "text/plain": "plain",
+            "text/markdown": "plain",
+            "application/pdf; charset=utf-8": "pdf",
+            "application/pdf": "pdf",
+            "application/msword": "doc",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+            "application/zip": "zip",
+            "application/epub+zip": "zip",
+            "audio/mpeg": "mp3",
+            "video/mp4": "mp4",
+            "audio/x-wav": "wav",
+            "video/x-msvideo": "avi",
+            "application/octet-stream": "octet",
+            "application/x-tex": "tex",
+            "application/x-texinfo": "texinfo",
+            "image/jpeg": "jpeg",
+            "image/png": "png",
+            "image/gif": "gif",
+            "image/tiff": "tiff",
+            "application/postscript": "postscript",
+            "application/rtf": "rtf",
+        }
         self.processors = {
             "bib": self._bib_processor,
             "citation": self._citation_processor,
