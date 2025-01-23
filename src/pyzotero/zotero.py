@@ -197,6 +197,7 @@ def retrieve(func):
             "application/json": "json",
             "text/html": "snapshot",
             "text/plain": "plain",
+            "text/markdown": "plain",
             "application/pdf; charset=utf-8": "pdf",
             "application/pdf": "pdf",
             "application/msword": "doc",
