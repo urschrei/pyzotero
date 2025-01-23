@@ -321,7 +321,9 @@ class Zotero:
         self.tag_data = False
         self.request = None
         self.snapshot = False
-        self.client = httpx.Client(headers=self.default_headers())
+        self.client = httpx.Client(
+            headers=self.default_headers(), follow_redirects=True
+        )
         # these aren't valid item fields, so never send them to the server
         self.temp_keys = set(["key", "etag", "group_id", "updated"])
         # determine which processor to use for the parsed content
