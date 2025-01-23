@@ -2,6 +2,15 @@ version = 1
 requires-python = ">=3.9"
 
 [[package]]
+name = "aiofiles"
+version = "24.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/03/a88171e277e8caa88a4c77808c20ebb04ba74cc4681bf1e9416c862de237/aiofiles-24.1.0.tar.gz", hash = "sha256:22a075c9e5a3810f0c2e48f3008c94d68c65d763b9b03857924c99e57355166c", size = 30247 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a5/45/30bb92d442636f570cb5651bc661f52b610e2eec3f891a5dc3a4c3667db0/aiofiles-24.1.0-py3-none-any.whl", hash = "sha256:b4ec55f4195e3eb5d7abd1bf7e061763e864dd4954231fb8539a0ef8bb8260e5", size = 15896 },
+]
+
+[[package]]
 name = "anyio"
 version = "4.5.2"
 source = { registry = "https://pypi.org/simple" }
@@ -150,6 +159,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517 },
+]
+
+[[package]]
+name = "httpx-file"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiofiles" },
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b4/f7/737dbfaa3b3288ce69f75fad9a4cd22cae60d71763618ddd849018895172/httpx-file-0.2.0.tar.gz", hash = "sha256:a00f1dd02c9ffb5e7e072205c30f7ae0d867c397318b045a40b3268f2cdfa932", size = 4250 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f4/9c/4f3fba4c1b5a8919c3f6d407a41df43980c6a03a631d49f458b9546da128/httpx_file-0.2.0-py3-none-any.whl", hash = "sha256:9a425b351bf65aa394c02096204dc3fa8b647573a289079f927d3e3abfa3c7c8", size = 4471 },
 ]
 
 [[package]]
@@ -359,6 +381,7 @@ dependencies = [
     { name = "bibtexparser" },
     { name = "feedparser" },
     { name = "httpx" },
+    { name = "httpx-file" },
     { name = "pytz" },
 ]
 
@@ -376,6 +399,7 @@ requires-dist = [
     { name = "feedparser", specifier = ">=6.0.11" },
     { name = "httpretty", marker = "extra == 'test'" },
     { name = "httpx", specifier = ">=0.28.1" },
+    { name = "httpx-file", specifier = ">=0.2.0" },
     { name = "ipython", marker = "extra == 'test'" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=7.4.2" },
     { name = "python-dateutil", marker = "extra == 'test'" },

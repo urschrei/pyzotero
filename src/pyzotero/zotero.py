@@ -40,6 +40,7 @@ import feedparser
 import httpx
 import pytz
 from httpx import Request
+from httpx_file import Client as File_Client
 
 import pyzotero as pz
 
@@ -482,13 +483,28 @@ class Zotero:
         # Unfortunately, httpx doesn't like to merge query paramaters in the url string and passed params
         # so we strip the url params, combining them with our existing url_params
         final_url, final_params = merge_params(full_url, merged_params)
-        self.request = self.client.get(
-            url=final_url,
-            params=final_params,
-            headers=self.default_headers(),
-            timeout=timeout,
-        )
-        self.request.encoding = "utf-8"
+        # file URI errors are raised immediately so we have to try here
+        try:
+            self.request = self.client.get(
+                url=final_url,
+                params=final_params,
+                headers=self.default_headers(),
+                timeout=timeout,
+            )
+            self.request.encoding = "utf-8"
+        except httpx.UnsupportedProtocol:
+            # File URI handler logic
+            fc = File_Client()
+            request = fc.get(
+                url=final_url,
+                params=final_params,
+                headers=self.default_headers(),
+                timeout=timeout,
+                follow_redirects=True,
+            )
+            self.request = request
+            # since we'll be writing bytes, we need to set this to a type that will trigger the bytes processor
+            self.request.headers["Content-Type"] = "text/plain"
         try:
             self.request.raise_for_status()
         except httpx.HTTPError as exc:
