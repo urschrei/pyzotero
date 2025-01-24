@@ -30,6 +30,7 @@ classifiers = [
 [project.urls]
 Repository = "https://github.com/urschrei/pyzotero"
 Tracker = "https://github.com/urschrei/pyzotero/issues"
+documentation = "https://pyzotero.readthedocs.org"
 
 [project.optional-dependencies]
 test = [
