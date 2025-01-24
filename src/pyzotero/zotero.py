@@ -1311,14 +1311,14 @@ class Zotero:
         headers = {"Zotero-Write-Token": token(), "Content-Type": "application/json"}
         if last_modified is not None:
             headers["If-Unmodified-Since-Version"] = str(last_modified)
-        to_send = json.dumps([i for i in self._cleanup(*payload, allow=("key"))])
+        to_send = [i for i in self._cleanup(*payload, allow=("key"))]
         self._check_backoff()
         req = self.client.post(
             url=build_url(
                 self.endpoint,
                 "/{t}/{u}/items".format(t=self.library_type, u=self.library_id),
             ),
-            data=to_send,
+            content=json.dumps(to_send),
             headers=dict(headers),
         )
         self.request = req
@@ -1393,7 +1393,7 @@ class Zotero:
                 "/{t}/{u}/collections".format(t=self.library_type, u=self.library_id),
             ),
             headers=headers,
-            data=json.dumps(payload),
+            content=json.dumps(payload),
         )
         self.request = req
         try:
@@ -1426,7 +1426,7 @@ class Zotero:
                 ),
             ),
             headers=headers,
-            data=json.dumps(payload),
+            content=json.dumps(payload),
         )
 
     def attachment_simple(self, files, parentid=None):
@@ -1484,7 +1484,7 @@ class Zotero:
                 ),
             ),
             headers=headers,
-            data=json.dumps(to_send),
+            content=json.dumps(to_send),
         )
 
     def update_items(self, payload):
