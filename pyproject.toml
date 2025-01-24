@@ -8,7 +8,6 @@ dependencies = [
     "pytz",
     "bibtexparser",
     "httpx>=0.28.1",
-    "httpx-file>=0.2.0",
 ]
 authors = [{ name = "Stephan Hügel", email = "urschrei@gmail.com" }]
 license = {file = "LICENSE.md"}
@@ -37,7 +36,8 @@ test = [
     "pytest >= 7.4.2",
     "httpretty",
     "python-dateutil",
-    "ipython"
+    "ipython",
+    "pytest-asyncio",
 ]
 
 [tool.setuptools.dynamic]
@@ -58,6 +58,8 @@ addopts = [
 testpaths = [
     "tests",
 ]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.setuptools_scm]
 write_to = "src/_version.py"

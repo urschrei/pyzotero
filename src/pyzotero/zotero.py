@@ -40,11 +40,11 @@ import feedparser
 import httpx
 import pytz
 from httpx import Request
-from httpx_file import Client as File_Client
 
 import pyzotero as pz
 
 from . import zotero_errors as ze
+from .filetransport import Client as File_Client
 
 # Avoid hanging the application if there's no server response
 timeout = 30
