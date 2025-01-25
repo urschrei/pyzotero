@@ -3,6 +3,7 @@ Tests for the Pyzotero module
 
 This file is part of Pyzotero.
 """
+# ruff: noqa: N802
 
 import os
 import time
@@ -26,8 +27,8 @@ class ZoteroTests(unittest.TestCase):
     cwd = os.path.dirname(os.path.realpath(__file__))
 
     def get_doc(self, doc_name, cwd=cwd):
-        """return the requested test document"""
-        with open(os.path.join(cwd, "api_responses", "%s" % doc_name), "r") as f:
+        """Return the requested test document"""
+        with open(os.path.join(cwd, "api_responses", f"{doc_name}")) as f:
             return f.read()
 
     def setUp(self):
@@ -61,7 +62,7 @@ class ZoteroTests(unittest.TestCase):
         )
 
     def testBuildUrlCorrectHandleEndpoint(self):
-        """url should be concat correctly by build_url"""
+        """Url should be concat correctly by build_url"""
         url = z.build_url("http://localhost:23119/api", "/users/0")
         self.assertEqual(url, "http://localhost:23119/api/users/0")
         url = z.build_url("http://localhost:23119/api/", "/users/0")
@@ -72,7 +73,7 @@ class ZoteroTests(unittest.TestCase):
         """Instance creation should fail, because we're leaving out a
         credential
         """
-        with self.assertRaises(z.ze.MissingCredentials):
+        with self.assertRaises(z.ze.MissingCredentialsError):
             z.Zotero("myuserID")
 
     @httpretty.activate
@@ -437,7 +438,7 @@ class ZoteroTests(unittest.TestCase):
             body=self.items_doc,
             status=403,
         )
-        with self.assertRaises(z.ze.UserNotAuthorised):
+        with self.assertRaises(z.ze.UserNotAuthorisedError):
             zot.items()
 
     @httpretty.activate
@@ -465,7 +466,7 @@ class ZoteroTests(unittest.TestCase):
             body=self.items_doc,
             status=400,
         )
-        with self.assertRaises(z.ze.UnsupportedParams):
+        with self.assertRaises(z.ze.UnsupportedParamsError):
             zot.items()
 
     @httpretty.activate
@@ -479,7 +480,7 @@ class ZoteroTests(unittest.TestCase):
             content_type="application/json",
             status=404,
         )
-        with self.assertRaises(z.ze.ResourceNotFound):
+        with self.assertRaises(z.ze.ResourceNotFoundError):
             zot.items()
 
     @httpretty.activate
@@ -526,7 +527,7 @@ class ZoteroTests(unittest.TestCase):
         """Ensure that collection creation fails with the wrong dict"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         t = [{"foo": "bar"}]
-        with self.assertRaises(z.ze.ParamNotPassed):
+        with self.assertRaises(z.ze.ParamNotPassedError):
             t = zot.create_collections(t)
 
     @httpretty.activate
@@ -725,7 +726,7 @@ class ZoteroTests(unittest.TestCase):
         """Should fail because we're passing too many items"""
         itms = [i for i in range(51)]
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        with self.assertRaises(z.ze.TooManyItems):
+        with self.assertRaises(z.ze.TooManyItemsError):
             zot.create_items(itms)
 
     @httpretty.activate

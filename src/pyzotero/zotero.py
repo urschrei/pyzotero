@@ -1,8 +1,4 @@
-# pylint: disable=R0904
-"""
-zotero.py
-
-Created by Stephan Hügel on 2011-02-28
+"""Created by Stephan Hügel on 2011-02-28.
 
 This file is part of Pyzotero.
 """
@@ -16,7 +12,6 @@ import hashlib
 import io
 import json
 import mimetypes
-import os
 import re
 import threading
 import time
@@ -49,13 +44,18 @@ from .filetransport import Client as File_Client
 # Avoid hanging the application if there's no server response
 timeout = 30
 
+NOT_MODIFIED = 304
+ONE_HOUR = 3600
+DEFAULT_NUM_ITEMS = 50
+TOO_MANY_REQUESTS = 429
+
 
 def build_url(base_url, path, args_dict=None):
     """Build a valid URL so we don't have to worry about string concatenation errors and
     leading / trailing slashes etc.
-    Returns a list in the structure of urlparse.ParseResult"""
-    if base_url.endswith("/"):
-        base_url = base_url[:-1]
+    Returns a list in the structure of urlparse.ParseResult
+    """
+    base_url = base_url.removesuffix("/")
     url_parts = list(urlparse(base_url))
     url_parts[2] += path
     if args_dict:
@@ -64,8 +64,9 @@ def build_url(base_url, path, args_dict=None):
 
 
 def merge_params(url, params):
-    """This function strips query parameters, extracting them into a dict, then merging it with
-    the "params" dict, returning the truncated url and merged query params dict"""
+    """Strip query parameters, extracting them into a dict, then merging it with
+    the "params" dict, returning the truncated url and merged query params dict
+    """
     parsed = urlparse(url)
     # Extract query parameters from URL
     incoming = parse_qs(parsed.query)
@@ -86,7 +87,7 @@ def token():
 
 
 def cleanwrap(func):
-    """Wrapper for Zotero._cleanup"""
+    """Wrap for Zotero._cleanup"""
 
     def enc(self, *args, **kwargs):
         """Send each item to _cleanup()"""
@@ -106,7 +107,7 @@ def tcache(func):
 
     @wraps(func)
     def wrapped_f(self, *args, **kwargs):
-        """Calls the decorated function to get query string and params,
+        """Call the decorated function to get query string and params,
         builds URL, retrieves template, caches result, and returns template
         """
         query_string, params = func(self, *args, **kwargs)
@@ -124,7 +125,9 @@ def tcache(func):
         # construct cache key
         cachekey = f"{result.path}_{result.query}"
         if self.templates.get(cachekey) and not self._updated(
-            query_string, self.templates[cachekey], cachekey
+            query_string,
+            self.templates[cachekey],
+            cachekey,
         ):
             return self.templates[cachekey]["tmplt"]
         # otherwise perform a normal request and cache the response
@@ -135,8 +138,7 @@ def tcache(func):
 
 
 def backoff_check(func):
-    """
-    Perform backoff processing
+    """Perform backoff processing
     func must return a Requests GET / POST / PUT / PATCH / DELETE etc
     This is is intercepted: we first check for an active backoff
     and wait if need be.
@@ -166,15 +168,13 @@ def backoff_check(func):
 
 
 def retrieve(func):
-    """
-    Decorator for Zotero read API methods; calls _retrieve_data() and passes
+    """Call _retrieve_data() and passes
     the result to the correct processor, based on a lookup
     """
 
     @wraps(func)
     def wrapped_f(self, *args, **kwargs):
-        """
-        Returns result of _retrieve_data()
+        """Return result of _retrieve_data()
 
         func's return value is part of a URI, and it's this
         which is intercepted and passed to _retrieve_data:
@@ -189,8 +189,7 @@ def retrieve(func):
         content = (
             self.content.search(str(self.request.url))
             and self.content.search(str(self.request.url)).group(0)
-            or "bib"
-        )
+        ) or "bib"
         # select format, or assume JSON
         content_type_header = self.request.headers["Content-Type"].lower() + ";"
         fmt = self.formats.get(
@@ -229,21 +228,21 @@ def retrieve(func):
             self.snapshot = True
         if fmt == "bibtex":
             parser = bibtexparser.bparser.BibTexParser(
-                common_strings=True, ignore_nonstandard_types=False
+                common_strings=True,
+                ignore_nonstandard_types=False,
             )
             return parser.parse(retrieved.text)
         # it's binary, so return raw content
-        elif fmt != "json":
+        if fmt != "json":
             return retrieved.content
         # no need to do anything special, return JSON
-        else:
-            return retrieved.json()
+        return retrieved.json()
 
     return wrapped_f
 
 
 def ss_wrap(func):
-    """ensure that a SavedSearch object exists"""
+    """Ensure that a SavedSearch object exists"""
 
     def wrapper(self, *args, **kwargs):
         if not self.savedsearch:
@@ -254,8 +253,7 @@ def ss_wrap(func):
 
 
 class Zotero:
-    """
-    Zotero API methods
+    """Zotero API methods
     A full list of methods can be found here:
     http://www.zotero.org/support/dev/server_api
     """
@@ -282,9 +280,8 @@ class Zotero:
             # library_type determines whether query begins w. /users or /groups
             self.library_type = library_type + "s"
         else:
-            raise ze.MissingCredentials(
-                "Please provide both the library ID and the library type"
-            )
+            err = "Please provide both the library ID and the library type"
+            raise ze.MissingCredentialsError(err)
         # api_key is not required for public individual or group libraries
         self.api_key = api_key
         self.preserve_json_order = preserve_json_order
@@ -294,10 +291,11 @@ class Zotero:
         self.request = None
         self.snapshot = False
         self.client = httpx.Client(
-            headers=self.default_headers(), follow_redirects=True
+            headers=self.default_headers(),
+            follow_redirects=True,
         )
         # these aren't valid item fields, so never send them to the server
-        self.temp_keys = set(["key", "etag", "group_id", "updated"])
+        self.temp_keys = {"key", "etag", "group_id", "updated"}
         # determine which processor to use for the parsed content
         self.fmt = re.compile(r"(?<=format=)\w+")
         self.content = re.compile(r"(?<=content=)\w+")
@@ -358,15 +356,14 @@ class Zotero:
         self.backoff_duration = 0.0
 
     def __del__(self):
+        """Remove client before cleanup"""
         # this isn't guaranteed to run, but that's OK
         if c := self.client:
             c.close()
 
     def _check_for_component(self, url, component):
         """Check a url path query fragment for a specific query parameter"""
-        if parse_qs(url).get(component):
-            return True
-        return False
+        return bool(parse_qs(url).get(component))
 
     def _striplocal(self, url):
         """We need to remve the leading "/api" substring from urls if we're running in local mode"""
@@ -379,8 +376,7 @@ class Zotero:
         return url
 
     def _set_backoff(self, duration):
-        """
-        Set a backoff
+        """Set a backoff
         Spins up a timer in a background thread which resets the backoff logic
         when it expires, then sets the time at which the backoff will expire.
         The latter step is required so that other calls can check whether there's
@@ -397,8 +393,7 @@ class Zotero:
         self.backoff_duration = 0.0
 
     def _check_backoff(self):
-        """
-        Before an API call is made, we check whether there's an active backoff.
+        """Before an API call is made, we check whether there's an active backoff.
         If there is, we check whether there's any time left on the backoff.
         If there is, we sleep for the remainder before returning
         """
@@ -408,9 +403,7 @@ class Zotero:
                 time.sleep(remainder)
 
     def default_headers(self):
-        """
-        It's always OK to include these headers
-        """
+        """It's always OK to include these headers"""
         _headers = {
             "User-Agent": f"Pyzotero/{pz.__version__}",
             "Zotero-API-Version": f"{__api_version__}",
@@ -420,19 +413,18 @@ class Zotero:
         return _headers
 
     def _cache(self, response, key):
-        """
-        Add a retrieved template to the cache for 304 checking
+        """Add a retrieved template to the cache for 304 checking
         accepts a dict and key name, adds the retrieval time, and adds both
         to self.templates as a new dict using the specified key
         """
         # cache template and retrieval time for subsequent calls
         try:
             thetime = datetime.datetime.now(datetime.UTC).replace(
-                tzinfo=pytz.timezone("GMT")
+                tzinfo=pytz.timezone("GMT"),
             )
         except AttributeError:
-            thetime = thetime = datetime.datetime.utcnow().replace(
-                tzinfo=pytz.timezone("GMT")
+            thetime = datetime.datetime.now(tz=datetime.timezone.utc).replace(
+                tzinfo=pytz.timezone("GMT"),
             )
         self.templates[key] = {"tmplt": response.json(), "updated": thetime}
         return copy.deepcopy(response.json())
@@ -449,12 +441,11 @@ class Zotero:
                 [k, v]
                 for k, v in list(to_clean.items())
                 if (k in allow or k not in self.temp_keys)
-            ]
+            ],
         )
 
     def _retrieve_data(self, request=None, params=None):
-        """
-        Retrieve Zotero items via the API
+        """Retrieve Zotero items via the API
         Combine endpoint and request to access the specific resource
         Returns a JSON document
         """
@@ -466,7 +457,8 @@ class Zotero:
         # don't set locale if the url already contains it
         # we always add a locale if it's a "standalone" or first call
         needs_locale = not self.links or not self._check_for_component(
-            self.links.get("next"), "locale"
+            self.links.get("next"),
+            "locale",
         )
         if needs_locale:
             if params:
@@ -510,17 +502,15 @@ class Zotero:
         except httpx.HTTPError as exc:
             error_handler(self, self.request, exc)
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after"
+            "retry-after",
         )
         if backoff:
             self._set_backoff(backoff)
         return self.request
 
     def _extract_links(self):
-        """
-        Extract self, first, next, last links from a request response
-        """
-        extracted = dict()
+        """Extract self, first, next, last links from a request response"""
+        extracted = {}
         try:
             for key, value in self.request.links.items():
                 parsed = urlparse(value["url"])
@@ -530,21 +520,21 @@ class Zotero:
             parsed = list(urlparse(self.self_link))
             # strip 'format' query parameter
             stripped = "&".join(
-                ["=".join(p) for p in parse_qsl(parsed[4])[:2] if p[0] != "format"]
+                ["=".join(p) for p in parse_qsl(parsed[4])[:2] if p[0] != "format"],
             )
             # rebuild url fragment
             # this is a death march
             extracted["self"] = urlunparse(
-                [parsed[0], parsed[1], parsed[2], parsed[3], stripped, parsed[5]]
+                [parsed[0], parsed[1], parsed[2], parsed[3], stripped, parsed[5]],
             )
-            return extracted
         except KeyError:
             # No links present, because it's a single item
             return None
+        else:
+            return extracted
 
     def _updated(self, url, payload, template=None):
-        """
-        Generic call to see if a template request returns 304
+        """Call to see if a template request returns 304
         accepts:
         - a string to combine with the API endpoint
         - a dict of format values, in case they're required by 'url'
@@ -555,10 +545,12 @@ class Zotero:
         # If the template is more than an hour old, try a 304
         if (
             abs(
-                datetime.datetime.utcnow().replace(tzinfo=pytz.timezone("GMT"))
-                - self.templates[template]["updated"]
+                datetime.datetime.now(tz=datetime.timezone.utc).replace(
+                    tzinfo=pytz.timezone("GMT"),
+                )
+                - self.templates[template]["updated"],
             ).seconds
-            > 3600
+            > ONE_HOUR
         ):
             query = build_url(
                 self.endpoint,
@@ -566,8 +558,8 @@ class Zotero:
             )
             headers = {
                 "If-Modified-Since": payload["updated"].strftime(
-                    "%a, %d %b %Y %H:%M:%S %Z"
-                )
+                    "%a, %d %b %Y %H:%M:%S %Z",
+                ),
             }
             # perform the request, and check whether the response returns 304
             self._check_backoff()
@@ -577,17 +569,17 @@ class Zotero:
             except httpx.HTTPError as exc:
                 error_handler(self, req, exc)
             backoff = self.request.headers.get("backoff") or self.request.headers.get(
-                "retry-after"
+                "retry-after",
             )
             if backoff:
                 self._set_backoff(backoff)
-            return req.status_code == 304
+            return req.status_code == NOT_MODIFIED
         # Still plenty of life left in't
         return False
 
     def add_parameters(self, **params):
-        """
-        Add URL parameters
+        """Add URL parameters.
+
         Also ensure that only valid format/content combinations are requested
         """
         self.url_params = None
@@ -611,26 +603,26 @@ class Zotero:
         self.url_params = params
 
     def _build_query(self, query_string, no_params=False):
-        """
-        Set request parameters. Will always add the user ID if it hasn't
+        """Set request parameters. Will always add the user ID if it hasn't
         been specifically set by an API method
         """
         try:
             query = quote(query_string.format(u=self.library_id, t=self.library_type))
         except KeyError as err:
-            raise ze.ParamNotPassed(f"There's a request parameter missing: {err}")
+            errmsg = f"There's a request parameter missing: {err}"
+            raise ze.ParamNotPassedError(errmsg) from None
         # Add the URL parameters and the user key, if necessary
-        if no_params is False:
-            if not self.url_params:
-                self.add_parameters()
+        if no_params is False and not self.url_params:
+            self.add_parameters()
         return query
 
     @retrieve
     def publications(self):
-        """Return the contents of My Publications"""
+        """Return the contents of My Publications."""
         if self.library_type != "users":
-            raise ze.CallDoesNotExist(
-                "This API call does not exist for group libraries"
+            msg = "This API call does not exist for group libraries"
+            raise ze.CallDoesNotExistError(
+                msg,
             )
         query_string = "/{t}/{u}/publications/items"
         return self._build_query(query_string)
@@ -648,9 +640,7 @@ class Zotero:
 
     def num_collectionitems(self, collection):
         """Return the total number of items in the specified collection"""
-        query = "/{t}/{u}/collections/{c}/items".format(
-            u=self.library_id, t=self.library_type, c=collection.upper()
-        )
+        query = f"/{self.library_type}/{self.library_id}/collections/{collection.upper()}/items"
         return self._totals(query)
 
     def _totals(self, query):
@@ -664,11 +654,10 @@ class Zotero:
 
     @retrieve
     def key_info(self, **kwargs):
-        """
-        Retrieve info about the permissions associated with the
+        """Retrieve info about the permissions associated with the
         key associated to the given Zotero instance
         """
-        query_string = "/keys/{k}".format(k=self.api_key)
+        query_string = f"/keys/{self.api_key}"
         return self._build_query(query_string)
 
     @retrieve
@@ -680,15 +669,14 @@ class Zotero:
     @retrieve
     def fulltext_item(self, itemkey, **kwargs):
         """Get full-text content for an item"""
-        query_string = "/{t}/{u}/items/{itemkey}/fulltext".format(
-            t=self.library_type, u=self.library_id, itemkey=itemkey
+        query_string = (
+            f"/{self.library_type}/{self.library_id}/items/{itemkey}/fulltext"
         )
         return self._build_query(query_string)
 
     @backoff_check
     def set_fulltext(self, itemkey, payload):
-        """
-        Set full-text data for an item
+        """Set full-text data for an item
         <itemkey> should correspond to an existing attachment item.
         payload should be a dict containing three keys:
         'content': the full-text content and either
@@ -700,42 +688,38 @@ class Zotero:
         return self.client.put(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/items/{k}/fulltext".format(
-                    t=self.library_type, u=self.library_id, k=itemkey
-                ),
+                f"/{self.library_type}/{self.library_id}/items/{itemkey}/fulltext",
             ),
             headers=headers,
             data=json.dumps(payload),
         )
 
     def new_fulltext(self, since):
-        """
-        Retrieve list of full-text content items and versions which are newer
+        """Retrieve list of full-text content items and versions which are newer
         than <since>
         """
-        query_string = "/{t}/{u}/fulltext".format(
-            t=self.library_type, u=self.library_id
-        )
+        query_string = f"/{self.library_type}/{self.library_id}/fulltext"
         headers = {}
         params = {"since": since}
         self._check_backoff()
         resp = self.client.get(
-            build_url(self.endpoint, query_string), params=params, headers=headers
+            build_url(self.endpoint, query_string),
+            params=params,
+            headers=headers,
         )
         try:
             resp.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self, resp, exc)
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after"
+            "retry-after",
         )
         if backoff:
             self._set_backoff(backoff)
         return resp.json()
 
     def item_versions(self, **kwargs):
-        """
-        Returns dict associating items keys (all no limit by default) to versions.
+        """Return dict associating items keys (all no limit by default) to versions.
         Accepts a since= parameter in kwargs to limit the data to those updated since since=
         """
         if "limit" not in kwargs:
@@ -744,8 +728,7 @@ class Zotero:
         return self.items(**kwargs)
 
     def collection_versions(self, **kwargs):
-        """
-        Returns dict associating collection keys (all no limit by default) to versions.
+        """Return dict associating collection keys (all no limit by default) to versions.
         Accepts a since= parameter in kwargs to limit the data to those updated since since=
         """
         if "limit" not in kwargs:
@@ -791,73 +774,60 @@ class Zotero:
     @retrieve
     def item(self, item, **kwargs):
         """Get a specific item"""
-        query_string = "/{t}/{u}/items/{i}".format(
-            u=self.library_id, t=self.library_type, i=item.upper()
-        )
+        query_string = f"/{self.library_type}/{self.library_id}/items/{item.upper()}"
         return self._build_query(query_string)
 
     @retrieve
     def file(self, item, **kwargs):
         """Get the file from a specific item"""
-        query_string = "/{t}/{u}/items/{i}/file".format(
-            u=self.library_id, t=self.library_type, i=item.upper()
+        query_string = (
+            f"/{self.library_type}/{self.library_id}/items/{item.upper()}/file"
         )
         return self._build_query(query_string, no_params=True)
 
     def dump(self, itemkey, filename=None, path=None):
-        """
-        Dump a file attachment to disk, with optional filename and path
-        """
+        """Dump a file attachment to disk, with optional filename and path"""
         if not filename:
             filename = self.item(itemkey)["data"]["filename"]
-        if path:
-            pth = os.path.join(path, filename)
-        else:
-            pth = filename
+        pth = Path(path) / filename if path else filename
         file = self.file(itemkey)
         if self.snapshot:
             self.snapshot = False
-            pth = pth + ".zip"
-        with open(pth, "wb") as f:
+            pth += ".zip"
+        with Path.open(pth, "wb") as f:
             f.write(file)
 
     @retrieve
     def children(self, item, **kwargs):
         """Get a specific item's child items"""
-        query_string = "/{t}/{u}/items/{i}/children".format(
-            u=self.library_id, t=self.library_type, i=item.upper()
+        query_string = (
+            f"/{self.library_type}/{self.library_id}/items/{item.upper()}/children"
         )
         return self._build_query(query_string)
 
     @retrieve
     def collection_items(self, collection, **kwargs):
         """Get a specific collection's items"""
-        query_string = "/{t}/{u}/collections/{c}/items".format(
-            u=self.library_id, t=self.library_type, c=collection.upper()
-        )
+        query_string = f"/{self.library_type}/{self.library_id}/collections/{collection.upper()}/items"
         return self._build_query(query_string)
 
     @retrieve
     def collection_items_top(self, collection, **kwargs):
         """Get a specific collection's top-level items"""
-        query_string = "/{t}/{u}/collections/{c}/items/top".format(
-            u=self.library_id, t=self.library_type, c=collection.upper()
-        )
+        query_string = f"/{self.library_type}/{self.library_id}/collections/{collection.upper()}/items/top"
         return self._build_query(query_string)
 
     @retrieve
     def collection_tags(self, collection, **kwargs):
         """Get a specific collection's tags"""
-        query_string = "/{t}/{u}/collections/{c}/tags".format(
-            u=self.library_id, t=self.library_type, c=collection.upper()
-        )
+        query_string = f"/{self.library_type}/{self.library_id}/collections/{collection.upper()}/tags"
         return self._build_query(query_string)
 
     @retrieve
     def collection(self, collection, **kwargs):
         """Get user collection"""
-        query_string = "/{t}/{u}/collections/{c}".format(
-            u=self.library_id, t=self.library_type, c=collection.upper()
+        query_string = (
+            f"/{self.library_type}/{self.library_id}/collections/{collection.upper()}"
         )
         return self._build_query(query_string)
 
@@ -868,14 +838,13 @@ class Zotero:
         return self._build_query(query_string)
 
     def all_collections(self, collid=None):
-        """
-        Retrieve all collections and subcollections. Works for top-level collections
+        """Retrieve all collections and subcollections. Works for top-level collections
         or for a specific collection. Works at all collection depths.
         """
         all_collections = []
 
         def subcoll(clct):
-            """recursively add collections to a flat master list"""
+            """Recursively add collections to a flat master list"""
             all_collections.append(clct)
             if clct["meta"].get("numCollections", 0) > 0:
                 # add collection to master list & recur with all child
@@ -903,9 +872,7 @@ class Zotero:
     @retrieve
     def collections_sub(self, collection, **kwargs):
         """Get subcollections for a specific collection"""
-        query_string = "/{t}/{u}/collections/{c}/collections".format(
-            u=self.library_id, t=self.library_type, c=collection.upper()
-        )
+        query_string = f"/{self.library_type}/{self.library_id}/collections/{collection.upper()}/collections"
         return self._build_query(query_string)
 
     @retrieve
@@ -924,8 +891,8 @@ class Zotero:
     @retrieve
     def item_tags(self, item, **kwargs):
         """Get tags for a specific item"""
-        query_string = "/{t}/{u}/items/{i}/tags".format(
-            u=self.library_id, t=self.library_type, i=item.upper()
+        query_string = (
+            f"/{self.library_type}/{self.library_id}/items/{item.upper()}/tags"
         )
         self.tag_data = True
         return self._build_query(query_string)
@@ -938,12 +905,11 @@ class Zotero:
     def follow(self):
         """Return the result of the call to the URL in the 'Next' link"""
         if n := self.links.get("next"):
-            newurl = self._striplocal(n)
-            return newurl
-        return
+            return self._striplocal(n)
+        return None
 
     def iterfollow(self):
-        """Generator for self.follow()"""
+        """Return generator for self.follow()"""
         # use same criterion as self.follow()
         while True:
             if self.links.get("next"):
@@ -958,8 +924,7 @@ class Zotero:
         return self.iterfollow()
 
     def everything(self, query):
-        """
-        Retrieve all items in the library for a particular query
+        """Retrieve all items in the library for a particular query
         This method will override the 'limit' parameter if it's been set
         """
         try:
@@ -975,12 +940,12 @@ class Zotero:
         return items
 
     def get_subset(self, subset):
-        """
-        Retrieve a subset of items
+        """Retrieve a subset of items
         Accepts a single argument: a list of item IDs
         """
-        if len(subset) > 50:
-            raise ze.TooManyItems("You may only retrieve 50 items per call")
+        if len(subset) > DEFAULT_NUM_ITEMS:
+            err = f"You may only retrieve {DEFAULT_NUM_ITEMS} items per call"
+            raise ze.TooManyItemsError(err)
         # remember any url parameters that have been set
         params = self.url_params
         retr = []
@@ -1013,24 +978,22 @@ class Zotero:
         json_kwargs = {}
         if self.preserve_json_order:
             json_kwargs["object_pairs_hook"] = OrderedDict
-        for csl in retrieved.entries:
-            items.append(json.loads(csl["content"][0]["value"], **json_kwargs))
+        items = [
+            json.loads(entry["content"][0]["value"], **json_kwargs)
+            for entry in retrieved.entries
+        ]
         self.url_params = None
         return items
 
     def _bib_processor(self, retrieved):
         """Return a list of strings formatted as HTML bibliography entries"""
-        items = []
-        for bib in retrieved.entries:
-            items.append(bib["content"][0]["value"])
+        items = [bib["content"][0]["value"] for bib in retrieved.entries]
         self.url_params = None
         return items
 
     def _citation_processor(self, retrieved):
         """Return a list of strings formatted as HTML citation entries"""
-        items = []
-        for cit in retrieved.entries:
-            items.append(cit["content"][0]["value"])
+        items = [cit["content"][0]["value"] for cit in retrieved.entries]
         self.url_params = None
         return items
 
@@ -1051,7 +1014,9 @@ class Zotero:
         self.add_parameters(**params)
         query_string = "/items/new"
         if self.templates.get(template_name) and not self._updated(
-            query_string, self.templates[template_name], template_name
+            query_string,
+            self.templates[template_name],
+            template_name,
         ):
             return copy.deepcopy(self.templates[template_name]["tmplt"])
         # otherwise perform a normal request and cache the response
@@ -1059,8 +1024,7 @@ class Zotero:
         return self._cache(retrieved, template_name)
 
     def _attachment_template(self, attachment_type):
-        """
-        Return a new attachment template of the required type:
+        """Return a new attachment template of the required type:
         imported_file
         imported_url
         linked_file
@@ -1069,15 +1033,13 @@ class Zotero:
         return self.item_template("attachment", linkmode=attachment_type)
 
     def _attachment(self, payload, parentid=None):
-        """
-        Create attachments
+        """Create attachments
         accepts a list of one or more attachment template dicts
         and an optional parent Item ID. If this is specified,
         attachments are created under this ID
         """
         attachment = Zupload(self, payload, parentid)
-        res = attachment.upload()
-        return res
+        return attachment.upload()
 
     @ss_wrap
     def show_operators(self):
@@ -1095,10 +1057,7 @@ class Zotero:
         # dict keys of allowed operators for the current condition
         permitted_operators = self.savedsearch.conditions_operators.get(condition)
         # transform these into values
-        permitted_operators_list = set(
-            [self.savedsearch.operators.get(op) for op in permitted_operators]
-        )
-        return permitted_operators_list
+        return {self.savedsearch.operators.get(op) for op in permitted_operators}
 
     @ss_wrap
     def saved_search(self, name, conditions):
@@ -1113,7 +1072,7 @@ class Zotero:
         req = self.client.post(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
+                f"/{self.library_type}/{self.library_id}/searches",
             ),
             headers=headers,
             data=json.dumps(payload),
@@ -1124,7 +1083,7 @@ class Zotero:
         except httpx.HTTPError as exc:
             error_handler(self, req, exc)
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after"
+            "retry-after",
         )
         if backoff:
             self._set_backoff(backoff)
@@ -1140,7 +1099,7 @@ class Zotero:
         req = self.client.delete(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/searches".format(t=self.library_type, u=self.library_id),
+                f"/{self.library_type}/{self.library_id}/searches",
             ),
             headers=headers,
             params={"searchKey": ",".join(keys)},
@@ -1151,7 +1110,7 @@ class Zotero:
         except httpx.HTTPError as exc:
             error_handler(self, req, exc)
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after"
+            "retry-after",
         )
         if backoff:
             self._set_backoff(backoff)
@@ -1162,26 +1121,22 @@ class Zotero:
         return Zupload(self, attachments, parentid, basedir=basedir).upload()
 
     def add_tags(self, item, *tags):
-        """
-        Add one or more tags to a retrieved item,
+        """Add one or more tags to a retrieved item,
         then update it on the server
         Accepts a dict, and one or more tags to add to it
         Returns the updated item from the server
         """
         # Make sure there's a tags field, or add one
-        try:
-            assert item["data"]["tags"]
-        except AssertionError:
-            item["data"]["tags"] = list()
+        if not item.get("data", {}).get("tags"):
+            item["data"]["tags"] = []
         for tag in tags:
             item["data"]["tags"].append({"tag": f"{tag}"})
         # make sure everything's OK
-        assert self.check_items([item])
+        self.check_items([item])
         return self.update_item(item)
 
     def check_items(self, items):
-        """
-        Check that items to be created contain no invalid dict keys
+        """Check that items to be created contain no invalid dict keys
         Accepts a single argument: a list of one or more dicts
         The retrieved fields are cached and re-used until a 304 call fails
         """
@@ -1199,58 +1154,62 @@ class Zotero:
         # construct cache key
         cachekey = result.path + "_" + result.query
         if self.templates.get(cachekey) and not self._updated(
-            query_string, self.templates[cachekey], cachekey
+            query_string,
+            self.templates[cachekey],
+            cachekey,
         ):
-            template = set(t["field"] for t in self.templates[cachekey]["tmplt"])
+            template = {t["field"] for t in self.templates[cachekey]["tmplt"]}
         else:
-            template = set(t["field"] for t in self.item_fields())
+            template = {t["field"] for t in self.item_fields()}
         # add fields we know to be OK
-        template = template | set(
-            [
-                "path",
-                "tags",
-                "notes",
-                "itemType",
-                "creators",
-                "mimeType",
-                "linkMode",
-                "note",
-                "charset",
-                "dateAdded",
-                "version",
-                "collections",
-                "dateModified",
-                "relations",
-                #  attachment items
-                "parentItem",
-                "mtime",
-                "contentType",
-                "md5",
-                "filename",
-                "inPublications",
-                # annotation fields
-                "annotationText",
-                "annotationColor",
-                "annotationType",
-                "annotationPageLabel",
-                "annotationPosition",
-                "annotationSortIndex",
-                "annotationComment",
-                "annotationAuthorName",
-            ]
-        )
-        template = template | set(self.temp_keys)
+        template |= {
+            "path",
+            "tags",
+            "notes",
+            "itemType",
+            "creators",
+            "mimeType",
+            "linkMode",
+            "note",
+            "charset",
+            "dateAdded",
+            "version",
+            "collections",
+            "dateModified",
+            "relations",
+            #  attachment items
+            "parentItem",
+            "mtime",
+            "contentType",
+            "md5",
+            "filename",
+            "inPublications",
+            # annotation fields
+            "annotationText",
+            "annotationColor",
+            "annotationType",
+            "annotationPageLabel",
+            "annotationPosition",
+            "annotationSortIndex",
+            "annotationComment",
+            "annotationAuthorName",
+        }
+        template |= set(self.temp_keys)
+        processed_items = []
         for pos, item in enumerate(items):
-            if set(item) == set(["links", "library", "version", "meta", "key", "data"]):
-                # we have an item that was retrieved from the API
-                item = item["data"]
-            to_check = set(i for i in list(item.keys()))
+            if set(item) == {"links", "library", "version", "meta", "key", "data"}:
+                itm = item["data"]
+            else:
+                itm = item
+            to_check = set(itm.keys())
             difference = to_check.difference(template)
             if difference:
-                raise ze.InvalidItemFields(
-                    f"Invalid keys present in item {pos + 1}: {' '.join(i for i in difference)}"
+                err = f"Invalid keys present in item {pos + 1}: {' '.join(i for i in difference)}"
+                raise ze.InvalidItemFieldsError(
+                    err,
                 )
-        return items
+            processed_items.append(itm)
+        return processed_items
 
     @tcache
     def item_types(self):
@@ -1290,7 +1249,7 @@ class Zotero:
         query_string = "/itemFields"
         return query_string, params
 
-    def item_attachment_link_modes(self):
+    def item_attachment_link_modes():
         """Get all available link mode types.
         Note: No viable REST API route was found for this, so I tested and built a list from documentation found
         here - https://www.zotero.org/support/dev/web_api/json
@@ -1298,25 +1257,25 @@ class Zotero:
         return ["imported_file", "imported_url", "linked_file", "linked_url"]
 
     def create_items(self, payload, parentid=None, last_modified=None):
-        """
-        Create new Zotero items
+        """Create new Zotero items
         Accepts two arguments:
             a list containing one or more item dicts
             an optional parent item ID.
         Note that this can also be used to update existing items
         """
-        if len(payload) > 50:
-            raise ze.TooManyItems("You may only create up to 50 items per call")
+        if len(payload) > DEFAULT_NUM_ITEMS:
+            msg = f"You may only create up to {DEFAULT_NUM_ITEMS} items per call"
+            raise ze.TooManyItemsError(msg)
         # TODO: strip extra data if it's an existing item
         headers = {"Zotero-Write-Token": token(), "Content-Type": "application/json"}
         if last_modified is not None:
             headers["If-Unmodified-Since-Version"] = str(last_modified)
-        to_send = [i for i in self._cleanup(*payload, allow=("key"))]
+        to_send = list(self._cleanup(*payload, allow=("key")))
         self._check_backoff()
         req = self.client.post(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/items".format(t=self.library_type, u=self.library_id),
+                f"/{self.library_type}/{self.library_id}/items",
             ),
             content=json.dumps(to_send),
             headers=dict(headers),
@@ -1328,7 +1287,7 @@ class Zotero:
             error_handler(self, req, exc)
         resp = req.json()
         backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after"
+            "retry-after",
         )
         if backoff:
             self._set_backoff(backoff)
@@ -1337,7 +1296,7 @@ class Zotero:
             # TODO: handle possibility of item creation + failed parent
             # attachment
             uheaders = {
-                "If-Unmodified-Since-Version": req.headers["last-modified-version"]
+                "If-Unmodified-Since-Version": req.headers["last-modified-version"],
             }
             for value in resp["success"].values():
                 payload = json.dumps({"parentItem": parentid})
@@ -1345,9 +1304,7 @@ class Zotero:
                 presp = self.client.patch(
                     url=build_url(
                         self.endpoint,
-                        "/{t}/{u}/items/{v}".format(
-                            t=self.library_type, u=self.library_id, v=value
-                        ),
+                        f"/{self.library_type}/{self.library_id}/items/{value}",
                     ),
                     data=payload,
                     headers=dict(uheaders),
@@ -1358,7 +1315,7 @@ class Zotero:
                 except httpx.HTTPError as exc:
                     error_handler(self, presp, exc)
                 backoff = presp.headers.get("backoff") or presp.headers.get(
-                    "retry-after"
+                    "retry-after",
                 )
                 if backoff:
                     self._set_backoff(backoff)
@@ -1369,8 +1326,7 @@ class Zotero:
         return self.create_collections(payload, last_modified)
 
     def create_collections(self, payload, last_modified=None):
-        """
-        Create new Zotero collections
+        """Create new Zotero collections
         Accepts one argument, a list of dicts containing the following keys:
 
         'name': the name of the collection
@@ -1379,7 +1335,8 @@ class Zotero:
         # no point in proceeding if there's no 'name' key
         for item in payload:
             if "name" not in item:
-                raise ze.ParamNotPassed("The dict you pass must include a 'name' key")
+                msg = "The dict you pass must include a 'name' key"
+                raise ze.ParamNotPassedError(msg)
             # add a blank 'parentCollection' key if it hasn't been passed
             if "parentCollection" not in item:
                 item["parentCollection"] = ""
@@ -1390,7 +1347,7 @@ class Zotero:
         req = self.client.post(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/collections".format(t=self.library_type, u=self.library_id),
+                f"/{self.library_type}/{self.library_id}/collections",
             ),
             headers=headers,
             content=json.dumps(payload),
@@ -1407,8 +1364,7 @@ class Zotero:
 
     @backoff_check
     def update_collection(self, payload, last_modified=None):
-        """
-        Update a Zotero collection property such as 'name'
+        """Update a Zotero collection property such as 'name'
         Accepts one argument, a dict containing collection data retrieved
         using e.g. 'collections()'
         """
@@ -1421,17 +1377,14 @@ class Zotero:
         return self.client.put(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/collections/{c}".format(
-                    t=self.library_type, u=self.library_id, c=key
-                ),
+                f"/{self.library_type}/{self.library_id}/collections/{key}",
             ),
             headers=headers,
             content=json.dumps(payload),
         )
 
     def attachment_simple(self, files, parentid=None):
-        """
-        Add attachments using filenames as title
+        """Add attachments using filenames as title
         Arguments:
         One or more file paths to add as attachments:
         An optional Item ID, which will create child attachments
@@ -1439,16 +1392,14 @@ class Zotero:
         orig = self._attachment_template("imported_file")
         to_add = [orig.copy() for fls in files]
         for idx, tmplt in enumerate(to_add):
-            tmplt["title"] = os.path.basename(files[idx])
+            tmplt["title"] = Path.name(files[idx])
             tmplt["filename"] = files[idx]
         if parentid:
             return self._attachment(to_add, parentid)
-        else:
-            return self._attachment(to_add)
+        return self._attachment(to_add)
 
     def attachment_both(self, files, parentid=None):
-        """
-        Add child attachments using title, filename
+        """Add child attachments using title, filename
         Arguments:
         One or more lists or tuples containing title, file path
         An optional Item ID, which will create child attachments
@@ -1460,47 +1411,39 @@ class Zotero:
             tmplt["filename"] = files[idx][1]
         if parentid:
             return self._attachment(to_add, parentid)
-        else:
-            return self._attachment(to_add)
+        return self._attachment(to_add)
 
     @backoff_check
     def update_item(self, payload, last_modified=None):
-        """
-        Update an existing item
+        """Update an existing item
         Accepts one argument, a dict containing Item data
         """
         to_send = self.check_items([payload])[0]
-        if last_modified is None:
-            modified = payload["version"]
-        else:
-            modified = last_modified
+        modified = payload["version"] if last_modified is None else last_modified
         ident = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
         return self.client.patch(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/items/{id}".format(
-                    t=self.library_type, u=self.library_id, id=ident
-                ),
+                f"/{self.library_type}/{self.library_id}/items/{ident}",
             ),
             headers=headers,
             content=json.dumps(to_send),
         )
 
     def update_items(self, payload):
-        """
-        Update existing items
+        """Update existing items
         Accepts one argument, a list of dicts containing Item data
         """
         to_send = [self.check_items([p])[0] for p in payload]
         # the API only accepts 50 items at a time, so we have to split
         # anything longer
-        for chunk in chunks(to_send, 50):
+        for chunk in chunks(to_send, DEFAULT_NUM_ITEMS):
             self._check_backoff()
             req = self.client.post(
                 url=build_url(
                     self.endpoint,
-                    "/{t}/{u}/items/".format(t=self.library_type, u=self.library_id),
+                    f"/{self.library_type}/{self.library_id}/items/",
                 ),
                 data=json.dumps(chunk),
             )
@@ -1515,21 +1458,18 @@ class Zotero:
         return True
 
     def update_collections(self, payload):
-        """
-        Update existing collections
+        """Update existing collections
         Accepts one argument, a list of dicts containing Collection data
         """
         to_send = [self.check_items([p])[0] for p in payload]
         # the API only accepts 50 items at a time, so we have to split
         # anything longer
-        for chunk in chunks(to_send, 50):
+        for chunk in chunks(to_send, DEFAULT_NUM_ITEMS):
             self._check_backoff()
             req = self.client.post(
                 url=build_url(
                     self.endpoint,
-                    "/{t}/{u}/collections/".format(
-                        t=self.library_type, u=self.library_id
-                    ),
+                    f"/{self.library_type}/{self.library_id}/collections/",
                 ),
                 data=json.dumps(chunk),
             )
@@ -1545,8 +1485,7 @@ class Zotero:
 
     @backoff_check
     def addto_collection(self, collection, payload):
-        """
-        Add one or more items to a collection
+        """Add one or more items to a collection
         Accepts two arguments:
         The collection ID, and an item dict
         """
@@ -1558,9 +1497,7 @@ class Zotero:
         return self.client.patch(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/items/{i}".format(
-                    t=self.library_type, u=self.library_id, i=ident
-                ),
+                f"/{self.library_type}/{self.library_id}/items/{ident}",
             ),
             data=json.dumps({"collections": modified_collections}),
             headers=headers,
@@ -1568,8 +1505,7 @@ class Zotero:
 
     @backoff_check
     def deletefrom_collection(self, collection, payload):
-        """
-        Delete an item from a collection
+        """Delete an item from a collection
         Accepts two arguments:
         The collection ID, and and an item dict
         """
@@ -1583,9 +1519,7 @@ class Zotero:
         return self.client.patch(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/items/{i}".format(
-                    t=self.library_type, u=self.library_id, i=ident
-                ),
+                f"/{self.library_type}/{self.library_id}/items/{ident}",
             ),
             data=json.dumps({"collections": modified_collections}),
             headers=headers,
@@ -1593,23 +1527,25 @@ class Zotero:
 
     @backoff_check
     def delete_tags(self, *payload):
-        """
-        Delete a group of tags
+        """Delete a group of tags
         pass in up to 50 tags, or use *[tags]
 
         """
-        if len(payload) > 50:
-            raise ze.TooManyItems("Only 50 tags or fewer may be deleted")
-        modified_tags = " || ".join([tag for tag in payload])
+        if len(payload) > DEFAULT_NUM_ITEMS:
+            msg = f"Only {DEFAULT_NUM_ITEMS} tags or fewer may be deleted"
+            raise ze.TooManyItemsError(msg)
+        modified_tags = " || ".join(list(payload))
         # first, get version data by getting one tag
         self.tags(limit=1)
         headers = {
-            "If-Unmodified-Since-Version": self.request.headers["last-modified-version"]
+            "If-Unmodified-Since-Version": self.request.headers[
+                "last-modified-version"
+            ],
         }
         return self.client.delete(
             url=build_url(
                 self.endpoint,
-                "/{t}/{u}/tags".format(t=self.library_type, u=self.library_id),
+                f"/{self.library_type}/{self.library_id}/tags",
             ),
             params={"tag": modified_tags},
             headers=headers,
@@ -1617,8 +1553,7 @@ class Zotero:
 
     @backoff_check
     def delete_item(self, payload, last_modified=None):
-        """
-        Delete Items from a Zotero library
+        """Delete Items from a Zotero library
         Accepts a single argument:
             a dict containing item data
             OR a list of dicts containing item data
@@ -1632,7 +1567,7 @@ class Zotero:
                 modified = payload[0]["version"]
             url = build_url(
                 self.endpoint,
-                "/{t}/{u}/items".format(t=self.library_type, u=self.library_id),
+                f"/{self.library_type}/{self.library_id}/items",
             )
         else:
             ident = payload["key"]
@@ -1642,17 +1577,14 @@ class Zotero:
                 modified = payload["version"]
             url = build_url(
                 self.endpoint,
-                "/{t}/{u}/items/{c}".format(
-                    t=self.library_type, u=self.library_id, c=ident
-                ),
+                f"/{self.library_type}/{self.library_id}/items/{ident}",
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
         return self.client.delete(url=url, params=params, headers=headers)
 
     @backoff_check
     def delete_collection(self, payload, last_modified=None):
-        """
-        Delete a Collection from a Zotero library
+        """Delete a Collection from a Zotero library
         Accepts a single argument:
             a dict containing item data
             OR a list of dicts containing item data
@@ -1666,7 +1598,7 @@ class Zotero:
                 modified = payload[0]["version"]
             url = build_url(
                 self.endpoint,
-                "/{t}/{u}/collections".format(t=self.library_type, u=self.library_id),
+                f"/{self.library_type}/{self.library_id}/collections",
             )
         else:
             ident = payload["key"]
@@ -1676,9 +1608,7 @@ class Zotero:
                 modified = payload["version"]
             url = build_url(
                 self.endpoint,
-                "/{t}/{u}/collections/{c}".format(
-                    t=self.library_type, u=self.library_id, c=ident
-                ),
+                f"/{self.library_type}/{self.library_id}/collections/{ident}",
             )
         headers = {"If-Unmodified-Since-Version": str(modified)}
         return self.client.delete(url=url, params=params, headers=headers)
@@ -1687,42 +1617,40 @@ class Zotero:
 def error_handler(zot, req, exc=None):
     """Error handler for HTTP requests"""
     error_codes = {
-        400: ze.UnsupportedParams,
-        401: ze.UserNotAuthorised,
-        403: ze.UserNotAuthorised,
-        404: ze.ResourceNotFound,
-        409: ze.Conflict,
-        412: ze.PreConditionFailed,
-        413: ze.RequestEntityTooLarge,
-        428: ze.PreConditionRequired,
-        429: ze.TooManyRequests,
+        400: ze.UnsupportedParamsError,
+        401: ze.UserNotAuthorisedError,
+        403: ze.UserNotAuthorisedError,
+        404: ze.ResourceNotFoundError,
+        409: ze.ConflictError,
+        412: ze.PreConditionFailedError,
+        413: ze.RequestEntityTooLargeError,
+        428: ze.PreConditionRequiredError,
+        429: ze.TooManyRequestsError,
     }
 
     def err_msg(req):
         """Return a nicely-formatted error message"""
-        return f"\nCode: {req.status_code}\nURL: {str(req.url)}\nMethod: {req.request.method}\nResponse: {req.text}"
+        return f"\nCode: {req.status_code}\nURL: {req.url!s}\nMethod: {req.request.method}\nResponse: {req.text}"
 
     if error_codes.get(req.status_code):
         # check to see whether its 429
-        if req.status_code == 429:
+        if req.status_code == TOO_MANY_REQUESTS:
             # try to get backoff or delay duration
             delay = req.headers.get("backoff") or req.headers.get("retry-after")
             if not delay:
-                raise ze.TooManyRetries(
-                    "You are being rate-limited and no backoff or retry duration has been received from the server. Try again later"
+                msg = "You are being rate-limited and no backoff or retry duration has been received from the server. Try again later"
+                raise ze.TooManyRetriesError(
+                    msg,
                 )
-            else:
-                zot._set_backoff(delay)
+            zot._set_backoff(delay)
+        elif not exc:
+            raise error_codes.get(req.status_code)(err_msg(req))
         else:
-            if not exc:
-                raise error_codes.get(req.status_code)(err_msg(req))
-            else:
-                raise error_codes.get(req.status_code)(err_msg(req)) from exc
+            raise error_codes.get(req.status_code)(err_msg(req)) from exc
+    elif not exc:
+        raise ze.HTTPError(err_msg(req))
     else:
-        if not exc:
-            raise ze.HTTPError(err_msg(req))
-        else:
-            raise ze.HTTPError(err_msg(req)) from exc
+        raise ze.HTTPError(err_msg(req)) from exc
 
 
 class SavedSearch:
@@ -1731,7 +1659,7 @@ class SavedSearch:
     """
 
     def __init__(self, zinstance):
-        super(SavedSearch, self).__init__()
+        super().__init__()
         self.zinstance = zinstance
         self.searchkeys = ("condition", "operator", "value")
         # always exclude these fields from zotero.item_keys()
@@ -1868,78 +1796,80 @@ class SavedSearch:
         operators_set = set(self.operators.keys())
         for condition in conditions:
             if set(condition.keys()) != allowed_keys:
-                raise ze.ParamNotPassed(
-                    f"Keys must be all of: {', '.join(self.searchkeys)}"
+                msg = f"Keys must be all of: {', '.join(self.searchkeys)}"
+                raise ze.ParamNotPassedError(
+                    msg,
                 )
             if condition.get("operator") not in operators_set:
-                raise ze.ParamNotPassed(
-                    f"You have specified an unknown operator: {condition.get('operator')}"
+                msg = f"You have specified an unknown operator: {condition.get('operator')}"
+                raise ze.ParamNotPassedError(
+                    msg,
                 )
             # dict keys of allowed operators for the current condition
             permitted_operators = self.conditions_operators.get(
-                condition.get("condition")
+                condition.get("condition"),
             )
             # transform these into values
-            permitted_operators_list = set(
-                [self.operators.get(op) for op in permitted_operators]
-            )
+            permitted_operators_list = {
+                self.operators.get(op) for op in permitted_operators
+            }
             if condition.get("operator") not in permitted_operators_list:
-                raise ze.ParamNotPassed(
-                    f"You may not use the '{condition.get('operator')}' operator when selecting the '{condition.get('condition')}' condition. \nAllowed operators: {', '.join(list(permitted_operators_list))}"
+                msg = f"You may not use the '{condition.get('operator')}' operator when selecting the '{condition.get('condition')}' condition. \nAllowed operators: {', '.join(list(permitted_operators_list))}"
+                raise ze.ParamNotPassedError(
+                    msg,
                 )
 
 
 class Zupload:
-    """
-    Zotero file attachment helper
+    """Zotero file attachment helper
     Receives a Zotero instance, file(s) to upload, and optional parent ID
 
     """
 
     def __init__(self, zinstance, payload, parentid=None, basedir=None):
-        super(Zupload, self).__init__()
+        super().__init__()
         self.zinstance = zinstance
         self.payload = payload
         self.parentid = parentid
         if basedir is None:
-            self.basedir = Path("")
+            self.basedir = Path()
         elif isinstance(basedir, Path):
             self.basedir = basedir
         else:
             self.basedir = Path(basedir)
 
     def _verify(self, payload):
-        """
-        ensure that all files to be attached exist
+        """Ensure that all files to be attached exist
         open()'s better than exists(), cos it avoids a race condition
         """
         if not payload:  # Check payload has nonzero length
-            raise ze.ParamNotPassed
+            raise ze.ParamNotPassedError
         for templt in payload:
-            if os.path.isfile(str(self.basedir.joinpath(templt["filename"]))):
+            if Path.is_file(str(self.basedir.joinpath(templt["filename"]))):
                 try:
                     # if it is a file, try to open it, and catch the error
-                    with open(str(self.basedir.joinpath(templt["filename"]))):
+                    with Path.open(str(self.basedir.joinpath(templt["filename"]))):
                         pass
-                except IOError:
-                    raise ze.FileDoesNotExist(
-                        f"The file at {str(self.basedir.joinpath(templt['filename']))} couldn't be opened or found."
-                    )
+                except OSError:
+                    msg = f"The file at {self.basedir.joinpath(templt['filename'])!s} couldn't be opened or found."
+                    raise ze.FileDoesNotExistError(
+                        msg,
+                    ) from None
             # no point in continuing if the file isn't a file
             else:
-                raise ze.FileDoesNotExist(
-                    f"The file at {str(self.basedir.joinpath(templt['filename']))} couldn't be opened or found."
+                msg = f"The file at {self.basedir.joinpath(templt['filename'])!s} couldn't be opened or found."
+                raise ze.FileDoesNotExistError(
+                    msg,
                 )
 
     def _create_prelim(self):
-        """
-        Step 0: Register intent to upload files
-        """
+        """Step 0: Register intent to upload files"""
         self._verify(self.payload)
         if "key" in self.payload[0] and self.payload[0]["key"]:
             if next((i for i in self.payload if "key" not in i), False):
-                raise ze.UnsupportedParams(
-                    "Can't pass payload entries with and without keys to Zupload"
+                msg = "Can't pass payload entries with and without keys to Zupload"
+                raise ze.UnsupportedParamsError(
+                    msg,
                 )
             return None  # Don't do anything if payload comes with keys
         liblevel = "/{t}/{u}/items"
@@ -1955,7 +1885,8 @@ class Zupload:
             url=build_url(
                 self.zinstance.endpoint,
                 liblevel.format(
-                    t=self.zinstance.library_type, u=self.zinstance.library_id
+                    t=self.zinstance.library_type,
+                    u=self.zinstance.library_id,
                 ),
             ),
             data=to_send,
@@ -1974,12 +1905,10 @@ class Zupload:
         return data
 
     def _get_auth(self, attachment, reg_key, md5=None):
-        """
-        Step 1: get upload authorisation for a file
-        """
+        """Step 1: get upload authorisation for a file"""
         mtypes = mimetypes.guess_type(attachment)
-        digest = hashlib.md5()
-        with open(attachment, "rb") as att:
+        digest = hashlib.md5()  # noqa: S324
+        with Path.open(attachment, "rb") as att:
             for chunk in iter(lambda: att.read(8192), b""):
                 digest.update(chunk)
         auth_headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -1990,9 +1919,9 @@ class Zupload:
             auth_headers["If-Match"] = md5
         data = {
             "md5": digest.hexdigest(),
-            "filename": os.path.basename(attachment),
-            "filesize": os.path.getsize(attachment),
-            "mtime": str(int(os.path.getmtime(attachment) * 1000)),
+            "filename": Path.name(attachment),
+            "filesize": Path.stat().st_size(attachment),
+            "mtime": str(int(Path.stat().st_mtime(attachment) * 1000)),
             "contentType": mtypes[0] or "application/octet-stream",
             "charset": mtypes[1],
             "params": 1,
@@ -2001,11 +1930,7 @@ class Zupload:
         auth_req = self.zinstance.client.post(
             url=build_url(
                 self.zinstance.endpoint,
-                "/{t}/{u}/items/{i}/file".format(
-                    t=self.zinstance.library_type,
-                    u=self.zinstance.library_id,
-                    i=reg_key,
-                ),
+                f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
             ),
             data=data,
             headers=auth_headers,
@@ -2020,8 +1945,7 @@ class Zupload:
         return auth_req.json()
 
     def _upload_file(self, authdata, attachment, reg_key):
-        """
-        Step 2: auth successful, and file not on server
+        """Step 2: auth successful, and file not on server
         zotero.org/support/dev/server_api/file_upload#a_full_upload
 
         reg_key isn't used, but we need to pass it through to Step 3
@@ -2031,7 +1955,7 @@ class Zupload:
         upload_list = [("key", upload_dict.pop("key"))]
         for key, value in upload_dict.items():
             upload_list.append((key, value))
-        upload_list.append(("file", open(attachment, "rb").read()))
+        upload_list.append(("file", Path.open(attachment, "rb").read()))
         upload_pairs = tuple(upload_list)
         try:
             self.zinstance._check_backoff()
@@ -2043,7 +1967,8 @@ class Zupload:
                 headers={"User-Agent": f"Pyzotero/{pz.__version__}"},
             )
         except httpx.ConnectionError:
-            raise ze.UploadError("ConnectionError")
+            msg = "ConnectionError"
+            raise ze.UploadError(msg) from None
         try:
             upload.raise_for_status()
         except httpx.HTTPError as exc:
@@ -2055,9 +1980,7 @@ class Zupload:
         return self._register_upload(authdata, reg_key)
 
     def _register_upload(self, authdata, reg_key):
-        """
-        Step 3: upload successful, so register it
-        """
+        """Step 3: upload successful, so register it"""
         reg_headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "If-None-Match": "*",
@@ -2067,11 +1990,7 @@ class Zupload:
         upload_reg = self.zinstance.client.post(
             url=build_url(
                 self.zinstance.endpoint,
-                "/{t}/{u}/items/{i}/file".format(
-                    t=self.zinstance.library_type,
-                    u=self.zinstance.library_id,
-                    i=reg_key,
-                ),
+                f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
             ),
             data=reg_data,
             headers=dict(reg_headers),
@@ -2081,14 +2000,13 @@ class Zupload:
         except httpx.HTTPError as exc:
             error_handler(self.zinstance, upload_reg, exc)
         backoff = upload_reg.headers.get("backoff") or upload_reg.headers.get(
-            "retry-after"
+            "retry-after",
         )
         if backoff:
             self._set_backoff(backoff)
 
     def upload(self):
-        """
-        File upload functionality
+        """File upload functionality
 
         Goes through upload steps 0 - 3 (private class methods), and returns
         a dict noting success, failure, or unchanged

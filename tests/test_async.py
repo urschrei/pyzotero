@@ -4,6 +4,9 @@ import pytest
 
 from pyzotero.filetransport import AsyncClient
 
+# ruff: noqa: PLR2004
+# ruff: noqa: S101
+
 
 @pytest.mark.asyncio
 async def test_file_transport():

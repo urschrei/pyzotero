@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Pyzotero documentation build configuration file, created by
 # sphinx-quickstart on Mon Jul  4 19:52:05 2011.
@@ -11,9 +10,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import datetime
 import os
 import sys
-from datetime import date
 
 sys.path.insert(1, "..")
 import pyzotero
@@ -26,7 +25,7 @@ if os.environ.get("READTHEDOCS", "") == "True":
     html_context["READTHEDOCS"] = True
 
 author = zot.__author__
-current_year = date.today().year
+current_year = datetime.datetime.now(tz=datetime.timezone.utc).date().year
 
 html_context = {
     "display_github": True,  # Integrate GitHub
@@ -63,7 +62,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "Pyzotero"
-copyright = "2011 – %s, %s" % (current_year, author)
+copyright = f"2011 - {current_year}, {author}"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -240,7 +239,7 @@ man_pages = [("index", "pyzotero", "Pyzotero Documentation", [author], 1)]
 epub_title = "Pyzotero"
 epub_author = author
 epub_publisher = author
-epub_copyright = "2011 – %s, %s" % (current_year, author)
+epub_copyright = f"2011 - {current_year}, {author}"
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

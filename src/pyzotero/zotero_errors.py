@@ -14,37 +14,37 @@ class PyZoteroError(Exception):
     pass
 
 
-class ParamNotPassed(PyZoteroError):
+class ParamNotPassedError(PyZoteroError):
     """Raised if a parameter which is required isn't passed"""
 
     pass
 
 
-class CallDoesNotExist(PyZoteroError):
+class CallDoesNotExistError(PyZoteroError):
     """Raised if the specified API call doesn't exist"""
 
     pass
 
 
-class UnsupportedParams(PyZoteroError):
+class UnsupportedParamsError(PyZoteroError):
     """Raised when unsupported parameters are passed"""
 
     pass
 
 
-class UserNotAuthorised(PyZoteroError):
+class UserNotAuthorisedError(PyZoteroError):
     """Raised when the user is not allowed to retrieve the resource"""
 
     pass
 
 
-class TooManyItems(PyZoteroError):
+class TooManyItemsError(PyZoteroError):
     """Raised when too many items are passed to a Write API method"""
 
     pass
 
 
-class MissingCredentials(PyZoteroError):
+class MissingCredentialsError(PyZoteroError):
     """
     Raised when an attempt is made to create a Zotero instance
     without providing both the user ID and the user key
@@ -53,13 +53,13 @@ class MissingCredentials(PyZoteroError):
     pass
 
 
-class InvalidItemFields(PyZoteroError):
+class InvalidItemFieldsError(PyZoteroError):
     """Raised when an attempt is made to create/update items w/invalid fields"""
 
     pass
 
 
-class ResourceNotFound(PyZoteroError):
+class ResourceNotFoundError(PyZoteroError):
     """Raised when a resource (item, collection etc.) could not be found"""
 
     pass
@@ -71,19 +71,19 @@ class HTTPError(PyZoteroError):
     pass
 
 
-class CouldNotReachURL(PyZoteroError):
+class CouldNotReachURLError(PyZoteroError):
     """Raised when we can't reach a URL"""
 
     pass
 
 
-class Conflict(PyZoteroError):
+class ConflictError(PyZoteroError):
     """409 - Raised when the target library is locked"""
 
     pass
 
 
-class PreConditionFailed(PyZoteroError):
+class PreConditionFailedError(PyZoteroError):
     """
     412 - Raised when the provided X-Zotero-Write-Token has already been
     submitted
@@ -92,15 +92,15 @@ class PreConditionFailed(PyZoteroError):
     pass
 
 
-class RequestEntityTooLarge(PyZoteroError):
+class RequestEntityTooLargeError(PyZoteroError):
     """
-    413 – The upload would exceed the storage quota of the library owner.
+    413 - The upload would exceed the storage quota of the library owner.
     """
 
     pass
 
 
-class PreConditionRequired(PyZoteroError):
+class PreConditionRequiredError(PyZoteroError):
     """
     428 - Raised when If-Match or If-None-Match was not provided.
     """
@@ -108,7 +108,7 @@ class PreConditionRequired(PyZoteroError):
     pass
 
 
-class TooManyRequests(PyZoteroError):
+class TooManyRequestsError(PyZoteroError):
     """
     429 - Raised when there are too many unfinished uploads.
     Try again after the number of seconds specified in the Retry-After header.
@@ -117,7 +117,7 @@ class TooManyRequests(PyZoteroError):
     pass
 
 
-class FileDoesNotExist(PyZoteroError):
+class FileDoesNotExistError(PyZoteroError):
     """
     Raised when a file path to be attached can't be opened (or doesn't exist)
     """
@@ -125,7 +125,7 @@ class FileDoesNotExist(PyZoteroError):
     pass
 
 
-class TooManyRetries(PyZoteroError):
+class TooManyRetriesError(PyZoteroError):
     """
     Raise after the backoff period for new requests exceeds 32s
     """

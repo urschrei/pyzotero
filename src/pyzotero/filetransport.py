@@ -32,7 +32,7 @@
 
 import asyncio
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import httpx
 from httpx import (
@@ -65,7 +65,7 @@ httpx.URL.is_absolute_url = property(is_absolute_url)  # type: ignore
 
 
 class FileTransport(AsyncBaseTransport, BaseTransport):
-    def _handle(self, request: Request) -> Tuple[Optional[int], httpx.Headers]:
+    def _handle(self, request: Request) -> tuple[Optional[int], httpx.Headers]:
         if request.url.host and request.url.host != "localhost":
             raise NotImplementedError("Only local paths are allowed")
         if request.method in {"PUT", "DELETE"}:
@@ -148,4 +148,4 @@ class AsyncClient(_AsyncClient):
         self._mounts.update({URLPattern(protocol): transport})
 
 
-__all__ = ["FileTransport", "AsyncClient", "Client"]
+__all__ = ["AsyncClient", "Client", "FileTransport"]
