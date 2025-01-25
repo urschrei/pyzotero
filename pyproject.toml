@@ -64,3 +64,46 @@ asyncio_default_fixture_loop_scope = "function"
 
 [tool.setuptools_scm]
 write_to = "src/_version.py"
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "N", "D4", "UP", "PL", "TRY", "PERF", "FURB", "RUF", "S", "DTZ"]
+ignore = ["ANN001", "ANN003", "ANN202", "ANN201", "DOC201", "E501", "PLR0904", "PLR0913", "PLR0917", "SLF001", "FIX002", "D400", "D415"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
