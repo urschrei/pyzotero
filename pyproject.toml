@@ -40,6 +40,9 @@ test = [
     "ipython",
     "pytest-asyncio",
 ]
+optional-dependencies = [
+    "pytest-cov>=6.0.0",
+]
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md", content-type = "text/markdown"}
@@ -54,7 +57,7 @@ requires = [
 [tool.pytest.ini_options]
 minversion = "6.2.2"
 addopts = [
-    "--import-mode=importlib",
+    "--import-mode=importlib", "--cov=pyzotero", "--cov-report=xml",
 ]
 testpaths = [
     "tests",
