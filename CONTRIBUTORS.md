@@ -14,7 +14,9 @@
 | 1 | [christianbrodbeck](https://github.com/urschrei/pyzotero/commits?author=christianbrodbeck) |
 | 1 | [egh](https://github.com/urschrei/pyzotero/commits?author=egh) |
 | 1 | [fmagin](https://github.com/urschrei/pyzotero/commits?author=fmagin) |
+| 1 | [pnb](https://github.com/urschrei/pyzotero/commits?author=pnb) |
 | 1 | [porduna](https://github.com/urschrei/pyzotero/commits?author=porduna) |
 | 1 | [stakats](https://github.com/urschrei/pyzotero/commits?author=stakats) |
 | 1 | [epistemery](https://github.com/urschrei/pyzotero/commits?author=epistemery) |
+| 1 | [tnajdek](https://github.com/urschrei/pyzotero/commits?author=tnajdek) |
 | 1 | [jghauser](https://github.com/urschrei/pyzotero/commits?author=jghauser) |
