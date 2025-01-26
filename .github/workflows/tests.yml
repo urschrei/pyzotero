@@ -3,6 +3,12 @@ name: Build wheel, release and publish on new tag
 on: [push, pull_request]
 
 jobs:
+  lint:
+    name: run Ruff
+    runs-on: ubuntu-latest
+    steps:
+    - uses: astral-sh/ruff-action@v3
+
   build:
     name: Build and test
     runs-on: ubuntu-latest
@@ -56,10 +62,21 @@ jobs:
       with:
         path: dist/*.tar.gz
 
+  status_check:
+    name: All Checks
+    needs: [lint, build]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check status
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
+
+
   release_artifacts:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     name: Release repaired and tested wheels
-    needs: build
+    needs: [status_check, make_sdist]
     runs-on: ubuntu-latest
     environment: release
     permissions:
