@@ -1,17 +1,18 @@
 # Contributing
 Contributions are welcome. Please bear the following in mind:
 
-- **Base your changes on the dev branch**
-    - If necessary, rebase against `dev` before opening a pull request
-- Follow [PEP 8](http://www.python.org/dev/peps/pep-0008/). I currently periodically run [`Black`](https://black.readthedocs.io/en/stable/) against the codebase and perhaps you should, too
-- Use spaces for indentation, and ensure that all methods have a proper docstring. **Please don't use Doctest**
+- **Base your changes on the `main` branch**
+    - If necessary, rebase against `main` before opening a pull request
+- This codebase uses Ruff, and PRs are gated on `ruff check` passing. Run `ruff check` locally before opening a PR
+  - PRs that reformat code will not be accepted.
+- Ensure that all methods added have a proper docstring. **Please do not use Doctest**
 - If at all possible, don't add dependencies
-    - If it's unavoidable, ensure that the dependency is maintained, and supported
-    - Ensure that you add your dependency to [setup.py](setup.py)
-- Run the tests, and ensure that they pass. If you're adding a feature, **you must add tests that exercise it**
-- If your pull request is a feature, **document it**
+    - If it is unavoidable, you must ensure that the dependency is maintained, and supported
+    - Ensure that you add your dependency to [pyproject.toml](pyproject.toml)
+- Run the tests and ensure that they pass. If you are adding a feature **you must add tests that exercise it**
+- If your pull request is a feature **document the feature**
 - One feature per pull request
-- If possible, [squash](http://git-scm.com/book/en/Git-Tools-Rewriting-History#Squashing-Commits) your commits before opening a pull request, unless it makes no sense to do so
+- [squash](http://git-scm.com/book/en/Git-Tools-Rewriting-History#Squashing-Commits) your commits before opening a pull request unless it makes no sense to do so
 - If in doubt, comment your code.
 
 # License of Contributed Code
