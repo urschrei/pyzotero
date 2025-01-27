@@ -462,14 +462,12 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-optional-dependencies = [
-    { name = "pytest-cov" },
-]
 test = [
     { name = "httpretty" },
     { name = "ipython" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
     { name = "python-dateutil" },
 ]
 
@@ -482,7 +480,7 @@ requires-dist = [
     { name = "ipython", marker = "extra == 'test'" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=7.4.2" },
     { name = "pytest-asyncio", marker = "extra == 'test'" },
-    { name = "pytest-cov", marker = "extra == 'optional-dependencies'", specifier = ">=6.0.0" },
+    { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=6.0.0" },
     { name = "python-dateutil", marker = "extra == 'test'" },
     { name = "pytz" },
 ]

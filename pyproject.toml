@@ -39,8 +39,6 @@ test = [
     "python-dateutil",
     "ipython",
     "pytest-asyncio",
-]
-optional-dependencies = [
     "pytest-cov>=6.0.0",
 ]
 
