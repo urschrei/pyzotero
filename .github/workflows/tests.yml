@@ -8,12 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: astral-sh/ruff-action@v3
-    - name: List files
-      run: |
-        echo ls in cwd
-        ls .
-        echo ls next dir up
-        ls ..
+    - name: List files in cwd
+      run: ls .
+    - name: List files above
+      run: ls ..
+
 
   build:
     name: Build and test
