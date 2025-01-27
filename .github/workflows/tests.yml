@@ -9,11 +9,11 @@ jobs:
     steps:
     - uses: astral-sh/ruff-action@v3
     - name: List files
-    - run: |
-      echo ls in cwd
-      ls .
-      echo ls next dir up
-      ls ..
+      run: |
+        echo ls in cwd
+        ls .
+        echo ls next dir up
+        ls ..
 
   build:
     name: Build and test
