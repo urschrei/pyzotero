@@ -14,7 +14,7 @@ def search_by_title(title_query):
     try:
         # Search for items where title contains the query string
         results = zot.items(q=title_query)
-        
+
         # Print results
         print(f"\nFound {len(results)} items matching '{title_query}':")
         for item in results:
@@ -30,14 +30,14 @@ def search_by_title(title_query):
             print(f"Type: {item_type}")
             print(f"Date: {date}")
             print("##########################\n")
-            
-        return results
 
     except Exception as e:
-        print(f"Error searching Zotero: {str(e)}")
+        print(f"Error searching Zotero: {e!s}")
         return []
+    else:
+        return results
 
 if __name__ == "__main__":
     # Example usage
     search_query = "uORFs"  # Change this to your search term
-    search_by_title(search_query) 
+    search_by_title(search_query)
