@@ -60,6 +60,9 @@ jobs:
         fetch-depth: 0  # Optional, use if you use setuptools_scm
         submodules: true  # Optional, use if you have submodules
 
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+
     - name: Build SDist
       run: uv build --no-sources --sdist -o dist
 
