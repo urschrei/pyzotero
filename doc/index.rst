@@ -168,6 +168,12 @@ The following methods will retrieve either user or group items, depending on the
 
         :rtype: list of dicts
 
+    .. py:method:: Zotero.settings([since])
+
+        Returns synced Zotero user library settings such as feeds and PDF reading progress. Use the optional ``since`` parameter to specify the retrieval of changes since a known previous library version.
+
+        :rtype: list of dicts
+
     .. py:method:: Zotero.count_items()
 
         Returns a count of all items in a library / group

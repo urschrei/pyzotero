@@ -667,6 +667,12 @@ class Zotero:
         return self._build_query(query_string)
 
     @retrieve
+    def settings(self, **kwargs):
+        """Get synced user settings"""
+        query_string = "/{t}/{u}/settings"
+        return self._build_query(query_string)
+
+    @retrieve
     def fulltext_item(self, itemkey, **kwargs):
         """Get full-text content for an item"""
         query_string = (
