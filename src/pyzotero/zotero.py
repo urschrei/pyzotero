@@ -1398,7 +1398,7 @@ class Zotero:
         orig = self._attachment_template("imported_file")
         to_add = [orig.copy() for fls in files]
         for idx, tmplt in enumerate(to_add):
-            tmplt["title"] = Path.name(files[idx])
+            tmplt["title"] = Path(files[idx]).name
             tmplt["filename"] = files[idx]
         if parentid:
             return self._attachment(to_add, parentid)
@@ -1851,7 +1851,7 @@ class Zupload:
         if not payload:  # Check payload has nonzero length
             raise ze.ParamNotPassedError
         for templt in payload:
-            if Path.is_file(str(self.basedir.joinpath(templt["filename"]))):
+            if Path(str(self.basedir.joinpath(templt["filename"]))).is_file():
                 try:
                     # if it is a file, try to open it, and catch the error
                     with Path.open(str(self.basedir.joinpath(templt["filename"]))):
@@ -1925,9 +1925,9 @@ class Zupload:
             auth_headers["If-Match"] = md5
         data = {
             "md5": digest.hexdigest(),
-            "filename": Path.name(attachment),
-            "filesize": Path.stat().st_size(attachment),
-            "mtime": str(int(Path.stat().st_mtime(attachment) * 1000)),
+            "filename": Path(attachment).name,
+            "filesize": Path(attachment).stat().st_size,
+            "mtime": str(int(Path(attachment).stat().st_mtime * 1000)),
             "contentType": mtypes[0] or "application/octet-stream",
             "charset": mtypes[1],
             "params": 1,
