@@ -800,7 +800,7 @@ class Zotero:
         if self.snapshot:
             self.snapshot = False
             pth += ".zip"
-        with Path.open(pth, "wb") as f:
+        with Path(pth).open("wb") as f:
             f.write(file)
 
     @retrieve
@@ -1854,7 +1854,7 @@ class Zupload:
             if Path(str(self.basedir.joinpath(templt["filename"]))).is_file():
                 try:
                     # if it is a file, try to open it, and catch the error
-                    with Path.open(str(self.basedir.joinpath(templt["filename"]))):
+                    with Path(str(self.basedir.joinpath(templt["filename"]))).open():
                         pass
                 except OSError:
                     msg = f"The file at {self.basedir.joinpath(templt['filename'])!s} couldn't be opened or found."
@@ -1914,7 +1914,7 @@ class Zupload:
         """Step 1: get upload authorisation for a file"""
         mtypes = mimetypes.guess_type(attachment)
         digest = hashlib.md5()  # noqa: S324
-        with Path.open(attachment, "rb") as att:
+        with Path(attachment).open("rb") as att:
             for chunk in iter(lambda: att.read(8192), b""):
                 digest.update(chunk)
         auth_headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -1961,7 +1961,7 @@ class Zupload:
         upload_list = [("key", upload_dict.pop("key"))]
         for key, value in upload_dict.items():
             upload_list.append((key, value))
-        upload_list.append(("file", Path.open(attachment, "rb").read()))
+        upload_list.append(("file", Path(attachment).open("rb").read()))
         upload_pairs = tuple(upload_list)
         try:
             self.zinstance._check_backoff()
