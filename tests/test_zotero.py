@@ -1192,200 +1192,210 @@ class ZoteroTests(unittest.TestCase):
 
         # Clean up
         os.remove(temp_file_path)
-        
+
     @httpretty.activate
     def testAttachmentSimple(self):
         """Test attachment_simple method with a single file"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary test file
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_attachment.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test attachment content")
-        
+
         # Mock the item template response
         HTTPretty.register_uri(
             HTTPretty.GET,
             "https://api.zotero.org/items/new?itemType=attachment&linkMode=imported_file",
             content_type="application/json",
-            body=json.dumps({"itemType": "attachment", "linkMode": "imported_file"})
+            body=json.dumps({"itemType": "attachment", "linkMode": "imported_file"}),
         )
-        
+
         # Mock the item creation response
         HTTPretty.register_uri(
             HTTPretty.POST,
             "https://api.zotero.org/users/myuserID/items",
             content_type="application/json",
-            body=json.dumps({"success": {"0": "ITEMKEY123"}})
+            body=json.dumps({"success": {"0": "ITEMKEY123"}}),
         )
-        
+
         # Patch the necessary methods to avoid HTTP calls and file system checks
-        with patch.object(z.Zupload, "_verify", return_value=None), \
-             patch.object(z.Zupload, "_get_auth", return_value={
-                "url": "https://uploads.zotero.org/",
-                "params": {"key": "abcdef1234567890"},
-                "uploadKey": "upload_key_123"
-             }), \
-             patch.object(z.Zupload, "_upload_file", return_value=None):
-            
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(
+                z.Zupload,
+                "_get_auth",
+                return_value={
+                    "url": "https://uploads.zotero.org/",
+                    "params": {"key": "abcdef1234567890"},
+                    "uploadKey": "upload_key_123",
+                },
+            ),
+            patch.object(z.Zupload, "_upload_file", return_value=None),
+        ):
             # Test attachment_simple with a single file
             result = zot.attachment_simple([temp_file_path])
-            
+
             # Verify the result structure
             self.assertIn("success", result)
             self.assertEqual(len(result["success"]), 1)
-            
+
             # Verify that the correct attachment template was used
             request = httpretty.last_request()
             payload = json.loads(request.body.decode("utf-8"))
             self.assertEqual(payload[0]["title"], "test_attachment.txt")
             self.assertEqual(payload[0]["filename"], temp_file_path)
-        
+
         # Clean up
         os.remove(temp_file_path)
-    
+
     @httpretty.activate
     def testAttachmentSimpleWithParent(self):
         """Test attachment_simple method with a parent ID"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary test file
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_attachment.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test attachment content")
-        
+
         # Mock the item template response
         HTTPretty.register_uri(
             HTTPretty.GET,
             "https://api.zotero.org/items/new?itemType=attachment&linkMode=imported_file",
             content_type="application/json",
-            body=json.dumps({"itemType": "attachment", "linkMode": "imported_file"})
+            body=json.dumps({"itemType": "attachment", "linkMode": "imported_file"}),
         )
-        
+
         # Patch the _attachment method to verify it's called correctly
         with patch.object(z.Zotero, "_attachment") as mock_attachment:
             # Set up the mock return value
             mock_attachment.return_value = {"success": [{"key": "ITEMKEY123"}]}
-            
+
             # Test attachment_simple with a parent ID
             result = zot.attachment_simple([temp_file_path], parentid="PARENT123")
-            
+
             # Verify the result structure matches the mock return value
             self.assertEqual(result, {"success": [{"key": "ITEMKEY123"}]})
-            
+
             # Check that _attachment was called with the parent ID
             mock_attachment.assert_called_once()
             args = mock_attachment.call_args[0]
             # First argument is the templates list, second is parent ID
             self.assertEqual(len(args), 2)
             self.assertEqual(args[1], "PARENT123")
-            
+
             # Verify the template was correctly set up
             templates = args[0]
             self.assertEqual(len(templates), 1)
             self.assertEqual(templates[0]["title"], "test_attachment.txt")
             self.assertEqual(templates[0]["filename"], temp_file_path)
-        
+
         # Clean up
         os.remove(temp_file_path)
-    
+
     @httpretty.activate
     def testAttachmentBoth(self):
         """Test attachment_both method with custom title and filename"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary test file
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_attachment.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test attachment content")
-        
+
         # Mock the item template response
         HTTPretty.register_uri(
             HTTPretty.GET,
             "https://api.zotero.org/items/new?itemType=attachment&linkMode=imported_file",
             content_type="application/json",
-            body=json.dumps({"itemType": "attachment", "linkMode": "imported_file"})
+            body=json.dumps({"itemType": "attachment", "linkMode": "imported_file"}),
         )
-        
+
         # Mock the item creation response
         HTTPretty.register_uri(
             HTTPretty.POST,
             "https://api.zotero.org/users/myuserID/items",
             content_type="application/json",
-            body=json.dumps({"success": {"0": "ITEMKEY123"}})
+            body=json.dumps({"success": {"0": "ITEMKEY123"}}),
         )
-        
+
         # Patch the necessary methods to avoid HTTP calls and file system checks
-        with patch.object(z.Zupload, "_verify", return_value=None), \
-             patch.object(z.Zupload, "_get_auth", return_value={
-                "url": "https://uploads.zotero.org/",
-                "params": {"key": "abcdef1234567890"},
-                "uploadKey": "upload_key_123"
-             }), \
-             patch.object(z.Zupload, "_upload_file", return_value=None):
-            
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(
+                z.Zupload,
+                "_get_auth",
+                return_value={
+                    "url": "https://uploads.zotero.org/",
+                    "params": {"key": "abcdef1234567890"},
+                    "uploadKey": "upload_key_123",
+                },
+            ),
+            patch.object(z.Zupload, "_upload_file", return_value=None),
+        ):
             # Test attachment_both with custom title
             custom_title = "Custom Attachment Title"
             files = [(custom_title, temp_file_path)]
             result = zot.attachment_both(files)
-            
+
             # Verify the result structure
             self.assertIn("success", result)
             self.assertEqual(len(result["success"]), 1)
-            
+
             # Verify that the correct attachment template was used
             request = httpretty.last_request()
             payload = json.loads(request.body.decode("utf-8"))
             self.assertEqual(payload[0]["title"], custom_title)
             self.assertEqual(payload[0]["filename"], temp_file_path)
-        
+
         # Clean up
         os.remove(temp_file_path)
-    
+
     @httpretty.activate
     def testAttachmentBothWithParent(self):
         """Test attachment_both method with a parent ID"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary test file
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_attachment.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test attachment content")
-        
+
         # Mock the item template response
         HTTPretty.register_uri(
             HTTPretty.GET,
             "https://api.zotero.org/items/new?itemType=attachment&linkMode=imported_file",
             content_type="application/json",
-            body=json.dumps({"itemType": "attachment", "linkMode": "imported_file"})
+            body=json.dumps({"itemType": "attachment", "linkMode": "imported_file"}),
         )
-        
+
         # Patch the _attachment method to verify it's called correctly
         with patch.object(z.Zotero, "_attachment") as mock_attachment:
             # Set up the mock return value
             mock_attachment.return_value = {"success": [{"key": "ITEMKEY123"}]}
-            
+
             # Test attachment_both with a parent ID
             custom_title = "Custom Attachment Title"
             files = [(custom_title, temp_file_path)]
             result = zot.attachment_both(files, parentid="PARENT123")
-            
+
             # Verify the result structure matches the mock return value
             self.assertEqual(result, {"success": [{"key": "ITEMKEY123"}]})
-            
+
             # Check that _attachment was called with the parent ID
             mock_attachment.assert_called_once()
             args = mock_attachment.call_args[0]
             # First argument is the templates list, second is parent ID
             self.assertEqual(len(args), 2)
             self.assertEqual(args[1], "PARENT123")
-            
+
             # Verify the template was correctly set up
             templates = args[0]
             self.assertEqual(len(templates), 1)
             self.assertEqual(templates[0]["title"], custom_title)
             self.assertEqual(templates[0]["filename"], temp_file_path)
-        
+
         # Clean up
         os.remove(temp_file_path)
 
