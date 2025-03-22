@@ -5,9 +5,11 @@ This file is part of Pyzotero.
 """
 # ruff: noqa: N802
 
+import json
 import os
 import time
 import unittest
+from unittest.mock import patch
 
 import httpretty
 from dateutil import parser
@@ -741,6 +743,121 @@ class ZoteroTests(unittest.TestCase):
         )
         zot.items()
         self.assertTrue(zot.backoff)
+
+    @httpretty.activate
+    def testDeleteTags(self):
+        """Tests deleting tags"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Mock the initial request to get version info
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/tags?limit=1",
+            content_type="application/json",
+            body=self.tags_doc,
+            adding_headers={"last-modified-version": "42"},
+        )
+
+        # Mock the delete endpoint
+        HTTPretty.register_uri(
+            HTTPretty.DELETE, "https://api.zotero.org/users/myuserID/tags", status=204
+        )
+
+        # Test tag deletion
+        resp = zot.delete_tags("tag1", "tag2")
+
+        # Verify the request
+        request = httpretty.last_request()
+        self.assertEqual(request.method, "DELETE")
+        self.assertEqual(request.headers["If-Unmodified-Since-Version"], "42")
+        self.assertTrue(resp)
+
+    @httpretty.activate
+    def testAddToCollection(self):
+        """Tests adding an item to a collection"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Mock the PATCH endpoint for adding to collection
+        HTTPretty.register_uri(
+            HTTPretty.PATCH,
+            "https://api.zotero.org/users/myuserID/items/ITEMKEY",
+            status=204,
+        )
+
+        # Create a test item
+        item = {"key": "ITEMKEY", "version": 5, "data": {"collections": []}}
+
+        # Test adding to collection
+        resp = zot.addto_collection("COLLECTIONKEY", item)
+
+        # Verify the request
+        request = httpretty.last_request()
+        self.assertEqual(request.method, "PATCH")
+        self.assertEqual(request.headers["If-Unmodified-Since-Version"], "5")
+
+        # Check the body contains the collection key
+
+        body = json.loads(request.body.decode("utf-8"))
+        self.assertEqual(body["collections"], ["COLLECTIONKEY"])
+
+        self.assertTrue(resp)
+
+    @httpretty.activate
+    def testDeleteItem(self):
+        """Tests deleting an item"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Mock the DELETE endpoint
+        HTTPretty.register_uri(
+            HTTPretty.DELETE,
+            "https://api.zotero.org/users/myuserID/items/ITEMKEY",
+            status=204,
+        )
+
+        # Create a test item
+        item = {"key": "ITEMKEY", "version": 7}
+
+        # Test deletion
+        resp = zot.delete_item(item)
+
+        # Verify the request
+        request = httpretty.last_request()
+        self.assertEqual(request.method, "DELETE")
+        self.assertEqual(request.headers["If-Unmodified-Since-Version"], "7")
+
+        self.assertTrue(resp)
+
+    @httpretty.activate
+    def testDeleteMultipleItems(self):
+        """Tests deleting multiple items at once"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Mock the DELETE endpoint for multiple items
+        HTTPretty.register_uri(
+            HTTPretty.DELETE, "https://api.zotero.org/users/myuserID/items", status=204
+        )
+
+        # Create test items
+        items = [{"key": "ITEM1", "version": 5}, {"key": "ITEM2", "version": 3}]
+
+        # Test deletion
+        resp = zot.delete_item(items)
+
+        # Verify the request
+        request = httpretty.last_request()
+        self.assertEqual(request.method, "DELETE")
+        self.assertEqual(request.headers["If-Unmodified-Since-Version"], "5")
+
+        # Extract and parse the query string
+        from urllib.parse import parse_qs, urlparse
+
+        parsed_url = urlparse(request.url)
+        query_params = parse_qs(parsed_url.query)
+
+        self.assertIn("itemKey", query_params)
+        self.assertEqual(query_params["itemKey"][0], "ITEM1,ITEM2")
+
+        self.assertTrue(resp)
 
     def tearDown(self):
         """Tear stuff down"""
