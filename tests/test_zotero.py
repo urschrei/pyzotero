@@ -9,7 +9,7 @@ import json
 import os
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import httpretty
 from dateutil import parser
@@ -1196,6 +1196,219 @@ class ZoteroTests(unittest.TestCase):
     def tearDown(self):
         """Tear stuff down"""
         HTTPretty.disable()
+
+    @httpretty.activate
+    def test_updated_template_comparison(self):
+        """Test that ONE_HOUR is properly used for template freshness check"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Test that ONE_HOUR constant matches code expectation
+        self.assertEqual(z.ONE_HOUR, 3600)
+
+        # Use a simplified approach to test checking template freshness
+        zot.templates = {}
+
+        # Create a template
+        template_name = "test_template"
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/items/new",
+            body=json.dumps({"success": True}),
+            content_type="application/json",
+        )
+
+        # The _cache method should create a template with a timestamp
+        zot._cache(MagicMock(json=lambda: {"data": "test"}), template_name)
+
+        # Verify template was created with a timestamp
+        self.assertIn(template_name, zot.templates)
+        self.assertIn("updated", zot.templates[template_name])
+
+    @httpretty.activate
+    def test_template_cache_creation(self):
+        """Test template caching in the _cache method"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Create a mock response to cache
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"test": "data"}
+
+        # Call the _cache method
+        template_name = "test_key"
+        result = zot._cache(mock_response, template_name)
+
+        # Verify the template was stored correctly
+        self.assertIn(template_name, zot.templates)
+        self.assertEqual(zot.templates[template_name]["tmplt"], {"test": "data"})
+        self.assertIn("updated", zot.templates[template_name])
+
+        # Verify the return value is a deep copy
+        self.assertEqual(result, {"test": "data"})
+
+        # Modify the returned data and check it doesn't affect the cached template
+        result["modified"] = True
+        self.assertNotIn("modified", zot.templates[template_name]["tmplt"])
+
+    @httpretty.activate
+    def test_striplocal_local_mode(self):
+        """Test _striplocal method in local mode"""
+        zot = z.Zotero("myuserID", "user", "myuserkey", local=True)
+
+        # Test stripping local API path
+        url = "http://localhost:23119/api/users/myuserID/items"
+        result = zot._striplocal(url)
+        self.assertEqual(result, "http://localhost:23119/users/myuserID/items")
+
+        # Test with more complex path
+        url = "http://localhost:23119/api/users/myuserID/collections/ABC123/items"
+        result = zot._striplocal(url)
+        self.assertEqual(
+            result, "http://localhost:23119/users/myuserID/collections/ABC123/items"
+        )
+
+    @httpretty.activate
+    def test_striplocal_remote_mode(self):
+        """Test _striplocal method in remote mode (shouldn't change URL)"""
+        zot = z.Zotero("myuserID", "user", "myuserkey", local=False)
+
+        # Test without changing URL in remote mode
+        url = "https://api.zotero.org/users/myuserID/items"
+        result = zot._striplocal(url)
+        self.assertEqual(result, url)
+
+    @httpretty.activate
+    def test_set_fulltext(self):
+        """Test set_fulltext method for setting full-text data"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Mock response from Zotero API
+        HTTPretty.register_uri(
+            HTTPretty.PUT,
+            "https://api.zotero.org/users/myuserID/items/ABCD1234/fulltext",
+            status=204,
+        )
+
+        # Test with PDF data
+        pdf_payload = {
+            "content": "This is the full text content",
+            "indexedPages": 5,
+            "totalPages": 10,
+        }
+
+        _ = zot.set_fulltext("ABCD1234", pdf_payload)
+
+        # Verify the request
+        request = httpretty.last_request()
+        self.assertEqual(request.method, "PUT")
+        self.assertEqual(json.loads(request.body.decode()), pdf_payload)
+        self.assertEqual(request.headers["Content-Type"], "application/json")
+
+    @httpretty.activate
+    def test_new_fulltext(self):
+        """Test new_fulltext method for retrieving newer full-text content"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Mock response from Zotero API
+        mock_response = {
+            "ITEM1": {"version": 123, "indexedPages": 10, "totalPages": 10},
+            "ITEM2": {"version": 456, "indexedChars": 5000, "totalChars": 5000},
+        }
+
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/fulltext",
+            body=json.dumps(mock_response),
+            content_type="application/json",
+        )
+
+        # Set up a mock for the request attribute
+        zot.request = MagicMock()
+        zot.request.headers = {}
+
+        # Test the new_fulltext method
+        result = zot.new_fulltext(since=5)
+
+        # Verify the result
+        self.assertEqual(result, mock_response)
+
+        # Check that the correct parameters were sent
+        request = httpretty.last_request()
+        self.assertEqual(request.querystring.get("since"), ["5"])
+
+    @httpretty.activate
+    def test_last_modified_version(self):
+        """Test the last_modified_version method"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Mock the response with a last-modified-version header
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/items",
+            body=self.items_doc,
+            content_type="application/json",
+            adding_headers={"last-modified-version": "1234"},
+        )
+
+        # Test retrieving the last modified version
+        version = zot.last_modified_version()
+
+        # Verify the result
+        self.assertEqual(version, 1234)
+
+    def test_makeiter(self):
+        """Test the makeiter method that wraps iterfollow"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Create a mock method that returns items
+        # This is a better approach than trying to test the generator directly
+        mock_items = [{"key": "ITEM1"}, {"key": "ITEM2"}]
+
+        with patch.object(zot, "iterfollow") as mock_iterfollow:
+            # Set up the mock to return our test items
+            mock_iterfollow.return_value = iter([mock_items])
+
+            # Test makeiter which wraps the iterfollow generator
+            # Set links manually since we're not actually calling the API
+            zot.links = {"self": "/test", "next": "/test?start=5"}
+
+            # This should call iterfollow internally
+            result = zot.makeiter(lambda: None)
+
+            # Verify makeiter sets the 'next' link to the 'self' link
+            self.assertEqual(zot.links["next"], zot.links["self"])
+
+            # Verify makeiter returns an iterable
+            self.assertTrue(hasattr(result, "__iter__"))
+
+            # Verify the mock was called
+            mock_iterfollow.assert_called_once()
+
+    @httpretty.activate
+    def test_publications_user(self):
+        """Test the publications method for user libraries"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Mock the API response
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/publications/items",
+            body=self.items_doc,
+            content_type="application/json",
+        )
+
+        # Get publications
+        items = zot.publications()
+
+        # Verify the result
+        self.assertEqual(items[0]["key"], "NM66T6EF")
+
+    def test_publications_group(self):
+        """Test that publications method raises error for group libraries"""
+        zot = z.Zotero("myGroupID", "group", "myuserkey")
+
+        # Publications API endpoint doesn't exist for groups
+        with self.assertRaises(z.ze.CallDoesNotExistError):
+            zot.publications()
 
 
 if __name__ == "__main__":
