@@ -863,18 +863,14 @@ class ZoteroTests(unittest.TestCase):
     def testFileUpload(self):
         """Tests file upload process with attachments"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary file for testing
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload_file.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test file content for upload")
-        
+
         # Mock Step 0: Create preliminary item registration
-        prelim_response = {
-            "success": {
-                "0": "ITEMKEY123"
-            }
-        }
+        prelim_response = {"success": {"0": "ITEMKEY123"}}
         HTTPretty.register_uri(
             HTTPretty.POST,
             "https://api.zotero.org/users/myuserID/items",
@@ -882,55 +878,61 @@ class ZoteroTests(unittest.TestCase):
             body=json.dumps(prelim_response),
             status=200,
         )
-                
+
         # Create the upload payload
-        payload = [{"filename": "test_upload_file.txt", "title": "Test File", "linkMode": "imported_file"}]
-        
+        payload = [
+            {
+                "filename": "test_upload_file.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+            }
+        ]
+
         # Create mock auth data to be returned by _get_auth
         mock_auth_data = {
             "url": "https://uploads.zotero.org/",
             "params": {
                 "key": "abcdef1234567890",
                 "prefix": "prefix",
-                "suffix": "suffix"
+                "suffix": "suffix",
             },
-            "uploadKey": "upload_key_123"
+            "uploadKey": "upload_key_123",
         }
-        
+
         # Patch the necessary methods to avoid HTTP calls and file system checks
-        with patch.object(z.Zupload, '_verify', return_value=None), \
-             patch.object(z.Zupload, '_get_auth', return_value=mock_auth_data), \
-             patch.object(z.Zupload, '_upload_file', return_value=None):
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(z.Zupload, "_get_auth", return_value=mock_auth_data),
+            patch.object(z.Zupload, "_upload_file", return_value=None),
+        ):
             # Create the upload object and initiate upload
-            upload = z.Zupload(zot, payload, basedir=os.path.join(self.cwd, "api_responses"))
+            upload = z.Zupload(
+                zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+            )
             result = upload.upload()
-            
+
             # Verify the result structure
             self.assertIn("success", result)
             self.assertIn("failure", result)
             self.assertIn("unchanged", result)
             self.assertEqual(len(result["success"]), 1)
             self.assertEqual(result["success"][0]["key"], "ITEMKEY123")
-        
+
         # Clean up
         os.remove(temp_file_path)
-    
+
     @httpretty.activate
     def testFileUploadExists(self):
         """Tests file upload process when the file already exists on the server"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary file for testing
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload_file.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test file content for upload")
-        
+
         # Mock Step 0: Create preliminary item registration
-        prelim_response = {
-            "success": {
-                "0": "ITEMKEY123"
-            }
-        }
+        prelim_response = {"success": {"0": "ITEMKEY123"}}
         HTTPretty.register_uri(
             HTTPretty.POST,
             "https://api.zotero.org/users/myuserID/items",
@@ -938,48 +940,52 @@ class ZoteroTests(unittest.TestCase):
             body=json.dumps(prelim_response),
             status=200,
         )
-        
+
         # Create the upload payload
-        payload = [{"filename": "test_upload_file.txt", "title": "Test File", "linkMode": "imported_file"}]
-        
+        payload = [
+            {
+                "filename": "test_upload_file.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+            }
+        ]
+
         # Create mock auth data to be returned by _get_auth with exists=True
-        mock_auth_data = {
-            "exists": True
-        }
-        
+        mock_auth_data = {"exists": True}
+
         # Patch the necessary methods to avoid HTTP calls and file system checks
-        with patch.object(z.Zupload, '_verify', return_value=None), \
-             patch.object(z.Zupload, '_get_auth', return_value=mock_auth_data):
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(z.Zupload, "_get_auth", return_value=mock_auth_data),
+        ):
             # Create the upload object and initiate upload
-            upload = z.Zupload(zot, payload, basedir=os.path.join(self.cwd, "api_responses"))
+            upload = z.Zupload(
+                zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+            )
             result = upload.upload()
-            
+
             # Verify the result structure
             self.assertIn("success", result)
             self.assertIn("failure", result)
             self.assertIn("unchanged", result)
             self.assertEqual(len(result["unchanged"]), 1)
             self.assertEqual(result["unchanged"][0]["key"], "ITEMKEY123")
-        
+
         # Clean up
         os.remove(temp_file_path)
-        
+
     @httpretty.activate
     def testFileUploadWithParentItem(self):
         """Tests file upload process with a parent item ID"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary file for testing
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload_file.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test file content for upload")
-        
+
         # Mock Step 0: Create preliminary item registration
-        prelim_response = {
-            "success": {
-                "0": "ITEMKEY123"
-            }
-        }
+        prelim_response = {"success": {"0": "ITEMKEY123"}}
         HTTPretty.register_uri(
             HTTPretty.POST,
             "https://api.zotero.org/users/myuserID/items",
@@ -987,24 +993,30 @@ class ZoteroTests(unittest.TestCase):
             body=json.dumps(prelim_response),
             status=200,
         )
-        
+
         # Create the upload payload
-        payload = [{"filename": "test_upload_file.txt", "title": "Test File", "linkMode": "imported_file"}]
-        
+        payload = [
+            {
+                "filename": "test_upload_file.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+            }
+        ]
+
         # Test with parent ID
         parent_id = "PARENTITEM123"
-        
+
         # Create mock auth data to be returned by _get_auth
         mock_auth_data = {
             "url": "https://uploads.zotero.org/",
             "params": {
                 "key": "abcdef1234567890",
                 "prefix": "prefix",
-                "suffix": "suffix"
+                "suffix": "suffix",
             },
-            "uploadKey": "upload_key_123"
+            "uploadKey": "upload_key_123",
         }
-        
+
         # Mock Step 1: Get upload authorization
         HTTPretty.register_uri(
             HTTPretty.POST,
@@ -1013,18 +1025,25 @@ class ZoteroTests(unittest.TestCase):
             body=json.dumps(mock_auth_data),
             status=200,
         )
-        
+
         # Patch the necessary methods to avoid file system checks and skip the actual upload
-        with patch.object(z.Zupload, '_verify', return_value=None), \
-             patch.object(z.Zupload, '_upload_file', return_value=None):
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(z.Zupload, "_upload_file", return_value=None),
+        ):
             # Create the upload object with a parent ID and initiate upload
-            upload = z.Zupload(zot, payload, parentid=parent_id, basedir=os.path.join(self.cwd, "api_responses"))
+            upload = z.Zupload(
+                zot,
+                payload,
+                parentid=parent_id,
+                basedir=os.path.join(self.cwd, "api_responses"),
+            )
             result = upload.upload()
-            
+
             # Verify the result structure
             self.assertIn("success", result)
             self.assertEqual(len(result["success"]), 1)
-            
+
             # Check that the parentItem was added to the payload
             # Get the latest request to the items endpoint
             requests = httpretty.latest_requests()
@@ -1033,30 +1052,26 @@ class ZoteroTests(unittest.TestCase):
                 if req.url.endswith("/items"):
                     item_request = req
                     break
-            
+
             self.assertIsNotNone(item_request, "No request found to the items endpoint")
-            request_body = json.loads(item_request.body.decode('utf-8'))
+            request_body = json.loads(item_request.body.decode("utf-8"))
             self.assertEqual(request_body[0]["parentItem"], parent_id)
-        
+
         # Clean up
         os.remove(temp_file_path)
-    
+
     @httpretty.activate
     def testFileUploadFailure(self):
         """Tests file upload process when auth step fails"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary file for testing
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload_file.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test file content for upload")
-        
+
         # Mock Step 0: Create preliminary item registration
-        prelim_response = {
-            "success": {
-                "0": "ITEMKEY123"
-            }
-        }
+        prelim_response = {"success": {"0": "ITEMKEY123"}}
         HTTPretty.register_uri(
             HTTPretty.POST,
             "https://api.zotero.org/users/myuserID/items",
@@ -1064,96 +1079,117 @@ class ZoteroTests(unittest.TestCase):
             body=json.dumps(prelim_response),
             status=200,
         )
-        
+
         # Mock Step 1: Authorization fails with 403
         HTTPretty.register_uri(
             HTTPretty.POST,
             "https://api.zotero.org/users/myuserID/items/ITEMKEY123/file",
             status=403,
         )
-        
+
         # Create the upload payload
-        payload = [{"filename": "test_upload_file.txt", "title": "Test File", "linkMode": "imported_file"}]
-        
+        payload = [
+            {
+                "filename": "test_upload_file.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+            }
+        ]
+
         # Patch just the _verify method to avoid file system checks, but allow the real HTTP calls
-        with patch.object(z.Zupload, '_verify', return_value=None):
+        with patch.object(z.Zupload, "_verify", return_value=None):
             # Create the upload object and test for exception
-            upload = z.Zupload(zot, payload, basedir=os.path.join(self.cwd, "api_responses"))
-            
+            upload = z.Zupload(
+                zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+            )
+
             # This should raise an error due to 403 status
             with self.assertRaises(z.ze.UserNotAuthorisedError):
                 upload.upload()
-        
+
         # Clean up
         os.remove(temp_file_path)
-        
+
     @httpretty.activate
     def testFileUploadWithPreexistingKeys(self):
         """Tests file upload process when the payload already contains keys"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary file for testing
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload_file.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test file content for upload")
-        
+
         # Create the upload payload with preexisting key
-        payload = [{"key": "PREEXISTING123", "filename": "test_upload_file.txt", "title": "Test File", "linkMode": "imported_file"}]
-        
+        payload = [
+            {
+                "key": "PREEXISTING123",
+                "filename": "test_upload_file.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+            }
+        ]
+
         # Create mock auth data to be returned by _get_auth
         mock_auth_data = {
             "url": "https://uploads.zotero.org/",
             "params": {
                 "key": "abcdef1234567890",
                 "prefix": "prefix",
-                "suffix": "suffix"
+                "suffix": "suffix",
             },
-            "uploadKey": "upload_key_123"
+            "uploadKey": "upload_key_123",
         }
-        
+
         # Patch the necessary methods to avoid HTTP calls and file system checks
-        with patch.object(z.Zupload, '_verify', return_value=None), \
-             patch.object(z.Zupload, '_get_auth', return_value=mock_auth_data), \
-             patch.object(z.Zupload, '_upload_file', return_value=None):
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(z.Zupload, "_get_auth", return_value=mock_auth_data),
+            patch.object(z.Zupload, "_upload_file", return_value=None),
+        ):
             # Create the upload object and initiate upload
-            upload = z.Zupload(zot, payload, basedir=os.path.join(self.cwd, "api_responses"))
+            upload = z.Zupload(
+                zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+            )
             result = upload.upload()
-            
+
             # Verify the result structure
             self.assertIn("success", result)
             self.assertEqual(len(result["success"]), 1)
             self.assertEqual(result["success"][0]["key"], "PREEXISTING123")
-            
+
             # No need to check for endpoint calls since we're patching the methods
-        
+
         # Clean up
         os.remove(temp_file_path)
-        
+
     @httpretty.activate
     def testFileUploadInvalidPayload(self):
         """Tests file upload process with invalid payload mixing items with and without keys"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
-        
+
         # Create a temporary file for testing
         temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload_file.txt")
         with open(temp_file_path, "w") as f:
             f.write("Test file content for upload")
-        
+
         # Create the invalid upload payload (mixing items with and without keys)
         payload = [
             {"key": "PREEXISTING123", "filename": "test_upload_file.txt"},
-            {"filename": "test_upload_file.txt"} # No key
+            {"filename": "test_upload_file.txt"},  # No key
         ]
-        
+
         # Patch the _verify method to avoid file system checks
-        with patch.object(z.Zupload, '_verify', return_value=None):
+        with patch.object(z.Zupload, "_verify", return_value=None):
             # Create the upload object and test for exception
-            upload = z.Zupload(zot, payload, basedir=os.path.join(self.cwd, "api_responses"))
-            
+            upload = z.Zupload(
+                zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+            )
+
             # This should raise an UnsupportedParamsError
             with self.assertRaises(z.ze.UnsupportedParamsError):
                 upload.upload()
-        
+
         # Clean up
         os.remove(temp_file_path)
 
