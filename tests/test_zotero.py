@@ -1616,6 +1616,47 @@ class ZoteroTests(unittest.TestCase):
         with self.assertRaises(z.ze.CallDoesNotExistError):
             zot.publications()
 
+    def test_timezone_behavior_pytz_vs_whenever(self):
+        """Test that whenever implementation produces equivalent timezone behavior to pytz"""
+        import datetime
+
+        import pytz
+        import whenever
+
+        # Test the old pytz behavior (what we were doing before)
+        old_dt = datetime.datetime.now(datetime.timezone.utc).replace(
+            tzinfo=pytz.timezone("GMT")
+        )
+
+        # Test the current whenever behavior
+        current_dt = whenever.ZonedDateTime.now("GMT").py_datetime()
+
+        # Assert that both produce GMT timezone
+        self.assertEqual(old_dt.tzinfo.zone, "GMT")
+        self.assertEqual(current_dt.tzinfo.tzname(None), "GMT")
+
+        # Assert that timezone names are equivalent
+        self.assertEqual(old_dt.tzinfo.zone, current_dt.tzinfo.tzname(None))
+
+    def test_timezone_behavior_instant_vs_zoned(self):
+        """Test that ZonedDateTime produces correct GMT while Instant produces UTC"""
+        import whenever
+
+        # Test Instant behavior (should be UTC)
+        instant_dt = whenever.Instant.now().py_datetime()
+
+        # Test ZonedDateTime behavior (should be GMT)
+        zoned_dt = whenever.ZonedDateTime.now("GMT").py_datetime()
+
+        # Assert timezone differences
+        self.assertEqual(instant_dt.tzinfo.tzname(None), "UTC")
+        self.assertEqual(zoned_dt.tzinfo.tzname(None), "GMT")
+
+        # Assert they are different timezone implementations
+        self.assertNotEqual(
+            instant_dt.tzinfo.tzname(None), zoned_dt.tzinfo.tzname(None)
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

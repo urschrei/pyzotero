@@ -5,9 +5,9 @@ description = "Python wrapper for the Zotero API"
 requires-python = ">=3.9"
 dependencies = [
     "feedparser >= 6.0.11",
-    "pytz",
     "bibtexparser",
     "httpx>=0.28.1",
+    "whenever>=0.8.3",
 ]
 authors = [{ name = "Stephan Hügel", email = "urschrei@gmail.com" }]
 license = {file = "LICENSE.md"}
@@ -35,6 +35,7 @@ documentation = "https://pyzotero.readthedocs.org"
 [project.optional-dependencies]
 test = [
     "pytest >= 7.4.2",
+    "pytz>=2025.2",
     "httpretty",
     "python-dateutil",
     "ipython",
