@@ -7,7 +7,6 @@ __author__ = "Stephan Hügel"
 __api_version__ = "3"
 
 import copy
-import datetime
 import hashlib
 import io
 import json
@@ -33,7 +32,7 @@ from urllib.parse import (
 import bibtexparser
 import feedparser
 import httpx
-import pytz
+import whenever
 from httpx import Request
 
 import pyzotero as pz
@@ -419,13 +418,9 @@ class Zotero:
         """
         # cache template and retrieval time for subsequent calls
         try:
-            thetime = datetime.datetime.now(datetime.UTC).replace(
-                tzinfo=pytz.timezone("GMT"),
-            )
+            thetime = whenever.ZonedDateTime.now("GMT").py_datetime()
         except AttributeError:
-            thetime = datetime.datetime.now(tz=datetime.timezone.utc).replace(
-                tzinfo=pytz.timezone("GMT"),
-            )
+            thetime = whenever.ZonedDateTime.now("GMT").py_datetime()
         self.templates[key] = {"tmplt": response.json(), "updated": thetime}
         return copy.deepcopy(response.json())
 
@@ -545,9 +540,7 @@ class Zotero:
         # If the template is more than an hour old, try a 304
         if (
             abs(
-                datetime.datetime.now(tz=datetime.timezone.utc).replace(
-                    tzinfo=pytz.timezone("GMT"),
-                )
+                whenever.ZonedDateTime.now("GMT").py_datetime()
                 - self.templates[template]["updated"],
             ).seconds
             > ONE_HOUR
