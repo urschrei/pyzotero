@@ -465,7 +465,7 @@ class Zotero:
             params = {}
         if not self.url_params:
             self.url_params = {}
-        merged_params = params | self.url_params
+        merged_params = {**params, **self.url_params}
         # our incoming url might be from the "links" dict, in which case it will contain url parameters.
         # Unfortunately, httpx doesn't like to merge query paramaters in the url string and passed params
         # so we strip the url params, combining them with our existing url_params
