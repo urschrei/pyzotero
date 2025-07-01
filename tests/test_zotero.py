@@ -5,13 +5,17 @@ This file is part of Pyzotero.
 """
 # ruff: noqa: N802
 
+import datetime
 import json
 import os
 import time
 import unittest
 from unittest.mock import MagicMock, patch
+from urllib.parse import parse_qs, urlparse
 
 import httpretty
+import pytz
+import whenever
 from dateutil import parser
 from httpretty import HTTPretty
 
@@ -20,7 +24,7 @@ try:
 except ModuleNotFoundError:
     from pyzotero import zotero as z
 
-from urllib.parse import parse_qs, urlencode
+from urllib.parse import urlencode
 
 
 class ZoteroTests(unittest.TestCase):
@@ -849,8 +853,6 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(request.headers["If-Unmodified-Since-Version"], "5")
 
         # Extract and parse the query string
-        from urllib.parse import parse_qs, urlparse
-
         parsed_url = urlparse(request.url)
         query_params = parse_qs(parsed_url.query)
 
@@ -1618,10 +1620,6 @@ class ZoteroTests(unittest.TestCase):
 
     def test_timezone_behavior_pytz_vs_whenever(self):
         """Test that whenever implementation produces equivalent timezone behavior to pytz"""
-        import datetime
-
-        import pytz
-        import whenever
 
         # Test the old pytz behavior (what we were doing before)
         old_dt = datetime.datetime.now(datetime.timezone.utc).replace(
@@ -1640,8 +1638,6 @@ class ZoteroTests(unittest.TestCase):
 
     def test_timezone_behavior_instant_vs_zoned(self):
         """Test that ZonedDateTime produces correct GMT while Instant produces UTC"""
-        import whenever
-
         # Test Instant behavior (should be UTC)
         instant_dt = whenever.Instant.now().py_datetime()
 
