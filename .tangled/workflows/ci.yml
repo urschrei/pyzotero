@@ -2,7 +2,10 @@
 # Runs on push and pull request events
 
 when:
-  - event: ["push", "pull_request"]
+  - event: ["push", "manual"]
+    branch: ["main"]
+  - event: ["pull_request"]
+    branch: ["main"]
 
 engine: nixery
 
