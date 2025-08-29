@@ -7,7 +7,7 @@ dependencies = [
     "feedparser >= 6.0.11",
     "bibtexparser",
     "httpx>=0.28.1",
-    "whenever>=0.8.3",
+    "whenever>=0.8.8",
 ]
 authors = [{ name = "Stephan Hügel", email = "urschrei@gmail.com" }]
 license = {file = "LICENSE.md"}
