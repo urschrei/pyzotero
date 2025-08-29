@@ -12,6 +12,7 @@ engine: nixery
 dependencies:
   nixpkgs:
     - glibc
+    - tzdata
     - uv
     - ruff
 
