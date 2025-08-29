@@ -3,7 +3,7 @@
 
 when:
   - event: ["push", "manual"]
-    branch: ["main"]
+    branch: ["main", "ci_update"]
   - event: ["pull_request"]
     branch: ["main"]
 
