@@ -22,38 +22,33 @@ steps:
   # Test with Python 3.9
   - name: "Test with Python 3.9"
     command: |
-      uv python install 3.9
       uv sync --python 3.9 --all-extras --dev
       uv run --python 3.9 pytest
   
   # Test with Python 3.10
   - name: "Test with Python 3.10"
     command: |
-      uv python install 3.10
       uv sync --python 3.10 --all-extras --dev
       uv run --python 3.10 pytest
   
   # Test with Python 3.11
   - name: "Test with Python 3.11"
     command: |
-      uv python install 3.11
       uv sync --python 3.11 --all-extras --dev
       uv run --python 3.11 pytest
   
   # Test with Python 3.12
   - name: "Test with Python 3.12"
     command: |
-      uv python install 3.12
       uv sync --python 3.12 --all-extras --dev
       uv run --python 3.12 pytest
   
   # Test with Python 3.13
   - name: "Test with Python 3.13"
     command: |
-      uv python install 3.13
       uv sync --python 3.13 --all-extras --dev
       uv run --python 3.13 pytest
   
   # Build wheel to verify packaging
   - name: "Build wheel"
-    command: "uv build --no-sources --wheel -o dist"
+    command: "uv build --python 3.13 --no-sources --wheel -o dist"
