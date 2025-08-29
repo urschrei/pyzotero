@@ -418,9 +418,9 @@ class Zotero:
         """
         # cache template and retrieval time for subsequent calls
         try:
-            thetime = whenever.ZonedDateTime.now("GMT").py_datetime()
+            thetime = whenever.ZonedDateTime.now("Europe/London").py_datetime()
         except AttributeError:
-            thetime = whenever.ZonedDateTime.now("GMT").py_datetime()
+            thetime = whenever.ZonedDateTime.now("Europe/London").py_datetime()
         self.templates[key] = {"tmplt": response.json(), "updated": thetime}
         return copy.deepcopy(response.json())
 
@@ -540,7 +540,7 @@ class Zotero:
         # If the template is more than an hour old, try a 304
         if (
             abs(
-                whenever.ZonedDateTime.now("GMT").py_datetime()
+                whenever.ZonedDateTime.now("Europe/London").py_datetime()
                 - self.templates[template]["updated"],
             ).seconds
             > ONE_HOUR
