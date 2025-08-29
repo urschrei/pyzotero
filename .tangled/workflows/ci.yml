@@ -16,6 +16,9 @@ dependencies:
     - uv
     - ruff
 
+environment:
+  TZDIR: "/etc/zoneinfo"
+
 steps:
   # Linting
   - name: "Run Ruff linter"
