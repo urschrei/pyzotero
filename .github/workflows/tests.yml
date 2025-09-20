@@ -1,9 +1,13 @@
-name: Build wheel, release and publish on new tag
+name: CI/CD
 
 on:
   push:
   pull_request:
   merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
@@ -23,6 +27,7 @@ jobs:
     name: Build and test
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.9, 3.10.9, 3.11, 3.12, 3.13]
 
@@ -34,12 +39,14 @@ jobs:
       uses: astral-sh/setup-uv@v6
       with:
         python-version: ${{ matrix.python-version }}
+        enable-cache: true
+        cache-dependency-glob: "**/pyproject.toml"
 
     - name: Install the project and deps
       run: uv sync --dev
 
     - name: Run tests
-      run: uv run pytest
+      run: uv run pytest --junit-xml=junit.xml
 
     - name: Build wheel
       run: uv build --no-sources --wheel  -o dist
@@ -47,9 +54,16 @@ jobs:
     - uses: actions/upload-artifact@v4
       name: Upload wheel as artifact
       with:
-        name: wheels-${{ strategy.job-index }}
+        name: wheels-py${{ matrix.python-version }}
         path: |
           ./dist/*.whl
+
+    - uses: actions/upload-artifact@v4
+      name: Upload test results
+      if: always()
+      with:
+        name: test-results-py${{ matrix.python-version }}
+        path: junit.xml
 
   make_sdist:
     name: Make SDist
@@ -62,12 +76,15 @@ jobs:
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
 
     - name: Build SDist
       run: uv build --no-sources --sdist -o dist
 
     - uses: actions/upload-artifact@v4
       with:
+        name: sdist
         path: dist/*.tar.gz
 
   status_check:
