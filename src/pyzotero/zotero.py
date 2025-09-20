@@ -360,6 +360,11 @@ class Zotero:
         if c := self.client:
             c.close()
 
+    @property
+    def __version__(self):
+        """Return the version of the pyzotero library"""
+        return pz.__version__
+
     def _check_for_component(self, url, component):
         """Check a url path query fragment for a specific query parameter"""
         return bool(parse_qs(url).get(component))

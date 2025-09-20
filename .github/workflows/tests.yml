@@ -26,9 +26,6 @@ jobs:
     steps:
     - name: check out repo
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Optional, use if you use setuptools_scm
-        submodules: false  # Optional, use if you have submodules
 
     - name: Install uv and set the python version
       uses: astral-sh/setup-uv@v5
@@ -36,7 +33,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install the project and deps
-      run: uv sync --all-extras --dev
+      run: uv sync --dev
 
     - name: Run tests
       run: uv run pytest
