@@ -114,21 +114,27 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Download compressed artifacts
-      id: download
+    - name: Download wheel artifacts
       uses: actions/download-artifact@v4
       with:
+        pattern: wheels-*
         path: ./artifacts
         merge-multiple: true
+
+    - name: Download sdist artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sdist
+        path: ./artifacts
 
     - name: Create release and upload wheels
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: "${{ steps.download.outputs.download-path }}/*.whl,${{ steps.download.outputs.download-path }}/*.gz,${{ steps.download.outputs.download-path }}/*.so,${{ steps.download.outputs.download-path }}/*.dylib,${{ steps.download.outputs.download-path }}/*.lib,${{ steps.download.outputs.download-path }}/*.dll"
+        artifacts: "./artifacts/*.whl,./artifacts/*.gz"
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: PyPI Publish
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        packages-dir: ${{ steps.download.outputs.download-path }}
+        packages-dir: ./artifacts
