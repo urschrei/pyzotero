@@ -1,6 +1,9 @@
 **/__pycache__
 Pyzotero.egg-info
-Pyzotero.egg-info
 __pycache__
 .eggs
 src/_version.py
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
