@@ -14,7 +14,7 @@ Pyzotero is a Python wrapper for the `Zotero API (v3) <https://www.zotero.org/su
 
 Getting started (short version)
 ===============================
-1. In a shell / prompt: ``pip install pyzotero`` or ``conda config --add channels conda-forge && conda install pyzotero``
+1. ``uv add pyzotero`` or ``pip install pyzotero`` or ``conda install conda-forge::pyzotero``
 2. You'll need the ID of the personal or group library you want to access:
 
   * Your **personal library ID** is available `here <https://www.zotero.org/settings/keys>`_, in the section ``Your userID for use in API calls``
@@ -48,9 +48,11 @@ Installation, testing, usage (longer version)
 ============
 Installation
 ============
+Using `uv <https://docs.astral.sh/uv/concepts/projects/dependencies/#adding-dependencies>`_: ``uv add pyzotero``
+
 Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
 
-Using `Anaconda <https://www.anaconda.com/distribution/>`_: ``conda config --add channels conda-forge && conda install pyzotero``
+Using `Anaconda <https://www.anaconda.com/distribution/>`_: ``conda install conda-forge::pyzotero``
 
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
@@ -60,7 +62,7 @@ From a local clone, if you wish to install Pyzotero from a specific branch:
         git clone git://github.com/urschrei/pyzotero.git
         cd pyzotero
         git checkout main
-        pip install .
+        uv sync
 
 The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org/pypi/Pyzotero>`_
 
@@ -69,13 +71,13 @@ The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org
 ===============================
 Installing development versions
 ===============================
-Pyzotero remains in development as of November 2024. Unstable development versions can be found on the `Github main branch <https://github.com/urschrei/pyzotero/tree/main>`_, and installed directly from a checked-out ``main`` branch on a local clone, as in the example above.
+Pyzotero remains in development as of 2025. Unstable development versions can be found on the `Github main branch <https://github.com/urschrei/pyzotero/tree/main>`_, and installed directly from a checked-out ``main`` branch on a local clone, as in the example above: specify ``--dev`` (uv) / ``--group dev`` (pip).
 
 
 =======
 Testing
 =======
-Testing requires the ``HTTPretty``, and ``Python-Dateutil`` packages.
+Testing requires installation of the ``dev`` dependency group (see above).
 
 Run ``pytest .`` from the top-level directory.
 
