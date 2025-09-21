@@ -30,8 +30,9 @@ Full documentation of available Pyzotero methods, code examples, and sample outp
 
 # Installation
 
-* Using [pip][10]: `pip install pyzotero` (it's available as a wheel, and is tested on Python 3.7 and up)
-* Using Anaconda:`conda config --add channels conda-forge && conda install pyzotero`
+* Using [uv][11]: `uv add pyzotero`
+* Using [pip][10]: `pip install pyzotero`
+* Using Anaconda:`conda install conda-forge::pyzotero`
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
 Example:
@@ -40,12 +41,13 @@ Example:
 git clone git://github.com/urschrei/pyzotero.git
 cd pyzotero
 git checkout main
-pip install .
+# specify --dev if you're planning on running tests
+uv sync
 ```
 
 ## Testing
 
-Run `pytest .` from the top-level directory.
+Run `pytest .` from the top-level directory. This requires the `dev` dependency group to be installed: `uv sync --dev` / `pip install --group dev`
 
 ## Issues
 
@@ -53,12 +55,11 @@ The latest commits can be found on the [main branch][9], although new features a
 
 ## Pull Requests
 
-Pull requests are welcomed. Please read the [contribution guidelines](CONTRIBUTING.md). In particular, please **base your PR on the `dev` branch**.
+Pull requests are welcomed. Please read the [contribution guidelines](CONTRIBUTING.md). In particular, please **base your PR on the `main` branch**.
 
 ## Versioning
 
 As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); version increments are performed as follows:  
-
 
 
 1. MAJOR version will increment with incompatible API changes,
@@ -84,5 +85,6 @@ Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENSE.m
 [8]: https://opensource.org/license/blue-oak-model-license
 [9]: https://github.com/urschrei/pyzotero/tree/main
 [10]: http://www.pip-installer.org/en/latest/index.html
+[11]: https://docs.astral.sh/uv
 † This isn't strictly true: you only need an API key for personal libraries and non-public group libraries.
 
