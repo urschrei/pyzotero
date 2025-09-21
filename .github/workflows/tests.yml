@@ -72,9 +72,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Optional, use if you use setuptools_scm
-        submodules: true  # Optional, use if you have submodules
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
@@ -91,7 +88,7 @@ jobs:
 
   status_check:
     name: All Checks
-    needs: [lint, build]
+    needs: [lint, build, make_sdist]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -131,7 +128,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: "./artifacts/*.whl,./artifacts/*.gz"
+        artifacts: "./artifacts/*.whl,./artifacts/*.tar.gz"
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: PyPI Publish
