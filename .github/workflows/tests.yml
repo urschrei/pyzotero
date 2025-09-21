@@ -16,7 +16,7 @@ jobs:
     name: run Ruff
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0  # Optional, use if you use setuptools_scm
         submodules: false  # Optional, use if you have submodules
@@ -35,7 +35,7 @@ jobs:
 
     steps:
     - name: check out repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Install uv and set the python version
       uses: astral-sh/setup-uv@v6
@@ -71,7 +71,7 @@ jobs:
     name: Make SDist
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
@@ -109,17 +109,17 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Download wheel artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         pattern: wheels-*
         path: ./artifacts
         merge-multiple: true
 
     - name: Download sdist artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: sdist
         path: ./artifacts
