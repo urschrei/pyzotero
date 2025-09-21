@@ -470,7 +470,7 @@ class Zotero:
             params = {}
         if not self.url_params:
             self.url_params = {}
-        merged_params = {**params, **self.url_params}
+        merged_params = {**self.url_params, **params}
         # our incoming url might be from the "links" dict, in which case it will contain url parameters.
         # Unfortunately, httpx doesn't like to merge query paramaters in the url string and passed params
         # so we strip the url params, combining them with our existing url_params
@@ -580,7 +580,13 @@ class Zotero:
 
         Also ensure that only valid format/content combinations are requested
         """
-        self.url_params = None
+        # Preserve constructor-level parameters (like locale) while allowing method-level overrides
+        if self.url_params is None:
+            self.url_params = {}
+
+        # Store existing params to preserve things like locale
+        preserved_params = self.url_params.copy()
+
         # we want JSON by default
         if not params.get("format"):
             params["format"] = "json"
@@ -597,8 +603,10 @@ class Zotero:
             del params["limit"]
         # bib format can't have a limit
         if params.get("format") == "bib":
-            del params["limit"]
-        self.url_params = params
+            params.pop("limit", None)
+
+        # Merge preserved params with new params (new params override existing ones)
+        self.url_params = {**preserved_params, **params}
 
     def _build_query(self, query_string, no_params=False):
         """Set request parameters. Will always add the user ID if it hasn't

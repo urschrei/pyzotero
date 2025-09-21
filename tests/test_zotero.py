@@ -104,7 +104,26 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero("myuserID", "user", "myuserkey")
         _ = zot.items()
         req = zot.request
-        self.assertEqual(str(req.url).find("locale"), 44)
+        self.assertIn("locale=en-US", str(req.url))
+
+    @httpretty.activate
+    def testLocalePreservedWithMethodParams(self):
+        """Should preserve locale when methods provide their own parameters"""
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/items/top",
+            content_type="application/json",
+            body=self.items_doc,
+        )
+        # Test with non-default locale
+        zot = z.Zotero("myuserID", "user", "myuserkey", locale="de-DE")
+        # Call top() with limit which internally adds parameters
+        _ = zot.top(limit=1)
+        req = zot.request
+        # Check that locale is preserved in the URL
+        self.assertIn("locale=de-DE", str(req.url))
+        # Also verify the method parameter is present
+        self.assertIn("limit=1", str(req.url))
 
     @httpretty.activate
     def testRequestBuilderLimitNone(self):
@@ -368,9 +387,13 @@ class ZoteroTests(unittest.TestCase):
             body=self.tags_doc,
         )
         _ = zot.tags(limit=1)
-        self.assertEqual(
-            "https://api.zotero.org/users/myuserID/tags?locale=en-US&limit=1&format=json",
-            zot.request.url,
+        # Check that all expected parameters are present
+        url_str = str(zot.request.url)
+        self.assertIn("locale=en-US", url_str)
+        self.assertIn("limit=1", url_str)
+        self.assertIn("format=json", url_str)
+        self.assertTrue(
+            url_str.startswith("https://api.zotero.org/users/myuserID/tags?")
         )
 
     @httpretty.activate
@@ -408,13 +431,12 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual("smart_cities", groups_data[0]["data"]["name"])
 
     def testParamsReset(self):
-        """Should successfully reset URL parameters after a query string
-        is built
-        """
+        """Should preserve existing URL parameters when add_parameters is called multiple times"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
         zot.add_parameters(start=5, limit=10)
         zot._build_query("/whatever")
         zot.add_parameters(start=2)
+        # Should get default limit=100 since no limit specified in second call
         self.assertEqual(
             parse_qs("start=2&format=json&limit=100"),
             parse_qs(urlencode(zot.url_params, doseq=True)),
