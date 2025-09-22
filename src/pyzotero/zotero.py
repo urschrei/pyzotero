@@ -46,6 +46,7 @@ timeout = 30
 NOT_MODIFIED = 304
 ONE_HOUR = 3600
 DEFAULT_NUM_ITEMS = 50
+DEFAULT_ITEM_LIMIT = 100
 TOO_MANY_REQUESTS = 429
 
 
@@ -595,7 +596,7 @@ class Zotero:
             params["format"] = "atom"
         # TODO: rewrite format=atom, content=json request
         if "limit" not in params or params.get("limit") == 0:
-            params["limit"] = 100
+            params["limit"] = DEFAULT_ITEM_LIMIT
         # Need ability to request arbitrary number of results for version
         # response
         # -1 value is hack that works with current version
