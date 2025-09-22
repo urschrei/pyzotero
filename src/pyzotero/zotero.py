@@ -43,11 +43,9 @@ from .filetransport import Client as File_Client
 # Avoid hanging the application if there's no server response
 timeout = 30
 
-NOT_MODIFIED = 304
 ONE_HOUR = 3600
 DEFAULT_NUM_ITEMS = 50
 DEFAULT_ITEM_LIMIT = 100
-TOO_MANY_REQUESTS = 429
 
 
 def build_url(base_url, path, args_dict=None):
@@ -572,7 +570,7 @@ class Zotero:
             )
             if backoff:
                 self._set_backoff(backoff)
-            return req.status_code == NOT_MODIFIED
+            return req.status_code == httpx.codes.NOT_MODIFIED
         # Still plenty of life left in't
         return False
 
@@ -1647,7 +1645,7 @@ def error_handler(zot, req, exc=None):
 
     if error_codes.get(req.status_code):
         # check to see whether its 429
-        if req.status_code == TOO_MANY_REQUESTS:
+        if req.status_code == httpx.codes.TOO_MANY_REQUESTS:
             # try to get backoff or delay duration
             delay = req.headers.get("backoff") or req.headers.get("retry-after")
             if not delay:
