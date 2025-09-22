@@ -21,9 +21,10 @@ from httpretty import HTTPretty
 
 try:
     from pyzotero.pyzotero import zotero as z
+    from pyzotero.pyzotero.zotero import DEFAULT_ITEM_LIMIT
 except ModuleNotFoundError:
     from pyzotero import zotero as z
-
+    from pyzotero.zotero import DEFAULT_ITEM_LIMIT
 from urllib.parse import urlencode
 
 
@@ -88,7 +89,7 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero("myuserID", "user", "myuserkey")
         zot.add_parameters(limit=0, start=7)
         self.assertEqual(
-            parse_qs("start=7&limit=100&format=json"),
+            parse_qs(f"start=7&limit={DEFAULT_ITEM_LIMIT}&format=json"),
             parse_qs(urlencode(zot.url_params, doseq=True)),
         )
 
@@ -438,7 +439,7 @@ class ZoteroTests(unittest.TestCase):
         zot.add_parameters(start=2)
         # Should get default limit=100 since no limit specified in second call
         self.assertEqual(
-            parse_qs("start=2&format=json&limit=100"),
+            parse_qs(f"start=2&format=json&limit={DEFAULT_ITEM_LIMIT}"),
             parse_qs(urlencode(zot.url_params, doseq=True)),
         )
 
