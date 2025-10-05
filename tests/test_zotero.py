@@ -416,6 +416,27 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(zot.links["alternate"], "/users/436/items/top?")
 
     @httpretty.activate
+    def testParseLinkHeadersPreservesAllParameters(self):
+        """Test that the self link preserves all parameters, not just the first 2"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            "https://api.zotero.org/users/myuserID/items/top",
+            content_type="application/json",
+            body=self.items_doc,
+            adding_headers={
+                "Link": '<https://api.zotero.org/users/myuserID/items/top?start=1>; rel="next"'
+            },
+        )
+        # Call with multiple parameters including limit
+        zot.top(limit=1)
+        # The self link should preserve all parameters except format
+        self.assertIn("limit=1", zot.links["self"])
+        self.assertIn("locale=", zot.links["self"])
+        # format should be stripped
+        self.assertNotIn("format=", zot.links["self"])
+
+    @httpretty.activate
     def testParseGroupsJSONDoc(self):
         """Should successfully return a list of group dicts, ID should match
         input doc's zapi:key value, and 'total_items' value should match
@@ -1613,6 +1634,27 @@ class ZoteroTests(unittest.TestCase):
 
             # Verify the mock was called
             mock_iterfollow.assert_called_once()
+
+    def test_makeiter_preserves_limit_parameter(self):
+        """Test that makeiter preserves the limit parameter in the self link"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Simulate a self link with multiple parameters including limit
+        # This mimics what _extract_links() creates
+        test_self_link = "/users/myuserID/items/top?limit=1&locale=en-US"
+        zot.links = {
+            "self": test_self_link,
+            "next": "/users/myuserID/items/top?start=1",
+        }
+
+        # Call makeiter (with a dummy function since we're testing link manipulation)
+        with patch.object(zot, "iterfollow"):
+            zot.makeiter(lambda: None)
+
+        # Verify that the 'next' link was set to 'self' and still contains limit parameter
+        self.assertEqual(zot.links["next"], test_self_link)
+        self.assertIn("limit=1", zot.links["next"])
+        self.assertIn("locale=en-US", zot.links["next"])
 
     @httpretty.activate
     def test_publications_user(self):

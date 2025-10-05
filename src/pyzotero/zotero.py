@@ -449,8 +449,6 @@ class Zotero:
         Returns a JSON document
         """
         full_url = build_url(self.endpoint, request)
-        # The API doesn't return this any more, so we have to cheat
-        self.self_link = request
         # ensure that we wait if there's an active backoff
         self._check_backoff()
         # don't set locale if the url already contains it
@@ -483,6 +481,8 @@ class Zotero:
                 timeout=timeout,
             )
             self.request.encoding = "utf-8"
+            # The API doesn't return this any more, so we have to cheat
+            self.self_link = self.request.url
         except httpx.UnsupportedProtocol:
             # File URI handler logic
             fc = File_Client()
@@ -516,15 +516,12 @@ class Zotero:
                 fragment = f"{parsed[2]}?{parsed[4]}"
                 extracted[key] = fragment
             # add a 'self' link
-            parsed = list(urlparse(self.self_link))
-            # strip 'format' query parameter
-            stripped = "&".join(
-                ["=".join(p) for p in parse_qsl(parsed[4])[:2] if p[0] != "format"],
-            )
-            # rebuild url fragment
-            # this is a death march
+            parsed = urlparse(str(self.self_link))
+            # strip 'format' query parameter and rebuild query string
+            query_params = [(k, v) for k, v in parse_qsl(parsed.query) if k != "format"]
+            # rebuild url fragment with just path and query (consistent with other links)
             extracted["self"] = urlunparse(
-                [parsed[0], parsed[1], parsed[2], parsed[3], stripped, parsed[5]],
+                ("", "", parsed.path, "", urlencode(query_params), "")
             )
         except KeyError:
             # No links present, because it's a single item
