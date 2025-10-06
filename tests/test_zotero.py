@@ -413,7 +413,7 @@ class ZoteroTests(unittest.TestCase):
         zot.tags()
         self.assertEqual(zot.links["next"], "/users/436/items/top?limit=1&start=1")
         self.assertEqual(zot.links["last"], "/users/436/items/top?limit=1&start=2319")
-        self.assertEqual(zot.links["alternate"], "/users/436/items/top?")
+        self.assertEqual(zot.links["alternate"], "/users/436/items/top")
 
     @httpretty.activate
     def testParseLinkHeadersPreservesAllParameters(self):

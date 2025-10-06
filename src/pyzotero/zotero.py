@@ -51,14 +51,13 @@ DEFAULT_ITEM_LIMIT = 100
 def build_url(base_url, path, args_dict=None):
     """Build a valid URL so we don't have to worry about string concatenation errors and
     leading / trailing slashes etc.
-    Returns a list in the structure of urlparse.ParseResult
     """
     base_url = base_url.removesuffix("/")
-    url_parts = list(urlparse(base_url))
-    url_parts[2] += path
+    parsed = urlparse(base_url)
+    new_path = str(PurePosixPath(parsed.path) / path.removeprefix("/"))
     if args_dict:
-        url_parts[4] = urlencode(args_dict)
-    return urlunparse(url_parts)
+        return urlunparse(parsed._replace(path=new_path, query=urlencode(args_dict)))
+    return urlunparse(parsed._replace(path=new_path))
 
 
 def merge_params(url, params):
@@ -513,7 +512,7 @@ class Zotero:
         try:
             for key, value in self.request.links.items():
                 parsed = urlparse(value["url"])
-                fragment = f"{parsed[2]}?{parsed[4]}"
+                fragment = urlunparse(("", "", parsed.path, "", parsed.query, ""))
                 extracted[key] = fragment
             # add a 'self' link
             parsed = urlparse(str(self.self_link))
