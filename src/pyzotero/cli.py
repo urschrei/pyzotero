@@ -5,7 +5,7 @@ import sys
 
 import click
 
-from pyzotero import zotero
+from pyzotero import __version__, zotero
 from pyzotero.zotero import chunks
 
 
@@ -15,6 +15,7 @@ def _get_zotero_client(locale="en-US"):
 
 
 @click.group()
+@click.version_option(version=__version__, prog_name="pyzotero")
 @click.option(
     "--locale",
     default="en-US",
@@ -210,7 +211,11 @@ def search(ctx, query, fulltext, itemtype, collection, limit, output_json):  # n
 
         # Output results
         if output_json:
-            click.echo(json.dumps(output_items, indent=2))
+            click.echo(
+                json.dumps(
+                    {"count": len(output_items), "items": output_items}, indent=2
+                )
+            )
         else:
             click.echo(f"\nFound {len(results)} items:\n")
             for idx, item_obj in enumerate(output_items, 1):
