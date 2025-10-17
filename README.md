@@ -82,7 +82,7 @@ Use the `--json` flag to output structured JSON.
 
 ## Optional: Command-Line Interface
 
-Pyzotero includes an optional command-line interface for searching and querying your local Zotero library.
+Pyzotero includes an optional command-line interface for searching and querying your local Zotero library. As it uses the local API server introduced in Zotero 7, it requires "Allow other applications on this computer to communicate with Zotero" to be enabled in Zotero's Settings > Advanced.
 
 ### Installing the CLI
 
