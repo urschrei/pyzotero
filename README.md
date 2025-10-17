@@ -59,6 +59,12 @@ pyzotero listcollections
 pyzotero itemtypes
 ```
 
+## Search Behaviour
+
+By default, `pyzotero search` searches only top-level item titles and metadata fields.
+
+When the `--fulltext` flag is used, the search expands to include all full-text indexed content, including PDFs and other attachments. Since most full-text content comes from PDF attachments rather than top-level items, the CLI automatically retrieves the parent bibliographic items for any matching attachments. This ensures you receive useful bibliographic records (journal articles, books, etc.) rather than raw attachment items.
+
 ## Output Format
 
 By default, the CLI outputs human-readable text with a subset of metadata including:
