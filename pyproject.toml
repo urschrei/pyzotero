@@ -1,6 +1,6 @@
 [project]
 name = "pyzotero"
-version = "1.7.1"
+version = "1.7.2"
 description = "Python wrapper for the Zotero API"
 readme = "README.md"
 requires-python = ">=3.9"
