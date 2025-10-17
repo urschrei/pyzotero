@@ -6,6 +6,7 @@ import sys
 import click
 
 from pyzotero import zotero
+from pyzotero.zotero import chunks
 
 
 def _get_zotero_client(locale="en-US"):
@@ -36,7 +37,7 @@ def main(ctx, locale):
 @click.option(
     "--fulltext",
     is_flag=True,
-    help="Enable full-text search (qmode='everything')",
+    help="Search full-text content including PDFs. Retrieves parent items when attachments match.",
 )
 @click.option(
     "--itemtype",
@@ -62,6 +63,12 @@ def main(ctx, locale):
 @click.pass_context
 def search(ctx, query, fulltext, itemtype, collection, limit, output_json):  # noqa: PLR0912, PLR0915
     """Search local Zotero library.
+
+    By default, searches top-level items in titles and metadata.
+
+    When --fulltext is enabled, searches all items including attachment content
+    (PDFs, documents, etc.). If a match is found in an attachment, the parent
+    bibliographic item is retrieved and included in results.
 
     Examples:
         pyzotero search -q "machine learning"
@@ -92,8 +99,43 @@ def search(ctx, query, fulltext, itemtype, collection, limit, output_json):  # n
             # Join multiple item types with || for OR search
             params["itemType"] = " || ".join(itemtype)
 
-        # Execute search using collection_items_top() if collection specified, otherwise top()
-        if collection:
+        # Execute search
+        # When fulltext is enabled, use items() or collection_items() to get both
+        # top-level items and attachments. Otherwise use top() or collection_items_top()
+        # to only get top-level items.
+        if fulltext:
+            if collection:
+                results = zot.collection_items(collection, **params)
+            else:
+                results = zot.items(**params)
+
+            # When using fulltext, we need to retrieve parent items for any attachments
+            # that matched, since most full-text content comes from PDFs and other attachments
+            top_level_items = []
+            attachment_items = []
+
+            for item in results:
+                data = item.get("data", {})
+                if "parentItem" in data:
+                    attachment_items.append(item)
+                else:
+                    top_level_items.append(item)
+
+            # Retrieve parent items for attachments in batches of 50
+            parent_items = []
+            if attachment_items:
+                parent_ids = list(
+                    {item["data"]["parentItem"] for item in attachment_items}
+                )
+                for chunk in chunks(parent_ids, 50):
+                    parent_items.extend(zot.get_subset(chunk))
+
+            # Combine top-level items and parent items, removing duplicates by key
+            all_items = top_level_items + parent_items
+            items_dict = {item["data"]["key"]: item for item in all_items}
+            results = list(items_dict.values())
+        # Non-fulltext search: use top() or collection_items_top() as before
+        elif collection:
             results = zot.collection_items_top(collection, **params)
         else:
             results = zot.top(**params)
