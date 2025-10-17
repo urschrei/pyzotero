@@ -28,11 +28,74 @@ for item in items:
 
 Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
 
+# Command-Line Interface
+
+Pyzotero includes an optional command-line interface for searching and querying your local Zotero library. The CLI must be installed separately (see [Installation](#optional-command-line-interface)).
+
+## Basic Usage
+
+The CLI connects to your local Zotero installation and allows you to search your library, list collections, and view item types:
+
+```bash
+# Search for top-level items
+pyzotero search -q "machine learning"
+
+# Search with full-text mode
+pyzotero search -q "climate change" --fulltext
+
+# Filter by item type
+pyzotero search -q "methodology" --itemtype book --itemtype journalArticle
+
+# Search for top-level items within a collection
+pyzotero search --collection ABC123 -q "test"
+
+# Output as JSON for machine processing
+pyzotero search -q "climate" --json
+
+# List all collections
+pyzotero listcollections
+
+# List available item types
+pyzotero itemtypes
+```
+
+## Output Format
+
+By default, the CLI outputs human-readable text with a subset of metadata including:
+- Title, authors, date, publication
+- Volume, issue, DOI, URL
+- PDF attachments (with local file paths)
+
+Use the `--json` flag to output structured JSON.
+
 # Installation
 
 * Using [uv][11]: `uv add pyzotero`
 * Using [pip][10]: `pip install pyzotero`
 * Using Anaconda:`conda install conda-forge::pyzotero`
+
+## Optional: Command-Line Interface
+
+Pyzotero includes an optional command-line interface for searching and querying your local Zotero library.
+
+### Installing the CLI
+
+To install Pyzotero with the CLI:
+
+* Using [uv][11]: `uv add "pyzotero[cli]"`
+* Using [pip][10]: `pip install "pyzotero[cli]"`
+
+### Using the CLI without installing
+
+If you just want to use the CLI without permanently installing Pyzotero, you can run it directly:
+
+* Using [uvx][11]: `uvx --from "pyzotero[cli]" pyzotero search -q "your query"`
+* Using [pipx][10]: `pipx run --spec "pyzotero[cli]" pyzotero search -q "your query"`
+
+See the [Command-Line Interface](#command-line-interface) section below for usage details.
+
+## Installing from Source
+
 * From a local clone, if you wish to install Pyzotero from a specific branch: 
 
 Example:

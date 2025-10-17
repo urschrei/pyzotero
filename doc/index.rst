@@ -54,6 +54,24 @@ Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install 
 
 Using `Anaconda <https://www.anaconda.com/distribution/>`_: ``conda install conda-forge::pyzotero``
 
+-------------------------------
+Optional: Command-Line Interface
+-------------------------------
+
+Pyzotero includes an optional command-line interface for searching and querying your local Zotero library.
+
+To install Pyzotero with the CLI:
+
+* Using `uv <https://docs.astral.sh/uv/>`_: ``uv add "pyzotero[cli]"``
+* Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install "pyzotero[cli]"``
+
+If you just want to use the CLI without permanently installing Pyzotero:
+
+* Using `uvx <https://docs.astral.sh/uv/>`_: ``uvx --from "pyzotero[cli]" pyzotero search -q "your query"``
+* Using `pipx <https://pipx.pypa.io/>`_: ``pipx run --spec "pyzotero[cli]" pyzotero search -q "your query"``
+
+See :ref:`cli-usage` for usage details.
+
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
     .. code-block:: bash
@@ -80,6 +98,70 @@ Testing
 Testing requires installation of the ``dev`` dependency group (see above).
 
 Run ``pytest .`` from the top-level directory.
+
+.. _cli-usage:
+
+==========================
+Command-Line Interface Usage
+==========================
+
+The Pyzotero CLI connects to your local Zotero installation and allows you to search your library, list collections, and view item types.
+
+Basic Commands
+--------------
+
+Search for top-level items:
+
+    .. code-block:: bash
+
+        pyzotero search -q "machine learning"
+
+Search with full-text mode:
+
+    .. code-block:: bash
+
+        pyzotero search -q "climate change" --fulltext
+
+Filter by item type:
+
+    .. code-block:: bash
+
+        pyzotero search -q "methodology" --itemtype book --itemtype journalArticle
+
+Search for top-level items within a collection:
+
+    .. code-block:: bash
+
+        pyzotero search --collection ABC123 -q "test"
+
+Output as JSON for machine processing:
+
+    .. code-block:: bash
+
+        pyzotero search -q "climate" --json
+
+List all collections:
+
+    .. code-block:: bash
+
+        pyzotero listcollections
+
+List available item types:
+
+    .. code-block:: bash
+
+        pyzotero itemtypes
+
+Output Format
+-------------
+
+By default, the CLI outputs human-readable text with all relevant metadata including:
+
+* Title, authors, date, publication
+* Volume, issue, DOI, URL
+* PDF attachments (with local file paths)
+
+Use the ``--json`` flag to output structured JSON suitable for consumption by other tools and agents.
 
 
 ======================
