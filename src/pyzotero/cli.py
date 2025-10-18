@@ -4,6 +4,7 @@ import json
 import sys
 
 import click
+import httpx
 
 from pyzotero import __version__, zotero
 from pyzotero.zotero import chunks
@@ -348,6 +349,48 @@ def itemtypes(ctx):
         # Output as JSON array
         click.echo(json.dumps(item_types, indent=2))
 
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.pass_context
+def test(ctx):
+    """Test connection to local Zotero instance.
+
+    This command checks whether Zotero is running and accepting local connections.
+
+    Examples:
+        pyzotero test
+
+    """
+    try:
+        locale = ctx.obj.get("locale", "en-US")
+        zot = _get_zotero_client(locale)
+
+        # Call settings() to test the connection
+        # This should return {} if Zotero is running and listening
+        result = zot.settings()
+
+        # If we get here, the connection succeeded
+        click.echo("✓ Connection successful: Zotero is running and listening locally.")
+        if result == {}:
+            click.echo("  Received expected empty settings response.")
+        else:
+            click.echo(f"  Received response: {json.dumps(result)}")
+
+    except httpx.ConnectError:
+        click.echo(
+            "✗ Connection failed: Could not connect to Zotero.\n\n"
+            "Possible causes:\n"
+            "  • Zotero might not be running\n"
+            "  • Local connections might not be enabled\n\n"
+            "To enable local connections:\n"
+            "  Zotero > Settings > Advanced > Allow other applications on this computer to communicate with Zotero",
+            err=True,
+        )
+        sys.exit(1)
     except Exception as e:
         click.echo(f"Error: {e!s}", err=True)
         sys.exit(1)
