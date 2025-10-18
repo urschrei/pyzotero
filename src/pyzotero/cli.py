@@ -15,6 +15,29 @@ def _get_zotero_client(locale="en-US"):
     return zotero.Zotero(library_id="0", library_type="user", local=True, locale=locale)
 
 
+def _normalize_doi(doi):
+    """Normalise a DOI for case-insensitive matching.
+
+    Strips common prefixes (https://doi.org/, http://doi.org/, doi:) and converts to lowercase.
+    DOIs are case-insensitive per the DOI specification.
+    """
+    if not doi:
+        return ""
+
+    # Strip whitespace
+    doi = doi.strip()
+
+    # Strip common prefixes
+    prefixes = ["https://doi.org/", "http://doi.org/", "doi:"]
+    for prefix in prefixes:
+        if doi.lower().startswith(prefix.lower()):
+            doi = doi[len(prefix) :]
+            break
+
+    # Convert to lowercase for case-insensitive matching
+    return doi.lower().strip()
+
+
 @click.group()
 @click.version_option(version=__version__, prog_name="pyzotero")
 @click.option(
@@ -391,6 +414,100 @@ def test(ctx):
             err=True,
         )
         sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.argument("dois", nargs=-1)
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+def alldoi(ctx, dois, output_json):  # noqa: PLR0912
+    """Look up DOIs in the local Zotero library and return their Zotero IDs.
+
+    Accepts one or more DOIs as arguments and checks if they exist in the library.
+    DOI matching is case-insensitive and handles common prefixes (https://doi.org/, doi:).
+
+    If no DOIs are provided, shows "No items found" (text) or {} (JSON).
+
+    Examples:
+        pyzotero alldoi 10.1234/example
+
+        pyzotero alldoi 10.1234/abc https://doi.org/10.5678/def doi:10.9012/ghi
+
+        pyzotero alldoi 10.1234/example --json
+
+    """
+    try:
+        locale = ctx.obj.get("locale", "en-US")
+        zot = _get_zotero_client(locale)
+
+        # Build a mapping of normalized DOIs to (original_doi, zotero_key)
+        click.echo("Building DOI index from library...", err=True)
+        doi_map = {}
+
+        # Get all items using everything() which handles pagination automatically
+        all_items = zot.everything(zot.items())
+
+        # Process all items
+        for item in all_items:
+            data = item.get("data", {})
+            item_doi = data.get("DOI", "")
+
+            if item_doi:
+                normalized_doi = _normalize_doi(item_doi)
+                item_key = data.get("key", "")
+
+                if normalized_doi and item_key:
+                    # Store the original DOI from Zotero and the item key
+                    doi_map[normalized_doi] = (item_doi, item_key)
+
+        click.echo(f"Indexed {len(doi_map)} items with DOIs", err=True)
+
+        # If no DOIs provided, return empty result
+        if not dois:
+            if output_json:
+                click.echo(json.dumps({}))
+            else:
+                click.echo("No items found")
+            return
+
+        # Look up each input DOI
+        found = []
+        not_found = []
+
+        for input_doi in dois:
+            normalized_input = _normalize_doi(input_doi)
+
+            if normalized_input in doi_map:
+                original_doi, zotero_key = doi_map[normalized_input]
+                found.append({"doi": original_doi, "key": zotero_key})
+            else:
+                not_found.append(input_doi)
+
+        # Output results
+        if output_json:
+            result = {"found": found, "not_found": not_found}
+            click.echo(json.dumps(result, indent=2))
+        else:
+            if found:
+                click.echo(f"\nFound {len(found)} items:\n")
+                for item in found:
+                    click.echo(f"  {item['doi']} → {item['key']}")
+            else:
+                click.echo("No items found")
+
+            if not_found:
+                click.echo(f"\nNot found ({len(not_found)}):")
+                for doi in not_found:
+                    click.echo(f"  {doi}")
+
     except Exception as e:
         click.echo(f"Error: {e!s}", err=True)
         sys.exit(1)
