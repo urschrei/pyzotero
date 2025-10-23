@@ -1492,7 +1492,7 @@ class Zotero:
 
     @backoff_check
     def addto_collection(self, collection, payload):
-        """Add one or more items to a collection
+        """Add item to a collection
         Accepts two arguments:
         The collection ID, and an item dict
         """
