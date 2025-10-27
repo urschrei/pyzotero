@@ -53,14 +53,14 @@ jobs:
     - name: Build wheel
       run: uv build --no-sources --wheel  -o dist
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       name: Upload wheel as artifact
       with:
         name: wheels-py${{ matrix.python-version }}
         path: |
           ./dist/*.whl
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       name: Upload test results
       if: always()
       with:
@@ -81,7 +81,7 @@ jobs:
     - name: Build SDist
       run: uv build --no-sources --sdist -o dist
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: sdist
         path: dist/*.tar.gz
@@ -112,14 +112,14 @@ jobs:
     - uses: actions/checkout@v5
 
     - name: Download wheel artifacts
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         pattern: wheels-*
         path: ./artifacts
         merge-multiple: true
 
     - name: Download sdist artifact
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         name: sdist
         path: ./artifacts
