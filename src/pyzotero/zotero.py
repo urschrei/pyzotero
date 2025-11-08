@@ -796,12 +796,12 @@ class Zotero:
         """Dump a file attachment to disk, with optional filename and path"""
         if not filename:
             filename = self.item(itemkey)["data"]["filename"]
-        pth = Path(path) / filename if path else filename
+        pth = Path(path) / filename if path else Path(filename)
         file = self.file(itemkey)
         if self.snapshot:
             self.snapshot = False
-            pth += ".zip"
-        with Path(pth).open("wb") as f:
+            pth = pth.parent / (pth.name + ".zip")
+        with pth.open("wb") as f:
             f.write(file)
 
     @retrieve
