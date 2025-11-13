@@ -1,5 +1,3 @@
-Description
-===========
 Pyzotero is a Python wrapper for the `Zotero API (v3) <https://www.zotero.org/support/dev/web_api/v3/start>`_.
 
 
@@ -12,6 +10,7 @@ Pyzotero is a Python wrapper for the `Zotero API (v3) <https://www.zotero.org/su
 
 
 
+===============================
 Getting started (short version)
 ===============================
 1. ``uv add pyzotero`` or ``pip install pyzotero`` or ``conda install conda-forge::pyzotero``
@@ -42,21 +41,20 @@ Getting started (short version)
 Refer to the :ref:`read` and :ref:`write`.
 
 
+=============================================
 Installation, testing, usage (longer version)
 =============================================
 
-============
 Installation
-============
+------------
 Using `uv <https://docs.astral.sh/uv/concepts/projects/dependencies/#adding-dependencies>`_: ``uv add pyzotero``
 
 Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install pyzotero``
 
 Using `Anaconda <https://www.anaconda.com/distribution/>`_: ``conda install conda-forge::pyzotero``
 
--------------------------------
 Optional: Command-Line Interface
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Pyzotero includes an optional command-line interface for searching and querying your local Zotero library.
 
@@ -86,29 +84,26 @@ The Pyzotero source tarball is also available from `PyPI <http://pypi.python.org
 
 
 
-===============================
 Installing development versions
-===============================
+-------------------------------
 Pyzotero remains in development as of 2025. Unstable development versions can be found on the `Github main branch <https://github.com/urschrei/pyzotero/tree/main>`_, and installed directly from a checked-out ``main`` branch on a local clone, as in the example above: specify ``--dev`` (uv) / ``--group dev`` (pip).
 
 
-=======
 Testing
-=======
+-------
 Testing requires installation of the ``dev`` dependency group (see above).
 
 Run ``pytest .`` from the top-level directory.
 
 .. _cli-usage:
 
-==========================
 Command-Line Interface Usage
-==========================
+----------------------------
 
 The Pyzotero CLI connects to your local Zotero installation and allows you to search your library, list collections, and view item types.
 
 Basic Commands
---------------
+~~~~~~~~~~~~~~
 
 Search for top-level items:
 
@@ -153,14 +148,14 @@ List available item types:
         pyzotero itemtypes
 
 Search Behaviour
-----------------
+~~~~~~~~~~~~~~~~
 
 By default, ``pyzotero search`` searches only top-level item titles and metadata fields.
 
 When the ``--fulltext`` flag is used, the search expands to include all full-text indexed content, including PDFs and other attachments. Since most full-text content comes from PDF attachments rather than top-level items, the CLI automatically retrieves the parent bibliographic items for any matching attachments. This ensures you receive useful bibliographic records (journal articles, books, etc.) rather than raw attachment items.
 
 Output Format
--------------
+~~~~~~~~~~~~~
 
 By default, the CLI outputs human-readable text with all relevant metadata including:
 
@@ -171,18 +166,16 @@ By default, the CLI outputs human-readable text with all relevant metadata inclu
 Use the ``--json`` flag to output structured JSON suitable for consumption by other tools and agents.
 
 
-======================
 Building Documentation
-======================
+----------------------
 If you wish to build Pyzotero's documentation for offline use, it can be built from the ``doc`` directory of a local git repo by running ``make`` followed by the desired output format(s) (``html``, ``epub``, ``latexpdf`` etc.)
 
 This functionality requires Sphinx.
 See the `Sphinx documentation <http://sphinx.pocoo.org/tutorial.html#running-the-build>`_ for full details.
 
 
-================
 Reporting issues
-================
+----------------
 If you encounter an error while using Pyzotero, please open an issue on its `Github issues page <https://github.com/urschrei/pyzotero/issues>`_.
 
 
@@ -222,10 +215,11 @@ Example:
 .. _read:
 
 Errors
-=======
+------
 Where possible, any ``ZoteroError`` which is raised will preserve the underlying error in its ``__cause__`` and ``__context__`` properties, should you wish to work with these directly.
 
 
+====================
 Read API Methods
 ====================
 
@@ -235,6 +229,90 @@ Read API Methods
 .. tip::
     The Read API returns 25 results by default (the API documentation claims 50). In the interests of usability, Pyzotero returns 100 items by default, by setting the API ``limit`` parameter to 100, unless it's set by the user. If you wish to retrieve e.g. all top-level items without specifying a ``limit`` parameter, you'll have to wrap your call with :py:meth:`Zotero.everything()`: ``results = zot.everything(zot.top())``.
 
+Search / Request Parameters for Read API calls
+----------------------------------------------
+
+Additional parameters may be set on Read API methods **following any required parameters**, or set using the :py:meth:`Zotero.add_parameters()` method detailed below.
+
+The following two examples produce the same result:
+
+    .. code-block:: python
+
+        # set parameters on the call itself
+        z = zot.top(limit=7, start=3)
+
+        # set parameters using explicit method
+        zot.add_parameters(limit=7, start=3)
+        z = zot.top()
+
+The following parameters are **optional**.
+
+**You may also set a search term here, using the 'itemType', 'q', 'qmode', or 'tag' parameters**.
+
+This area of the Zotero Read API is under development, and may change frequently. See `the API documentation <https://www.zotero.org/support/dev/web_api/v3/basics#read_requests>`_ for the most up-to-date details of search syntax usage and export format details.
+
+
+
+    .. py:method:: Zotero.add_parameters([format=None, itemKey=None, itemType=None, q=None, qmode=None, since=None, tag=None, sort=None, direction=None, limit=None, start=None, [content=None[ ,style=None]]])
+
+        :param str format: "atom", "bib", "bibtex", json", "keys", "versions". Pyzotero retrieves and decodes JSON responses by default
+
+        .. attention::
+
+          Setting ``format='bib'`` will remove the ``limit`` parameter if it's been set, as **the API does not allow a limit on bibliography output**; it instead enforces a limit of 150 items, and if the set of items you are trying to generate a bibliography for exceeds 150, an error will be raised.
+
+        :param str itemKey: A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request
+
+        Search parameters:
+
+        :param str itemType: item type search. See the `Search Syntax <https://www.zotero.org/support/dev/web_api/v3/basics#search_syntax>`_ for details
+        :param str q: Quick search. Searches titles and individual creator fields by default. Use the ``qmode`` parameter to change the mode. Currently supports phrase searching only
+        :param str qmode: Quick search mode. To include full-text content in the search, use ``everything``. Defaults to ``titleCreatorYear``. Searching of other fields will be possible in the future
+        :param int since: default ``0``. Return only objects modified after the specified library version
+        :param str tag: tag search. See the `Search Syntax <https://www.zotero.org/support/dev/web_api/v3/basics#search_syntax>`_ for details. More than one tag may be passed by passing a list of strings – These are treated as ``AND`` search terms, meaning only items which include all of the specified tags are returned. You can search for items matching any tag in a list by using ``OR``: ``"tag1 OR tag2"``, and all items which exclude a tag: ``"-tag"``.
+
+        The following parameters can be used for search requests:
+
+        :param str sort: The name of the field by which entries are sorted: (``dateAdded``, ``dateModified``, ``title``, ``creator``, ``type``, ``date``, ``publisher``, ``publicationTitle``, ``journalAbbreviation``, ``language``, ``accessDate``, ``libraryCatalog``, ``callNumber``, ``rights``, ``addedBy``, ``numItems``, ``tags``)
+        :param str direction: ``asc`` or ``desc``
+        :param int limit: 1 – 100 or None
+        :param int start: 1 – total number of items in your library or None
+
+
+        If you wish to retrieve citation or bibliography entries, use the following parameters:
+
+        :param str content: 'bib', 'html', or one of the export formats (see below). If 'bib' is passed, you may **also** pass:
+        :param str style: Any valid CSL style in the Zotero style repository
+        :param str linkwrap: Set this to "1" to have URLs in bibliography entries (see below) wrapped in ``<a>`` tags.
+        :rtype: list of HTML strings or None.
+
+
+.. note::
+
+    Any parameters you set will be valid **for the next call only**. Any parameters set using ``add_parameters()`` will be overridden by parameters you pass in the call itself.
+
+
+A note on the ``content`` and ``style`` parameters:
+
+Example:
+
+    .. code-block:: python
+
+        zot.add_parameters(content='bib', style='mla')
+
+
+If these are set, the return value is a list of UTF-8 formatted HTML ``div`` elements, each containing an item:
+
+``['<div class="csl-entry">(content)</div>']``.
+
+You may also set ``content='citation'`` if you wish to retrieve citations. Similar to ``bib``, the result will be a list of one or more HTML ``span`` elements.
+
+
+If you select one of the available `export formats <https://www.zotero.org/support/dev/web_api/v3/basics#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
+
+If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
+
+If you set ``format='bibtex'``, a `bibtexparser <https://bibtexparser.readthedocs.io/en/v0.6.2/bibtexparser.html#bibdatabase.BibDatabase.entries>`_ object containing citations will be returned. You can access the citations as a list of dicts using the ``.entries`` property. The bibtexparser object also implements a `dump method <https://bibtexparser.readthedocs.io/en/v0.6.2/bibtexparser.html#bibtexparser.dump>`_, if you'd like to write your citations to a ``.bib`` file.
 
 .. py:method:: Zotero.key_info()
 
@@ -242,9 +320,8 @@ Read API Methods
 
     :rtype: dict
 
-====================
 Retrieving Items
-====================
+----------------
 
 .. tip::
     In contrast to the v1 API, a great deal of additional metadata is now returned. In most cases, simply accessing items by referring to their ``item['data']`` key will suffice.
@@ -400,9 +477,8 @@ Example of returned item data:
 
 See :ref:`'Hello World' <hello-world>` example, above
 
-====================
 Retrieving Files
-====================
+----------------
 
     .. py:method:: Zotero.file(itemID[, search/request parameters])
 
@@ -440,9 +516,8 @@ Retrieving Files
 
 File retrieval and dumping should work for most common document, audio and video file formats. If you encounter an error, `please open an issue <https://github.com/urschrei/pyzotero/issues>`_.
 
-=======================
 Retrieving Collections
-=======================
+----------------------
     .. py:method:: Zotero.collections([search/request parameters])
 
         Returns a library's collections. **This includes subcollections**.
@@ -499,9 +574,8 @@ Example of returned collection data:
           u'version': 778}]
 
 
-==========================
 Retrieving groups
-==========================
+-----------------
     .. py:method:: Zotero.groups([search/request parameters])
 
         Retrieve the Zotero group data to which the current library_id and api_key has access
@@ -535,9 +609,8 @@ Example of returned group data:
           u'version': 0}]
 
 
-===================
 Retrieving Tags
-===================
+---------------
 
     .. py:method:: Zotero.tags([search/request parameters])
 
@@ -558,9 +631,8 @@ Example of returned tag data:
 
         ['Authority in literature', 'Errata']
 
-==============================
 Retrieving Version Information
-==============================
+------------------------------
 
 The `Zotero API <https://www.zotero.org/support/dev/web_api/v3/syncing>`_ recommends requesting version information for all (or all changed) items and collections when implementing syncing.  The following convenience methods (which by default return an unlimited number of responses) simplify this process.
 
@@ -585,9 +657,8 @@ Example of returned version data:
         {'C9KW275P': 3915, 'IB489TKM': 4025 }
 
 
-=================
 Full–Text Content
-=================
+-----------------
 
 These methods allow the retrieval of full–text content for given library items
 
@@ -649,9 +720,8 @@ Example payload:
         "totalPages": 50
         }
 
-==============================================
 The ``follow()``, and ``everything()`` methods
-==============================================
+----------------------------------------------
 
 These methods (currently experimental) aim to make Pyzotero a little more RESTful. Following any Read API call which can retrieve **multiple items**, calling ``follow()`` will repeat that call, but for the next *x* number of items, where *x* is either a number set by the user for the original call, or 50 by default. Each subsequent call to ``follow()`` will extend the offset.
 
@@ -685,7 +755,7 @@ Example:
 The ``everything()`` method should work with all Pyzotero Read API calls which can return multiple items, but has not yet been extensively tested. `Feedback is welcomed <https://github.com/urschrei/pyzotero/issues>`_.
 
 Related generator methods
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The :py:meth:`Zotero.iterfollow()` and :py:meth:`Zotero.makeiter()` methods are available for users who prefer to work directly with generators:
 
@@ -721,9 +791,8 @@ Example:
 
 .. warning:: The ``follow()``, ``everything()`` and ``makeiter()`` methods are only valid for methods which can return multiple library items. For instance, you cannot use ``follow()`` after an ``item()`` call. The generator methods will raise a ``StopIteration`` error when all available items retrievable by your chosen API call have been exhausted.
 
-======================
 Retrieving item counts
-======================
+----------------------
 
 If you wish to retrieve item counts for subsets of a library, you can use the following methods:
 
@@ -739,9 +808,8 @@ If you wish to retrieve item counts for subsets of a library, you can use the fo
 
     :rtype: int
 
-================================
 Retrieving last modified version
-================================
+--------------------------------
 
 If you wish to retrieve the last modified version of a user or group library, you can use the following method:
 
@@ -751,103 +819,14 @@ If you wish to retrieve the last modified version of a user or group library, yo
 
     :rtype: int
 
-
-==============================================
-Search / Request Parameters for Read API calls
-==============================================
-
-Additional parameters may be set on Read API methods **following any required parameters**, or set using the :py:meth:`Zotero.add_parameters()` method detailed below.
-
-
-The following two examples produce the same result:
-
-    .. code-block:: python
-
-        # set parameters on the call itself
-        z = zot.top(limit=7, start=3)
-
-        # set parameters using explicit method
-        zot.add_parameters(limit=7, start=3)
-        z = zot.top()
-
-The following parameters are **optional**.
-
-**You may also set a search term here, using the 'itemType', 'q', 'qmode', or 'tag' parameters**.
-
-This area of the Zotero Read API is under development, and may change frequently. See `the API documentation <https://www.zotero.org/support/dev/web_api/v3/basics#read_requests>`_ for the most up-to-date details of search syntax usage and export format details.
-
-
-
-    .. py:method:: Zotero.add_parameters([format=None, itemKey=None, itemType=None, q=None, qmode=None, since=None, tag=None, sort=None, direction=None, limit=None, start=None, [content=None[ ,style=None]]])
-
-        :param str format: "atom", "bib", "bibtex", json", "keys", "versions". Pyzotero retrieves and decodes JSON responses by default
-
-        .. attention::
-
-          Setting ``format='bib'`` will remove the ``limit`` parameter if it's been set, as **the API does not allow a limit on bibliography output**; it instead enforces a limit of 150 items, and if the set of items you are trying to generate a bibliography for exceeds 150, an error will be raised.
-
-        :param str itemKey: A comma-separated list of item keys. Valid only for item requests. Up to 50 items can be specified in a single request
-
-        Search parameters:
-
-        :param str itemType: item type search. See the `Search Syntax <https://www.zotero.org/support/dev/web_api/v3/basics#search_syntax>`_ for details
-        :param str q: Quick search. Searches titles and individual creator fields by default. Use the ``qmode`` parameter to change the mode. Currently supports phrase searching only
-        :param str qmode: Quick search mode. To include full-text content in the search, use ``everything``. Defaults to ``titleCreatorYear``. Searching of other fields will be possible in the future
-        :param int since: default ``0``. Return only objects modified after the specified library version
-        :param str tag: tag search. See the `Search Syntax <https://www.zotero.org/support/dev/web_api/v3/basics#search_syntax>`_ for details. More than one tag may be passed by passing a list of strings – These are treated as ``AND`` search terms, meaning only items which include all of the specified tags are returned. You can search for items matching any tag in a list by using ``OR``: ``"tag1 OR tag2"``, and all items which exclude a tag: ``"-tag"``.
-
-        The following parameters can be used for search requests:
-
-        :param str sort: The name of the field by which entries are sorted: (``dateAdded``, ``dateModified``, ``title``, ``creator``, ``type``, ``date``, ``publisher``, ``publicationTitle``, ``journalAbbreviation``, ``language``, ``accessDate``, ``libraryCatalog``, ``callNumber``, ``rights``, ``addedBy``, ``numItems``, ``tags``)
-        :param str direction: ``asc`` or ``desc``
-        :param int limit: 1 – 100 or None
-        :param int start: 1 – total number of items in your library or None
-
-
-        If you wish to retrieve citation or bibliography entries, use the following parameters:
-
-        :param str content: 'bib', 'html', or one of the export formats (see below). If 'bib' is passed, you may **also** pass:
-        :param str style: Any valid CSL style in the Zotero style repository
-        :param str linkwrap: Set this to "1" to have URLs in bibliography entries (see below) wrapped in ``<a>`` tags.
-        :rtype: list of HTML strings or None.
-
-
-.. note::
-
-    Any parameters you set will be valid **for the next call only**. Any parameters set using ``add_parameters()`` will be overridden by parameters you pass in the call itself.
-
-
-A note on the ``content`` and ``style`` parameters:
-
-Example:
-
-    .. code-block:: python
-
-        zot.add_parameters(content='bib', style='mla')
-
-
-If these are set, the return value is a list of UTF-8 formatted HTML ``div`` elements, each containing an item:
-
-``['<div class="csl-entry">(content)</div>']``.
-
-You may also set ``content='citation'`` if you wish to retrieve citations. Similar to ``bib``, the result will be a list of one or more HTML ``span`` elements.
-
-
-If you select one of the available `export formats <https://www.zotero.org/support/dev/web_api/v3/basics#export_formats>`_ as the ``content`` parameter, pyzotero will in most cases return a list of unicode strings in the format you specified. The exception is the ``csljson`` format, which is parsed into a list of dicts. Please note that you must provide a ``limit`` parameter if you specify one of these export formats. Multiple simultaneous retrieval of particular formats, e.g. ``content="json,coins"`` is not currently supported.
-
-If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
-
-If you set ``format='bibtex'``, a `bibtexparser <https://bibtexparser.readthedocs.io/en/v0.6.2/bibtexparser.html#bibdatabase.BibDatabase.entries>`_ object containing citations will be returned. You can access the citations as a list of dicts using the ``.entries`` property. The bibtexparser object also implements a `dump method <https://bibtexparser.readthedocs.io/en/v0.6.2/bibtexparser.html#bibtexparser.dump>`_, if you'd like to write your citations to a ``.bib`` file.
-
-
 .. _write:
 
+=================
 Write API Methods
 =================
 
-==============
 Saved Searches
-==============
+--------------
 Pyzotero allows you to retrieve, delete, or modify saved searches:
 
     .. py:method:: Zotero.searches()
@@ -891,9 +870,8 @@ Pyzotero allows you to retrieve, delete, or modify saved searches:
         :param str condition: a valid saved search condition
         :rtype: list
 
-=================
 Item Methods
-=================
+------------
 
     .. py:method:: Zotero.item_types()
 
@@ -936,7 +914,7 @@ Item Methods
         :rtype: dict
 
 Creating and Updating Items
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     .. py:method:: Zotero.create_items(items[, parentid, last_modified])
 
@@ -1010,7 +988,7 @@ Example:
 
 
 Uploading files
----------------
+~~~~~~~~~~~~~~~
 
     .. warning:: Attachment methods are in beta.
 
@@ -1054,7 +1032,7 @@ Uploading files
         unlike the space-saving responses from the server, the return value here eschews the complex index / key lookup and simply passes back the ``imported_file`` item template populated with keys (if created successfully or passed in) corresponding to each result. This is the return type for all of these methods.
 
 Deleting items
---------------
+~~~~~~~~~~~~~~
 
     .. py:method:: Zotero.delete_item(item[, last_modified])
 
@@ -1064,7 +1042,7 @@ Deleting items
         :param str/int last_modified: If not ``None``, will set the value of the If-Unmodified-Since-Version header. 
 
 Deleting tags
---------------
+~~~~~~~~~~~~~
 
     .. py:method:: Zotero.delete_tags(tag_a[, tag …])
 
@@ -1074,9 +1052,8 @@ Deleting tags
 
         You may also pass a list using ``zot.delete_tags(*[tag_list])``
 
-===========
 Adding tags
-===========
+-----------
 
     .. py:method:: Zotero.add_tags(item, tag[, tag …])
 
@@ -1098,9 +1075,8 @@ Example:
         # updated now contains a representation of the updated server item
 
 
-====================
 Collection Methods
-====================
+------------------
 
     .. py:method:: Zotero.create_collections(dicts[, last_modified])
 
@@ -1180,17 +1156,20 @@ Examples:
 
 
 
+=====
 Notes
 =====
 Most Read API methods return **lists** of **dicts** or, in the case of tag methods, **lists** of **strings**. Most Write API methods return either ``True`` if successful, or raise an error. See ``zotero_errors.py`` for a full listing of these.
 
 .. warning:: URL parameters will supersede API calls which should return e.g. a single item: ``https://api.zotero.org/users/436/items/ABC?start=50&limit=10`` will return 10 items beginning at position 50, even though ``ABC`` does not exist. Be aware of this, and don't pass URL parameters which do not apply to a given API method.
 
+=======
 License
 =======
 Pyzotero is licensed under the `Blue Oak Model Licence <https://opensource.org/license/blue-oak-model-license>`_  license.
 
 
+===========
 Cat Picture
 ===========
 This is The Grinch.
