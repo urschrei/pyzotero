@@ -698,7 +698,7 @@ class Zotero:
                 f"/{self.library_type}/{self.library_id}/items/{itemkey}/fulltext",
             ),
             headers=headers,
-            data=json.dumps(payload),
+            json=payload,
         )
 
     def new_fulltext(self, since):
@@ -926,6 +926,9 @@ class Zotero:
 
     def makeiter(self, func):
         """Return a generator of func's results"""
+        if self.links is None or "self" not in self.links:
+            msg = "makeiter() requires a previous API call with pagination links"
+            raise RuntimeError(msg)
         # reset the link. This results in an extra API call, yes
         self.links["next"] = self.links["self"]
         return self.iterfollow()
@@ -1082,7 +1085,7 @@ class Zotero:
                 f"/{self.library_type}/{self.library_id}/searches",
             ),
             headers=headers,
-            data=json.dumps(payload),
+            json=payload,
         )
         self.request = req
         try:
@@ -1306,14 +1309,14 @@ class Zotero:
                 "If-Unmodified-Since-Version": req.headers["last-modified-version"],
             }
             for value in resp["success"].values():
-                payload = json.dumps({"parentItem": parentid})
+                payload = {"parentItem": parentid}
                 self._check_backoff()
                 presp = self.client.patch(
                     url=build_url(
                         self.endpoint,
                         f"/{self.library_type}/{self.library_id}/items/{value}",
                     ),
-                    data=payload,
+                    json=payload,
                     headers=dict(uheaders),
                 )
                 self.request = presp
@@ -1452,7 +1455,7 @@ class Zotero:
                     self.endpoint,
                     f"/{self.library_type}/{self.library_id}/items/",
                 ),
-                data=json.dumps(chunk),
+                json=chunk,
             )
             self.request = req
             try:
@@ -1478,7 +1481,7 @@ class Zotero:
                     self.endpoint,
                     f"/{self.library_type}/{self.library_id}/collections/",
                 ),
-                data=json.dumps(chunk),
+                json=chunk,
             )
             self.request = req
             try:
@@ -1506,7 +1509,7 @@ class Zotero:
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{ident}",
             ),
-            data=json.dumps({"collections": modified_collections}),
+            json={"collections": modified_collections},
             headers=headers,
         )
 
@@ -1528,7 +1531,7 @@ class Zotero:
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{ident}",
             ),
-            data=json.dumps({"collections": modified_collections}),
+            json={"collections": modified_collections},
             headers=headers,
         )
 
@@ -1646,14 +1649,14 @@ def error_handler(zot, req, exc=None):
             delay = req.headers.get("backoff") or req.headers.get("retry-after")
             if not delay:
                 msg = "You are being rate-limited and no backoff or retry duration has been received from the server. Try again later"
-                raise ze.TooManyRetriesError(
-                    msg,
-                )
+                raise ze.TooManyRetriesError(msg)
             zot._set_backoff(delay)
         elif not exc:
-            raise error_codes.get(req.status_code)(err_msg(req))
+            raise error_codes[req.status_code](err_msg(req))
         else:
-            raise error_codes.get(req.status_code)(err_msg(req)) from exc
+            raise error_codes[req.status_code](
+                err_msg(req)
+            ) from exc  # ← Direct indexing
     elif not exc:
         raise ze.HTTPError(err_msg(req))
     else:
@@ -1816,9 +1819,14 @@ class SavedSearch:
             permitted_operators = self.conditions_operators.get(
                 condition.get("condition"),
             )
+            if permitted_operators is None:
+                msg = f"Unknown condition: {condition.get('condition')}"
+                raise ze.ParamNotPassedError(msg)
             # transform these into values
             permitted_operators_list = {
-                self.operators.get(op) for op in permitted_operators
+                op_value
+                for op in permitted_operators
+                if (op_value := self.operators.get(op)) is not None
             }
             if condition.get("operator") not in permitted_operators_list:
                 msg = f"You may not use the '{condition.get('operator')}' operator when selecting the '{condition.get('condition')}' condition. \nAllowed operators: {', '.join(list(permitted_operators_list))}"
@@ -1979,7 +1987,7 @@ class Zupload:
                 files=upload_pairs,
                 headers={"User-Agent": f"Pyzotero/{pz.__version__}"},
             )
-        except httpx.ConnectionError:
+        except httpx.ConnectError:
             msg = "ConnectionError"
             raise ze.UploadError(msg) from None
         try:
@@ -2016,7 +2024,7 @@ class Zupload:
             "retry-after",
         )
         if backoff:
-            self._set_backoff(backoff)
+            self.zinstance._set_backoff(backoff)
 
     def upload(self):
         """File upload functionality
