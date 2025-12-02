@@ -1879,6 +1879,12 @@ class Zupload:
                     msg,
                 )
             return None  # Don't do anything if payload comes with keys
+        # Set contentType for each attachment if not already provided
+        for item in self.payload:
+            if not item.get("contentType"):
+                filepath = str(self.basedir.joinpath(item["filename"]))
+                detected_type = mimetypes.guess_type(filepath)[0]
+                item["contentType"] = detected_type or "application/octet-stream"
         liblevel = "/{t}/{u}/items"
         # Create one or more new attachments
         headers = {"Zotero-Write-Token": token(), "Content-Type": "application/json"}
