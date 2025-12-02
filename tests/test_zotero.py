@@ -1157,6 +1157,110 @@ class ZoteroTests(unittest.TestCase):
         os.remove(temp_file_path)
 
     @httpretty.activate
+    def testFileUploadSetsContentType(self):
+        """Tests that contentType is automatically set during upload based on file extension"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        # Create a temporary PDF file for testing
+        temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload.pdf")
+        with open(temp_file_path, "w") as f:
+            f.write("Fake PDF content")
+
+        # Variable to capture the request body
+        captured_body = []
+
+        def request_callback(request, uri, response_headers):
+            body = json.loads(request.body)
+            captured_body.append(body)
+            return [200, response_headers, json.dumps({"success": {"0": "ITEMKEY123"}})]
+
+        HTTPretty.register_uri(
+            HTTPretty.POST,
+            "https://api.zotero.org/users/myuserID/items",
+            body=request_callback,
+            content_type="application/json",
+        )
+
+        # Create payload with empty contentType (mimics Zotero API template)
+        payload = [
+            {
+                "filename": "test_upload.pdf",
+                "title": "Test PDF",
+                "linkMode": "imported_file",
+                "contentType": "",
+            }
+        ]
+
+        mock_auth_data = {"exists": True}
+
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(z.Zupload, "_get_auth", return_value=mock_auth_data),
+        ):
+            upload = z.Zupload(
+                zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+            )
+            upload.upload()
+
+        # Verify contentType was automatically set to application/pdf
+        self.assertEqual(len(captured_body), 1)
+        self.assertEqual(captured_body[0][0].get("contentType"), "application/pdf")
+
+        os.remove(temp_file_path)
+
+    @httpretty.activate
+    def testFileUploadPreservesUserContentType(self):
+        """Tests that user-provided contentType is not overridden"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+
+        temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload.txt")
+        with open(temp_file_path, "w") as f:
+            f.write("Test content")
+
+        captured_body = []
+
+        def request_callback(request, uri, response_headers):
+            body = json.loads(request.body)
+            captured_body.append(body)
+            return [200, response_headers, json.dumps({"success": {"0": "ITEMKEY123"}})]
+
+        HTTPretty.register_uri(
+            HTTPretty.POST,
+            "https://api.zotero.org/users/myuserID/items",
+            body=request_callback,
+            content_type="application/json",
+        )
+
+        # Create payload WITH explicit contentType
+        payload = [
+            {
+                "filename": "test_upload.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+                "contentType": "application/custom-type",
+            }
+        ]
+
+        mock_auth_data = {"exists": True}
+
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(z.Zupload, "_get_auth", return_value=mock_auth_data),
+        ):
+            upload = z.Zupload(
+                zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+            )
+            upload.upload()
+
+        # Verify user-provided contentType was preserved
+        self.assertEqual(len(captured_body), 1)
+        self.assertEqual(
+            captured_body[0][0].get("contentType"), "application/custom-type"
+        )
+
+        os.remove(temp_file_path)
+
+    @httpretty.activate
     def testFileUploadWithPreexistingKeys(self):
         """Tests file upload process when the payload already contains keys"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
