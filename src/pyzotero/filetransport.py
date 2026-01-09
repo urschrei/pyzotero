@@ -60,8 +60,8 @@ def is_absolute_url(self):
     return not self.is_relative_url
 
 
-httpx.URL.is_relative_url = property(is_relative_url)  # type: ignore
-httpx.URL.is_absolute_url = property(is_absolute_url)  # type: ignore
+httpx.URL.is_relative_url = property(is_relative_url)
+httpx.URL.is_absolute_url = property(is_absolute_url)
 
 
 class FileTransport(AsyncBaseTransport, BaseTransport):
