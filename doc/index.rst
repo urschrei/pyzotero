@@ -30,8 +30,8 @@ Getting started (short version)
     .. code-block:: python
         :emphasize-lines: 1,2,3
 
-            from pyzotero import zotero
-            zot = zotero.Zotero(library_id, library_type, api_key)
+            from pyzotero import Zotero
+            zot = Zotero(library_id, library_type, api_key)
             items = zot.top(limit=5)
             # we've retrieved the latest five top-level items in our library
             # we can print each item's item type and ID
@@ -205,8 +205,8 @@ Example:
     .. code-block:: python
         :emphasize-lines: 4
 
-        from pyzotero import zotero
-        zot = zotero.Zotero('123', 'user', 'ABC1234XYZ')
+        from pyzotero import Zotero
+        zot = Zotero('123', 'user', 'ABC1234XYZ')
         # we now have a Zotero object, zot, and access to all its methods
         first_ten = zot.items(limit=10)
         # a list containing dicts of the ten most recently modified library items
@@ -731,8 +731,8 @@ Example:
 
     .. code-block:: python
 
-        from pyzotero import zotero
-        zot = zotero.Zotero(library_id, library_type, api_key)
+        from pyzotero import Zotero
+        zot = Zotero(library_id, library_type, api_key)
         # only retrieve a single item
         # this will retrieve the most recently added/modified top-level item
         first_item = zot.top(limit=1)
@@ -747,8 +747,8 @@ Example:
 
     .. code-block:: python
 
-        from pyzotero import zotero
-        zot = zotero.Zotero(library_id, library_type, api_key)
+        from pyzotero import Zotero
+        zot = Zotero(library_id, library_type, api_key)
         # retrieve all top-level items
         toplevel = zot.everything(zot.top())
 

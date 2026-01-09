@@ -16,7 +16,6 @@ import sys
 
 sys.path.insert(1, "..")
 import pyzotero
-from pyzotero import zotero as zot
 
 # Tell Jinja2 templates the build is running on Read the Docs
 if os.environ.get("READTHEDOCS", "") == "True":
@@ -24,7 +23,7 @@ if os.environ.get("READTHEDOCS", "") == "True":
         html_context = {}
     html_context["READTHEDOCS"] = True
 
-author = zot.__author__
+author = "Stephan Hügel"
 current_year = datetime.datetime.now(tz=datetime.timezone.utc).date().year
 
 html_context = {
