@@ -9,7 +9,6 @@ from __future__ import annotations
 import copy
 import json
 import re
-import threading
 import time
 from pathlib import Path, PurePosixPath
 from urllib.parse import (
@@ -156,9 +155,8 @@ class Zotero:
         self.self_link = {}
         self.templates = {}
         self.savedsearch = None
-        # these are required for backoff handling
-        self.backoff = False
-        self.backoff_duration = 0.0
+        # backoff handling: timestamp when backoff expires (0.0 = no backoff)
+        self.backoff_until = 0.0
 
     def __del__(self):
         """Remove client before cleanup."""
@@ -186,33 +184,14 @@ class Zotero:
         return url
 
     def _set_backoff(self, duration):
-        """Set a backoff.
-
-        Spins up a timer in a background thread which resets the backoff logic
-        when it expires, then sets the time at which the backoff will expire.
-        The latter step is required so that other calls can check whether there's
-        an active backoff, because the threading.Timer method has no way
-        of returning a duration.
-        """
-        duration = float(duration)
-        self.backoff = True
-        threading.Timer(duration, self._reset_backoff).start()
-        self.backoff_duration = time.time() + duration
-
-    def _reset_backoff(self):
-        self.backoff = False
-        self.backoff_duration = 0.0
+        """Set backoff expiration time."""
+        self.backoff_until = time.time() + float(duration)
 
     def _check_backoff(self):
-        """Before an API call is made, check whether there's an active backoff.
-
-        If there is, check whether there's any time left on the backoff.
-        If there is, sleep for the remainder before returning.
-        """
-        if self.backoff:
-            remainder = self.backoff_duration - time.time()
-            if remainder > 0.0:
-                time.sleep(remainder)
+        """Wait if backoff is active."""
+        remainder = self.backoff_until - time.time()
+        if remainder > 0.0:
+            time.sleep(remainder)
 
     def default_headers(self):
         """Return headers that are always OK to include."""
