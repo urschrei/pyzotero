@@ -63,6 +63,7 @@ class Zotero:
         preserve_json_order=False,
         locale="en-US",
         local=False,
+        client=None,
     ):
         self.client = None
         """Store Zotero credentials"""
@@ -95,7 +96,7 @@ class Zotero:
         self.tag_data = False
         self.request = None
         self.snapshot = False
-        self.client = httpx.Client(
+        self.client = client or httpx.Client(
             headers=self.default_headers(),
             follow_redirects=True,
         )
@@ -927,8 +928,7 @@ class Zotero:
             build_url(self.endpoint, query_string),
             params=params,
         )
-        with httpx.Client() as client:
-            response = client.send(r)
+        response = self.client.send(r)
         # now split up the URL
         result = urlparse(str(response.url))
         # construct cache key

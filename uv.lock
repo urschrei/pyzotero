@@ -2,7 +2,9 @@ version = 1
 revision = 3
 requires-python = ">=3.9"
 resolution-markers = [
-    "python_full_version >= '3.11'",
+    "python_full_version >= '3.14'",
+    "python_full_version == '3.13.*'",
+    "python_full_version >= '3.11' and python_full_version < '3.13'",
     "python_full_version == '3.10.*'",
     "python_full_version < '3.10'",
 ]
@@ -24,7 +26,9 @@ name = "alabaster"
 version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.11'",
+    "python_full_version >= '3.14'",
+    "python_full_version == '3.13.*'",
+    "python_full_version >= '3.11' and python_full_version < '3.13'",
     "python_full_version == '3.10.*'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a6/f8/d9c74d0daf3f742840fd818d69cfae176fa332022fd44e3469487d5a9420/alabaster-1.0.0.tar.gz", hash = "sha256:c00dca57bca26fa62a6d7d0a9fcce65f3e026e9bfe33e9c538fd3fbb2144fd9e", size = 24210, upload-time = "2024-07-26T18:15:03.762Z" }
@@ -187,7 +191,9 @@ name = "click"
 version = "8.3.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.11'",
+    "python_full_version >= '3.14'",
+    "python_full_version == '3.13.*'",
+    "python_full_version >= '3.11' and python_full_version < '3.13'",
     "python_full_version == '3.10.*'",
 ]
 dependencies = [
@@ -378,12 +384,6 @@ wheels = [
 ]
 
 [[package]]
-name = "httpretty"
-version = "1.1.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6e/19/850b7ed736319d0c4088581f4fc34f707ef14461947284026664641e16d4/httpretty-1.1.4.tar.gz", hash = "sha256:20de0e5dd5a18292d36d928cc3d6e52f8b2ac73daec40d41eb62dee154933b68", size = 442389, upload-time = "2021-08-16T19:35:31.4Z" }
-
-[[package]]
 name = "httpx"
 version = "0.28.1"
 source = { registry = "https://pypi.org/simple" }
@@ -492,7 +492,9 @@ name = "ipython"
 version = "9.5.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.11'",
+    "python_full_version >= '3.14'",
+    "python_full_version == '3.13.*'",
+    "python_full_version >= '3.11' and python_full_version < '3.13'",
 ]
 dependencies = [
     { name = "colorama", marker = "python_full_version >= '3.11' and sys_platform == 'win32'" },
@@ -801,7 +803,6 @@ cli = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "httpretty" },
     { name = "ipython", version = "8.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "ipython", version = "8.37.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
     { name = "ipython", version = "9.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -831,7 +832,6 @@ provides-extras = ["cli"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "httpretty", specifier = ">=1.1.4" },
     { name = "ipython" },
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest-asyncio" },
@@ -970,7 +970,9 @@ name = "sphinx"
 version = "8.2.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.11'",
+    "python_full_version >= '3.14'",
+    "python_full_version == '3.13.*'",
+    "python_full_version >= '3.11' and python_full_version < '3.13'",
 ]
 dependencies = [
     { name = "alabaster", version = "1.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
