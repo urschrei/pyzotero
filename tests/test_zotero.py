@@ -195,10 +195,11 @@ class ZoteroTests(unittest.TestCase):
             adding_headers={"backoff": 0.2},
         )
         zot.items()
-        self.assertTrue(zot.backoff)
+        # backoff_until should be in the future
+        self.assertGreater(zot.backoff_until, time.time())
         time.sleep(0.3)
-        # Timer will have expired, triggering backoff reset
-        self.assertFalse(zot.backoff)
+        # backoff_until should now be in the past
+        self.assertLess(zot.backoff_until, time.time())
 
     @httpretty.activate
     def testGetItemFile(self):
@@ -790,7 +791,8 @@ class ZoteroTests(unittest.TestCase):
             adding_headers={"backoff": 0.1},
         )
         zot.items()
-        self.assertTrue(zot.backoff)
+        # backoff_until should be in the future
+        self.assertGreater(zot.backoff_until, time.time())
 
     @httpretty.activate
     def testDeleteTags(self):
