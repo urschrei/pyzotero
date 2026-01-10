@@ -3,7 +3,7 @@
 import json
 import sys
 
-import click
+import click  # ty:ignore[unresolved-import]
 import httpx
 
 from pyzotero import __version__, zotero

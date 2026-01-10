@@ -1,4 +1,5 @@
-from pyzotero import zotero
+from pyzotero import Zotero
+
 
 def search_by_title(title_query):
     """
@@ -9,7 +10,7 @@ def search_by_title(title_query):
         list: List of matching items
     """
     # Initialize Zotero client with local=True
-    zot = zotero.Zotero(library_id='000000', library_type='user', local=True)
+    zot = Zotero(library_id="000000", library_type="user", local=True)
 
     try:
         # Search for items where title contains the query string
@@ -19,10 +20,10 @@ def search_by_title(title_query):
         print(f"\nFound {len(results)} items matching '{title_query}':")
         for item in results:
             # Get the item data
-            title = item['data'].get('title', 'No title')
-            item_type = item['data'].get('itemType', 'Unknown type')
-            date = item['data'].get('date', 'No date')
-            item_id = item['data'].get('key', 'No ID')
+            title = item["data"].get("title", "No title")
+            item_type = item["data"].get("itemType", "Unknown type")
+            date = item["data"].get("date", "No date")
+            item_id = item["data"].get("key", "No ID")
 
             print("\n##########################")
             print(f"ID: {item_id}")
@@ -36,6 +37,7 @@ def search_by_title(title_query):
         return []
     else:
         return results
+
 
 if __name__ == "__main__":
     # Example usage

@@ -195,10 +195,11 @@ class ZoteroTests(unittest.TestCase):
             adding_headers={"backoff": 0.2},
         )
         zot.items()
-        self.assertTrue(zot.backoff)
+        # backoff_until should be in the future
+        self.assertGreater(zot.backoff_until, time.time())
         time.sleep(0.3)
-        # Timer will have expired, triggering backoff reset
-        self.assertFalse(zot.backoff)
+        # backoff_until should now be in the past
+        self.assertLess(zot.backoff_until, time.time())
 
     @httpretty.activate
     def testGetItemFile(self):
@@ -683,6 +684,18 @@ class ZoteroTests(unittest.TestCase):
         request = httpretty.last_request()
         self.assertEqual(request.headers["If-Unmodified-Since-Version"], "5")
 
+    def testItemAttachmentLinkModes(self):
+        """Tests that item_attachment_link_modes returns expected values"""
+        # Should work as class method
+        modes = z.Zotero.item_attachment_link_modes()
+        self.assertEqual(
+            modes, ["imported_file", "imported_url", "linked_file", "linked_url"]
+        )
+        # Should also work on instance
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        modes_from_instance = zot.item_attachment_link_modes()
+        self.assertEqual(modes, modes_from_instance)
+
     @httpretty.activate
     def testItemCreation(self):
         """Tests creation of a new item using a template"""
@@ -790,7 +803,8 @@ class ZoteroTests(unittest.TestCase):
             adding_headers={"backoff": 0.1},
         )
         zot.items()
-        self.assertTrue(zot.backoff)
+        # backoff_until should be in the future
+        self.assertGreater(zot.backoff_until, time.time())
 
     @httpretty.activate
     def testDeleteTags(self):
