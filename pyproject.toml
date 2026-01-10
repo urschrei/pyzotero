@@ -43,12 +43,11 @@ pyzotero = "pyzotero.cli:main"
 dev = [
     "pytest >= 8.4.2",
     "pytz>=2025.2",
-    "httpretty >= 1.1.4",
     "python-dateutil",
     "ipython",
     "pytest-asyncio",
     "pytest-cov>=6.0.0",
-    "tzdata>=2025.2"
+    "tzdata>=2025.2",
 ]
 doc = [
     "sphinx",
@@ -109,6 +108,9 @@ select = ["F", "E", "W", "N", "D4", "UP", "PL", "TRY", "PERF", "FURB", "RUF", "S
 ignore = ["ANN001", "ANN003", "ANN202", "ANN201", "DOC201", "E501", "PLR0904", "PLR0913", "PLR0917", "SLF001", "FIX002", "D400", "D415"]
 fixable = ["ALL"]
 unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # Allow assert in tests
 
 [tool.ruff.format]
 # Like Black, use double quotes for strings.

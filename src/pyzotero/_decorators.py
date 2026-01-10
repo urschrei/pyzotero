@@ -50,8 +50,7 @@ def tcache(func: Callable) -> Callable:
             build_url(self.endpoint, query_string),
             params=params,
         )
-        with httpx.Client() as client:
-            response = client.send(r)
+        response = self.client.send(r)
 
         # now split up the URL
         result = urlparse(str(response.url))
