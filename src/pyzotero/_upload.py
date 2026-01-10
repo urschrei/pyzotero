@@ -56,18 +56,13 @@ class Zupload:
         if not payload:  # Check payload has nonzero length
             raise ze.ParamNotPassedError
         for templt in payload:
-            if Path(str(self.basedir.joinpath(templt["filename"]))).is_file():
-                try:
-                    # if it is a file, try to open it, and catch the error
-                    with Path(str(self.basedir.joinpath(templt["filename"]))).open():
-                        pass
-                except OSError:
-                    msg = f"The file at {self.basedir.joinpath(templt['filename'])!s} couldn't be opened or found."
-                    raise ze.FileDoesNotExistError(msg) from None
-            # no point in continuing if the file isn't a file
-            else:
-                msg = f"The file at {self.basedir.joinpath(templt['filename'])!s} couldn't be opened or found."
-                raise ze.FileDoesNotExistError(msg)
+            filepath = self.basedir.joinpath(templt["filename"])
+            try:
+                with filepath.open():
+                    pass
+            except OSError:
+                msg = f"The file at {filepath!s} couldn't be opened or found."
+                raise ze.FileDoesNotExistError(msg) from None
 
     def _create_prelim(self) -> dict | None:
         """Step 0: Register intent to upload files."""
