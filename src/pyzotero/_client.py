@@ -1175,7 +1175,7 @@ class Zotero:
 
         """
         orig = self._attachment_template("imported_file")
-        to_add = [orig.copy() for fls in files]
+        to_add = [orig.copy() for _ in files]
         for idx, tmplt in enumerate(to_add):
             tmplt["title"] = Path(files[idx]).name
             tmplt["filename"] = files[idx]
@@ -1192,7 +1192,7 @@ class Zotero:
 
         """
         orig = self._attachment_template("imported_file")
-        to_add = [orig.copy() for f in files]
+        to_add = [orig.copy() for _ in files]
         for idx, tmplt in enumerate(to_add):
             tmplt["title"] = files[idx][0]
             tmplt["filename"] = files[idx][1]
