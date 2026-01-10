@@ -27,6 +27,7 @@ if TYPE_CHECKING:
 def cleanwrap(func: Callable) -> Callable:
     """Wrap for Zotero._cleanup to process multiple items."""
 
+    @wraps(func)
     def enc(self, *args, **kwargs):
         """Send each item to _cleanup()."""
         return (func(self, item, **kwargs) for item in args)
