@@ -64,6 +64,15 @@ def chunks(iterable: list[T], n: int) -> Iterator[list[T]]:
         yield iterable[i : i + n]
 
 
+def get_backoff_duration(headers) -> str | None:
+    """Extract backoff duration from response headers.
+
+    The Zotero API may return backoff instructions via either the
+    'Backoff' or 'Retry-After' header.
+    """
+    return headers.get("backoff") or headers.get("retry-after")
+
+
 __all__ = [
     "DEFAULT_ITEM_LIMIT",
     "DEFAULT_NUM_ITEMS",
@@ -71,6 +80,7 @@ __all__ = [
     "ONE_HOUR",
     "build_url",
     "chunks",
+    "get_backoff_duration",
     "merge_params",
     "token",
 ]

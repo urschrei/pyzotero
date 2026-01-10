@@ -37,6 +37,7 @@ from ._utils import (
     ONE_HOUR,
     build_url,
     chunks,
+    get_backoff_duration,
     merge_params,
     token,
 )
@@ -291,9 +292,7 @@ class Zotero:
             self.request.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self, self.request, exc)
-        backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after",
-        )
+        backoff = get_backoff_duration(self.request.headers)
         if backoff:
             self._set_backoff(backoff)
         return self.request
@@ -355,9 +354,7 @@ class Zotero:
                 req.raise_for_status()
             except httpx.HTTPError as exc:
                 error_handler(self, req, exc)
-            backoff = self.request.headers.get("backoff") or self.request.headers.get(
-                "retry-after",
-            )
+            backoff = get_backoff_duration(self.request.headers)
             if backoff:
                 self._set_backoff(backoff)
             return req.status_code == httpx.codes.NOT_MODIFIED
@@ -507,9 +504,7 @@ class Zotero:
             resp.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self, resp, exc)
-        backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after",
-        )
+        backoff = get_backoff_duration(self.request.headers)
         if backoff:
             self._set_backoff(backoff)
         return resp.json()
@@ -874,9 +869,7 @@ class Zotero:
             req.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self, req, exc)
-        backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after",
-        )
+        backoff = get_backoff_duration(self.request.headers)
         if backoff:
             self._set_backoff(backoff)
         return req.json()
@@ -902,9 +895,7 @@ class Zotero:
             req.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self, req, exc)
-        backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after",
-        )
+        backoff = get_backoff_duration(self.request.headers)
         if backoff:
             self._set_backoff(backoff)
         return req.status_code
@@ -1082,9 +1073,7 @@ class Zotero:
         except httpx.HTTPError as exc:
             error_handler(self, req, exc)
         resp = req.json()
-        backoff = self.request.headers.get("backoff") or self.request.headers.get(
-            "retry-after",
-        )
+        backoff = get_backoff_duration(self.request.headers)
         if backoff:
             self._set_backoff(backoff)
         if parentid:
@@ -1109,9 +1098,7 @@ class Zotero:
                     presp.raise_for_status()
                 except httpx.HTTPError as exc:
                     error_handler(self, presp, exc)
-                backoff = presp.headers.get("backoff") or presp.headers.get(
-                    "retry-after",
-                )
+                backoff = get_backoff_duration(presp.headers)
                 if backoff:
                     self._set_backoff(backoff)
         return resp
@@ -1152,7 +1139,7 @@ class Zotero:
             req.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self, req, exc)
-        backoff = req.headers.get("backoff") or req.headers.get("retry-after")
+        backoff = get_backoff_duration(req.headers)
         if backoff:
             self._set_backoff(backoff)
         return req.json()
@@ -1253,7 +1240,7 @@ class Zotero:
                 req.raise_for_status()
             except httpx.HTTPError as exc:
                 error_handler(self, req, exc)
-            backoff = req.headers.get("backoff") or req.headers.get("retry-after")
+            backoff = get_backoff_duration(req.headers)
             if backoff:
                 self._set_backoff(backoff)
         return True
@@ -1279,7 +1266,7 @@ class Zotero:
                 req.raise_for_status()
             except httpx.HTTPError as exc:
                 error_handler(self, req, exc)
-            backoff = req.headers.get("backoff") or req.headers.get("retry-after")
+            backoff = get_backoff_duration(req.headers)
             if backoff:
                 self._set_backoff(backoff)
         return True

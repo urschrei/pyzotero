@@ -17,7 +17,7 @@ import httpx
 import pyzotero as pz
 
 from . import errors as ze
-from ._utils import build_url, token
+from ._utils import build_url, get_backoff_duration, token
 from .errors import error_handler
 
 if TYPE_CHECKING:
@@ -107,7 +107,7 @@ class Zupload:
             req.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self.zinstance, req, exc)
-        backoff = req.headers.get("backoff") or req.headers.get("retry-after")
+        backoff = get_backoff_duration(req.headers)
         if backoff:
             self.zinstance._set_backoff(backoff)
         data = req.json()
@@ -152,7 +152,7 @@ class Zupload:
             auth_req.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self.zinstance, auth_req, exc)
-        backoff = auth_req.headers.get("backoff") or auth_req.headers.get("retry-after")
+        backoff = get_backoff_duration(auth_req.headers)
         if backoff:
             self.zinstance._set_backoff(backoff)
         return auth_req.json()
@@ -189,7 +189,7 @@ class Zupload:
             upload.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self.zinstance, upload, exc)
-        backoff = upload.headers.get("backoff") or upload.headers.get("retry-after")
+        backoff = get_backoff_duration(upload.headers)
         if backoff:
             self.zinstance._set_backoff(backoff)
         # now check the responses
@@ -215,9 +215,7 @@ class Zupload:
             upload_reg.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self.zinstance, upload_reg, exc)
-        backoff = upload_reg.headers.get("backoff") or upload_reg.headers.get(
-            "retry-after",
-        )
+        backoff = get_backoff_duration(upload_reg.headers)
         if backoff:
             self.zinstance._set_backoff(backoff)
 
