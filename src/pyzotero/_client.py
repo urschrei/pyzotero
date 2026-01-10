@@ -1041,6 +1041,7 @@ class Zotero:
         query_string = "/itemFields"
         return query_string, params
 
+    @staticmethod
     def item_attachment_link_modes():
         """Get all available link mode types.
 

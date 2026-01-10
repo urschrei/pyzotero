@@ -684,6 +684,18 @@ class ZoteroTests(unittest.TestCase):
         request = httpretty.last_request()
         self.assertEqual(request.headers["If-Unmodified-Since-Version"], "5")
 
+    def testItemAttachmentLinkModes(self):
+        """Tests that item_attachment_link_modes returns expected values"""
+        # Should work as class method
+        modes = z.Zotero.item_attachment_link_modes()
+        self.assertEqual(
+            modes, ["imported_file", "imported_url", "linked_file", "linked_url"]
+        )
+        # Should also work on instance
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        modes_from_instance = zot.item_attachment_link_modes()
+        self.assertEqual(modes, modes_from_instance)
+
     @httpretty.activate
     def testItemCreation(self):
         """Tests creation of a new item using a template"""
