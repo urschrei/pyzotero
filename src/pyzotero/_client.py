@@ -1060,7 +1060,7 @@ class Zotero:
                 f"/{self.library_type}/{self.library_id}/items",
             ),
             content=json.dumps(to_send),
-            headers=dict(headers),
+            headers=headers,
         )
         self.request = req
         try:

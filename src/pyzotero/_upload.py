@@ -209,7 +209,7 @@ class Zupload:
                 f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
             ),
             data=reg_data,
-            headers=dict(reg_headers),
+            headers=reg_headers,
         )
         try:
             upload_reg.raise_for_status()
