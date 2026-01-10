@@ -17,7 +17,7 @@ import feedparser
 import httpx
 from httpx import Request
 
-from ._utils import DEFAULT_TIMEOUT, build_url
+from ._utils import DEFAULT_TIMEOUT, build_url, get_backoff_duration
 from .errors import error_handler
 
 if TYPE_CHECKING:
@@ -91,7 +91,7 @@ def backoff_check(func: Callable) -> Callable:
         except httpx.HTTPError as exc:
             error_handler(self, resp, exc)
         self.request = resp
-        backoff = resp.headers.get("backoff") or resp.headers.get("retry-after")
+        backoff = get_backoff_duration(resp.headers)
         if backoff:
             self._set_backoff(backoff)
 

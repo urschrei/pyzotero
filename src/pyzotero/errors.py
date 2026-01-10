@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 
 import httpx
 
+from ._utils import get_backoff_duration
+
 if TYPE_CHECKING:
     from typing import Any
 
@@ -140,7 +142,7 @@ def error_handler(
         # check to see whether its 429
         if req.status_code == httpx.codes.TOO_MANY_REQUESTS:
             # try to get backoff or delay duration
-            delay = req.headers.get("backoff") or req.headers.get("retry-after")
+            delay = get_backoff_duration(req.headers)
             if not delay:
                 msg = (
                     "You are being rate-limited and no backoff or retry duration "
