@@ -786,7 +786,7 @@ wheels = [
 
 [[package]]
 name = "pyzotero"
-version = "1.7.6"
+version = "1.8.0"
 source = { editable = "." }
 dependencies = [
     { name = "bibtexparser" },
