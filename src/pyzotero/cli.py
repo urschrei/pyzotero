@@ -7,6 +7,16 @@ import click  # ty:ignore[unresolved-import]
 import httpx
 
 from pyzotero import __version__, zotero
+from pyzotero.semantic_scholar import (
+    PaperNotFoundError,
+    RateLimitError,
+    SemanticScholarError,
+    filter_by_citations,
+    get_citations,
+    get_recommendations,
+    get_references,
+    search_papers,
+)
 from pyzotero.zotero import chunks
 
 
@@ -508,6 +518,415 @@ def alldoi(ctx, dois, output_json):  # noqa: PLR0912
                 for doi in not_found:
                     click.echo(f"  {doi}")
 
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+def _build_doi_index(zot):
+    """Build a mapping of normalised DOIs to Zotero item keys.
+
+    Returns:
+        Dict mapping normalised DOIs to item keys
+
+    """
+    doi_map = {}
+    all_items = zot.everything(zot.items())
+
+    for item in all_items:
+        data = item.get("data", {})
+        item_doi = data.get("DOI", "")
+
+        if item_doi:
+            normalised_doi = _normalize_doi(item_doi)
+            item_key = data.get("key", "")
+
+            if normalised_doi and item_key:
+                doi_map[normalised_doi] = item_key
+
+    return doi_map
+
+
+def _format_s2_paper(paper, in_library=None):
+    """Format a Semantic Scholar paper for output.
+
+    Args:
+        paper: Normalised paper dict from semantic_scholar module
+        in_library: Boolean indicating if paper is in local Zotero
+
+    Returns:
+        Formatted dict for output
+
+    """
+    result = {
+        "paperId": paper.get("paperId"),
+        "doi": paper.get("doi"),
+        "title": paper.get("title"),
+        "authors": [a.get("name") for a in (paper.get("authors") or [])],
+        "year": paper.get("year"),
+        "venue": paper.get("venue"),
+        "citationCount": paper.get("citationCount"),
+        "referenceCount": paper.get("referenceCount"),
+        "isOpenAccess": paper.get("isOpenAccess"),
+        "openAccessPdfUrl": paper.get("openAccessPdfUrl"),
+    }
+
+    if in_library is not None:
+        result["inLibrary"] = in_library
+
+    return result
+
+
+def _annotate_with_library(papers, doi_map):
+    """Annotate papers with in_library status based on DOI matching.
+
+    Args:
+        papers: List of normalised paper dicts
+        doi_map: Dict mapping normalised DOIs to Zotero item keys
+
+    Returns:
+        List of formatted paper dicts with inLibrary field
+
+    """
+    results = []
+    for paper in papers:
+        doi = paper.get("doi")
+        in_library = False
+        if doi:
+            normalised = _normalize_doi(doi)
+            in_library = normalised in doi_map
+        results.append(_format_s2_paper(paper, in_library))
+    return results
+
+
+@main.command()
+@click.option(
+    "--doi",
+    required=True,
+    help="DOI of the paper to find related papers for",
+)
+@click.option(
+    "--limit",
+    type=int,
+    default=20,
+    help="Maximum number of results to return (default: 20, max: 500)",
+)
+@click.option(
+    "--min-citations",
+    type=int,
+    default=0,
+    help="Minimum citation count filter (default: 0)",
+)
+@click.option(
+    "--check-library/--no-check-library",
+    default=True,
+    help="Check if papers exist in local Zotero (default: True)",
+)
+@click.pass_context
+def related(ctx, doi, limit, min_citations, check_library):
+    """Find papers related to a given paper using Semantic Scholar.
+
+    Uses SPECTER2 embeddings to find semantically similar papers.
+
+    Examples:
+        pyzotero related --doi "10.1038/nature12373"
+
+        pyzotero related --doi "10.1038/nature12373" --limit 50
+
+        pyzotero related --doi "10.1038/nature12373" --min-citations 100
+
+    """
+    try:
+        # Get recommendations from Semantic Scholar
+        click.echo(f"Fetching related papers for DOI: {doi}...", err=True)
+        result = get_recommendations(doi, id_type="doi", limit=limit)
+        papers = result.get("papers", [])
+
+        # Apply citation filter
+        if min_citations > 0:
+            papers = filter_by_citations(papers, min_citations)
+
+        if not papers:
+            click.echo(json.dumps({"count": 0, "papers": []}))
+            return
+
+        # Optionally annotate with library status
+        if check_library:
+            click.echo("Checking local Zotero library...", err=True)
+            locale = ctx.obj.get("locale", "en-US")
+            zot = _get_zotero_client(locale)
+            doi_map = _build_doi_index(zot)
+            output_papers = _annotate_with_library(papers, doi_map)
+        else:
+            output_papers = [_format_s2_paper(p) for p in papers]
+
+        click.echo(
+            json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+        )
+
+    except PaperNotFoundError:
+        click.echo("Error: Paper not found in Semantic Scholar.", err=True)
+        sys.exit(1)
+    except RateLimitError:
+        click.echo("Error: Rate limit exceeded. Please wait and try again.", err=True)
+        sys.exit(1)
+    except SemanticScholarError as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.option(
+    "--doi",
+    required=True,
+    help="DOI of the paper to find citations for",
+)
+@click.option(
+    "--limit",
+    type=int,
+    default=100,
+    help="Maximum number of results to return (default: 100, max: 1000)",
+)
+@click.option(
+    "--min-citations",
+    type=int,
+    default=0,
+    help="Minimum citation count filter (default: 0)",
+)
+@click.option(
+    "--check-library/--no-check-library",
+    default=True,
+    help="Check if papers exist in local Zotero (default: True)",
+)
+@click.pass_context
+def citations(ctx, doi, limit, min_citations, check_library):
+    """Find papers that cite a given paper using Semantic Scholar.
+
+    Examples:
+        pyzotero citations --doi "10.1038/nature12373"
+
+        pyzotero citations --doi "10.1038/nature12373" --limit 50
+
+        pyzotero citations --doi "10.1038/nature12373" --min-citations 50
+
+    """
+    try:
+        # Get citations from Semantic Scholar
+        click.echo(f"Fetching citations for DOI: {doi}...", err=True)
+        result = get_citations(doi, id_type="doi", limit=limit)
+        papers = result.get("papers", [])
+
+        # Apply citation filter
+        if min_citations > 0:
+            papers = filter_by_citations(papers, min_citations)
+
+        if not papers:
+            click.echo(json.dumps({"count": 0, "papers": []}))
+            return
+
+        # Optionally annotate with library status
+        if check_library:
+            click.echo("Checking local Zotero library...", err=True)
+            locale = ctx.obj.get("locale", "en-US")
+            zot = _get_zotero_client(locale)
+            doi_map = _build_doi_index(zot)
+            output_papers = _annotate_with_library(papers, doi_map)
+        else:
+            output_papers = [_format_s2_paper(p) for p in papers]
+
+        click.echo(
+            json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+        )
+
+    except PaperNotFoundError:
+        click.echo("Error: Paper not found in Semantic Scholar.", err=True)
+        sys.exit(1)
+    except RateLimitError:
+        click.echo("Error: Rate limit exceeded. Please wait and try again.", err=True)
+        sys.exit(1)
+    except SemanticScholarError as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.option(
+    "--doi",
+    required=True,
+    help="DOI of the paper to find references for",
+)
+@click.option(
+    "--limit",
+    type=int,
+    default=100,
+    help="Maximum number of results to return (default: 100, max: 1000)",
+)
+@click.option(
+    "--min-citations",
+    type=int,
+    default=0,
+    help="Minimum citation count filter (default: 0)",
+)
+@click.option(
+    "--check-library/--no-check-library",
+    default=True,
+    help="Check if papers exist in local Zotero (default: True)",
+)
+@click.pass_context
+def references(ctx, doi, limit, min_citations, check_library):
+    """Find papers referenced by a given paper using Semantic Scholar.
+
+    Examples:
+        pyzotero references --doi "10.1038/nature12373"
+
+        pyzotero references --doi "10.1038/nature12373" --limit 50
+
+        pyzotero references --doi "10.1038/nature12373" --min-citations 100
+
+    """
+    try:
+        # Get references from Semantic Scholar
+        click.echo(f"Fetching references for DOI: {doi}...", err=True)
+        result = get_references(doi, id_type="doi", limit=limit)
+        papers = result.get("papers", [])
+
+        # Apply citation filter
+        if min_citations > 0:
+            papers = filter_by_citations(papers, min_citations)
+
+        if not papers:
+            click.echo(json.dumps({"count": 0, "papers": []}))
+            return
+
+        # Optionally annotate with library status
+        if check_library:
+            click.echo("Checking local Zotero library...", err=True)
+            locale = ctx.obj.get("locale", "en-US")
+            zot = _get_zotero_client(locale)
+            doi_map = _build_doi_index(zot)
+            output_papers = _annotate_with_library(papers, doi_map)
+        else:
+            output_papers = [_format_s2_paper(p) for p in papers]
+
+        click.echo(
+            json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+        )
+
+    except PaperNotFoundError:
+        click.echo("Error: Paper not found in Semantic Scholar.", err=True)
+        sys.exit(1)
+    except RateLimitError:
+        click.echo("Error: Rate limit exceeded. Please wait and try again.", err=True)
+        sys.exit(1)
+    except SemanticScholarError as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.option(
+    "-q",
+    "--query",
+    required=True,
+    help="Search query string",
+)
+@click.option(
+    "--limit",
+    type=int,
+    default=20,
+    help="Maximum number of results to return (default: 20, max: 100)",
+)
+@click.option(
+    "--year",
+    help="Year filter (e.g., '2020', '2018-2022', '2020-')",
+)
+@click.option(
+    "--open-access/--no-open-access",
+    default=False,
+    help="Only return open access papers (default: False)",
+)
+@click.option(
+    "--sort",
+    type=click.Choice(["citations", "year"], case_sensitive=False),
+    help="Sort results by citation count or year (descending)",
+)
+@click.option(
+    "--min-citations",
+    type=int,
+    default=0,
+    help="Minimum citation count filter (default: 0)",
+)
+@click.option(
+    "--check-library/--no-check-library",
+    default=True,
+    help="Check if papers exist in local Zotero (default: True)",
+)
+@click.pass_context
+def s2search(ctx, query, limit, year, open_access, sort, min_citations, check_library):
+    """Search for papers on Semantic Scholar.
+
+    Search across Semantic Scholar's index of over 200M papers.
+
+    Examples:
+        pyzotero s2search -q "climate adaptation"
+
+        pyzotero s2search -q "machine learning" --year 2020-2024
+
+        pyzotero s2search -q "neural networks" --open-access --limit 50
+
+        pyzotero s2search -q "deep learning" --sort citations --min-citations 100
+
+    """
+    try:
+        # Search Semantic Scholar
+        click.echo(f'Searching Semantic Scholar for: "{query}"...', err=True)
+        result = search_papers(
+            query,
+            limit=limit,
+            year=year,
+            open_access_only=open_access,
+            sort=sort,
+            min_citations=min_citations,
+        )
+        papers = result.get("papers", [])
+        total = result.get("total", len(papers))
+
+        if not papers:
+            click.echo(json.dumps({"count": 0, "total": total, "papers": []}))
+            return
+
+        # Optionally annotate with library status
+        if check_library:
+            click.echo("Checking local Zotero library...", err=True)
+            locale = ctx.obj.get("locale", "en-US")
+            zot = _get_zotero_client(locale)
+            doi_map = _build_doi_index(zot)
+            output_papers = _annotate_with_library(papers, doi_map)
+        else:
+            output_papers = [_format_s2_paper(p) for p in papers]
+
+        click.echo(
+            json.dumps(
+                {"count": len(output_papers), "total": total, "papers": output_papers},
+                indent=2,
+            )
+        )
+
+    except RateLimitError:
+        click.echo("Error: Rate limit exceeded. Please wait and try again.", err=True)
+        sys.exit(1)
+    except SemanticScholarError as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
     except Exception as e:
         click.echo(f"Error: {e!s}", err=True)
         sys.exit(1)
