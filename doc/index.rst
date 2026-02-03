@@ -135,6 +135,18 @@ Output as JSON for machine processing:
 
         pyzotero search -q "climate" --json
 
+Filter by tags (multiple tags use AND logic):
+
+    .. code-block:: bash
+
+        pyzotero search -q "topic" --tag "climate" --tag "adaptation"
+
+Paginate results:
+
+    .. code-block:: bash
+
+        pyzotero search -q "topic" --limit 20 --offset 20 --json
+
 List all collections:
 
     .. code-block:: bash
@@ -146,6 +158,59 @@ List available item types:
     .. code-block:: bash
 
         pyzotero itemtypes
+
+Item and Attachment Commands
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get a single item by key:
+
+    .. code-block:: bash
+
+        pyzotero item ABC123 --json
+
+Get child items (attachments, notes) of an item:
+
+    .. code-block:: bash
+
+        pyzotero children ABC123 --json
+
+Get multiple items by key in a single call (up to 50):
+
+    .. code-block:: bash
+
+        pyzotero subset ABC123 DEF456 GHI789 --json
+
+Get full-text content of an attachment:
+
+    .. code-block:: bash
+
+        pyzotero fulltext ABC123
+
+Tag Commands
+~~~~~~~~~~~~
+
+List all tags in the library:
+
+    .. code-block:: bash
+
+        pyzotero tags
+
+List tags from a specific collection:
+
+    .. code-block:: bash
+
+        pyzotero tags --collection ABC123
+
+DOI Index
+~~~~~~~~~
+
+Output the complete DOI-to-key mapping for caching:
+
+    .. code-block:: bash
+
+        pyzotero doiindex > doi_cache.json
+
+This returns a JSON mapping of normalised DOIs to item keys and original DOIs, allowing external tools to cache the index and avoid repeated full-library scans.
 
 Search Behaviour
 ~~~~~~~~~~~~~~~~

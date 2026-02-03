@@ -84,10 +84,21 @@ def main(ctx, locale):
     help="Filter by collection key (returns only items in this collection)",
 )
 @click.option(
+    "--tag",
+    multiple=True,
+    help="Filter by tag (can be specified multiple times for AND search)",
+)
+@click.option(
     "--limit",
     type=int,
     default=1000000,
     help="Maximum number of results to return (default: 1000000)",
+)
+@click.option(
+    "--offset",
+    type=int,
+    default=0,
+    help="Number of results to skip for pagination (default: 0)",
 )
 @click.option(
     "--json",
@@ -96,7 +107,7 @@ def main(ctx, locale):
     help="Output results as JSON",
 )
 @click.pass_context
-def search(ctx, query, fulltext, itemtype, collection, limit, output_json):  # noqa: PLR0912, PLR0915
+def search(ctx, query, fulltext, itemtype, collection, tag, limit, offset, output_json):  # noqa: PLR0912, PLR0915
     """Search local Zotero library.
 
     By default, searches top-level items in titles and metadata.
@@ -116,6 +127,10 @@ def search(ctx, query, fulltext, itemtype, collection, limit, output_json):  # n
 
         pyzotero search -q "climate" --json
 
+        pyzotero search -q "topic" --limit 20 --offset 20 --json
+
+        pyzotero search -q "topic" --tag "climate" --tag "adaptation" --json
+
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
@@ -123,6 +138,9 @@ def search(ctx, query, fulltext, itemtype, collection, limit, output_json):  # n
 
         # Build query parameters
         params = {"limit": limit}
+
+        if offset > 0:
+            params["start"] = offset
 
         if query:
             params["q"] = query
@@ -133,6 +151,10 @@ def search(ctx, query, fulltext, itemtype, collection, limit, output_json):  # n
         if itemtype:
             # Join multiple item types with || for OR search
             params["itemType"] = " || ".join(itemtype)
+
+        if tag:
+            # Multiple tags are passed as a list for AND search
+            params["tag"] = list(tag)
 
         # Execute search
         # When fulltext is enabled, use items() or collection_items() to get both
@@ -320,7 +342,7 @@ def listcollections(ctx, limit):
             key = data.get("key", "")
             name = data.get("name", "")
             if key:
-                collection_map[key] = name if name else None
+                collection_map[key] = name or None
 
         # Build JSON output
         output = []
@@ -335,7 +357,7 @@ def listcollections(ctx, limit):
 
             collection_obj = {
                 "id": key,
-                "name": name if name else None,
+                "name": name or None,
                 "items": num_items,
             }
 
@@ -424,6 +446,254 @@ def test(ctx):
             err=True,
         )
         sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.argument("key")
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+def item(ctx, key, output_json):
+    """Get a single item by its key.
+
+    Returns full item data for the specified Zotero item key.
+
+    Examples:
+        pyzotero item ABC123
+
+        pyzotero item ABC123 --json
+
+    """
+    try:
+        locale = ctx.obj.get("locale", "en-US")
+        zot = _get_zotero_client(locale)
+
+        # Fetch the item
+        result = zot.item(key)
+
+        if not result:
+            if output_json:
+                click.echo(json.dumps(None))
+            else:
+                click.echo(f"Item not found: {key}")
+            return
+
+        data = result.get("data", {})
+
+        if output_json:
+            click.echo(json.dumps(result, indent=2))
+        else:
+            title = data.get("title", "No title")
+            item_type = data.get("itemType", "Unknown")
+            date = data.get("date", "No date")
+            item_key = data.get("key", "")
+            doi = data.get("DOI", "")
+            url = data.get("url", "")
+
+            # Format creators
+            creators = data.get("creators", [])
+            creator_names = []
+            for creator in creators:
+                if "lastName" in creator:
+                    if "firstName" in creator:
+                        creator_names.append(
+                            f"{creator['firstName']} {creator['lastName']}"
+                        )
+                    else:
+                        creator_names.append(creator["lastName"])
+                elif "name" in creator:
+                    creator_names.append(creator["name"])
+
+            authors_str = ", ".join(creator_names) if creator_names else "No authors"
+
+            click.echo(f"[{item_type}] {title}")
+            click.echo(f"Authors: {authors_str}")
+            click.echo(f"Date: {date}")
+            click.echo(f"DOI: {doi}")
+            click.echo(f"URL: {url}")
+            click.echo(f"Key: {item_key}")
+
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.argument("key")
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+def children(ctx, key, output_json):
+    """Get child items (attachments, notes) of a specific item.
+
+    Returns all child items for the specified Zotero item key.
+    Useful for finding PDF attachments without the N+1 overhead during search.
+
+    Examples:
+        pyzotero children ABC123
+
+        pyzotero children ABC123 --json
+
+    """
+    try:
+        locale = ctx.obj.get("locale", "en-US")
+        zot = _get_zotero_client(locale)
+
+        # Fetch children
+        results = zot.children(key)
+
+        if not results:
+            if output_json:
+                click.echo(json.dumps([]))
+            else:
+                click.echo(f"No children found for item: {key}")
+            return
+
+        if output_json:
+            click.echo(json.dumps(results, indent=2))
+        else:
+            click.echo(f"\nFound {len(results)} child items:\n")
+            for idx, child in enumerate(results, 1):
+                data = child.get("data", {})
+                item_type = data.get("itemType", "Unknown")
+                child_key = data.get("key", "")
+                title = data.get("title", data.get("note", "No title")[:50] + "...")
+                content_type = data.get("contentType", "")
+
+                click.echo(f"{idx}. [{item_type}] {title}")
+                click.echo(f"   Key: {child_key}")
+                if content_type:
+                    click.echo(f"   Content-Type: {content_type}")
+
+                # Show file URL for attachments
+                file_url = child.get("links", {}).get("enclosure", {}).get("href", "")
+                if file_url:
+                    click.echo(f"   File: {file_url}")
+                click.echo()
+
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.option(
+    "--collection",
+    help="Filter tags to a specific collection key",
+)
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+def tags(ctx, collection, output_json):
+    """List all tags in the library.
+
+    Returns all tags used in the library, or only tags from a specific collection.
+
+    Examples:
+        pyzotero tags
+
+        pyzotero tags --collection ABC123
+
+        pyzotero tags --json
+
+    """
+    try:
+        locale = ctx.obj.get("locale", "en-US")
+        zot = _get_zotero_client(locale)
+
+        # Fetch tags
+        if collection:
+            results = zot.collection_tags(collection)
+        else:
+            results = zot.tags()
+
+        if not results:
+            if output_json:
+                click.echo(json.dumps([]))
+            else:
+                click.echo("No tags found.")
+            return
+
+        if output_json:
+            click.echo(json.dumps(results, indent=2))
+        else:
+            click.echo(f"\nFound {len(results)} tags:\n")
+            for tag in sorted(results):
+                click.echo(f"  {tag}")
+
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.argument("keys", nargs=-1, required=True)
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+def subset(ctx, keys, output_json):
+    """Get multiple items by their keys in a single call.
+
+    Efficiently retrieve up to 50 items by key in a single API call.
+    Far more efficient than multiple individual item lookups.
+
+    Examples:
+        pyzotero subset ABC123 DEF456 GHI789
+
+        pyzotero subset ABC123 DEF456 --json
+
+    """
+    try:
+        locale = ctx.obj.get("locale", "en-US")
+        zot = _get_zotero_client(locale)
+
+        if len(keys) > 50:  # noqa: PLR2004 - Zotero API limit
+            click.echo("Error: Maximum 50 items per call.", err=True)
+            sys.exit(1)
+
+        # Fetch items
+        results = zot.get_subset(list(keys))
+
+        if not results:
+            if output_json:
+                click.echo(json.dumps([]))
+            else:
+                click.echo("No items found.")
+            return
+
+        if output_json:
+            click.echo(json.dumps(results, indent=2))
+        else:
+            click.echo(f"\nFound {len(results)} items:\n")
+            for idx, item in enumerate(results, 1):
+                data = item.get("data", {})
+                title = data.get("title", "No title")
+                item_type = data.get("itemType", "Unknown")
+                item_key = data.get("key", "")
+
+                click.echo(f"{idx}. [{item_type}] {title}")
+                click.echo(f"   Key: {item_key}")
+                click.echo()
+
     except Exception as e:
         click.echo(f"Error: {e!s}", err=True)
         sys.exit(1)
@@ -521,6 +791,102 @@ def alldoi(ctx, dois, output_json):  # noqa: PLR0912
     except Exception as e:
         click.echo(f"Error: {e!s}", err=True)
         sys.exit(1)
+
+
+@main.command()
+@click.pass_context
+def doiindex(ctx):
+    """Output the complete DOI-to-key mapping for the library.
+
+    Returns a JSON mapping of normalised DOIs to item keys and original DOIs.
+    This allows the skill to cache the index and avoid repeated full-library scans.
+
+    Output format:
+        {
+          "10.1234/abc": {"key": "ABC123", "original": "https://doi.org/10.1234/ABC"},
+          ...
+        }
+
+    Examples:
+        pyzotero doiindex
+
+        pyzotero doiindex > doi_cache.json
+
+    """
+    try:
+        locale = ctx.obj.get("locale", "en-US")
+        zot = _get_zotero_client(locale)
+
+        click.echo("Building DOI index from library...", err=True)
+        doi_map = _build_doi_index_full(zot)
+        click.echo(f"Indexed {len(doi_map)} items with DOIs", err=True)
+
+        click.echo(json.dumps(doi_map, indent=2))
+
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.argument("key")
+@click.pass_context
+def fulltext(ctx, key):
+    """Get full-text content of an attachment.
+
+    Returns the full-text content extracted from a PDF or other attachment.
+    The key should be the key of an attachment item (not a top-level item).
+
+    Output format:
+        {
+          "content": "Full-text extracted from PDF...",
+          "indexedPages": 50,
+          "totalPages": 50
+        }
+
+    Examples:
+        pyzotero fulltext ABC123
+
+    """
+    try:
+        locale = ctx.obj.get("locale", "en-US")
+        zot = _get_zotero_client(locale)
+
+        result = zot.fulltext_item(key)
+
+        if not result:
+            click.echo(json.dumps({"error": "No full-text content available"}))
+            return
+
+        click.echo(json.dumps(result, indent=2))
+
+    except Exception as e:
+        click.echo(f"Error: {e!s}", err=True)
+        sys.exit(1)
+
+
+def _build_doi_index_full(zot):
+    """Build a mapping of normalised DOIs to Zotero item keys and original DOIs.
+
+    Returns:
+        Dict mapping normalised DOIs to dicts with 'key' and 'original' fields
+
+    """
+    doi_map = {}
+    all_items = zot.everything(zot.items())
+
+    for item in all_items:
+        data = item.get("data", {})
+        item_doi = data.get("DOI", "")
+
+        if item_doi:
+            normalised_doi = _normalize_doi(item_doi)
+            item_key = data.get("key", "")
+
+            if normalised_doi and item_key:
+                doi_map[normalised_doi] = {"key": item_key, "original": item_doi}
+
+    return doi_map
 
 
 def _build_doi_index(zot):
