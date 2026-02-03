@@ -6,8 +6,13 @@ for fetching paper metadata, citations, references, and recommendations.
 API Documentation: https://api.semanticscholar.org/api-docs
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 import httpx
 from httpx import codes as http
+
 
 BASE_URL = "https://api.semanticscholar.org/graph/v1"
 RECOMMENDATIONS_URL = "https://api.semanticscholar.org/recommendations/v1"
@@ -52,7 +57,9 @@ class PaperNotFoundError(SemanticScholarError):
         super().__init__(msg)
 
 
-def _make_request(url, params=None):
+def _make_request(
+    url: str, params: dict[str, str | int] | None = None
+) -> dict[str, Any]:
     """Make an HTTP GET request to the Semantic Scholar API.
 
     Args:
@@ -75,7 +82,7 @@ def _make_request(url, params=None):
         return response.json()
 
 
-def _check_response(response):
+def _check_response(response: httpx.Response) -> None:
     """Check HTTP response and raise appropriate exceptions.
 
     Args:
@@ -98,7 +105,7 @@ def _check_response(response):
         raise SemanticScholarError(msg)
 
 
-def _format_paper_id(identifier, id_type=None):  # noqa: PLR0911
+def _format_paper_id(identifier: str | None, id_type: str | None = None) -> str | None:  # noqa: PLR0911
     """Format a paper identifier for the Semantic Scholar API.
 
     Semantic Scholar accepts various identifier formats:
@@ -163,7 +170,7 @@ def _format_paper_id(identifier, id_type=None):  # noqa: PLR0911
     return identifier
 
 
-def _normalise_paper(paper_data):
+def _normalise_paper(paper_data: dict[str, Any] | None) -> dict[str, Any] | None:
     """Normalise paper data from Semantic Scholar to a consistent format.
 
     Args:
@@ -206,7 +213,7 @@ def _normalise_paper(paper_data):
     }
 
 
-def get_paper(identifier, id_type=None):
+def get_paper(identifier: str, id_type: str | None = None) -> dict[str, Any] | None:
     """Get details for a single paper.
 
     Args:
@@ -229,7 +236,9 @@ def get_paper(identifier, id_type=None):
     return _normalise_paper(data)
 
 
-def get_citations(identifier, id_type=None, limit=100, offset=0):
+def get_citations(
+    identifier: str, id_type: str | None = None, limit: int = 100, offset: int = 0
+) -> dict[str, Any]:
     """Get papers that cite a given paper.
 
     Args:
@@ -270,7 +279,9 @@ def get_citations(identifier, id_type=None, limit=100, offset=0):
     }
 
 
-def get_references(identifier, id_type=None, limit=100, offset=0):
+def get_references(
+    identifier: str, id_type: str | None = None, limit: int = 100, offset: int = 0
+) -> dict[str, Any]:
     """Get papers that a given paper references.
 
     Args:
@@ -311,7 +322,9 @@ def get_references(identifier, id_type=None, limit=100, offset=0):
     }
 
 
-def get_recommendations(identifier, id_type=None, limit=100):
+def get_recommendations(
+    identifier: str, id_type: str | None = None, limit: int = 100
+) -> dict[str, Any]:
     """Get recommended papers based on a seed paper.
 
     Uses Semantic Scholar's recommendation API which returns papers
@@ -359,14 +372,14 @@ def get_recommendations(identifier, id_type=None, limit=100):
 
 
 def search_papers(
-    query,
-    limit=100,
-    offset=0,
-    year=None,
-    open_access_only=False,
-    sort=None,
-    min_citations=None,
-):
+    query: str,
+    limit: int = 100,
+    offset: int = 0,
+    year: str | None = None,
+    open_access_only: bool = False,
+    sort: str | None = None,
+    min_citations: int | None = None,
+) -> dict[str, Any]:
     """Search for papers by keyword query.
 
     Args:
@@ -425,7 +438,9 @@ def search_papers(
     }
 
 
-def filter_by_citations(papers, min_citations):
+def filter_by_citations(
+    papers: list[dict[str, Any]], min_citations: int | None
+) -> list[dict[str, Any]]:
     """Filter a list of papers by minimum citation count.
 
     Args:
