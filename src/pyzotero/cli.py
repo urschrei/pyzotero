@@ -1,9 +1,12 @@
 """Command-line interface for pyzotero."""
 
+from __future__ import annotations
+
 import json
 import sys
+from typing import Any
 
-import click  # ty:ignore[unresolved-import]
+import click
 import httpx
 
 from pyzotero import __version__, zotero
@@ -20,12 +23,12 @@ from pyzotero.semantic_scholar import (
 from pyzotero.zotero import chunks
 
 
-def _get_zotero_client(locale="en-US"):
+def _get_zotero_client(locale: str = "en-US") -> zotero.Zotero:
     """Get a Zotero client configured for local access."""
     return zotero.Zotero(library_id="0", library_type="user", local=True, locale=locale)
 
 
-def _normalize_doi(doi):
+def _normalize_doi(doi: str) -> str:
     """Normalise a DOI for case-insensitive matching.
 
     Strips common prefixes (https://doi.org/, http://doi.org/, doi:) and converts to lowercase.
@@ -56,7 +59,7 @@ def _normalize_doi(doi):
     help="Locale for localized strings (default: en-US)",
 )
 @click.pass_context
-def main(ctx, locale):
+def main(ctx: Any, locale: str) -> None:
     """Search local Zotero library."""
     ctx.ensure_object(dict)
     ctx.obj["locale"] = locale
@@ -107,7 +110,17 @@ def main(ctx, locale):
     help="Output results as JSON",
 )
 @click.pass_context
-def search(ctx, query, fulltext, itemtype, collection, tag, limit, offset, output_json):  # noqa: PLR0912, PLR0915
+def search(  # noqa: PLR0912, PLR0915
+    ctx: Any,
+    query: str,
+    fulltext: bool,
+    itemtype: tuple[str, ...],
+    collection: str | None,
+    tag: tuple[str, ...],
+    limit: int,
+    offset: int,
+    output_json: bool,
+) -> None:
     """Search local Zotero library.
 
     By default, searches top-level items in titles and metadata.
@@ -310,7 +323,7 @@ def search(ctx, query, fulltext, itemtype, collection, tag, limit, offset, outpu
     help="Maximum number of collections to return (default: all)",
 )
 @click.pass_context
-def listcollections(ctx, limit):
+def listcollections(ctx: Any, limit: int | None) -> None:
     """List all collections in the local Zotero library.
 
     Examples:
@@ -383,7 +396,7 @@ def listcollections(ctx, limit):
 
 @main.command()
 @click.pass_context
-def itemtypes(ctx):
+def itemtypes(ctx: Any) -> None:
     """List all valid item types.
 
     Examples:
@@ -411,7 +424,7 @@ def itemtypes(ctx):
 
 @main.command()
 @click.pass_context
-def test(ctx):
+def test(ctx: Any) -> None:
     """Test connection to local Zotero instance.
 
     This command checks whether Zotero is running and accepting local connections.
@@ -460,7 +473,7 @@ def test(ctx):
     help="Output results as JSON",
 )
 @click.pass_context
-def item(ctx, key, output_json):
+def item(ctx: Any, key: str, output_json: bool) -> None:
     """Get a single item by its key.
 
     Returns full item data for the specified Zotero item key.
@@ -534,7 +547,7 @@ def item(ctx, key, output_json):
     help="Output results as JSON",
 )
 @click.pass_context
-def children(ctx, key, output_json):
+def children(ctx: Any, key: str, output_json: bool) -> None:
     """Get child items (attachments, notes) of a specific item.
 
     Returns all child items for the specified Zotero item key.
@@ -599,7 +612,7 @@ def children(ctx, key, output_json):
     help="Output results as JSON",
 )
 @click.pass_context
-def tags(ctx, collection, output_json):
+def tags(ctx: Any, collection: str | None, output_json: bool) -> None:
     """List all tags in the library.
 
     Returns all tags used in the library, or only tags from a specific collection.
@@ -650,7 +663,7 @@ def tags(ctx, collection, output_json):
     help="Output results as JSON",
 )
 @click.pass_context
-def subset(ctx, keys, output_json):
+def subset(ctx: Any, keys: tuple[str, ...], output_json: bool) -> None:
     """Get multiple items by their keys in a single call.
 
     Efficiently retrieve up to 50 items by key in a single API call.
@@ -708,7 +721,7 @@ def subset(ctx, keys, output_json):
     help="Output results as JSON",
 )
 @click.pass_context
-def alldoi(ctx, dois, output_json):  # noqa: PLR0912
+def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa: PLR0912
     """Look up DOIs in the local Zotero library and return their Zotero IDs.
 
     Accepts one or more DOIs as arguments and checks if they exist in the library.
@@ -795,7 +808,7 @@ def alldoi(ctx, dois, output_json):  # noqa: PLR0912
 
 @main.command()
 @click.pass_context
-def doiindex(ctx):
+def doiindex(ctx: Any) -> None:
     """Output the complete DOI-to-key mapping for the library.
 
     Returns a JSON mapping of normalised DOIs to item keys and original DOIs.
@@ -831,7 +844,7 @@ def doiindex(ctx):
 @main.command()
 @click.argument("key")
 @click.pass_context
-def fulltext(ctx, key):
+def fulltext(ctx: Any, key: str) -> None:
     """Get full-text content of an attachment.
 
     Returns the full-text content extracted from a PDF or other attachment.
@@ -865,14 +878,14 @@ def fulltext(ctx, key):
         sys.exit(1)
 
 
-def _build_doi_index_full(zot):
+def _build_doi_index_full(zot: zotero.Zotero) -> dict[str, dict[str, str]]:
     """Build a mapping of normalised DOIs to Zotero item keys and original DOIs.
 
     Returns:
         Dict mapping normalised DOIs to dicts with 'key' and 'original' fields
 
     """
-    doi_map = {}
+    doi_map: dict[str, dict[str, str]] = {}
     all_items = zot.everything(zot.items())
 
     for item in all_items:
@@ -889,14 +902,14 @@ def _build_doi_index_full(zot):
     return doi_map
 
 
-def _build_doi_index(zot):
+def _build_doi_index(zot: zotero.Zotero) -> dict[str, str]:
     """Build a mapping of normalised DOIs to Zotero item keys.
 
     Returns:
         Dict mapping normalised DOIs to item keys
 
     """
-    doi_map = {}
+    doi_map: dict[str, str] = {}
     all_items = zot.everything(zot.items())
 
     for item in all_items:
@@ -913,7 +926,9 @@ def _build_doi_index(zot):
     return doi_map
 
 
-def _format_s2_paper(paper, in_library=None):
+def _format_s2_paper(
+    paper: dict[str, Any], in_library: bool | None = None
+) -> dict[str, Any]:
     """Format a Semantic Scholar paper for output.
 
     Args:
@@ -924,7 +939,7 @@ def _format_s2_paper(paper, in_library=None):
         Formatted dict for output
 
     """
-    result = {
+    result: dict[str, Any] = {
         "paperId": paper.get("paperId"),
         "doi": paper.get("doi"),
         "title": paper.get("title"),
@@ -943,7 +958,9 @@ def _format_s2_paper(paper, in_library=None):
     return result
 
 
-def _annotate_with_library(papers, doi_map):
+def _annotate_with_library(
+    papers: list[dict[str, Any]], doi_map: dict[str, str]
+) -> list[dict[str, Any]]:
     """Annotate papers with in_library status based on DOI matching.
 
     Args:
@@ -989,7 +1006,9 @@ def _annotate_with_library(papers, doi_map):
     help="Check if papers exist in local Zotero (default: True)",
 )
 @click.pass_context
-def related(ctx, doi, limit, min_citations, check_library):
+def related(
+    ctx: Any, doi: str, limit: int, min_citations: int, check_library: bool
+) -> None:
     """Find papers related to a given paper using Semantic Scholar.
 
     Uses SPECTER2 embeddings to find semantically similar papers.
@@ -1068,7 +1087,9 @@ def related(ctx, doi, limit, min_citations, check_library):
     help="Check if papers exist in local Zotero (default: True)",
 )
 @click.pass_context
-def citations(ctx, doi, limit, min_citations, check_library):
+def citations(
+    ctx: Any, doi: str, limit: int, min_citations: int, check_library: bool
+) -> None:
     """Find papers that cite a given paper using Semantic Scholar.
 
     Examples:
@@ -1145,7 +1166,9 @@ def citations(ctx, doi, limit, min_citations, check_library):
     help="Check if papers exist in local Zotero (default: True)",
 )
 @click.pass_context
-def references(ctx, doi, limit, min_citations, check_library):
+def references(
+    ctx: Any, doi: str, limit: int, min_citations: int, check_library: bool
+) -> None:
     """Find papers referenced by a given paper using Semantic Scholar.
 
     Examples:
@@ -1237,7 +1260,16 @@ def references(ctx, doi, limit, min_citations, check_library):
     help="Check if papers exist in local Zotero (default: True)",
 )
 @click.pass_context
-def s2search(ctx, query, limit, year, open_access, sort, min_citations, check_library):
+def s2search(
+    ctx: Any,
+    query: str,
+    limit: int,
+    year: str | None,
+    open_access: bool,
+    sort: str | None,
+    min_citations: int,
+    check_library: bool,
+) -> None:
     """Search for papers on Semantic Scholar.
 
     Search across Semantic Scholar's index of over 200M papers.

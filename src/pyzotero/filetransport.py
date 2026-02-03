@@ -30,9 +30,11 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
+
 import asyncio
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 import httpx
 from httpx import (
@@ -65,7 +67,7 @@ httpx.URL.is_absolute_url = property(is_absolute_url)
 
 
 class FileTransport(AsyncBaseTransport, BaseTransport):
-    def _handle(self, request: Request) -> tuple[Optional[int], httpx.Headers]:
+    def _handle(self, request: Request) -> tuple[int | None, httpx.Headers]:
         if request.url.host and request.url.host != "localhost":
             raise NotImplementedError("Only local paths are allowed")
         if request.method in {"PUT", "DELETE"}:
@@ -131,7 +133,7 @@ class FileTransport(AsyncBaseTransport, BaseTransport):
 
 
 class Client(_Client):
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.mount("file://", FileTransport())
 
@@ -140,7 +142,7 @@ class Client(_Client):
 
 
 class AsyncClient(_AsyncClient):
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.mount("file://", FileTransport())
 

@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import io
 import zipfile
+from collections.abc import Callable, Generator
 from functools import wraps
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar
 from urllib.parse import urlparse
 
 import bibtexparser
@@ -21,25 +22,29 @@ from ._utils import DEFAULT_TIMEOUT, build_url, get_backoff_duration
 from .errors import error_handler
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    pass
+
+T = TypeVar("T")
 
 
-def cleanwrap(func: Callable) -> Callable:
+def cleanwrap(func: Callable[..., T]) -> Callable[..., Generator[T, None, None]]:
     """Wrap for Zotero._cleanup to process multiple items."""
 
     @wraps(func)
-    def enc(self, *args, **kwargs):
+    def enc(self: Any, *args: Any, **kwargs: Any) -> Generator[T, None, None]:
         """Send each item to _cleanup()."""
         return (func(self, item, **kwargs) for item in args)
 
     return enc
 
 
-def tcache(func: Callable) -> Callable:
+def tcache(
+    func: Callable[..., tuple[str, dict[str, Any]]],
+) -> Callable[..., dict[str, Any]]:
     """Handle URL building and caching for template functions."""
 
     @wraps(func)
-    def wrapped_f(self, *args, **kwargs):
+    def wrapped_f(self: Any, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Call the decorated function to get query string and params,
         builds URL, retrieves template, caches result, and returns template.
         """
@@ -69,7 +74,9 @@ def tcache(func: Callable) -> Callable:
     return wrapped_f
 
 
-def backoff_check(func: Callable) -> Callable:
+def backoff_check(
+    func: Callable[..., httpx.Response],
+) -> Callable[..., bool]:
     """Perform backoff processing for write operations.
 
     func must return a Requests GET / POST / PUT / PATCH / DELETE etc.
@@ -82,7 +89,7 @@ def backoff_check(func: Callable) -> Callable:
     """
 
     @wraps(func)
-    def wrapped_f(self, *args, **kwargs):
+    def wrapped_f(self: Any, *args: Any, **kwargs: Any) -> bool:
         self._check_backoff()
         # resp is a Requests response object
         resp = func(self, *args, **kwargs)
@@ -100,11 +107,11 @@ def backoff_check(func: Callable) -> Callable:
     return wrapped_f
 
 
-def retrieve(func: Callable) -> Callable:
+def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
     """Call _retrieve_data() and pass the result to the correct processor."""
 
     @wraps(func)
-    def wrapped_f(self, *args, **kwargs) -> Any:
+    def wrapped_f(self: Any, *args: Any, **kwargs: Any) -> Any:
         """Return result of _retrieve_data().
 
         func's return value is part of a URI, and it's this
@@ -172,10 +179,10 @@ def retrieve(func: Callable) -> Callable:
     return wrapped_f
 
 
-def ss_wrap(func: Callable) -> Callable:
+def ss_wrap(func: Callable[..., T]) -> Callable[..., T]:
     """Ensure that a SavedSearch object exists before method execution."""
 
-    def wrapper(self, *args, **kwargs):
+    def wrapper(self: Any, *args: Any, **kwargs: Any) -> T:
         if not self.savedsearch:
             # Import here to avoid circular imports
             from ._search import SavedSearch  # noqa: PLC0415
