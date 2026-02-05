@@ -9,7 +9,15 @@ from typing import Any
 import click
 import httpx
 
-from pyzotero import __version__, zotero
+from pyzotero import __version__
+from pyzotero._helpers import (
+    annotate_with_library,
+    build_doi_index,
+    build_doi_index_full,
+    format_s2_paper,
+    get_zotero_client,
+    normalize_doi,
+)
 from pyzotero.semantic_scholar import (
     PaperNotFoundError,
     RateLimitError,
@@ -21,34 +29,6 @@ from pyzotero.semantic_scholar import (
     search_papers,
 )
 from pyzotero.zotero import chunks
-
-
-def _get_zotero_client(locale: str = "en-US") -> zotero.Zotero:
-    """Get a Zotero client configured for local access."""
-    return zotero.Zotero(library_id="0", library_type="user", local=True, locale=locale)
-
-
-def _normalize_doi(doi: str) -> str:
-    """Normalise a DOI for case-insensitive matching.
-
-    Strips common prefixes (https://doi.org/, http://doi.org/, doi:) and converts to lowercase.
-    DOIs are case-insensitive per the DOI specification.
-    """
-    if not doi:
-        return ""
-
-    # Strip whitespace
-    doi = doi.strip()
-
-    # Strip common prefixes
-    prefixes = ["https://doi.org/", "http://doi.org/", "doi:"]
-    for prefix in prefixes:
-        if doi.lower().startswith(prefix.lower()):
-            doi = doi[len(prefix) :]
-            break
-
-    # Convert to lowercase for case-insensitive matching
-    return doi.lower().strip()
 
 
 @click.group()
@@ -147,7 +127,7 @@ def search(  # noqa: PLR0912, PLR0915
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         # Build query parameters
         params = {"limit": limit}
@@ -334,7 +314,7 @@ def listcollections(ctx: Any, limit: int | None) -> None:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         # Build query parameters
         params = {}
@@ -405,7 +385,7 @@ def itemtypes(ctx: Any) -> None:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         # Get all item types
         item_types = zot.item_types()
@@ -435,7 +415,7 @@ def test(ctx: Any) -> None:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         # Call settings() to test the connection
         # This should return {} if Zotero is running and listening
@@ -486,7 +466,7 @@ def item(ctx: Any, key: str, output_json: bool) -> None:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         # Fetch the item
         result = zot.item(key)
@@ -561,7 +541,7 @@ def children(ctx: Any, key: str, output_json: bool) -> None:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         # Fetch children
         results = zot.children(key)
@@ -627,7 +607,7 @@ def tags(ctx: Any, collection: str | None, output_json: bool) -> None:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         # Fetch tags
         if collection:
@@ -677,7 +657,7 @@ def subset(ctx: Any, keys: tuple[str, ...], output_json: bool) -> None:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         if len(keys) > 50:  # noqa: PLR2004 - Zotero API limit
             click.echo("Error: Maximum 50 items per call.", err=True)
@@ -739,7 +719,7 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         # Build a mapping of normalized DOIs to (original_doi, zotero_key)
         click.echo("Building DOI index from library...", err=True)
@@ -754,7 +734,7 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
             item_doi = data.get("DOI", "")
 
             if item_doi:
-                normalized_doi = _normalize_doi(item_doi)
+                normalized_doi = normalize_doi(item_doi)
                 item_key = data.get("key", "")
 
                 if normalized_doi and item_key:
@@ -776,7 +756,7 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
         not_found = []
 
         for input_doi in dois:
-            normalized_input = _normalize_doi(input_doi)
+            normalized_input = normalize_doi(input_doi)
 
             if normalized_input in doi_map:
                 original_doi, zotero_key = doi_map[normalized_input]
@@ -828,10 +808,10 @@ def doiindex(ctx: Any) -> None:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         click.echo("Building DOI index from library...", err=True)
-        doi_map = _build_doi_index_full(zot)
+        doi_map = build_doi_index_full(zot)
         click.echo(f"Indexed {len(doi_map)} items with DOIs", err=True)
 
         click.echo(json.dumps(doi_map, indent=2))
@@ -863,7 +843,7 @@ def fulltext(ctx: Any, key: str) -> None:
     """
     try:
         locale = ctx.obj.get("locale", "en-US")
-        zot = _get_zotero_client(locale)
+        zot = get_zotero_client(locale)
 
         result = zot.fulltext_item(key)
 
@@ -876,110 +856,6 @@ def fulltext(ctx: Any, key: str) -> None:
     except Exception as e:
         click.echo(f"Error: {e!s}", err=True)
         sys.exit(1)
-
-
-def _build_doi_index_full(zot: zotero.Zotero) -> dict[str, dict[str, str]]:
-    """Build a mapping of normalised DOIs to Zotero item keys and original DOIs.
-
-    Returns:
-        Dict mapping normalised DOIs to dicts with 'key' and 'original' fields
-
-    """
-    doi_map: dict[str, dict[str, str]] = {}
-    all_items = zot.everything(zot.items())
-
-    for item in all_items:
-        data = item.get("data", {})
-        item_doi = data.get("DOI", "")
-
-        if item_doi:
-            normalised_doi = _normalize_doi(item_doi)
-            item_key = data.get("key", "")
-
-            if normalised_doi and item_key:
-                doi_map[normalised_doi] = {"key": item_key, "original": item_doi}
-
-    return doi_map
-
-
-def _build_doi_index(zot: zotero.Zotero) -> dict[str, str]:
-    """Build a mapping of normalised DOIs to Zotero item keys.
-
-    Returns:
-        Dict mapping normalised DOIs to item keys
-
-    """
-    doi_map: dict[str, str] = {}
-    all_items = zot.everything(zot.items())
-
-    for item in all_items:
-        data = item.get("data", {})
-        item_doi = data.get("DOI", "")
-
-        if item_doi:
-            normalised_doi = _normalize_doi(item_doi)
-            item_key = data.get("key", "")
-
-            if normalised_doi and item_key:
-                doi_map[normalised_doi] = item_key
-
-    return doi_map
-
-
-def _format_s2_paper(
-    paper: dict[str, Any], in_library: bool | None = None
-) -> dict[str, Any]:
-    """Format a Semantic Scholar paper for output.
-
-    Args:
-        paper: Normalised paper dict from semantic_scholar module
-        in_library: Boolean indicating if paper is in local Zotero
-
-    Returns:
-        Formatted dict for output
-
-    """
-    result: dict[str, Any] = {
-        "paperId": paper.get("paperId"),
-        "doi": paper.get("doi"),
-        "title": paper.get("title"),
-        "authors": [a.get("name") for a in (paper.get("authors") or [])],
-        "year": paper.get("year"),
-        "venue": paper.get("venue"),
-        "citationCount": paper.get("citationCount"),
-        "referenceCount": paper.get("referenceCount"),
-        "isOpenAccess": paper.get("isOpenAccess"),
-        "openAccessPdfUrl": paper.get("openAccessPdfUrl"),
-    }
-
-    if in_library is not None:
-        result["inLibrary"] = in_library
-
-    return result
-
-
-def _annotate_with_library(
-    papers: list[dict[str, Any]], doi_map: dict[str, str]
-) -> list[dict[str, Any]]:
-    """Annotate papers with in_library status based on DOI matching.
-
-    Args:
-        papers: List of normalised paper dicts
-        doi_map: Dict mapping normalised DOIs to Zotero item keys
-
-    Returns:
-        List of formatted paper dicts with inLibrary field
-
-    """
-    results = []
-    for paper in papers:
-        doi = paper.get("doi")
-        in_library = False
-        if doi:
-            normalised = _normalize_doi(doi)
-            in_library = normalised in doi_map
-        results.append(_format_s2_paper(paper, in_library))
-    return results
 
 
 @main.command()
@@ -1039,11 +915,11 @@ def related(
         if check_library:
             click.echo("Checking local Zotero library...", err=True)
             locale = ctx.obj.get("locale", "en-US")
-            zot = _get_zotero_client(locale)
-            doi_map = _build_doi_index(zot)
-            output_papers = _annotate_with_library(papers, doi_map)
+            zot = get_zotero_client(locale)
+            doi_map = build_doi_index(zot)
+            output_papers = annotate_with_library(papers, doi_map)
         else:
-            output_papers = [_format_s2_paper(p) for p in papers]
+            output_papers = [format_s2_paper(p) for p in papers]
 
         click.echo(
             json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
@@ -1118,11 +994,11 @@ def citations(
         if check_library:
             click.echo("Checking local Zotero library...", err=True)
             locale = ctx.obj.get("locale", "en-US")
-            zot = _get_zotero_client(locale)
-            doi_map = _build_doi_index(zot)
-            output_papers = _annotate_with_library(papers, doi_map)
+            zot = get_zotero_client(locale)
+            doi_map = build_doi_index(zot)
+            output_papers = annotate_with_library(papers, doi_map)
         else:
-            output_papers = [_format_s2_paper(p) for p in papers]
+            output_papers = [format_s2_paper(p) for p in papers]
 
         click.echo(
             json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
@@ -1197,11 +1073,11 @@ def references(
         if check_library:
             click.echo("Checking local Zotero library...", err=True)
             locale = ctx.obj.get("locale", "en-US")
-            zot = _get_zotero_client(locale)
-            doi_map = _build_doi_index(zot)
-            output_papers = _annotate_with_library(papers, doi_map)
+            zot = get_zotero_client(locale)
+            doi_map = build_doi_index(zot)
+            output_papers = annotate_with_library(papers, doi_map)
         else:
-            output_papers = [_format_s2_paper(p) for p in papers]
+            output_papers = [format_s2_paper(p) for p in papers]
 
         click.echo(
             json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
@@ -1306,11 +1182,11 @@ def s2search(
         if check_library:
             click.echo("Checking local Zotero library...", err=True)
             locale = ctx.obj.get("locale", "en-US")
-            zot = _get_zotero_client(locale)
-            doi_map = _build_doi_index(zot)
-            output_papers = _annotate_with_library(papers, doi_map)
+            zot = get_zotero_client(locale)
+            doi_map = build_doi_index(zot)
+            output_papers = annotate_with_library(papers, doi_map)
         else:
-            output_papers = [_format_s2_paper(p) for p in papers]
+            output_papers = [format_s2_paper(p) for p in papers]
 
         click.echo(
             json.dumps(
