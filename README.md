@@ -1,4 +1,4 @@
-[![Supported Python versions](https://img.shields.io/pypi/pyversions/Pyzotero.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Docs](https://readthedocs.org/projects/pyzotero/badge/?version=latest)](http://pyzotero.readthedocs.org/en/latest/?badge=latest) [![PyPI Version](https://img.shields.io/pypi/v/Pyzotero.svg)](https://pypi.python.org/pypi/Pyzotero) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyzotero/badges/version.svg)](https://anaconda.org/conda-forge/pyzotero) [![Downloads](https://pepy.tech/badge/pyzotero)](https://pepy.tech/project/pyzotero)  
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/Pyzotero.svg?style=flat)](https://pypi.python.org/pypi/Pyzotero/) [![Docs](https://readthedocs.org/projects/pyzotero/badge/?version=latest)](http://pyzotero.readthedocs.org/en/latest/?badge=latest) [![PyPI Version](https://img.shields.io/pypi/v/Pyzotero.svg)](https://pypi.python.org/pypi/Pyzotero) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pyzotero/badges/version.svg)](https://anaconda.org/conda-forge/pyzotero) [![Downloads](https://pepy.tech/badge/pyzotero)](https://pepy.tech/project/pyzotero)
 
 # Pyzotero: An API Client for the Zotero API
 
@@ -10,7 +10,7 @@
     - For **group libraries**, the ID can be found by opening the group's page: `https://www.zotero.org/groups/groupname`, and hovering over the `group settings` link. The ID is the integer after `/groups/`
 3. You'll also need<sup>†</sup> to get an **API key** [here][2]
 4. Are you accessing your own Zotero library? `library_type` is `'user'`
-5. Are you accessing a shared group library? `library_type` is `'group'`.  
+5. Are you accessing a shared group library? `library_type` is `'group'`.
 
 Then:
 
@@ -28,13 +28,29 @@ for item in items:
 
 Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
 
+# Installation
+
+* Using [uv][11]: `uv add pyzotero`
+* Using [pip][10]: `pip install pyzotero`
+* Using Anaconda: `conda install conda-forge::pyzotero`
+
+Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero".
+
 # Command-Line Interface
 
-Pyzotero includes an optional command-line interface for searching and querying your local Zotero library. The CLI must be installed separately (see [Installation](#optional-command-line-interface)).
+Pyzotero includes an optional CLI for searching and querying your local Zotero library.
 
-## Basic Usage
+## Installing the CLI
 
-The CLI connects to your local Zotero installation and allows you to search your library, list collections, and view item types:
+* Using [uv][11]: `uv add "pyzotero[cli]"`
+* Using [pip][10]: `pip install "pyzotero[cli]"`
+
+Or run it directly without installing:
+
+* Using [uvx][11]: `uvx --from "pyzotero[cli]" pyzotero search -q "your query"`
+* Using [pipx][10]: `pipx run --spec "pyzotero[cli]" pyzotero search -q "your query"`
+
+## Usage
 
 ```bash
 # Search for top-level items
@@ -74,37 +90,72 @@ By default, the CLI outputs human-readable text with a subset of metadata includ
 
 Use the `--json` flag to output structured JSON.
 
-# Installation
+# MCP Server
 
-* Using [uv][11]: `uv add pyzotero`
-* Using [pip][10]: `pip install pyzotero`
-* Using Anaconda:`conda install conda-forge::pyzotero`
+Pyzotero includes an optional [MCP](https://modelcontextprotocol.io) server that exposes your local Zotero library and Semantic Scholar integration as tools for LLMs. This lets sandboxed applications such as Claude Desktop access your Zotero library without needing direct CLI access.
 
-## Optional: Command-Line Interface
+## Installing the MCP server
 
-Pyzotero includes an optional command-line interface for searching and querying your local Zotero library. As it uses the local API server introduced in Zotero 7, it requires "Allow other applications on this computer to communicate with Zotero" to be enabled in Zotero's Settings > Advanced.
+* Using [uv][11]: `uv add "pyzotero[mcp]"`
+* Using [pip][10]: `pip install "pyzotero[mcp]"`
+* As a standalone tool: `uv tool install "pyzotero[mcp]"`
 
-### Installing the CLI
+## Claude Desktop Configuration
 
-To install Pyzotero with the CLI:
+Add the following to your Claude Desktop configuration file:
 
-* Using [uv][11]: `uv add "pyzotero[cli]"`
-* Using [pip][10]: `pip install "pyzotero[cli]"`
+If `pyzotero-mcp` is installed:
 
-### Using the CLI without installing
+```json
+{
+  "mcpServers": {
+    "zotero": {
+      "command": "pyzotero-mcp"
+    }
+  }
+}
+```
 
-If you just want to use the CLI without permanently installing Pyzotero, you can run it directly:
+Or, without installing, using uvx:
 
-* Using [uvx][11]: `uvx --from "pyzotero[cli]" pyzotero search -q "your query"`
-* Using [pipx][10]: `pipx run --spec "pyzotero[cli]" pyzotero search -q "your query"`
+```json
+{
+  "mcpServers": {
+    "zotero": {
+      "command": "uvx",
+      "args": ["--from", "pyzotero[mcp]", "pyzotero-mcp"]
+    }
+  }
+}
+```
 
-See the [Command-Line Interface](#command-line-interface) section below for usage details.
+## Available Tools
+
+### Zotero Library Tools
+
+| Tool | Description |
+|------|-------------|
+| `search` | Search the local Zotero library by query, item type, collection, tag, or full-text content |
+| `get_item` | Get a single Zotero item by its key |
+| `get_children` | Get child items (attachments, notes) of a Zotero item |
+| `list_collections` | List all collections in the library |
+| `list_tags` | List all tags, optionally filtered by collection |
+| `get_fulltext` | Get full-text content of a PDF or other attachment |
+
+### Semantic Scholar Tools
+
+| Tool | Description |
+|------|-------------|
+| `find_related` | Find semantically similar papers using SPECTER2 embeddings |
+| `get_citations` | Find papers that cite a given paper |
+| `get_references` | Find papers referenced by a given paper |
+| `search_semantic_scholar` | Search across Semantic Scholar's paper index |
+
+The Semantic Scholar tools can optionally check whether results already exist in your local Zotero library (enabled by default via the `check_library` parameter).
+
+# Development
 
 ## Installing from Source
-
-* From a local clone, if you wish to install Pyzotero from a specific branch: 
-
-Example:
 
 ``` bash
 git clone git://github.com/urschrei/pyzotero.git
@@ -128,8 +179,7 @@ Pull requests are welcomed. Please read the [contribution guidelines](CONTRIBUTI
 
 ## Versioning
 
-As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); version increments are performed as follows:  
-
+As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); version increments are performed as follows:
 
 1. MAJOR version will increment with incompatible API changes,
 2. MINOR version will increment when functionality is added in a backwards-compatible manner, and
@@ -137,15 +187,15 @@ As of v1.0.0, Pyzotero is versioned according to [Semver](http://semver.org); ve
 
 # Citation
 
-Pyzotero has a DOI:  
-[![DOI](https://zenodo.org/badge/1423403.svg)](https://zenodo.org/badge/latestdoi/1423403)  
-You may also cite Pyzotero using [CITATION.cff](CITATION.cff).  
-A sample citation (APA 6th edition) might look like:  
+Pyzotero has a DOI:
+[![DOI](https://zenodo.org/badge/1423403.svg)](https://zenodo.org/badge/latestdoi/1423403)
+You may also cite Pyzotero using [CITATION.cff](CITATION.cff).
+A sample citation (APA 6th edition) might look like:
 > Stephan Hügel, The Pyzotero Authors (2019, May 18). urschrei/pyzotero: Version v1.3.15. http://doi.org/10.5281/zenodo.2917290
 
 # License
 
-Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENSE.md](LICENSE.md) for details.  
+Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENSE.md](LICENSE.md) for details.
 
 [1]: https://www.zotero.org/support/dev/web_api/v3/start
 [2]: https://www.zotero.org/settings/keys/new
@@ -156,4 +206,3 @@ Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENSE.m
 [10]: http://www.pip-installer.org/en/latest/index.html
 [11]: https://docs.astral.sh/uv
 † This isn't strictly true: you only need an API key for personal libraries and non-public group libraries.
-
