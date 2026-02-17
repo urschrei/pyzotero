@@ -12,7 +12,11 @@ import re
 import time
 from collections.abc import Generator
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import os
+
 from urllib.parse import (
     parse_qs,
     parse_qsl,
@@ -588,7 +592,10 @@ class Zotero:
         return self._build_query(query_string, no_params=True)
 
     def dump(
-        self, itemkey: str, filename: str | None = None, path: str | None = None
+        self,
+        itemkey: str,
+        filename: str | os.PathLike[str] | None = None,
+        path: str | os.PathLike[str] | None = None,
     ) -> None:
         """Dump a file attachment to disk, with optional filename and path."""
         if not filename:
