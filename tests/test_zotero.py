@@ -715,6 +715,26 @@ class ZoteroTests(unittest.TestCase):
         request = mock.last_request()
         self.assertFalse("If-Unmodified-Since-Version" in request.headers)
 
+    def testItemCreationWithParentId(self):
+        """Checks that parentItem is set in the POST payload when parentid is given"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/items",
+            body=self.creation_doc,
+            content_type="application/json",
+            status=200,
+        )
+        note = {"itemType": "note", "note": "A test note", "tags": []}
+        resp = zot.create_items([note], parentid="PARENT123")
+        self.assertEqual("ABC123", resp["success"]["0"])
+        request = mock.last_request()
+        request_body = json.loads(request.body.decode("utf-8"))
+        self.assertEqual(request_body[0]["parentItem"], "PARENT123")
+        # Should be a single POST, no PATCH requests
+        self.assertEqual(len(mock.latest_requests()), 1)
+
     def testItemCreationLastModified(self):
         """Checks 'If-Unmodified-Since-Version' header correctly set on create_items"""
         mock = MockClient()
