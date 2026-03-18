@@ -22,10 +22,10 @@ class SavedSearch:
 
     def __init__(self, zinstance: Zotero) -> None:
         super().__init__()
-        self.zinstance = zinstance
-        self.searchkeys = ("condition", "operator", "value")
+        self.zinstance: Zotero = zinstance
+        self.searchkeys: tuple[str, str, str] = ("condition", "operator", "value")
         # always exclude these fields from zotero.item_keys()
-        self.excluded_items = (
+        self.excluded_items: tuple[str, ...] = (
             "accessDate",
             "date",
             "pages",
@@ -144,14 +144,14 @@ class SavedSearch:
             self.conditions_operators[df] = self.conditions_operators.get("datefield")
         # aliases for field - this makes a blocking API call unless item types have been cached
         item_fields = [
-            itm["field"]
+            itm["field"]  # ty: ignore[invalid-argument-type]
             for itm in self.zinstance.item_fields()
-            if itm["field"] not in set(self.excluded_items)
+            if itm["field"] not in set(self.excluded_items)  # ty: ignore[invalid-argument-type]
         ]
         for itf in item_fields:
             self.conditions_operators[itf] = self.conditions_operators.get("field")
 
-    def _validate(self, conditions: list[dict]) -> None:
+    def _validate(self, conditions: list[dict[str, str]]) -> None:
         """Validate saved search conditions.
 
         Raises an error if any contain invalid operators.

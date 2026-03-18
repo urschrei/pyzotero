@@ -13,7 +13,7 @@ import httpx
 from ._utils import get_backoff_duration
 
 if TYPE_CHECKING:
-    from typing import Any
+    from ._types import ZoteroClientProtocol
 
 
 class PyZoteroError(Exception):
@@ -115,7 +115,7 @@ ERROR_CODES: dict[int, type[PyZoteroError]] = {
 
 
 def error_handler(
-    zot: Any, req: httpx.Response, exc: BaseException | None = None
+    zot: ZoteroClientProtocol, req: httpx.Response, exc: BaseException | None = None
 ) -> None:
     """Error handler for HTTP requests.
 

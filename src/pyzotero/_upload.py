@@ -22,6 +22,7 @@ from .errors import error_handler
 
 if TYPE_CHECKING:
     from ._client import Zotero
+    from ._types import JsonDict
 
 
 class Zupload:
@@ -33,7 +34,7 @@ class Zupload:
     def __init__(
         self,
         zinstance: Zotero,
-        payload: list[dict],
+        payload: list[JsonDict],
         parentid: str | None = None,
         basedir: str | Path | None = None,
     ) -> None:

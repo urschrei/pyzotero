@@ -30,7 +30,7 @@ def copy_specific_pdf(item_id, output_dir, new_name=None):
             original_filename = item["data"].get("filename", default_filename)
 
             # Use new_name if provided, otherwise use original filename
-            filename = new_name if new_name else original_filename
+            filename = new_name or original_filename
 
             # Add .pdf extension if not present
             if not filename.lower().endswith(".pdf"):

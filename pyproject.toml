@@ -1,6 +1,6 @@
 [project]
 name = "pyzotero"
-version = "1.7.6"
+version = "1.11.0"
 description = "Python wrapper for the Zotero API"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -35,20 +35,21 @@ documentation = "https://pyzotero.readthedocs.org"
 
 [project.optional-dependencies]
 cli = ["click>=8.0.0"]
+mcp = ["mcp[cli]>=1.0.0; python_version>='3.10'"]
 
 [project.scripts]
 pyzotero = "pyzotero.cli:main"
+pyzotero-mcp = "pyzotero.mcp_server:main"
 
 [dependency-groups]
 dev = [
     "pytest >= 8.4.2",
     "pytz>=2025.2",
-    "httpretty >= 1.1.4",
     "python-dateutil",
     "ipython",
     "pytest-asyncio",
     "pytest-cov>=6.0.0",
-    "tzdata>=2025.2"
+    "tzdata>=2025.2",
 ]
 doc = [
     "sphinx",
@@ -110,6 +111,9 @@ ignore = ["ANN001", "ANN003", "ANN202", "ANN201", "DOC201", "E501", "PLR0904", "
 fixable = ["ALL"]
 unfixable = []
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # Allow assert in tests
+
 [tool.ruff.format]
 # Like Black, use double quotes for strings.
 quote-style = "double"
@@ -117,5 +121,9 @@ quote-style = "double"
 # Like Black, indent with spaces, rather than tabs.
 indent-style = "space"
 
+[tool.ty.src]
+exclude = ["tests/", "doc/"]
+
 [tool.ty.rules]
+all = "warn"
 possibly-missing-attribute = "ignore"

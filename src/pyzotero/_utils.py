@@ -8,8 +8,11 @@ from __future__ import annotations
 import uuid
 from collections.abc import Iterator
 from pathlib import PurePosixPath
-from typing import TypeVar
+from typing import TYPE_CHECKING, TypeVar
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+
+if TYPE_CHECKING:
+    import httpx
 
 # Avoid hanging the application if there's no server response
 DEFAULT_TIMEOUT = 30
@@ -64,7 +67,7 @@ def chunks(iterable: list[T], n: int) -> Iterator[list[T]]:
         yield iterable[i : i + n]
 
 
-def get_backoff_duration(headers) -> str | None:
+def get_backoff_duration(headers: httpx.Headers | dict[str, str]) -> str | None:
     """Extract backoff duration from response headers.
 
     The Zotero API may return backoff instructions via either the
