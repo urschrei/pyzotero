@@ -177,9 +177,13 @@ class Zupload:
                 url=authdata["url"],
                 files=upload_pairs,
                 headers={"User-Agent": f"Pyzotero/{pz.__version__}"},
+                timeout=self.zinstance.upload_timeout,
             )
         except httpx.ConnectError:
             msg = "ConnectionError"
+            raise ze.UploadError(msg) from None
+        except httpx.TimeoutException:
+            msg = "Upload timed out. Try increasing upload_timeout when creating the Zotero instance."
             raise ze.UploadError(msg) from None
         try:
             upload.raise_for_status()

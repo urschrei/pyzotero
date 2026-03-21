@@ -70,6 +70,7 @@ class Zotero:
         locale: str = "en-US",
         local: bool = False,
         client: httpx.Client | None = None,
+        upload_timeout: int | float = 120,
     ) -> None:
         self.client: httpx.Client | None = None
         """Store Zotero credentials"""
@@ -102,6 +103,7 @@ class Zotero:
         self.tag_data = False
         self.request: httpx.Response | None = None
         self.snapshot = False
+        self.upload_timeout = upload_timeout
         self.client = client or httpx.Client(
             headers=self.default_headers(),
             follow_redirects=True,
