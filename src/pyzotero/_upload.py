@@ -42,12 +42,17 @@ class Zupload:
         self.zinstance = zinstance
         self.payload = payload
         self.parentid = parentid
-        if basedir is None:
-            self.basedir = Path()
-        elif isinstance(basedir, Path):
-            self.basedir = basedir
-        else:
-            self.basedir = Path(basedir)
+        self.basedir = Path() if basedir is None else Path(basedir)
+
+    def _check_response(self, req: httpx.Response) -> None:
+        """Raise on HTTP error and record any server-supplied backoff."""
+        try:
+            req.raise_for_status()
+        except httpx.HTTPError as exc:
+            error_handler(self.zinstance, req, exc)
+        backoff = get_backoff_duration(req.headers)
+        if backoff:
+            self.zinstance._set_backoff(backoff)
 
     def _verify(self, payload: list[dict]) -> None:
         """Ensure that all files to be attached exist.
@@ -99,13 +104,7 @@ class Zupload:
             content=to_send,
             headers=headers,
         )
-        try:
-            req.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self.zinstance, req, exc)
-        backoff = get_backoff_duration(req.headers)
-        if backoff:
-            self.zinstance._set_backoff(backoff)
+        self._check_response(req)
         data = req.json()
         for k in data["success"]:
             self.payload[int(k)]["key"] = data["success"][k]
@@ -115,9 +114,11 @@ class Zupload:
         self, attachment: str, reg_key: str, md5: str | None = None
     ) -> dict[str, Any]:
         """Step 1: get upload authorisation for a file."""
+        att_path = Path(attachment)
+        stat = att_path.stat()
         mtypes = mimetypes.guess_type(attachment)
         digest = hashlib.md5()  # noqa: S324
-        with Path(attachment).open("rb") as att:
+        with att_path.open("rb") as att:
             for chunk in iter(lambda: att.read(8192), b""):
                 digest.update(chunk)
         auth_headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -128,9 +129,9 @@ class Zupload:
             auth_headers["If-Match"] = md5
         data = {
             "md5": digest.hexdigest(),
-            "filename": Path(attachment).name,
-            "filesize": Path(attachment).stat().st_size,
-            "mtime": str(int(Path(attachment).stat().st_mtime * 1000)),
+            "filename": att_path.name,
+            "filesize": stat.st_size,
+            "mtime": str(int(stat.st_mtime * 1000)),
             "contentType": mtypes[0] or "application/octet-stream",
             "charset": mtypes[1],
             "params": 1,
@@ -144,13 +145,7 @@ class Zupload:
             data=data,
             headers=auth_headers,
         )
-        try:
-            auth_req.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self.zinstance, auth_req, exc)
-        backoff = get_backoff_duration(auth_req.headers)
-        if backoff:
-            self.zinstance._set_backoff(backoff)
+        self._check_response(auth_req)
         return auth_req.json()
 
     def _upload_file(
@@ -185,13 +180,7 @@ class Zupload:
         except httpx.TimeoutException:
             msg = "Upload timed out. Try increasing upload_timeout when creating the Zotero instance."
             raise ze.UploadError(msg) from None
-        try:
-            upload.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self.zinstance, upload, exc)
-        backoff = get_backoff_duration(upload.headers)
-        if backoff:
-            self.zinstance._set_backoff(backoff)
+        self._check_response(upload)
         # now check the responses
         return self._register_upload(authdata, reg_key)
 
@@ -211,13 +200,7 @@ class Zupload:
             data=reg_data,
             headers=reg_headers,
         )
-        try:
-            upload_reg.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self.zinstance, upload_reg, exc)
-        backoff = get_backoff_duration(upload_reg.headers)
-        if backoff:
-            self.zinstance._set_backoff(backoff)
+        self._check_response(upload_reg)
 
     def upload(self) -> dict[str, list]:
         """File upload functionality.
