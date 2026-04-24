@@ -202,6 +202,22 @@ class Zotero:
         if remainder > 0.0:
             time.sleep(remainder)
 
+    def _post_check(self, resp: httpx.Response) -> None:
+        """Raise on HTTP error and record any server-supplied backoff.
+
+        Centralises the post-request pattern used by every method that
+        performs an HTTP call: ``raise_for_status`` is dispatched through
+        ``error_handler`` to produce a PyZotero exception, and any
+        ``Backoff``/``Retry-After`` header is recorded on the instance.
+        """
+        try:
+            resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            error_handler(self, resp, exc)
+        backoff = get_backoff_duration(resp.headers)
+        if backoff:
+            self._set_backoff(backoff)
+
     def default_headers(self) -> dict[str, str]:
         """Return headers that are always OK to include."""
         _headers = {
@@ -300,13 +316,7 @@ class Zotero:
             self.request = response
             # since we'll be writing bytes, we need to set this to a type that will trigger the bytes processor
             self.request.headers["Content-Type"] = "text/plain"
-        try:
-            self.request.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self, self.request, exc)
-        backoff = get_backoff_duration(self.request.headers)
-        if backoff:
-            self._set_backoff(backoff)
+        self._post_check(self.request)
         return self.request
 
     def _extract_links(self) -> dict[str, str] | None:
@@ -368,13 +378,7 @@ class Zotero:
             # perform the request, and check whether the response returns 304
             self._check_backoff()
             req = self.client.get(query, headers=headers)
-            try:
-                req.raise_for_status()
-            except httpx.HTTPError as exc:
-                error_handler(self, req, exc)
-            backoff = get_backoff_duration(req.headers)
-            if backoff:
-                self._set_backoff(backoff)
+            self._post_check(req)
             return req.status_code == httpx.codes.NOT_MODIFIED
         # Still plenty of life left in't
         return False
@@ -518,13 +522,7 @@ class Zotero:
             params=params,
             headers=headers,
         )
-        try:
-            resp.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self, resp, exc)
-        backoff = get_backoff_duration(resp.headers)
-        if backoff:
-            self._set_backoff(backoff)
+        self._post_check(resp)
         return resp.json()
 
     def item_versions(self, **kwargs: Any) -> Any:
@@ -889,13 +887,7 @@ class Zotero:
             json=payload,
         )
         self.request = req
-        try:
-            req.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self, req, exc)
-        backoff = get_backoff_duration(self.request.headers)
-        if backoff:
-            self._set_backoff(backoff)
+        self._post_check(req)
         return req.json()
 
     @ss_wrap
@@ -915,13 +907,7 @@ class Zotero:
             params={"searchKey": ",".join(keys)},
         )
         self.request = req
-        try:
-            req.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self, req, exc)
-        backoff = get_backoff_duration(self.request.headers)
-        if backoff:
-            self._set_backoff(backoff)
+        self._post_check(req)
         return req.status_code
 
     def upload_attachments(
@@ -1086,15 +1072,8 @@ class Zotero:
             headers=headers,
         )
         self.request = req
-        try:
-            req.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self, req, exc)
-        resp = req.json()
-        backoff = get_backoff_duration(self.request.headers)
-        if backoff:
-            self._set_backoff(backoff)
-        return resp
+        self._post_check(req)
+        return req.json()
 
     def create_collection(
         self,
@@ -1136,13 +1115,7 @@ class Zotero:
             content=json.dumps(payload),
         )
         self.request = req
-        try:
-            req.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self, req, exc)
-        backoff = get_backoff_duration(req.headers)
-        if backoff:
-            self._set_backoff(backoff)
+        self._post_check(req)
         return req.json()
 
     @backoff_check
@@ -1245,13 +1218,7 @@ class Zotero:
                 json=chunk,
             )
             self.request = req
-            try:
-                req.raise_for_status()
-            except httpx.HTTPError as exc:
-                error_handler(self, req, exc)
-            backoff = get_backoff_duration(req.headers)
-            if backoff:
-                self._set_backoff(backoff)
+            self._post_check(req)
         return True
 
     def update_collections(self, payload: list[dict[str, Any]]) -> bool:
@@ -1271,13 +1238,7 @@ class Zotero:
                 json=chunk,
             )
             self.request = req
-            try:
-                req.raise_for_status()
-            except httpx.HTTPError as exc:
-                error_handler(self, req, exc)
-            backoff = get_backoff_duration(req.headers)
-            if backoff:
-                self._set_backoff(backoff)
+            self._post_check(req)
         return True
 
     @backoff_check
