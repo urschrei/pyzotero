@@ -233,7 +233,14 @@ class Zotero:
     ) -> dict[str, Any]:
         """Remove keys we added for internal use."""
         # this item's been retrieved from the API, we only need the 'data' entry
-        if to_clean.keys() == ["links", "library", "version", "meta", "key", "data"]:
+        if set(to_clean.keys()) == {
+            "links",
+            "library",
+            "version",
+            "meta",
+            "key",
+            "data",
+        }:
             to_clean = to_clean["data"]
         return {
             k: v for k, v in to_clean.items() if k in allow or k not in self.temp_keys
