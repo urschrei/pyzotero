@@ -52,6 +52,10 @@ from .filetransport import Client as File_Client
 __author__ = "Stephan Hügel"
 __api_version__ = "3"
 
+# Regex pattern used by the retrieve decorator to pick out the 'content='
+# URL parameter when dispatching Atom-format responses to processors.
+_CONTENT_RE = re.compile(r"(?<=content=)\w+")
+
 
 class Zotero:
     """Zotero API methods.
@@ -109,9 +113,9 @@ class Zotero:
         )
         # these aren't valid item fields, so never send them to the server
         self.temp_keys = {"key", "etag", "group_id", "updated"}
-        # determine which processor to use for the parsed content
-        self.fmt = re.compile(r"(?<=format=)\w+")
-        self.content = re.compile(r"(?<=content=)\w+")
+        # retained as an instance attribute for backwards compatibility; all
+        # usage inside pyzotero reads _CONTENT_RE at module scope.
+        self.content = _CONTENT_RE
         # JSON by default
         self.formats: dict[str, str] = {
             "application/atom+xml": "atom",
