@@ -756,26 +756,8 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
     locale = ctx.obj.get("locale", "en-US")
     zot = get_zotero_client(locale)
 
-    # Build a mapping of normalised DOIs to (original_doi, zotero_key)
     click.echo("Building DOI index from library...", err=True)
-    doi_map = {}
-
-    # Get all items using everything() which handles pagination automatically
-    all_items = zot.everything(zot.items())
-
-    # Process all items
-    for item in all_items:
-        data = item.get("data", {})
-        item_doi = data.get("DOI", "")
-
-        if item_doi:
-            normalised_doi = normalise_doi(item_doi)
-            item_key = data.get("key", "")
-
-            if normalised_doi and item_key:
-                # Store the original DOI from Zotero and the item key
-                doi_map[normalised_doi] = (item_doi, item_key)
-
+    doi_map = build_doi_index_full(zot)
     click.echo(f"Indexed {len(doi_map)} items with DOIs", err=True)
 
     # If no DOIs provided, return empty result
@@ -791,11 +773,9 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
     not_found = []
 
     for input_doi in dois:
-        normalised_input = normalise_doi(input_doi)
-
-        if normalised_input in doi_map:
-            original_doi, zotero_key = doi_map[normalised_input]
-            found.append({"doi": original_doi, "key": zotero_key})
+        entry = doi_map.get(normalise_doi(input_doi))
+        if entry is not None:
+            found.append({"doi": entry["original"], "key": entry["key"]})
         else:
             not_found.append(input_doi)
 
