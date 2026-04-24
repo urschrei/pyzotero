@@ -1201,45 +1201,38 @@ class Zotero:
             content=json.dumps(to_send),
         )
 
+    def _batch_update(self, payload: list[dict[str, Any]], collection: str) -> bool:
+        """POST a payload to the library in chunks of DEFAULT_NUM_ITEMS.
+
+        ``collection`` is the last path segment (e.g. ``"items"`` or
+        ``"collections"``) - the API only accepts 50 objects at a time, so
+        anything longer is split across multiple requests.
+        """
+        to_send = [self.check_items([p])[0] for p in payload]
+        url = build_url(
+            self.endpoint,
+            f"/{self.library_type}/{self.library_id}/{collection}/",
+        )
+        for chunk in chunks(to_send, DEFAULT_NUM_ITEMS):
+            self._check_backoff()
+            req = self.client.post(url=url, json=chunk)
+            self.request = req
+            self._post_check(req)
+        return True
+
     def update_items(self, payload: list[dict[str, Any]]) -> bool:
         """Update existing items.
 
         Accepts one argument, a list of dicts containing Item data.
         """
-        to_send = [self.check_items([p])[0] for p in payload]
-        # the API only accepts 50 items at a time, so we have to split anything longer
-        for chunk in chunks(to_send, DEFAULT_NUM_ITEMS):
-            self._check_backoff()
-            req = self.client.post(
-                url=build_url(
-                    self.endpoint,
-                    f"/{self.library_type}/{self.library_id}/items/",
-                ),
-                json=chunk,
-            )
-            self.request = req
-            self._post_check(req)
-        return True
+        return self._batch_update(payload, "items")
 
     def update_collections(self, payload: list[dict[str, Any]]) -> bool:
         """Update existing collections.
 
         Accepts one argument, a list of dicts containing Collection data.
         """
-        to_send = [self.check_items([p])[0] for p in payload]
-        # the API only accepts 50 items at a time, so we have to split anything longer
-        for chunk in chunks(to_send, DEFAULT_NUM_ITEMS):
-            self._check_backoff()
-            req = self.client.post(
-                url=build_url(
-                    self.endpoint,
-                    f"/{self.library_type}/{self.library_id}/collections/",
-                ),
-                json=chunk,
-            )
-            self.request = req
-            self._post_check(req)
-        return True
+        return self._batch_update(payload, "collections")
 
     @backoff_check
     def addto_collection(
