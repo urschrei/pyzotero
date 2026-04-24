@@ -29,7 +29,6 @@ from urllib.parse import (
 
 import httpx
 import whenever
-from httpx import Request
 
 import pyzotero as pz
 
@@ -955,26 +954,8 @@ class Zotero:
         Accepts a single argument: a list of one or more dicts.
         The retrieved fields are cached and re-used until a 304 call fails.
         """
-        params: dict[str, Any] = {"locale": self.locale, "timeout": DEFAULT_TIMEOUT}
-        query_string = "/itemFields"
-        r = Request(
-            "GET",
-            build_url(self.endpoint, query_string),
-            params=params,
-        )
-        response = self.client.send(r)
-        # now split up the URL
-        result = urlparse(str(response.url))
-        # construct cache key
-        cachekey = result.path + "_" + result.query
-        if self.templates.get(cachekey) and not self._updated(
-            query_string,
-            self.templates[cachekey],
-            cachekey,
-        ):
-            template = {t["field"] for t in self.templates[cachekey]["tmplt"]}
-        else:
-            template = {t["field"] for t in self.item_fields()}  # ty: ignore[invalid-argument-type]
+        # item_fields() is @tcache-decorated, so caching is handled there.
+        template = {t["field"] for t in self.item_fields()}  # ty: ignore[invalid-argument-type]
         # add fields we know to be OK
         template |= {
             "path",
