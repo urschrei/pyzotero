@@ -10,6 +10,11 @@ Example:
     # New style (preferred)
     from pyzotero import Zotero
 
+Maintainer note: do not add new exports here. Add new public symbols to
+``pyzotero/__init__.py`` and internal helpers to the relevant private module
+(``_client``, ``_utils``, etc.). This file exists only to preserve historic
+import paths.
+
 """
 
 # Re-export everything for backwards compatibility

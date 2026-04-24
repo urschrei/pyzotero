@@ -10,6 +10,10 @@ Example:
     # New style (preferred)
     from pyzotero import errors as ze
 
+Maintainer note: do not add new exception classes here. Add them to
+``pyzotero.errors`` and then mirror the import and ``__all__`` entry in
+this file to keep the backwards-compatible surface in sync.
+
 """
 
 # Re-export all exceptions for backwards compatibility

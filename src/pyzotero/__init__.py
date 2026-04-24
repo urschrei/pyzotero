@@ -1,4 +1,9 @@
-"""Pyzotero - Python wrapper for the Zotero API."""
+"""Pyzotero - Python wrapper for the Zotero API.
+
+Maintainer note: this module defines the public API surface. When adding
+a new public symbol, add it to both the imports below and to ``__all__``,
+and update ``doc/index.rst`` if it is user-facing.
+"""
 
 import importlib.metadata
 
