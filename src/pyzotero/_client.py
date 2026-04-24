@@ -220,10 +220,7 @@ class Zotero:
         to self.templates as a new dict using the specified key.
         """
         # cache template and retrieval time for subsequent calls
-        try:
-            thetime = whenever.ZonedDateTime.now("Europe/London").py_datetime()
-        except AttributeError:
-            thetime = whenever.ZonedDateTime.now("Europe/London").py_datetime()
+        thetime = whenever.ZonedDateTime.now("Europe/London").py_datetime()
         self.templates[key] = {"tmplt": response.json(), "updated": thetime}
         return copy.deepcopy(response.json())
 
