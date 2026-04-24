@@ -43,6 +43,38 @@ def _error(msg: str) -> str:
     return _json({"error": msg})
 
 
+def _run_s2_tool_lookup(
+    doi: str,
+    limit: int,
+    min_citations: int,
+    check_library: bool,
+    lookup: Callable[..., dict[str, Any]],
+) -> str:
+    """Drive the shared Semantic-Scholar-by-DOI lookup flow and return JSON.
+
+    Fetches papers via ``lookup(doi, id_type="doi", limit=limit)``, applies
+    the ``min_citations`` filter, optionally annotates each paper with its
+    presence in the local Zotero library, and serialises the payload.
+    """
+    result = lookup(doi, id_type="doi", limit=limit)
+    papers = result.get("papers", [])
+
+    if min_citations > 0:
+        papers = filter_by_citations(papers, min_citations)
+
+    if not papers:
+        return _json({"count": 0, "papers": []})
+
+    if check_library:
+        zot = get_zotero_client()
+        doi_map = build_doi_index(zot)
+        output_papers = annotate_with_library(papers, doi_map)
+    else:
+        output_papers = [format_s2_paper(p) for p in papers]
+
+    return _json({"count": len(output_papers), "papers": output_papers})
+
+
 def mcp_error_handler(func: F) -> F:
     """Translate exceptions raised inside an MCP tool to a JSON error payload.
 
@@ -314,23 +346,9 @@ def find_related(
         JSON with count and papers list.
 
     """
-    result = get_recommendations(doi, id_type="doi", limit=limit)
-    papers = result.get("papers", [])
-
-    if min_citations > 0:
-        papers = filter_by_citations(papers, min_citations)
-
-    if not papers:
-        return _json({"count": 0, "papers": []})
-
-    if check_library:
-        zot = get_zotero_client()
-        doi_map = build_doi_index(zot)
-        output_papers = annotate_with_library(papers, doi_map)
-    else:
-        output_papers = [format_s2_paper(p) for p in papers]
-
-    return _json({"count": len(output_papers), "papers": output_papers})
+    return _run_s2_tool_lookup(
+        doi, limit, min_citations, check_library, get_recommendations
+    )
 
 
 @mcp.tool()
@@ -353,23 +371,9 @@ def get_citations(
         JSON with count and papers list.
 
     """
-    result = s2_get_citations(doi, id_type="doi", limit=limit)
-    papers = result.get("papers", [])
-
-    if min_citations > 0:
-        papers = filter_by_citations(papers, min_citations)
-
-    if not papers:
-        return _json({"count": 0, "papers": []})
-
-    if check_library:
-        zot = get_zotero_client()
-        doi_map = build_doi_index(zot)
-        output_papers = annotate_with_library(papers, doi_map)
-    else:
-        output_papers = [format_s2_paper(p) for p in papers]
-
-    return _json({"count": len(output_papers), "papers": output_papers})
+    return _run_s2_tool_lookup(
+        doi, limit, min_citations, check_library, s2_get_citations
+    )
 
 
 @mcp.tool()
@@ -392,23 +396,9 @@ def get_references(
         JSON with count and papers list.
 
     """
-    result = s2_get_references(doi, id_type="doi", limit=limit)
-    papers = result.get("papers", [])
-
-    if min_citations > 0:
-        papers = filter_by_citations(papers, min_citations)
-
-    if not papers:
-        return _json({"count": 0, "papers": []})
-
-    if check_library:
-        zot = get_zotero_client()
-        doi_map = build_doi_index(zot)
-        output_papers = annotate_with_library(papers, doi_map)
-    else:
-        output_papers = [format_s2_paper(p) for p in papers]
-
-    return _json({"count": len(output_papers), "papers": output_papers})
+    return _run_s2_tool_lookup(
+        doi, limit, min_citations, check_library, s2_get_references
+    )
 
 
 @mcp.tool()
