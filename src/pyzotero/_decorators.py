@@ -6,19 +6,19 @@ They are tightly coupled with the Zotero class and are internal implementation d
 
 from __future__ import annotations
 
+import copy
 import io
 import zipfile
 from collections.abc import Callable, Generator
 from functools import wraps
 from typing import Any, TypeVar
-from urllib.parse import urlparse
+from urllib.parse import urlencode
 
 import bibtexparser
 import feedparser
 import httpx
-from httpx import Request
 
-from ._utils import DEFAULT_TIMEOUT, build_url, get_backoff_duration
+from ._utils import DEFAULT_TIMEOUT, get_backoff_duration
 from .errors import error_handler
 
 T = TypeVar("T")
@@ -43,28 +43,20 @@ def tcache(
     @wraps(func)
     def wrapped_f(self: Any, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Call the decorated function to get query string and params,
-        builds URL, retrieves template, caches result, and returns template.
+        check the local template cache, and retrieve + cache on miss.
         """
         query_string, params = func(self, *args, **kwargs)
         params["timeout"] = DEFAULT_TIMEOUT
-        r = Request(
-            "GET",
-            build_url(self.endpoint, query_string),
-            params=params,
-        )
-        response = self.client.send(r)
-
-        # now split up the URL
-        result = urlparse(str(response.url))
-        # construct cache key
-        cachekey = f"{result.path}_{result.query}"
+        # Build a stable cache key locally, without a network round-trip.
+        cachekey = f"{query_string}?{urlencode(sorted(params.items()))}"
         if self.templates.get(cachekey) and not self._updated(
             query_string,
             self.templates[cachekey],
             cachekey,
         ):
-            return self.templates[cachekey]["tmplt"]
-        # otherwise perform a normal request and cache the response
+            # Deep-copy so callers may mutate the result without corrupting
+            # the cached entry (matches the contract of Zotero._cache).
+            return copy.deepcopy(self.templates[cachekey]["tmplt"])
         retrieved = self._retrieve_data(query_string, params=params)
         return self._cache(retrieved, cachekey)
 
