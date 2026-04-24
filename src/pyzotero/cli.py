@@ -64,6 +64,25 @@ def cli_error_handler(func: F) -> F:
     return wrapper  # type: ignore[return-value]
 
 
+def _format_creators(creators: list[dict[str, Any]]) -> list[str]:
+    """Flatten Zotero creator dicts to display strings.
+
+    Zotero creators may carry either (firstName, lastName) or a single ``name``
+    field; emit ``"<first> <last>"``, falling back to ``lastName`` or ``name``.
+    Creators that have none of the recognised fields are dropped.
+    """
+    names: list[str] = []
+    for creator in creators:
+        if "lastName" in creator:
+            if "firstName" in creator:
+                names.append(f"{creator['firstName']} {creator['lastName']}")
+            else:
+                names.append(creator["lastName"])
+        elif "name" in creator:
+            names.append(creator["name"])
+    return names
+
+
 def _run_s2_lookup(
     ctx: Any,
     doi: str,
@@ -286,18 +305,7 @@ def search(  # noqa: PLR0912, PLR0915
         url = data.get("url", "")
 
         # Format creators (authors, editors, etc.)
-        creators = data.get("creators", [])
-        creator_names = []
-        for creator in creators:
-            if "lastName" in creator:
-                if "firstName" in creator:
-                    creator_names.append(
-                        f"{creator['firstName']} {creator['lastName']}"
-                    )
-                else:
-                    creator_names.append(creator["lastName"])
-            elif "name" in creator:
-                creator_names.append(creator["name"])
+        creator_names = _format_creators(data.get("creators", []))
 
         # Check for PDF attachments
         pdf_attachments = []
@@ -546,19 +554,7 @@ def item(ctx: Any, key: str, output_json: bool) -> None:
         url = data.get("url", "")
 
         # Format creators
-        creators = data.get("creators", [])
-        creator_names = []
-        for creator in creators:
-            if "lastName" in creator:
-                if "firstName" in creator:
-                    creator_names.append(
-                        f"{creator['firstName']} {creator['lastName']}"
-                    )
-                else:
-                    creator_names.append(creator["lastName"])
-            elif "name" in creator:
-                creator_names.append(creator["name"])
-
+        creator_names = _format_creators(data.get("creators", []))
         authors_str = ", ".join(creator_names) if creator_names else "No authors"
 
         click.echo(f"[{item_type}] {title}")
