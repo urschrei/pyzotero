@@ -11,6 +11,9 @@ from typing import TYPE_CHECKING, Any, Literal, Protocol, TypedDict
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    import httpx
+
+
 # Type aliases
 JsonDict = dict[str, Any]
 LibraryType = Literal["user", "group"]
@@ -121,13 +124,6 @@ class ZoteroCollection(TypedDict, total=False):
 
 
 # API response structures
-
-
-class CreateItemsSuccess(TypedDict):
-    """Successful items from create_items response."""
-
-    # Keys are string indices ("0", "1", etc.), values are item keys
-    pass  # Dynamic keys, use dict[str, str] in practice
 
 
 class CreateItemsResponse(TypedDict, total=False):
@@ -246,8 +242,8 @@ class ZoteroClientProtocol(Protocol):
     library_id: str | int
     library_type: str
     api_key: str | None
-    client: Any  # httpx.Client
-    request: Any  # httpx.Response | None
+    client: httpx.Client | None
+    request: httpx.Response | None
     templates: dict[str, Any]
     backoff_until: float
 
