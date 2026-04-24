@@ -96,6 +96,31 @@ def backoff_check(
     return wrapped_f
 
 
+def _extract_zip_attachment(retrieved: httpx.Response) -> bytes:
+    """Extract the single file from a Zotero-compressed attachment response.
+
+    The Zotero API zips plain-text attachments when the redirect carries the
+    ``Zotero-File-Compressed: Yes`` header. When present, return the inner
+    file's bytes; otherwise return the response body as-is.
+    """
+    if (
+        retrieved.history
+        and retrieved.history[0].headers.get("Zotero-File-Compressed") == "Yes"
+    ):
+        z = zipfile.ZipFile(io.BytesIO(retrieved.content))
+        return z.read(z.namelist()[0])
+    return retrieved.content
+
+
+def _parse_bibtex(text: str) -> Any:
+    """Parse a BibTeX response body into a BibDatabase."""
+    parser = bibtexparser.bparser.BibTexParser(
+        common_strings=True,
+        ignore_nonstandard_types=False,
+    )
+    return parser.parse(text)
+
+
 def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
     """Call _retrieve_data() and pass the result to the correct processor."""
 
@@ -110,53 +135,32 @@ def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
         if kwargs:
             self.add_parameters(**kwargs)
         retrieved = self._retrieve_data(func(self, *args))
-        # we now always have links in the header response
         self.links = self._extract_links()
-        # determine content and format, based on url params
-        content_match = self.content.search(str(self.request.url))
-        content = content_match.group(0) if content_match else "bib"
-        # select format from Content-Type, stripping any "; charset=..." segment
-        content_type = self.request.headers["Content-Type"].lower().split(";", 1)[0]
-        fmt = self.formats.get(content_type, "json")
-        # clear all query parameters
         self.url_params = None
-        # Zotero API returns plain-text attachments as zipped content
-        # We can inspect the redirect header to check whether Zotero compressed the file
-        if fmt == "zip":
-            if (
-                self.request.history
-                and self.request.history[0].headers.get("Zotero-File-Compressed")
-                == "Yes"
-            ):
-                z = zipfile.ZipFile(io.BytesIO(retrieved.content))
-                namelist = z.namelist()
-                file = z.read(namelist[0])
-            else:
-                file = retrieved.content
-            return file
-        # check to see whether it's tag data
+
+        # Tag responses short-circuit format dispatch.
         if "tags" in str(self.request.url):
             return self._tags_data(retrieved.json())
+
+        content_type = self.request.headers["Content-Type"].lower().split(";", 1)[0]
+        fmt = self.formats.get(content_type, "json")
+
+        if fmt == "zip":
+            return _extract_zip_attachment(self.request)
         if fmt == "atom":
-            parsed = feedparser.parse(retrieved.text)
-            # select the correct processor
+            content_match = self.content.search(str(self.request.url))
+            content = content_match.group(0) if content_match else "bib"
             processor = self.processors.get(content)
-            # process the content correctly with a custom rule
-            return processor(parsed)
-        if fmt == "snapshot":
-            # we need to dump as a zip!
-            self.snapshot = True
+            return processor(feedparser.parse(retrieved.text))
         if fmt == "bibtex":
-            parser = bibtexparser.bparser.BibTexParser(
-                common_strings=True,
-                ignore_nonstandard_types=False,
-            )
-            return parser.parse(retrieved.text)
-        # it's binary, so return raw content
-        if fmt != "json":
-            return retrieved.content
-        # no need to do anything special, return JSON
-        return retrieved.json()
+            return _parse_bibtex(retrieved.text)
+        if fmt == "json":
+            return retrieved.json()
+        if fmt == "snapshot":
+            # dump() uses this flag to append .zip to the output filename.
+            self.snapshot = True
+        # Anything else (snapshot, PDFs, Office formats, media, binary) → raw bytes.
+        return retrieved.content
 
     return wrapped_f
 
