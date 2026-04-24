@@ -1306,6 +1306,35 @@ class Zotero:
             headers=headers,
         )
 
+    def _delete_entity(
+        self,
+        payload: dict[str, Any] | list[dict[str, Any]],
+        last_modified: int | None,
+        collection: str,
+        key_param: str,
+    ) -> httpx.Response:
+        """Dispatch a DELETE against one or many entities of the same type.
+
+        ``collection`` is the path segment (e.g. ``"items"``); ``key_param``
+        is the query-parameter name used for list payloads (e.g.
+        ``"itemKey"``).
+        """
+        base = f"/{self.library_type}/{self.library_id}/{collection}"
+        if isinstance(payload, list):
+            params = {key_param: ",".join([p["key"] for p in payload])}
+            modified = (
+                last_modified if last_modified is not None else payload[0]["version"]
+            )
+            url = build_url(self.endpoint, base)
+        else:
+            params = None
+            modified = (
+                last_modified if last_modified is not None else payload["version"]
+            )
+            url = build_url(self.endpoint, f"{base}/{payload['key']}")
+        headers = {"If-Unmodified-Since-Version": str(modified)}
+        return self.client.delete(url=url, params=params, headers=headers)
+
     @backoff_check
     def delete_item(
         self,
@@ -1318,29 +1347,7 @@ class Zotero:
             a dict containing item data
             OR a list of dicts containing item data
         """
-        params = None
-        if isinstance(payload, list):
-            params = {"itemKey": ",".join([p["key"] for p in payload])}
-            if last_modified is not None:
-                modified = last_modified
-            else:
-                modified = payload[0]["version"]
-            url = build_url(
-                self.endpoint,
-                f"/{self.library_type}/{self.library_id}/items",
-            )
-        else:
-            ident = payload["key"]
-            if last_modified is not None:
-                modified = last_modified
-            else:
-                modified = payload["version"]
-            url = build_url(
-                self.endpoint,
-                f"/{self.library_type}/{self.library_id}/items/{ident}",
-            )
-        headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.delete(url=url, params=params, headers=headers)
+        return self._delete_entity(payload, last_modified, "items", "itemKey")
 
     @backoff_check
     def delete_collection(
@@ -1354,29 +1361,9 @@ class Zotero:
             a dict containing item data
             OR a list of dicts containing item data
         """
-        params = None
-        if isinstance(payload, list):
-            params = {"collectionKey": ",".join([p["key"] for p in payload])}
-            if last_modified is not None:
-                modified = last_modified
-            else:
-                modified = payload[0]["version"]
-            url = build_url(
-                self.endpoint,
-                f"/{self.library_type}/{self.library_id}/collections",
-            )
-        else:
-            ident = payload["key"]
-            if last_modified is not None:
-                modified = last_modified
-            else:
-                modified = payload["version"]
-            url = build_url(
-                self.endpoint,
-                f"/{self.library_type}/{self.library_id}/collections/{ident}",
-            )
-        headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.delete(url=url, params=params, headers=headers)
+        return self._delete_entity(
+            payload, last_modified, "collections", "collectionKey"
+        )
 
 
 __all__ = ["Zotero"]
