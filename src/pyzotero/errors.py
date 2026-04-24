@@ -114,50 +114,49 @@ ERROR_CODES: dict[int, type[PyZoteroError]] = {
 }
 
 
+def _err_msg(req: httpx.Response) -> str:
+    """Return a nicely-formatted error message for an HTTP response."""
+    return (
+        f"\nCode: {req.status_code}\n"
+        f"URL: {req.url!s}\n"
+        f"Method: {req.request.method}\n"
+        f"Response: {req.text}"
+    )
+
+
 def error_handler(
     zot: ZoteroClientProtocol, req: httpx.Response, exc: BaseException | None = None
 ) -> None:
     """Error handler for HTTP requests.
 
-    Raises appropriate exceptions based on HTTP status codes and handles
-    rate limiting with backoff.
+    Raises an appropriate PyZoteroError subclass for the response status code.
+
+    HTTP 429 responses are a special case: instead of raising, the
+    server-supplied backoff duration is recorded on ``zot`` via
+    ``_set_backoff`` and the function returns normally, leaving the caller
+    to retry. If no backoff duration is present, TooManyRetriesError is raised.
 
     Args:
-        zot: A Zotero instance (or any object with _set_backoff method)
-        req: The HTTP response object
-        exc: Optional exception that triggered this handler
+        zot: A Zotero instance (or any object with _set_backoff method).
+        req: The HTTP response object.
+        exc: Optional exception that triggered this handler.
 
     """
+    if req.status_code == httpx.codes.TOO_MANY_REQUESTS:
+        delay = get_backoff_duration(req.headers)
+        if not delay:
+            msg = (
+                "You are being rate-limited and no backoff or retry duration "
+                "has been received from the server. Try again later"
+            )
+            raise TooManyRetriesError(msg)
+        zot._set_backoff(delay)
+        return
 
-    def err_msg(req: httpx.Response) -> str:
-        """Return a nicely-formatted error message."""
-        return (
-            f"\nCode: {req.status_code}\n"
-            f"URL: {req.url!s}\n"
-            f"Method: {req.request.method}\n"
-            f"Response: {req.text}"
-        )
-
-    if ERROR_CODES.get(req.status_code):
-        # check to see whether its 429
-        if req.status_code == httpx.codes.TOO_MANY_REQUESTS:
-            # try to get backoff or delay duration
-            delay = get_backoff_duration(req.headers)
-            if not delay:
-                msg = (
-                    "You are being rate-limited and no backoff or retry duration "
-                    "has been received from the server. Try again later"
-                )
-                raise TooManyRetriesError(msg)
-            zot._set_backoff(delay)
-        elif not exc:
-            raise ERROR_CODES[req.status_code](err_msg(req))
-        else:
-            raise ERROR_CODES[req.status_code](err_msg(req)) from exc
-    elif not exc:
-        raise HTTPError(err_msg(req))
-    else:
-        raise HTTPError(err_msg(req)) from exc
+    error_cls = ERROR_CODES.get(req.status_code, HTTPError)
+    if exc is None:
+        raise error_cls(_err_msg(req))
+    raise error_cls(_err_msg(req)) from exc
 
 
 __all__ = [
