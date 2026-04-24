@@ -136,7 +136,6 @@ def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
             return file
         # check to see whether it's tag data
         if "tags" in str(self.request.url):
-            self.tag_data = False
             return self._tags_data(retrieved.json())
         if fmt == "atom":
             parsed = feedparser.parse(retrieved.text)
