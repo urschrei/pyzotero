@@ -12,7 +12,7 @@ def get_zotero_client(locale: str = "en-US") -> zotero.Zotero:
     return zotero.Zotero(library_id="0", library_type="user", local=True, locale=locale)
 
 
-def normalize_doi(doi: str) -> str:
+def normalise_doi(doi: str) -> str:
     """Normalise a DOI for case-insensitive matching.
 
     Strips common prefixes (https://doi.org/, http://doi.org/, doi:) and converts to lowercase.
@@ -48,7 +48,7 @@ def build_doi_index_full(zot: zotero.Zotero) -> dict[str, dict[str, str]]:
         item_doi = data.get("DOI", "")
         if not item_doi:
             continue
-        normalised_doi = normalize_doi(item_doi)
+        normalised_doi = normalise_doi(item_doi)
         item_key = data.get("key", "")
         if normalised_doi and item_key:
             doi_map[normalised_doi] = {"key": item_key, "original": item_doi}
@@ -110,7 +110,7 @@ def annotate_with_library(
         doi = paper.get("doi")
         in_library = False
         if doi:
-            normalised = normalize_doi(doi)
+            normalised = normalise_doi(doi)
             in_library = normalised in doi_map
         results.append(format_s2_paper(paper, in_library))
     return results

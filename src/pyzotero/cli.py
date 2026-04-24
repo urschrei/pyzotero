@@ -16,7 +16,7 @@ from pyzotero._helpers import (
     build_doi_index_full,
     format_s2_paper,
     get_zotero_client,
-    normalize_doi,
+    normalise_doi,
 )
 from pyzotero.semantic_scholar import (
     PaperNotFoundError,
@@ -721,7 +721,7 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
         locale = ctx.obj.get("locale", "en-US")
         zot = get_zotero_client(locale)
 
-        # Build a mapping of normalized DOIs to (original_doi, zotero_key)
+        # Build a mapping of normalised DOIs to (original_doi, zotero_key)
         click.echo("Building DOI index from library...", err=True)
         doi_map = {}
 
@@ -734,12 +734,12 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
             item_doi = data.get("DOI", "")
 
             if item_doi:
-                normalized_doi = normalize_doi(item_doi)
+                normalised_doi = normalise_doi(item_doi)
                 item_key = data.get("key", "")
 
-                if normalized_doi and item_key:
+                if normalised_doi and item_key:
                     # Store the original DOI from Zotero and the item key
-                    doi_map[normalized_doi] = (item_doi, item_key)
+                    doi_map[normalised_doi] = (item_doi, item_key)
 
         click.echo(f"Indexed {len(doi_map)} items with DOIs", err=True)
 
@@ -756,10 +756,10 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
         not_found = []
 
         for input_doi in dois:
-            normalized_input = normalize_doi(input_doi)
+            normalised_input = normalise_doi(input_doi)
 
-            if normalized_input in doi_map:
-                original_doi, zotero_key = doi_map[normalized_input]
+            if normalised_input in doi_map:
+                original_doi, zotero_key = doi_map[normalised_input]
                 found.append({"doi": original_doi, "key": zotero_key})
             else:
                 not_found.append(input_doi)
