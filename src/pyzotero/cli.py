@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import functools
 import json
 import sys
-from typing import Any
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 import click
 import httpx
@@ -29,6 +31,37 @@ from pyzotero.semantic_scholar import (
     search_papers,
 )
 from pyzotero.zotero import chunks
+
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+def cli_error_handler(func: F) -> F:
+    """Map exceptions raised in a CLI command to stderr messages + exit 1.
+
+    Semantic Scholar errors get short, specific messages; everything else
+    falls back to ``"Error: <str(exc)>"``.
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return func(*args, **kwargs)
+        except PaperNotFoundError:
+            click.echo("Error: Paper not found in Semantic Scholar.", err=True)
+            sys.exit(1)
+        except RateLimitError:
+            click.echo(
+                "Error: Rate limit exceeded. Please wait and try again.", err=True
+            )
+            sys.exit(1)
+        except SemanticScholarError as e:
+            click.echo(f"Error: {e!s}", err=True)
+            sys.exit(1)
+        except Exception as e:
+            click.echo(f"Error: {e!s}", err=True)
+            sys.exit(1)
+
+    return wrapper  # type: ignore[return-value]
 
 
 @click.group()
@@ -90,6 +123,7 @@ def main(ctx: Any, locale: str) -> None:
     help="Output results as JSON",
 )
 @click.pass_context
+@cli_error_handler
 def search(  # noqa: PLR0912, PLR0915
     ctx: Any,
     query: str,
@@ -125,175 +159,166 @@ def search(  # noqa: PLR0912, PLR0915
         pyzotero search -q "topic" --tag "climate" --tag "adaptation" --json
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        # Build query parameters
-        params = {"limit": limit}
+    # Build query parameters
+    params = {"limit": limit}
 
-        if offset > 0:
-            params["start"] = offset
+    if offset > 0:
+        params["start"] = offset
 
-        if query:
-            params["q"] = query
+    if query:
+        params["q"] = query
 
-        if fulltext:
-            params["qmode"] = "everything"
+    if fulltext:
+        params["qmode"] = "everything"
 
-        if itemtype:
-            # Join multiple item types with || for OR search
-            params["itemType"] = " || ".join(itemtype)
+    if itemtype:
+        # Join multiple item types with || for OR search
+        params["itemType"] = " || ".join(itemtype)
 
-        if tag:
-            # Multiple tags are passed as a list for AND search
-            params["tag"] = list(tag)
+    if tag:
+        # Multiple tags are passed as a list for AND search
+        params["tag"] = list(tag)
 
-        # Execute search
-        # When fulltext is enabled, use items() or collection_items() to get both
-        # top-level items and attachments. Otherwise use top() or collection_items_top()
-        # to only get top-level items.
-        if fulltext:
-            if collection:
-                results = zot.collection_items(collection, **params)
-            else:
-                results = zot.items(**params)
-
-            # When using fulltext, we need to retrieve parent items for any attachments
-            # that matched, since most full-text content comes from PDFs and other attachments
-            top_level_items = []
-            attachment_items = []
-
-            for item in results:
-                data = item.get("data", {})
-                if "parentItem" in data:
-                    attachment_items.append(item)
-                else:
-                    top_level_items.append(item)
-
-            # Retrieve parent items for attachments in batches of 50
-            parent_items = []
-            if attachment_items:
-                parent_ids = list(
-                    {item["data"]["parentItem"] for item in attachment_items}
-                )
-                for chunk in chunks(parent_ids, 50):
-                    parent_items.extend(zot.get_subset(chunk))
-
-            # Combine top-level items and parent items, removing duplicates by key
-            all_items = top_level_items + parent_items
-            items_dict = {item["data"]["key"]: item for item in all_items}
-            results = list(items_dict.values())
-        # Non-fulltext search: use top() or collection_items_top() as before
-        elif collection:
-            results = zot.collection_items_top(collection, **params)
+    # Execute search
+    # When fulltext is enabled, use items() or collection_items() to get both
+    # top-level items and attachments. Otherwise use top() or collection_items_top()
+    # to only get top-level items.
+    if fulltext:
+        if collection:
+            results = zot.collection_items(collection, **params)
         else:
-            results = zot.top(**params)
+            results = zot.items(**params)
 
-        # Handle empty results
-        if not results:
-            if output_json:
-                click.echo(json.dumps([]))
-            else:
-                click.echo("No results found.")
-            return
+        # When using fulltext, we need to retrieve parent items for any attachments
+        # that matched, since most full-text content comes from PDFs and other attachments
+        top_level_items = []
+        attachment_items = []
 
-        # Build output data structure
-        output_items = []
         for item in results:
             data = item.get("data", {})
+            if "parentItem" in data:
+                attachment_items.append(item)
+            else:
+                top_level_items.append(item)
 
-            title = data.get("title", "No title")
-            item_type = data.get("itemType", "Unknown")
-            date = data.get("date", "No date")
-            item_key = data.get("key", "")
-            publication = data.get("publicationTitle", "")
-            volume = data.get("volume", "")
-            issue = data.get("issue", "")
-            doi = data.get("DOI", "")
-            url = data.get("url", "")
+        # Retrieve parent items for attachments in batches of 50
+        parent_items = []
+        if attachment_items:
+            parent_ids = list({item["data"]["parentItem"] for item in attachment_items})
+            for chunk in chunks(parent_ids, 50):
+                parent_items.extend(zot.get_subset(chunk))
 
-            # Format creators (authors, editors, etc.)
-            creators = data.get("creators", [])
-            creator_names = []
-            for creator in creators:
-                if "lastName" in creator:
-                    if "firstName" in creator:
-                        creator_names.append(
-                            f"{creator['firstName']} {creator['lastName']}"
-                        )
-                    else:
-                        creator_names.append(creator["lastName"])
-                elif "name" in creator:
-                    creator_names.append(creator["name"])
+        # Combine top-level items and parent items, removing duplicates by key
+        all_items = top_level_items + parent_items
+        items_dict = {item["data"]["key"]: item for item in all_items}
+        results = list(items_dict.values())
+    # Non-fulltext search: use top() or collection_items_top() as before
+    elif collection:
+        results = zot.collection_items_top(collection, **params)
+    else:
+        results = zot.top(**params)
 
-            # Check for PDF attachments
-            pdf_attachments = []
-            num_children = item.get("meta", {}).get("numChildren", 0)
-            if num_children > 0:
-                children = zot.children(item_key)
-                for child in children:
-                    child_data = child.get("data", {})
-                    if child_data.get("contentType") == "application/pdf":
-                        # Extract file URL from links.enclosure.href
-                        file_url = (
-                            child.get("links", {}).get("enclosure", {}).get("href", "")
-                        )
-                        if file_url:
-                            pdf_attachments.append(file_url)
-
-            # Build item object for JSON output
-            item_obj = {
-                "key": item_key,
-                "itemType": item_type,
-                "title": title,
-                "creators": creator_names,
-                "date": date,
-                "publication": publication,
-                "volume": volume,
-                "issue": issue,
-                "doi": doi,
-                "url": url,
-                "pdfAttachments": pdf_attachments,
-            }
-            output_items.append(item_obj)
-
-        # Output results
+    # Handle empty results
+    if not results:
         if output_json:
-            click.echo(
-                json.dumps(
-                    {"count": len(output_items), "items": output_items}, indent=2
-                )
-            )
+            click.echo(json.dumps([]))
         else:
-            click.echo(f"\nFound {len(results)} items:\n")
-            for idx, item_obj in enumerate(output_items, 1):
-                authors_str = (
-                    ", ".join(item_obj["creators"])
-                    if item_obj["creators"]
-                    else "No authors"
-                )
+            click.echo("No results found.")
+        return
 
-                click.echo(f"{idx}. [{item_obj['itemType']}] {item_obj['title']}")
-                click.echo(f"   Authors: {authors_str}")
-                click.echo(f"   Date: {item_obj['date']}")
-                click.echo(f"   Publication: {item_obj['publication']}")
-                click.echo(f"   Volume: {item_obj['volume']}")
-                click.echo(f"   Issue: {item_obj['issue']}")
-                click.echo(f"   DOI: {item_obj['doi']}")
-                click.echo(f"   URL: {item_obj['url']}")
-                click.echo(f"   Key: {item_obj['key']}")
+    # Build output data structure
+    output_items = []
+    for item in results:
+        data = item.get("data", {})
 
-                if item_obj["pdfAttachments"]:
-                    click.echo("   PDF Attachments:")
-                    for pdf_url in item_obj["pdfAttachments"]:
-                        click.echo(f"      {pdf_url}")
+        title = data.get("title", "No title")
+        item_type = data.get("itemType", "Unknown")
+        date = data.get("date", "No date")
+        item_key = data.get("key", "")
+        publication = data.get("publicationTitle", "")
+        volume = data.get("volume", "")
+        issue = data.get("issue", "")
+        doi = data.get("DOI", "")
+        url = data.get("url", "")
 
-                click.echo()
+        # Format creators (authors, editors, etc.)
+        creators = data.get("creators", [])
+        creator_names = []
+        for creator in creators:
+            if "lastName" in creator:
+                if "firstName" in creator:
+                    creator_names.append(
+                        f"{creator['firstName']} {creator['lastName']}"
+                    )
+                else:
+                    creator_names.append(creator["lastName"])
+            elif "name" in creator:
+                creator_names.append(creator["name"])
 
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+        # Check for PDF attachments
+        pdf_attachments = []
+        num_children = item.get("meta", {}).get("numChildren", 0)
+        if num_children > 0:
+            children = zot.children(item_key)
+            for child in children:
+                child_data = child.get("data", {})
+                if child_data.get("contentType") == "application/pdf":
+                    # Extract file URL from links.enclosure.href
+                    file_url = (
+                        child.get("links", {}).get("enclosure", {}).get("href", "")
+                    )
+                    if file_url:
+                        pdf_attachments.append(file_url)
+
+        # Build item object for JSON output
+        item_obj = {
+            "key": item_key,
+            "itemType": item_type,
+            "title": title,
+            "creators": creator_names,
+            "date": date,
+            "publication": publication,
+            "volume": volume,
+            "issue": issue,
+            "doi": doi,
+            "url": url,
+            "pdfAttachments": pdf_attachments,
+        }
+        output_items.append(item_obj)
+
+    # Output results
+    if output_json:
+        click.echo(
+            json.dumps({"count": len(output_items), "items": output_items}, indent=2)
+        )
+    else:
+        click.echo(f"\nFound {len(results)} items:\n")
+        for idx, item_obj in enumerate(output_items, 1):
+            authors_str = (
+                ", ".join(item_obj["creators"])
+                if item_obj["creators"]
+                else "No authors"
+            )
+
+            click.echo(f"{idx}. [{item_obj['itemType']}] {item_obj['title']}")
+            click.echo(f"   Authors: {authors_str}")
+            click.echo(f"   Date: {item_obj['date']}")
+            click.echo(f"   Publication: {item_obj['publication']}")
+            click.echo(f"   Volume: {item_obj['volume']}")
+            click.echo(f"   Issue: {item_obj['issue']}")
+            click.echo(f"   DOI: {item_obj['doi']}")
+            click.echo(f"   URL: {item_obj['url']}")
+            click.echo(f"   Key: {item_obj['key']}")
+
+            if item_obj["pdfAttachments"]:
+                click.echo("   PDF Attachments:")
+                for pdf_url in item_obj["pdfAttachments"]:
+                    click.echo(f"      {pdf_url}")
+
+            click.echo()
 
 
 @main.command()
@@ -303,6 +328,7 @@ def search(  # noqa: PLR0912, PLR0915
     help="Maximum number of collections to return (default: all)",
 )
 @click.pass_context
+@cli_error_handler
 def listcollections(ctx: Any, limit: int | None) -> None:
     """List all collections in the local Zotero library.
 
@@ -312,70 +338,66 @@ def listcollections(ctx: Any, limit: int | None) -> None:
         pyzotero listcollections --limit 10
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        # Build query parameters
-        params = {}
-        if limit:
-            params["limit"] = limit
+    # Build query parameters
+    params = {}
+    if limit:
+        params["limit"] = limit
 
-        # Get all collections
-        collections = zot.collections(**params)
+    # Get all collections
+    collections = zot.collections(**params)
 
-        if not collections:
-            click.echo(json.dumps([]))
-            return
+    if not collections:
+        click.echo(json.dumps([]))
+        return
 
-        # Build a mapping of collection keys to names for parent lookup
-        collection_map = {}
-        for collection in collections:
-            data = collection.get("data", {})
-            key = data.get("key", "")
-            name = data.get("name", "")
-            if key:
-                collection_map[key] = name or None
+    # Build a mapping of collection keys to names for parent lookup
+    collection_map = {}
+    for collection in collections:
+        data = collection.get("data", {})
+        key = data.get("key", "")
+        name = data.get("name", "")
+        if key:
+            collection_map[key] = name or None
 
-        # Build JSON output
-        output = []
-        for collection in collections:
-            data = collection.get("data", {})
-            meta = collection.get("meta", {})
+    # Build JSON output
+    output = []
+    for collection in collections:
+        data = collection.get("data", {})
+        meta = collection.get("meta", {})
 
-            name = data.get("name", "")
-            key = data.get("key", "")
-            num_items = meta.get("numItems", 0)
-            parent_collection = data.get("parentCollection", "")
+        name = data.get("name", "")
+        key = data.get("key", "")
+        num_items = meta.get("numItems", 0)
+        parent_collection = data.get("parentCollection", "")
 
-            collection_obj = {
-                "id": key,
-                "name": name or None,
-                "items": num_items,
+        collection_obj = {
+            "id": key,
+            "name": name or None,
+            "items": num_items,
+        }
+
+        # Add parent information if it exists
+        if parent_collection:
+            parent_name = collection_map.get(parent_collection)
+            collection_obj["parent"] = {
+                "id": parent_collection,
+                "name": parent_name,
             }
+        else:
+            collection_obj["parent"] = None
 
-            # Add parent information if it exists
-            if parent_collection:
-                parent_name = collection_map.get(parent_collection)
-                collection_obj["parent"] = {
-                    "id": parent_collection,
-                    "name": parent_name,
-                }
-            else:
-                collection_obj["parent"] = None
+        output.append(collection_obj)
 
-            output.append(collection_obj)
-
-        # Output as JSON
-        click.echo(json.dumps(output, indent=2))
-
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    # Output as JSON
+    click.echo(json.dumps(output, indent=2))
 
 
 @main.command()
 @click.pass_context
+@cli_error_handler
 def itemtypes(ctx: Any) -> None:
     """List all valid item types.
 
@@ -383,27 +405,23 @@ def itemtypes(ctx: Any) -> None:
         pyzotero itemtypes
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        # Get all item types
-        item_types = zot.item_types()
+    # Get all item types
+    item_types = zot.item_types()
 
-        if not item_types:
-            click.echo(json.dumps([]))
-            return
+    if not item_types:
+        click.echo(json.dumps([]))
+        return
 
-        # Output as JSON array
-        click.echo(json.dumps(item_types, indent=2))
-
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    # Output as JSON array
+    click.echo(json.dumps(item_types, indent=2))
 
 
 @main.command()
 @click.pass_context
+@cli_error_handler
 def test(ctx: Any) -> None:
     """Test connection to local Zotero instance.
 
@@ -413,21 +431,13 @@ def test(ctx: Any) -> None:
         pyzotero test
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
+    try:
         # Call settings() to test the connection
         # This should return {} if Zotero is running and listening
         result = zot.settings()
-
-        # If we get here, the connection succeeded
-        click.echo("✓ Connection successful: Zotero is running and listening locally.")
-        if result == {}:
-            click.echo("  Received expected empty settings response.")
-        else:
-            click.echo(f"  Received response: {json.dumps(result)}")
-
     except httpx.ConnectError:
         click.echo(
             "✗ Connection failed: Could not connect to Zotero.\n\n"
@@ -439,9 +449,13 @@ def test(ctx: Any) -> None:
             err=True,
         )
         sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+
+    # If we get here, the connection succeeded
+    click.echo("✓ Connection successful: Zotero is running and listening locally.")
+    if result == {}:
+        click.echo("  Received expected empty settings response.")
+    else:
+        click.echo(f"  Received response: {json.dumps(result)}")
 
 
 @main.command()
@@ -453,6 +467,7 @@ def test(ctx: Any) -> None:
     help="Output results as JSON",
 )
 @click.pass_context
+@cli_error_handler
 def item(ctx: Any, key: str, output_json: bool) -> None:
     """Get a single item by its key.
 
@@ -464,58 +479,53 @@ def item(ctx: Any, key: str, output_json: bool) -> None:
         pyzotero item ABC123 --json
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        # Fetch the item
-        result = zot.item(key)
+    # Fetch the item
+    result = zot.item(key)
 
-        if not result:
-            if output_json:
-                click.echo(json.dumps(None))
-            else:
-                click.echo(f"Item not found: {key}")
-            return
-
-        data = result.get("data", {})
-
+    if not result:
         if output_json:
-            click.echo(json.dumps(result, indent=2))
+            click.echo(json.dumps(None))
         else:
-            title = data.get("title", "No title")
-            item_type = data.get("itemType", "Unknown")
-            date = data.get("date", "No date")
-            item_key = data.get("key", "")
-            doi = data.get("DOI", "")
-            url = data.get("url", "")
+            click.echo(f"Item not found: {key}")
+        return
 
-            # Format creators
-            creators = data.get("creators", [])
-            creator_names = []
-            for creator in creators:
-                if "lastName" in creator:
-                    if "firstName" in creator:
-                        creator_names.append(
-                            f"{creator['firstName']} {creator['lastName']}"
-                        )
-                    else:
-                        creator_names.append(creator["lastName"])
-                elif "name" in creator:
-                    creator_names.append(creator["name"])
+    data = result.get("data", {})
 
-            authors_str = ", ".join(creator_names) if creator_names else "No authors"
+    if output_json:
+        click.echo(json.dumps(result, indent=2))
+    else:
+        title = data.get("title", "No title")
+        item_type = data.get("itemType", "Unknown")
+        date = data.get("date", "No date")
+        item_key = data.get("key", "")
+        doi = data.get("DOI", "")
+        url = data.get("url", "")
 
-            click.echo(f"[{item_type}] {title}")
-            click.echo(f"Authors: {authors_str}")
-            click.echo(f"Date: {date}")
-            click.echo(f"DOI: {doi}")
-            click.echo(f"URL: {url}")
-            click.echo(f"Key: {item_key}")
+        # Format creators
+        creators = data.get("creators", [])
+        creator_names = []
+        for creator in creators:
+            if "lastName" in creator:
+                if "firstName" in creator:
+                    creator_names.append(
+                        f"{creator['firstName']} {creator['lastName']}"
+                    )
+                else:
+                    creator_names.append(creator["lastName"])
+            elif "name" in creator:
+                creator_names.append(creator["name"])
 
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+        authors_str = ", ".join(creator_names) if creator_names else "No authors"
+
+        click.echo(f"[{item_type}] {title}")
+        click.echo(f"Authors: {authors_str}")
+        click.echo(f"Date: {date}")
+        click.echo(f"DOI: {doi}")
+        click.echo(f"URL: {url}")
+        click.echo(f"Key: {item_key}")
 
 
 @main.command()
@@ -527,6 +537,7 @@ def item(ctx: Any, key: str, output_json: bool) -> None:
     help="Output results as JSON",
 )
 @click.pass_context
+@cli_error_handler
 def children(ctx: Any, key: str, output_json: bool) -> None:
     """Get child items (attachments, notes) of a specific item.
 
@@ -539,45 +550,40 @@ def children(ctx: Any, key: str, output_json: bool) -> None:
         pyzotero children ABC123 --json
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        # Fetch children
-        results = zot.children(key)
+    # Fetch children
+    results = zot.children(key)
 
-        if not results:
-            if output_json:
-                click.echo(json.dumps([]))
-            else:
-                click.echo(f"No children found for item: {key}")
-            return
-
+    if not results:
         if output_json:
-            click.echo(json.dumps(results, indent=2))
+            click.echo(json.dumps([]))
         else:
-            click.echo(f"\nFound {len(results)} child items:\n")
-            for idx, child in enumerate(results, 1):
-                data = child.get("data", {})
-                item_type = data.get("itemType", "Unknown")
-                child_key = data.get("key", "")
-                title = data.get("title", data.get("note", "No title")[:50] + "...")
-                content_type = data.get("contentType", "")
+            click.echo(f"No children found for item: {key}")
+        return
 
-                click.echo(f"{idx}. [{item_type}] {title}")
-                click.echo(f"   Key: {child_key}")
-                if content_type:
-                    click.echo(f"   Content-Type: {content_type}")
+    if output_json:
+        click.echo(json.dumps(results, indent=2))
+    else:
+        click.echo(f"\nFound {len(results)} child items:\n")
+        for idx, child in enumerate(results, 1):
+            data = child.get("data", {})
+            item_type = data.get("itemType", "Unknown")
+            child_key = data.get("key", "")
+            title = data.get("title", data.get("note", "No title")[:50] + "...")
+            content_type = data.get("contentType", "")
 
-                # Show file URL for attachments
-                file_url = child.get("links", {}).get("enclosure", {}).get("href", "")
-                if file_url:
-                    click.echo(f"   File: {file_url}")
-                click.echo()
+            click.echo(f"{idx}. [{item_type}] {title}")
+            click.echo(f"   Key: {child_key}")
+            if content_type:
+                click.echo(f"   Content-Type: {content_type}")
 
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+            # Show file URL for attachments
+            file_url = child.get("links", {}).get("enclosure", {}).get("href", "")
+            if file_url:
+                click.echo(f"   File: {file_url}")
+            click.echo()
 
 
 @main.command()
@@ -592,6 +598,7 @@ def children(ctx: Any, key: str, output_json: bool) -> None:
     help="Output results as JSON",
 )
 @click.pass_context
+@cli_error_handler
 def tags(ctx: Any, collection: str | None, output_json: bool) -> None:
     """List all tags in the library.
 
@@ -605,33 +612,28 @@ def tags(ctx: Any, collection: str | None, output_json: bool) -> None:
         pyzotero tags --json
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        # Fetch tags
-        if collection:
-            results = zot.collection_tags(collection)
-        else:
-            results = zot.tags()
+    # Fetch tags
+    if collection:
+        results = zot.collection_tags(collection)
+    else:
+        results = zot.tags()
 
-        if not results:
-            if output_json:
-                click.echo(json.dumps([]))
-            else:
-                click.echo("No tags found.")
-            return
-
+    if not results:
         if output_json:
-            click.echo(json.dumps(results, indent=2))
+            click.echo(json.dumps([]))
         else:
-            click.echo(f"\nFound {len(results)} tags:\n")
-            for tag in sorted(results):
-                click.echo(f"  {tag}")
+            click.echo("No tags found.")
+        return
 
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    if output_json:
+        click.echo(json.dumps(results, indent=2))
+    else:
+        click.echo(f"\nFound {len(results)} tags:\n")
+        for tag in sorted(results):
+            click.echo(f"  {tag}")
 
 
 @main.command()
@@ -643,6 +645,7 @@ def tags(ctx: Any, collection: str | None, output_json: bool) -> None:
     help="Output results as JSON",
 )
 @click.pass_context
+@cli_error_handler
 def subset(ctx: Any, keys: tuple[str, ...], output_json: bool) -> None:
     """Get multiple items by their keys in a single call.
 
@@ -655,41 +658,36 @@ def subset(ctx: Any, keys: tuple[str, ...], output_json: bool) -> None:
         pyzotero subset ABC123 DEF456 --json
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        if len(keys) > 50:  # noqa: PLR2004 - Zotero API limit
-            click.echo("Error: Maximum 50 items per call.", err=True)
-            sys.exit(1)
-
-        # Fetch items
-        results = zot.get_subset(list(keys))
-
-        if not results:
-            if output_json:
-                click.echo(json.dumps([]))
-            else:
-                click.echo("No items found.")
-            return
-
-        if output_json:
-            click.echo(json.dumps(results, indent=2))
-        else:
-            click.echo(f"\nFound {len(results)} items:\n")
-            for idx, item in enumerate(results, 1):
-                data = item.get("data", {})
-                title = data.get("title", "No title")
-                item_type = data.get("itemType", "Unknown")
-                item_key = data.get("key", "")
-
-                click.echo(f"{idx}. [{item_type}] {title}")
-                click.echo(f"   Key: {item_key}")
-                click.echo()
-
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
+    if len(keys) > 50:  # noqa: PLR2004 - Zotero API limit
+        click.echo("Error: Maximum 50 items per call.", err=True)
         sys.exit(1)
+
+    # Fetch items
+    results = zot.get_subset(list(keys))
+
+    if not results:
+        if output_json:
+            click.echo(json.dumps([]))
+        else:
+            click.echo("No items found.")
+        return
+
+    if output_json:
+        click.echo(json.dumps(results, indent=2))
+    else:
+        click.echo(f"\nFound {len(results)} items:\n")
+        for idx, item in enumerate(results, 1):
+            data = item.get("data", {})
+            title = data.get("title", "No title")
+            item_type = data.get("itemType", "Unknown")
+            item_key = data.get("key", "")
+
+            click.echo(f"{idx}. [{item_type}] {title}")
+            click.echo(f"   Key: {item_key}")
+            click.echo()
 
 
 @main.command()
@@ -701,6 +699,7 @@ def subset(ctx: Any, keys: tuple[str, ...], output_json: bool) -> None:
     help="Output results as JSON",
 )
 @click.pass_context
+@cli_error_handler
 def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa: PLR0912
     """Look up DOIs in the local Zotero library and return their Zotero IDs.
 
@@ -717,77 +716,73 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
         pyzotero alldoi 10.1234/example --json
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        # Build a mapping of normalised DOIs to (original_doi, zotero_key)
-        click.echo("Building DOI index from library...", err=True)
-        doi_map = {}
+    # Build a mapping of normalised DOIs to (original_doi, zotero_key)
+    click.echo("Building DOI index from library...", err=True)
+    doi_map = {}
 
-        # Get all items using everything() which handles pagination automatically
-        all_items = zot.everything(zot.items())
+    # Get all items using everything() which handles pagination automatically
+    all_items = zot.everything(zot.items())
 
-        # Process all items
-        for item in all_items:
-            data = item.get("data", {})
-            item_doi = data.get("DOI", "")
+    # Process all items
+    for item in all_items:
+        data = item.get("data", {})
+        item_doi = data.get("DOI", "")
 
-            if item_doi:
-                normalised_doi = normalise_doi(item_doi)
-                item_key = data.get("key", "")
+        if item_doi:
+            normalised_doi = normalise_doi(item_doi)
+            item_key = data.get("key", "")
 
-                if normalised_doi and item_key:
-                    # Store the original DOI from Zotero and the item key
-                    doi_map[normalised_doi] = (item_doi, item_key)
+            if normalised_doi and item_key:
+                # Store the original DOI from Zotero and the item key
+                doi_map[normalised_doi] = (item_doi, item_key)
 
-        click.echo(f"Indexed {len(doi_map)} items with DOIs", err=True)
+    click.echo(f"Indexed {len(doi_map)} items with DOIs", err=True)
 
-        # If no DOIs provided, return empty result
-        if not dois:
-            if output_json:
-                click.echo(json.dumps({}))
-            else:
-                click.echo("No items found")
-            return
-
-        # Look up each input DOI
-        found = []
-        not_found = []
-
-        for input_doi in dois:
-            normalised_input = normalise_doi(input_doi)
-
-            if normalised_input in doi_map:
-                original_doi, zotero_key = doi_map[normalised_input]
-                found.append({"doi": original_doi, "key": zotero_key})
-            else:
-                not_found.append(input_doi)
-
-        # Output results
+    # If no DOIs provided, return empty result
+    if not dois:
         if output_json:
-            result = {"found": found, "not_found": not_found}
-            click.echo(json.dumps(result, indent=2))
+            click.echo(json.dumps({}))
         else:
-            if found:
-                click.echo(f"\nFound {len(found)} items:\n")
-                for item in found:
-                    click.echo(f"  {item['doi']} → {item['key']}")
-            else:
-                click.echo("No items found")
+            click.echo("No items found")
+        return
 
-            if not_found:
-                click.echo(f"\nNot found ({len(not_found)}):")
-                for doi in not_found:
-                    click.echo(f"  {doi}")
+    # Look up each input DOI
+    found = []
+    not_found = []
 
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    for input_doi in dois:
+        normalised_input = normalise_doi(input_doi)
+
+        if normalised_input in doi_map:
+            original_doi, zotero_key = doi_map[normalised_input]
+            found.append({"doi": original_doi, "key": zotero_key})
+        else:
+            not_found.append(input_doi)
+
+    # Output results
+    if output_json:
+        result = {"found": found, "not_found": not_found}
+        click.echo(json.dumps(result, indent=2))
+    else:
+        if found:
+            click.echo(f"\nFound {len(found)} items:\n")
+            for item in found:
+                click.echo(f"  {item['doi']} → {item['key']}")
+        else:
+            click.echo("No items found")
+
+        if not_found:
+            click.echo(f"\nNot found ({len(not_found)}):")
+            for doi in not_found:
+                click.echo(f"  {doi}")
 
 
 @main.command()
 @click.pass_context
+@cli_error_handler
 def doiindex(ctx: Any) -> None:
     """Output the complete DOI-to-key mapping for the library.
 
@@ -806,24 +801,20 @@ def doiindex(ctx: Any) -> None:
         pyzotero doiindex > doi_cache.json
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        click.echo("Building DOI index from library...", err=True)
-        doi_map = build_doi_index_full(zot)
-        click.echo(f"Indexed {len(doi_map)} items with DOIs", err=True)
+    click.echo("Building DOI index from library...", err=True)
+    doi_map = build_doi_index_full(zot)
+    click.echo(f"Indexed {len(doi_map)} items with DOIs", err=True)
 
-        click.echo(json.dumps(doi_map, indent=2))
-
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    click.echo(json.dumps(doi_map, indent=2))
 
 
 @main.command()
 @click.argument("key")
 @click.pass_context
+@cli_error_handler
 def fulltext(ctx: Any, key: str) -> None:
     """Get full-text content of an attachment.
 
@@ -841,21 +832,16 @@ def fulltext(ctx: Any, key: str) -> None:
         pyzotero fulltext ABC123
 
     """
-    try:
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+    locale = ctx.obj.get("locale", "en-US")
+    zot = get_zotero_client(locale)
 
-        result = zot.fulltext_item(key)
+    result = zot.fulltext_item(key)
 
-        if not result:
-            click.echo(json.dumps({"error": "No full-text content available"}))
-            return
+    if not result:
+        click.echo(json.dumps({"error": "No full-text content available"}))
+        return
 
-        click.echo(json.dumps(result, indent=2))
-
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    click.echo(json.dumps(result, indent=2))
 
 
 @main.command()
@@ -882,6 +868,7 @@ def fulltext(ctx: Any, key: str) -> None:
     help="Check if papers exist in local Zotero (default: True)",
 )
 @click.pass_context
+@cli_error_handler
 def related(
     ctx: Any, doi: str, limit: int, min_citations: int, check_library: bool
 ) -> None:
@@ -897,46 +884,32 @@ def related(
         pyzotero related --doi "10.1038/nature12373" --min-citations 100
 
     """
-    try:
-        # Get recommendations from Semantic Scholar
-        click.echo(f"Fetching related papers for DOI: {doi}...", err=True)
-        result = get_recommendations(doi, id_type="doi", limit=limit)
-        papers = result.get("papers", [])
+    # Get recommendations from Semantic Scholar
+    click.echo(f"Fetching related papers for DOI: {doi}...", err=True)
+    result = get_recommendations(doi, id_type="doi", limit=limit)
+    papers = result.get("papers", [])
 
-        # Apply citation filter
-        if min_citations > 0:
-            papers = filter_by_citations(papers, min_citations)
+    # Apply citation filter
+    if min_citations > 0:
+        papers = filter_by_citations(papers, min_citations)
 
-        if not papers:
-            click.echo(json.dumps({"count": 0, "papers": []}))
-            return
+    if not papers:
+        click.echo(json.dumps({"count": 0, "papers": []}))
+        return
 
-        # Optionally annotate with library status
-        if check_library:
-            click.echo("Checking local Zotero library...", err=True)
-            locale = ctx.obj.get("locale", "en-US")
-            zot = get_zotero_client(locale)
-            doi_map = build_doi_index(zot)
-            output_papers = annotate_with_library(papers, doi_map)
-        else:
-            output_papers = [format_s2_paper(p) for p in papers]
+    # Optionally annotate with library status
+    if check_library:
+        click.echo("Checking local Zotero library...", err=True)
+        locale = ctx.obj.get("locale", "en-US")
+        zot = get_zotero_client(locale)
+        doi_map = build_doi_index(zot)
+        output_papers = annotate_with_library(papers, doi_map)
+    else:
+        output_papers = [format_s2_paper(p) for p in papers]
 
-        click.echo(
-            json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
-        )
-
-    except PaperNotFoundError:
-        click.echo("Error: Paper not found in Semantic Scholar.", err=True)
-        sys.exit(1)
-    except RateLimitError:
-        click.echo("Error: Rate limit exceeded. Please wait and try again.", err=True)
-        sys.exit(1)
-    except SemanticScholarError as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    click.echo(
+        json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+    )
 
 
 @main.command()
@@ -963,6 +936,7 @@ def related(
     help="Check if papers exist in local Zotero (default: True)",
 )
 @click.pass_context
+@cli_error_handler
 def citations(
     ctx: Any, doi: str, limit: int, min_citations: int, check_library: bool
 ) -> None:
@@ -976,46 +950,32 @@ def citations(
         pyzotero citations --doi "10.1038/nature12373" --min-citations 50
 
     """
-    try:
-        # Get citations from Semantic Scholar
-        click.echo(f"Fetching citations for DOI: {doi}...", err=True)
-        result = get_citations(doi, id_type="doi", limit=limit)
-        papers = result.get("papers", [])
+    # Get citations from Semantic Scholar
+    click.echo(f"Fetching citations for DOI: {doi}...", err=True)
+    result = get_citations(doi, id_type="doi", limit=limit)
+    papers = result.get("papers", [])
 
-        # Apply citation filter
-        if min_citations > 0:
-            papers = filter_by_citations(papers, min_citations)
+    # Apply citation filter
+    if min_citations > 0:
+        papers = filter_by_citations(papers, min_citations)
 
-        if not papers:
-            click.echo(json.dumps({"count": 0, "papers": []}))
-            return
+    if not papers:
+        click.echo(json.dumps({"count": 0, "papers": []}))
+        return
 
-        # Optionally annotate with library status
-        if check_library:
-            click.echo("Checking local Zotero library...", err=True)
-            locale = ctx.obj.get("locale", "en-US")
-            zot = get_zotero_client(locale)
-            doi_map = build_doi_index(zot)
-            output_papers = annotate_with_library(papers, doi_map)
-        else:
-            output_papers = [format_s2_paper(p) for p in papers]
+    # Optionally annotate with library status
+    if check_library:
+        click.echo("Checking local Zotero library...", err=True)
+        locale = ctx.obj.get("locale", "en-US")
+        zot = get_zotero_client(locale)
+        doi_map = build_doi_index(zot)
+        output_papers = annotate_with_library(papers, doi_map)
+    else:
+        output_papers = [format_s2_paper(p) for p in papers]
 
-        click.echo(
-            json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
-        )
-
-    except PaperNotFoundError:
-        click.echo("Error: Paper not found in Semantic Scholar.", err=True)
-        sys.exit(1)
-    except RateLimitError:
-        click.echo("Error: Rate limit exceeded. Please wait and try again.", err=True)
-        sys.exit(1)
-    except SemanticScholarError as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    click.echo(
+        json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+    )
 
 
 @main.command()
@@ -1042,6 +1002,7 @@ def citations(
     help="Check if papers exist in local Zotero (default: True)",
 )
 @click.pass_context
+@cli_error_handler
 def references(
     ctx: Any, doi: str, limit: int, min_citations: int, check_library: bool
 ) -> None:
@@ -1055,46 +1016,32 @@ def references(
         pyzotero references --doi "10.1038/nature12373" --min-citations 100
 
     """
-    try:
-        # Get references from Semantic Scholar
-        click.echo(f"Fetching references for DOI: {doi}...", err=True)
-        result = get_references(doi, id_type="doi", limit=limit)
-        papers = result.get("papers", [])
+    # Get references from Semantic Scholar
+    click.echo(f"Fetching references for DOI: {doi}...", err=True)
+    result = get_references(doi, id_type="doi", limit=limit)
+    papers = result.get("papers", [])
 
-        # Apply citation filter
-        if min_citations > 0:
-            papers = filter_by_citations(papers, min_citations)
+    # Apply citation filter
+    if min_citations > 0:
+        papers = filter_by_citations(papers, min_citations)
 
-        if not papers:
-            click.echo(json.dumps({"count": 0, "papers": []}))
-            return
+    if not papers:
+        click.echo(json.dumps({"count": 0, "papers": []}))
+        return
 
-        # Optionally annotate with library status
-        if check_library:
-            click.echo("Checking local Zotero library...", err=True)
-            locale = ctx.obj.get("locale", "en-US")
-            zot = get_zotero_client(locale)
-            doi_map = build_doi_index(zot)
-            output_papers = annotate_with_library(papers, doi_map)
-        else:
-            output_papers = [format_s2_paper(p) for p in papers]
+    # Optionally annotate with library status
+    if check_library:
+        click.echo("Checking local Zotero library...", err=True)
+        locale = ctx.obj.get("locale", "en-US")
+        zot = get_zotero_client(locale)
+        doi_map = build_doi_index(zot)
+        output_papers = annotate_with_library(papers, doi_map)
+    else:
+        output_papers = [format_s2_paper(p) for p in papers]
 
-        click.echo(
-            json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
-        )
-
-    except PaperNotFoundError:
-        click.echo("Error: Paper not found in Semantic Scholar.", err=True)
-        sys.exit(1)
-    except RateLimitError:
-        click.echo("Error: Rate limit exceeded. Please wait and try again.", err=True)
-        sys.exit(1)
-    except SemanticScholarError as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    click.echo(
+        json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+    )
 
 
 @main.command()
@@ -1136,6 +1083,7 @@ def references(
     help="Check if papers exist in local Zotero (default: True)",
 )
 @click.pass_context
+@cli_error_handler
 def s2search(
     ctx: Any,
     query: str,
@@ -1160,50 +1108,39 @@ def s2search(
         pyzotero s2search -q "deep learning" --sort citations --min-citations 100
 
     """
-    try:
-        # Search Semantic Scholar
-        click.echo(f'Searching Semantic Scholar for: "{query}"...', err=True)
-        result = search_papers(
-            query,
-            limit=limit,
-            year=year,
-            open_access_only=open_access,
-            sort=sort,
-            min_citations=min_citations,
+    # Search Semantic Scholar
+    click.echo(f'Searching Semantic Scholar for: "{query}"...', err=True)
+    result = search_papers(
+        query,
+        limit=limit,
+        year=year,
+        open_access_only=open_access,
+        sort=sort,
+        min_citations=min_citations,
+    )
+    papers = result.get("papers", [])
+    total = result.get("total", len(papers))
+
+    if not papers:
+        click.echo(json.dumps({"count": 0, "total": total, "papers": []}))
+        return
+
+    # Optionally annotate with library status
+    if check_library:
+        click.echo("Checking local Zotero library...", err=True)
+        locale = ctx.obj.get("locale", "en-US")
+        zot = get_zotero_client(locale)
+        doi_map = build_doi_index(zot)
+        output_papers = annotate_with_library(papers, doi_map)
+    else:
+        output_papers = [format_s2_paper(p) for p in papers]
+
+    click.echo(
+        json.dumps(
+            {"count": len(output_papers), "total": total, "papers": output_papers},
+            indent=2,
         )
-        papers = result.get("papers", [])
-        total = result.get("total", len(papers))
-
-        if not papers:
-            click.echo(json.dumps({"count": 0, "total": total, "papers": []}))
-            return
-
-        # Optionally annotate with library status
-        if check_library:
-            click.echo("Checking local Zotero library...", err=True)
-            locale = ctx.obj.get("locale", "en-US")
-            zot = get_zotero_client(locale)
-            doi_map = build_doi_index(zot)
-            output_papers = annotate_with_library(papers, doi_map)
-        else:
-            output_papers = [format_s2_paper(p) for p in papers]
-
-        click.echo(
-            json.dumps(
-                {"count": len(output_papers), "total": total, "papers": output_papers},
-                indent=2,
-            )
-        )
-
-    except RateLimitError:
-        click.echo("Error: Rate limit exceeded. Please wait and try again.", err=True)
-        sys.exit(1)
-    except SemanticScholarError as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Error: {e!s}", err=True)
-        sys.exit(1)
+    )
 
 
 if __name__ == "__main__":
