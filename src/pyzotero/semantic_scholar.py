@@ -236,6 +236,43 @@ def get_paper(identifier: str, id_type: str | None = None) -> dict[str, Any] | N
     return _normalise_paper(data)
 
 
+def _paper_list_endpoint(
+    identifier: str,
+    id_type: str | None,
+    limit: int,
+    offset: int,
+    suffix: str,
+    wrapper_key: str,
+) -> dict[str, Any]:
+    """Fetch a paper-list endpoint (``.../citations`` or ``.../references``).
+
+    Both endpoints return ``{"data": [{<wrapper_key>: {...}}, ...], ...}``;
+    ``wrapper_key`` is the one-of-two field name under which each payload's
+    actual paper record is nested (``citingPaper`` vs ``citedPaper``).
+    """
+    paper_id = _format_paper_id(identifier, id_type)
+    url = f"{BASE_URL}/paper/{paper_id}/{suffix}"
+    params = {
+        "fields": ",".join(DEFAULT_FIELDS),
+        "limit": min(limit, 1000),
+        "offset": offset,
+    }
+
+    data = _make_request(url, params)
+
+    papers = []
+    for item in data.get("data", []):
+        wrapped = item.get(wrapper_key)
+        if wrapped:
+            papers.append(_normalise_paper(wrapped))
+
+    return {
+        "total": len(papers),
+        "offset": data.get("offset", 0),
+        "papers": papers,
+    }
+
+
 def get_citations(
     identifier: str, id_type: str | None = None, limit: int = 100, offset: int = 0
 ) -> dict[str, Any]:
@@ -255,28 +292,9 @@ def get_citations(
         SemanticScholarError: For API errors
 
     """
-    paper_id = _format_paper_id(identifier, id_type)
-    url = f"{BASE_URL}/paper/{paper_id}/citations"
-    params = {
-        "fields": ",".join(DEFAULT_FIELDS),
-        "limit": min(limit, 1000),
-        "offset": offset,
-    }
-
-    data = _make_request(url, params)
-
-    # Citations API returns {"data": [...], "offset": N, "next": N}
-    papers = []
-    for item in data.get("data", []):
-        citing_paper = item.get("citingPaper")
-        if citing_paper:
-            papers.append(_normalise_paper(citing_paper))
-
-    return {
-        "total": len(papers),
-        "offset": data.get("offset", 0),
-        "papers": papers,
-    }
+    return _paper_list_endpoint(
+        identifier, id_type, limit, offset, "citations", "citingPaper"
+    )
 
 
 def get_references(
@@ -298,28 +316,9 @@ def get_references(
         SemanticScholarError: For API errors
 
     """
-    paper_id = _format_paper_id(identifier, id_type)
-    url = f"{BASE_URL}/paper/{paper_id}/references"
-    params = {
-        "fields": ",".join(DEFAULT_FIELDS),
-        "limit": min(limit, 1000),
-        "offset": offset,
-    }
-
-    data = _make_request(url, params)
-
-    # References API returns {"data": [...], "offset": N, "next": N}
-    papers = []
-    for item in data.get("data", []):
-        cited_paper = item.get("citedPaper")
-        if cited_paper:
-            papers.append(_normalise_paper(cited_paper))
-
-    return {
-        "total": len(papers),
-        "offset": data.get("offset", 0),
-        "papers": papers,
-    }
+    return _paper_list_endpoint(
+        identifier, id_type, limit, offset, "references", "citedPaper"
+    )
 
 
 def get_recommendations(
