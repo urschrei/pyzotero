@@ -51,36 +51,22 @@ class SavedSearch:
         }
         # common groupings of operators
         self.groups = {
-            "A": (self.operators["true"], self.operators["false"]),
-            "B": (self.operators["any"], self.operators["all"]),
-            "C": (
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-            ),
-            "D": (self.operators["is"], self.operators["isNot"]),
-            "E": (
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["isBefore"],
-                self.operators["isInTheLast"],
-            ),
-            "F": (self.operators["contains"], self.operators["doesNotContain"]),
+            "A": ("true", "false"),
+            "B": ("any", "all"),
+            "C": ("is", "isNot", "contains", "doesNotContain"),
+            "D": ("is", "isNot"),
+            "E": ("is", "isNot", "isBefore", "isInTheLast"),
+            "F": ("contains", "doesNotContain"),
             "G": (
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["contains"],
-                self.operators["doesNotContain"],
-                self.operators["isLessThan"],
-                self.operators["isGreaterThan"],
+                "is",
+                "isNot",
+                "contains",
+                "doesNotContain",
+                "isLessThan",
+                "isGreaterThan",
             ),
-            "H": (
-                self.operators["is"],
-                self.operators["isNot"],
-                self.operators["beginsWith"],
-            ),
-            "I": (self.operators["is"],),
+            "H": ("is", "isNot", "beginsWith"),
+            "I": ("is",),
         }
         self.conditions_operators = {
             "deleted": self.groups["A"],
@@ -124,32 +110,24 @@ class SavedSearch:
             "fulltextContent": self.groups["F"],
             "tempTable": self.groups["I"],
         }
-        ###########
-        # ALIASES #
-        ###########
-        # aliases for numberfield
-        pagefields = (
+        # Aliases
+        for pf in (
             "pages",
             "numPages",
             "numberOfVolumes",
             "section",
             "seriesNumber",
             "issue",
-        )
-        for pf in pagefields:
-            self.conditions_operators[pf] = self.conditions_operators.get("numberfield")
-        # aliases for datefield
-        datefields = ("accessDate", "date", "dateDue", "accepted")
-        for df in datefields:
-            self.conditions_operators[df] = self.conditions_operators.get("datefield")
+        ):
+            self.conditions_operators[pf] = self.groups["G"]
+        for df in ("accessDate", "date", "dateDue", "accepted"):
+            self.conditions_operators[df] = self.groups["E"]
         # aliases for field - this makes a blocking API call unless item types have been cached
-        item_fields = [
-            itm["field"]  # ty: ignore[invalid-argument-type]
-            for itm in self.zinstance.item_fields()
-            if itm["field"] not in set(self.excluded_items)  # ty: ignore[invalid-argument-type]
-        ]
-        for itf in item_fields:
-            self.conditions_operators[itf] = self.conditions_operators.get("field")
+        excluded = set(self.excluded_items)
+        for itm in self.zinstance.item_fields():
+            field = itm["field"]  # ty: ignore[invalid-argument-type]
+            if field not in excluded:
+                self.conditions_operators[field] = self.groups["C"]
 
     def _validate(self, conditions: list[dict[str, str]]) -> None:
         """Validate saved search conditions.
@@ -157,32 +135,25 @@ class SavedSearch:
         Raises an error if any contain invalid operators.
         """
         allowed_keys = set(self.searchkeys)
-        operators_set = set(self.operators.keys())
         for condition in conditions:
             if set(condition.keys()) != allowed_keys:
                 msg = f"Keys must be all of: {', '.join(self.searchkeys)}"
                 raise ze.ParamNotPassedError(msg)
-            if condition.get("operator") not in operators_set:
-                msg = f"You have specified an unknown operator: {condition.get('operator')}"
+            operator = condition.get("operator")
+            if operator not in self.operators:
+                msg = f"You have specified an unknown operator: {operator}"
                 raise ze.ParamNotPassedError(msg)
-            # dict keys of allowed operators for the current condition
             permitted_operators = self.conditions_operators.get(
                 condition.get("condition"),
             )
             if permitted_operators is None:
                 msg = f"Unknown condition: {condition.get('condition')}"
                 raise ze.ParamNotPassedError(msg)
-            # transform these into values
-            permitted_operators_list = {
-                op_value
-                for op in permitted_operators
-                if (op_value := self.operators.get(op)) is not None
-            }
-            if condition.get("operator") not in permitted_operators_list:
+            if operator not in permitted_operators:
                 msg = (
-                    f"You may not use the '{condition.get('operator')}' operator when "
+                    f"You may not use the '{operator}' operator when "
                     f"selecting the '{condition.get('condition')}' condition. \n"
-                    f"Allowed operators: {', '.join(list(permitted_operators_list))}"
+                    f"Allowed operators: {', '.join(permitted_operators)}"
                 )
                 raise ze.ParamNotPassedError(msg)
 
