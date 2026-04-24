@@ -150,7 +150,7 @@ def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
         if fmt == "atom":
             content_match = self.content.search(str(self.request.url))
             content = content_match.group(0) if content_match else "bib"
-            processor = self.processors.get(content)
+            processor = self.processors.get(content, self.processors["bib"])
             return processor(feedparser.parse(retrieved.text))
         if fmt == "bibtex":
             return _parse_bibtex(retrieved.text)
