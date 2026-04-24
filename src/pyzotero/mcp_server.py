@@ -10,6 +10,7 @@ from mcp.server.fastmcp import FastMCP
 from pyzotero._helpers import (
     annotate_with_library,
     build_doi_index,
+    format_creators,
     format_s2_paper,
     get_zotero_client,
 )
@@ -39,7 +40,7 @@ def _error(msg: str) -> str:
 
 
 @mcp.tool()
-def search(  # noqa: PLR0912, PLR0915
+def search(  # noqa: PLR0912
     query: str = "",
     fulltext: bool = False,
     itemtype: str = "",
@@ -117,18 +118,7 @@ def search(  # noqa: PLR0912, PLR0915
         output_items = []
         for item in results:
             data = item.get("data", {})
-            creators = data.get("creators", [])
-            creator_names = []
-            for creator in creators:
-                if "lastName" in creator:
-                    if "firstName" in creator:
-                        creator_names.append(
-                            f"{creator['firstName']} {creator['lastName']}"
-                        )
-                    else:
-                        creator_names.append(creator["lastName"])
-                elif "name" in creator:
-                    creator_names.append(creator["name"])
+            creator_names = format_creators(data.get("creators", []))
 
             output_items.append(
                 {

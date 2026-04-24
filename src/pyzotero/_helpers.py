@@ -60,6 +60,25 @@ def build_doi_index(zot: zotero.Zotero) -> dict[str, str]:
     return {norm: entry["key"] for norm, entry in build_doi_index_full(zot).items()}
 
 
+def format_creators(creators: list[dict[str, Any]]) -> list[str]:
+    """Flatten Zotero creator dicts to display strings.
+
+    Zotero creators may carry either (firstName, lastName) or a single ``name``
+    field; emit ``"<first> <last>"``, falling back to ``lastName`` or ``name``.
+    Creators that have none of the recognised fields are dropped.
+    """
+    names: list[str] = []
+    for creator in creators:
+        if "lastName" in creator:
+            if "firstName" in creator:
+                names.append(f"{creator['firstName']} {creator['lastName']}")
+            else:
+                names.append(creator["lastName"])
+        elif "name" in creator:
+            names.append(creator["name"])
+    return names
+
+
 def format_s2_paper(
     paper: dict[str, Any], in_library: bool | None = None
 ) -> dict[str, Any]:

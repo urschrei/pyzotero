@@ -16,6 +16,7 @@ from pyzotero._helpers import (
     annotate_with_library,
     build_doi_index,
     build_doi_index_full,
+    format_creators,
     format_s2_paper,
     get_zotero_client,
     normalise_doi,
@@ -67,25 +68,6 @@ def cli_error_handler(func: F) -> F:
 def _zot_from_ctx(ctx: Any) -> Any:
     """Build a local-mode Zotero client using the locale from the CLI context."""
     return get_zotero_client(ctx.obj.get("locale", "en-US"))
-
-
-def _format_creators(creators: list[dict[str, Any]]) -> list[str]:
-    """Flatten Zotero creator dicts to display strings.
-
-    Zotero creators may carry either (firstName, lastName) or a single ``name``
-    field; emit ``"<first> <last>"``, falling back to ``lastName`` or ``name``.
-    Creators that have none of the recognised fields are dropped.
-    """
-    names: list[str] = []
-    for creator in creators:
-        if "lastName" in creator:
-            if "firstName" in creator:
-                names.append(f"{creator['firstName']} {creator['lastName']}")
-            else:
-                names.append(creator["lastName"])
-        elif "name" in creator:
-            names.append(creator["name"])
-    return names
 
 
 def _run_s2_lookup(
@@ -308,7 +290,7 @@ def search(  # noqa: PLR0912, PLR0915
         url = data.get("url", "")
 
         # Format creators (authors, editors, etc.)
-        creator_names = _format_creators(data.get("creators", []))
+        creator_names = format_creators(data.get("creators", []))
 
         # Check for PDF attachments
         pdf_attachments = []
@@ -553,7 +535,7 @@ def item(ctx: Any, key: str, output_json: bool) -> None:
         url = data.get("url", "")
 
         # Format creators
-        creator_names = _format_creators(data.get("creators", []))
+        creator_names = format_creators(data.get("creators", []))
         authors_str = ", ".join(creator_names) if creator_names else "No authors"
 
         click.echo(f"[{item_type}] {title}")
