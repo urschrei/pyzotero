@@ -373,7 +373,7 @@ class Zotero:
                 req.raise_for_status()
             except httpx.HTTPError as exc:
                 error_handler(self, req, exc)
-            backoff = get_backoff_duration(self.request.headers)
+            backoff = get_backoff_duration(req.headers)
             if backoff:
                 self._set_backoff(backoff)
             return req.status_code == httpx.codes.NOT_MODIFIED
@@ -523,7 +523,7 @@ class Zotero:
             resp.raise_for_status()
         except httpx.HTTPError as exc:
             error_handler(self, resp, exc)
-        backoff = get_backoff_duration(self.request.headers)
+        backoff = get_backoff_duration(resp.headers)
         if backoff:
             self._set_backoff(backoff)
         return resp.json()
