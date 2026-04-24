@@ -167,7 +167,7 @@ class Zupload:
         upload_list = [("key", upload_dict.pop("key"))]
         for key, value in upload_dict.items():
             upload_list.append((key, value))
-        upload_list.append(("file", Path(attachment).open("rb").read()))
+        upload_list.append(("file", Path(attachment).read_bytes()))
         upload_pairs = tuple(upload_list)
         try:
             self.zinstance._check_backoff()
