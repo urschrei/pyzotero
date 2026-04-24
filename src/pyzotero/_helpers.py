@@ -35,30 +35,6 @@ def normalize_doi(doi: str) -> str:
     return doi.lower().strip()
 
 
-def build_doi_index(zot: zotero.Zotero) -> dict[str, str]:
-    """Build a mapping of normalised DOIs to Zotero item keys.
-
-    Returns:
-        Dict mapping normalised DOIs to item keys
-
-    """
-    doi_map: dict[str, str] = {}
-    all_items = zot.everything(zot.items())
-
-    for item in all_items:
-        data = item.get("data", {})
-        item_doi = data.get("DOI", "")
-
-        if item_doi:
-            normalised_doi = normalize_doi(item_doi)
-            item_key = data.get("key", "")
-
-            if normalised_doi and item_key:
-                doi_map[normalised_doi] = item_key
-
-    return doi_map
-
-
 def build_doi_index_full(zot: zotero.Zotero) -> dict[str, dict[str, str]]:
     """Build a mapping of normalised DOIs to Zotero item keys and original DOIs.
 
@@ -67,20 +43,21 @@ def build_doi_index_full(zot: zotero.Zotero) -> dict[str, dict[str, str]]:
 
     """
     doi_map: dict[str, dict[str, str]] = {}
-    all_items = zot.everything(zot.items())
-
-    for item in all_items:
+    for item in zot.everything(zot.items()):
         data = item.get("data", {})
         item_doi = data.get("DOI", "")
-
-        if item_doi:
-            normalised_doi = normalize_doi(item_doi)
-            item_key = data.get("key", "")
-
-            if normalised_doi and item_key:
-                doi_map[normalised_doi] = {"key": item_key, "original": item_doi}
-
+        if not item_doi:
+            continue
+        normalised_doi = normalize_doi(item_doi)
+        item_key = data.get("key", "")
+        if normalised_doi and item_key:
+            doi_map[normalised_doi] = {"key": item_key, "original": item_doi}
     return doi_map
+
+
+def build_doi_index(zot: zotero.Zotero) -> dict[str, str]:
+    """Build a mapping of normalised DOIs to Zotero item keys."""
+    return {norm: entry["key"] for norm, entry in build_doi_index_full(zot).items()}
 
 
 def format_s2_paper(
