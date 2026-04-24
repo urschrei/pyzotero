@@ -80,7 +80,7 @@ class SavedSearch:
                 self.operators["isNot"],
                 self.operators["beginsWith"],
             ),
-            "I": (self.operators["is"]),
+            "I": (self.operators["is"],),
         }
         self.conditions_operators = {
             "deleted": self.groups["A"],
