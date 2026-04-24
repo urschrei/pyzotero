@@ -64,6 +64,47 @@ def cli_error_handler(func: F) -> F:
     return wrapper  # type: ignore[return-value]
 
 
+def _run_s2_lookup(
+    ctx: Any,
+    doi: str,
+    limit: int,
+    min_citations: int,
+    check_library: bool,
+    lookup: Callable[..., dict[str, Any]],
+    label: str,
+) -> None:
+    """Drive the shared Semantic-Scholar-by-DOI lookup flow.
+
+    Fetches papers via ``lookup(doi, id_type="doi", limit=limit)``, applies
+    the ``min_citations`` filter, optionally annotates each paper with its
+    presence in the local Zotero library, and prints the JSON payload.
+    ``label`` appears in the stderr progress message.
+    """
+    click.echo(f"Fetching {label} for DOI: {doi}...", err=True)
+    result = lookup(doi, id_type="doi", limit=limit)
+    papers = result.get("papers", [])
+
+    if min_citations > 0:
+        papers = filter_by_citations(papers, min_citations)
+
+    if not papers:
+        click.echo(json.dumps({"count": 0, "papers": []}))
+        return
+
+    if check_library:
+        click.echo("Checking local Zotero library...", err=True)
+        locale = ctx.obj.get("locale", "en-US")
+        zot = get_zotero_client(locale)
+        doi_map = build_doi_index(zot)
+        output_papers = annotate_with_library(papers, doi_map)
+    else:
+        output_papers = [format_s2_paper(p) for p in papers]
+
+    click.echo(
+        json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+    )
+
+
 @click.group()
 @click.version_option(version=__version__, prog_name="pyzotero")
 @click.option(
@@ -884,31 +925,14 @@ def related(
         pyzotero related --doi "10.1038/nature12373" --min-citations 100
 
     """
-    # Get recommendations from Semantic Scholar
-    click.echo(f"Fetching related papers for DOI: {doi}...", err=True)
-    result = get_recommendations(doi, id_type="doi", limit=limit)
-    papers = result.get("papers", [])
-
-    # Apply citation filter
-    if min_citations > 0:
-        papers = filter_by_citations(papers, min_citations)
-
-    if not papers:
-        click.echo(json.dumps({"count": 0, "papers": []}))
-        return
-
-    # Optionally annotate with library status
-    if check_library:
-        click.echo("Checking local Zotero library...", err=True)
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
-        doi_map = build_doi_index(zot)
-        output_papers = annotate_with_library(papers, doi_map)
-    else:
-        output_papers = [format_s2_paper(p) for p in papers]
-
-    click.echo(
-        json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+    _run_s2_lookup(
+        ctx,
+        doi,
+        limit,
+        min_citations,
+        check_library,
+        get_recommendations,
+        "related papers",
     )
 
 
@@ -950,31 +974,8 @@ def citations(
         pyzotero citations --doi "10.1038/nature12373" --min-citations 50
 
     """
-    # Get citations from Semantic Scholar
-    click.echo(f"Fetching citations for DOI: {doi}...", err=True)
-    result = get_citations(doi, id_type="doi", limit=limit)
-    papers = result.get("papers", [])
-
-    # Apply citation filter
-    if min_citations > 0:
-        papers = filter_by_citations(papers, min_citations)
-
-    if not papers:
-        click.echo(json.dumps({"count": 0, "papers": []}))
-        return
-
-    # Optionally annotate with library status
-    if check_library:
-        click.echo("Checking local Zotero library...", err=True)
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
-        doi_map = build_doi_index(zot)
-        output_papers = annotate_with_library(papers, doi_map)
-    else:
-        output_papers = [format_s2_paper(p) for p in papers]
-
-    click.echo(
-        json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+    _run_s2_lookup(
+        ctx, doi, limit, min_citations, check_library, get_citations, "citations"
     )
 
 
@@ -1016,31 +1017,8 @@ def references(
         pyzotero references --doi "10.1038/nature12373" --min-citations 100
 
     """
-    # Get references from Semantic Scholar
-    click.echo(f"Fetching references for DOI: {doi}...", err=True)
-    result = get_references(doi, id_type="doi", limit=limit)
-    papers = result.get("papers", [])
-
-    # Apply citation filter
-    if min_citations > 0:
-        papers = filter_by_citations(papers, min_citations)
-
-    if not papers:
-        click.echo(json.dumps({"count": 0, "papers": []}))
-        return
-
-    # Optionally annotate with library status
-    if check_library:
-        click.echo("Checking local Zotero library...", err=True)
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
-        doi_map = build_doi_index(zot)
-        output_papers = annotate_with_library(papers, doi_map)
-    else:
-        output_papers = [format_s2_paper(p) for p in papers]
-
-    click.echo(
-        json.dumps({"count": len(output_papers), "papers": output_papers}, indent=2)
+    _run_s2_lookup(
+        ctx, doi, limit, min_citations, check_library, get_references, "references"
     )
 
 
