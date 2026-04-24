@@ -11,7 +11,7 @@ import io
 import zipfile
 from collections.abc import Callable, Generator
 from functools import wraps
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 from urllib.parse import urlencode
 
 import bibtexparser
@@ -21,6 +21,9 @@ import httpx
 from ._utils import DEFAULT_TIMEOUT, get_backoff_duration
 from .errors import error_handler
 
+if TYPE_CHECKING:
+    from ._client import Zotero
+
 T = TypeVar("T")
 
 
@@ -28,7 +31,7 @@ def cleanwrap(func: Callable[..., T]) -> Callable[..., Generator[T, None, None]]
     """Wrap for Zotero._cleanup to process multiple items."""
 
     @wraps(func)
-    def enc(self: Any, *args: Any, **kwargs: Any) -> Generator[T, None, None]:
+    def enc(self: Zotero, *args: Any, **kwargs: Any) -> Generator[T, None, None]:
         """Send each item to _cleanup()."""
         return (func(self, item, **kwargs) for item in args)
 
@@ -41,7 +44,7 @@ def tcache(
     """Handle URL building and caching for template functions."""
 
     @wraps(func)
-    def wrapped_f(self: Any, *args: Any, **kwargs: Any) -> dict[str, Any]:
+    def wrapped_f(self: Zotero, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Call the decorated function to get query string and params,
         check the local template cache, and retrieve + cache on miss.
         """
@@ -78,7 +81,7 @@ def backoff_check(
     """
 
     @wraps(func)
-    def wrapped_f(self: Any, *args: Any, **kwargs: Any) -> bool:
+    def wrapped_f(self: Zotero, *args: Any, **kwargs: Any) -> bool:
         self._check_backoff()
         # resp is a Requests response object
         resp = func(self, *args, **kwargs)
@@ -125,7 +128,7 @@ def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
     """Call _retrieve_data() and pass the result to the correct processor."""
 
     @wraps(func)
-    def wrapped_f(self: Any, *args: Any, **kwargs: Any) -> Any:
+    def wrapped_f(self: Zotero, *args: Any, **kwargs: Any) -> Any:
         """Return result of _retrieve_data().
 
         func's return value is part of a URI, and it's this
@@ -146,9 +149,9 @@ def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
         fmt = self.formats.get(content_type, "json")
 
         if fmt == "zip":
-            return _extract_zip_attachment(self.request)
+            return _extract_zip_attachment(retrieved)
         if fmt == "atom":
-            content_match = self.content.search(str(self.request.url))
+            content_match = self.content.search(str(retrieved.url))
             content = content_match.group(0) if content_match else "bib"
             processor = self.processors.get(content, self.processors["bib"])
             return processor(feedparser.parse(retrieved.text))
@@ -168,7 +171,7 @@ def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
 def ss_wrap(func: Callable[..., T]) -> Callable[..., T]:
     """Ensure that a SavedSearch object exists before method execution."""
 
-    def wrapper(self: Any, *args: Any, **kwargs: Any) -> T:
+    def wrapper(self: Zotero, *args: Any, **kwargs: Any) -> T:
         if not self.savedsearch:
             # Import here to avoid circular imports
             from ._search import SavedSearch  # noqa: PLC0415
