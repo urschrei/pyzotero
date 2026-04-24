@@ -297,7 +297,6 @@ class Zotero:
             self.request = self.client.get(
                 url=final_url,
                 params=final_params,
-                headers=self.default_headers(),
                 timeout=DEFAULT_TIMEOUT,
             )
             self.request.encoding = "utf-8"
