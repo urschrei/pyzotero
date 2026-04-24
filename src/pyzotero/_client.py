@@ -161,7 +161,7 @@ class Zotero:
             "html": self._bib_processor,
         }
         self.links: dict[str, str] | None = None
-        self.self_link: dict[str, Any] | httpx.URL = {}
+        self.self_link: httpx.URL | None = None
         self.templates: dict[str, Any] = {}
         self.savedsearch: Any = None
         # backoff handling: timestamp when backoff expires (0.0 = no backoff)
