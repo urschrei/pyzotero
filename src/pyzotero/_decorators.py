@@ -10,7 +10,7 @@ import io
 import zipfile
 from collections.abc import Callable, Generator
 from functools import wraps
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import Any, TypeVar
 from urllib.parse import urlparse
 
 import bibtexparser
@@ -20,9 +20,6 @@ from httpx import Request
 
 from ._utils import DEFAULT_TIMEOUT, build_url, get_backoff_duration
 from .errors import error_handler
-
-if TYPE_CHECKING:
-    pass
 
 T = TypeVar("T")
 
@@ -124,17 +121,11 @@ def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
         # we now always have links in the header response
         self.links = self._extract_links()
         # determine content and format, based on url params
-        content = (
-            self.content.search(str(self.request.url))
-            and self.content.search(str(self.request.url)).group(0)
-        ) or "bib"
-        # select format, or assume JSON
-        content_type_header = self.request.headers["Content-Type"].lower() + ";"
-        fmt = self.formats.get(
-            # strip "; charset=..." segment
-            content_type_header[0 : content_type_header.index(";")],
-            "json",
-        )
+        content_match = self.content.search(str(self.request.url))
+        content = content_match.group(0) if content_match else "bib"
+        # select format from Content-Type, stripping any "; charset=..." segment
+        content_type = self.request.headers["Content-Type"].lower().split(";", 1)[0]
+        fmt = self.formats.get(content_type, "json")
         # clear all query parameters
         self.url_params = None
         # Zotero API returns plain-text attachments as zipped content
