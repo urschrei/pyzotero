@@ -1094,7 +1094,7 @@ class Zotero:
         headers = {"Zotero-Write-Token": token(), "Content-Type": "application/json"}
         if last_modified is not None:
             headers["If-Unmodified-Since-Version"] = str(last_modified)
-        to_send = list(self._cleanup(*payload, allow=("key")))
+        to_send = list(self._cleanup(*payload, allow=("key",)))
         if parentid:
             for item in to_send:
                 item["parentItem"] = parentid
