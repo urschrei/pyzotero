@@ -78,17 +78,31 @@ class FileTransport(AsyncBaseTransport, BaseTransport):
             status = None
         return status, request.headers
 
+    @staticmethod
+    def _resolve_path(request: Request) -> Path:
+        parts = request.url.path.split("/")
+        if parts[1].endswith((":", "|")):
+            parts[1] = parts[1][:-1] + ":"
+            parts.pop(0)
+        return Path("/".join(parts))
+
+    @staticmethod
+    def _build_response(
+        status: int, headers: httpx.Headers, stream: ByteStream | None
+    ) -> Response:
+        return Response(
+            status_code=status,
+            headers=headers,
+            stream=stream,
+            extensions={},
+        )
+
     def handle_request(self, request: Request) -> Response:
         status, headers = self._handle(request)
         stream = None
         if not status:
-            parts = request.url.path.split("/")
-            if parts[1].endswith((":", "|")):
-                parts[1] = parts[1][:-1] + ":"
-                parts.pop(0)
-            ospath = Path("/".join(parts))
             try:
-                content = ospath.read_bytes()
+                content = self._resolve_path(request).read_bytes()
                 status = 200
             except FileNotFoundError:
                 status = 404
@@ -97,22 +111,13 @@ class FileTransport(AsyncBaseTransport, BaseTransport):
             else:
                 stream = ByteStream(content)
                 headers["Content-Length"] = str(len(content))
-        return Response(
-            status_code=status,
-            headers=headers,
-            stream=stream,
-            extensions=dict(),
-        )
+        return self._build_response(status, headers, stream)
 
     async def handle_async_request(self, request: Request) -> Response:
         status, headers = self._handle(request)
         stream = None
         if not status:
-            parts = request.url.path.split("/")
-            if parts[1].endswith((":", "|")):
-                parts[1] = parts[1][:-1] + ":"
-                parts.pop(0)
-            ospath = Path("/".join(parts))
+            ospath = self._resolve_path(request)
             try:
                 loop = asyncio.get_event_loop()
                 content = await loop.run_in_executor(None, ospath.read_bytes)
@@ -124,12 +129,7 @@ class FileTransport(AsyncBaseTransport, BaseTransport):
             else:
                 stream = ByteStream(content)
                 headers["Content-Length"] = str(len(content))
-        return Response(
-            status_code=status,
-            headers=headers,
-            stream=stream,
-            extensions=dict(),
-        )
+        return self._build_response(status, headers, stream)
 
 
 class Client(_Client):
