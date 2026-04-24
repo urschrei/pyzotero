@@ -64,6 +64,11 @@ def cli_error_handler(func: F) -> F:
     return wrapper  # type: ignore[return-value]
 
 
+def _zot_from_ctx(ctx: Any) -> Any:
+    """Build a local-mode Zotero client using the locale from the CLI context."""
+    return get_zotero_client(ctx.obj.get("locale", "en-US"))
+
+
 def _format_creators(creators: list[dict[str, Any]]) -> list[str]:
     """Flatten Zotero creator dicts to display strings.
 
@@ -112,8 +117,7 @@ def _run_s2_lookup(
 
     if check_library:
         click.echo("Checking local Zotero library...", err=True)
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+        zot = _zot_from_ctx(ctx)
         doi_map = build_doi_index(zot)
         output_papers = annotate_with_library(papers, doi_map)
     else:
@@ -219,8 +223,7 @@ def search(  # noqa: PLR0912, PLR0915
         pyzotero search -q "topic" --tag "climate" --tag "adaptation" --json
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     # Build query parameters
     params = {"limit": limit}
@@ -387,8 +390,7 @@ def listcollections(ctx: Any, limit: int | None) -> None:
         pyzotero listcollections --limit 10
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     # Build query parameters
     params = {}
@@ -454,8 +456,7 @@ def itemtypes(ctx: Any) -> None:
         pyzotero itemtypes
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     # Get all item types
     item_types = zot.item_types()
@@ -480,8 +481,7 @@ def test(ctx: Any) -> None:
         pyzotero test
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     try:
         # Call settings() to test the connection
@@ -528,8 +528,7 @@ def item(ctx: Any, key: str, output_json: bool) -> None:
         pyzotero item ABC123 --json
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     # Fetch the item
     result = zot.item(key)
@@ -587,8 +586,7 @@ def children(ctx: Any, key: str, output_json: bool) -> None:
         pyzotero children ABC123 --json
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     # Fetch children
     results = zot.children(key)
@@ -649,8 +647,7 @@ def tags(ctx: Any, collection: str | None, output_json: bool) -> None:
         pyzotero tags --json
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     # Fetch tags
     if collection:
@@ -695,8 +692,7 @@ def subset(ctx: Any, keys: tuple[str, ...], output_json: bool) -> None:
         pyzotero subset ABC123 DEF456 --json
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     if len(keys) > 50:  # noqa: PLR2004 - Zotero API limit
         click.echo("Error: Maximum 50 items per call.", err=True)
@@ -753,8 +749,7 @@ def alldoi(ctx: Any, dois: tuple[str, ...], output_json: bool) -> None:  # noqa:
         pyzotero alldoi 10.1234/example --json
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     click.echo("Building DOI index from library...", err=True)
     doi_map = build_doi_index_full(zot)
@@ -818,8 +813,7 @@ def doiindex(ctx: Any) -> None:
         pyzotero doiindex > doi_cache.json
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     click.echo("Building DOI index from library...", err=True)
     doi_map = build_doi_index_full(zot)
@@ -849,8 +843,7 @@ def fulltext(ctx: Any, key: str) -> None:
         pyzotero fulltext ABC123
 
     """
-    locale = ctx.obj.get("locale", "en-US")
-    zot = get_zotero_client(locale)
+    zot = _zot_from_ctx(ctx)
 
     result = zot.fulltext_item(key)
 
@@ -1082,8 +1075,7 @@ def s2search(
     # Optionally annotate with library status
     if check_library:
         click.echo("Checking local Zotero library...", err=True)
-        locale = ctx.obj.get("locale", "en-US")
-        zot = get_zotero_client(locale)
+        zot = _zot_from_ctx(ctx)
         doi_map = build_doi_index(zot)
         output_papers = annotate_with_library(papers, doi_map)
     else:
