@@ -378,7 +378,7 @@ If you select one of the available `export formats <https://www.zotero.org/suppo
 
 If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
 
-If you set ``format='bibtex'``, a `bibtexparser <https://bibtexparser.readthedocs.io/en/v0.6.2/bibtexparser.html#bibdatabase.BibDatabase.entries>`_ object containing citations will be returned. You can access the citations as a list of dicts using the ``.entries`` property. The bibtexparser object also implements a `dump method <https://bibtexparser.readthedocs.io/en/v0.6.2/bibtexparser.html#bibtexparser.dump>`_, if you'd like to write your citations to a ``.bib`` file.
+If you set ``format='bibtex'``, a `bibtexparser <https://bibtexparser.readthedocs.io/en/main/bibtexparser.html>`_ object containing citations will be returned. You can access the citations as a list of dicts using the ``.entries`` property. The bibtexparser object also implements a `dump method <https://bibtexparser.readthedocs.io/en/main/customize.html#formatting-options-for-writing>`_, if you'd like to write your citations to a ``.bib`` file.
 
 .. py:method:: Zotero.key_info()
 
