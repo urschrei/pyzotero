@@ -751,6 +751,44 @@ class ZoteroTests(unittest.TestCase):
         request = mock.last_request()
         self.assertEqual(request.headers["If-Unmodified-Since-Version"], "5")
 
+    def testItemCreationCustomTimeout(self):
+        """create_items propagates a caller-supplied timeout to the request"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/items",
+            body=self.creation_doc,
+            content_type="application/json",
+            status=200,
+        )
+        zot.create_items([{"key": "ABC123"}], timeout=60)
+        request = mock.last_request()
+        # httpx records per-request timeouts in request.extensions["timeout"]
+        # as a dict with connect/read/write/pool keys
+        timeout_ext = request.extensions.get("timeout")
+        self.assertIsNotNone(timeout_ext)
+        self.assertEqual(timeout_ext["read"], 60)
+
+    def testItemCreationDefaultTimeout(self):
+        """create_items uses the client's configured timeout when none is given"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/items",
+            body=self.creation_doc,
+            content_type="application/json",
+            status=200,
+        )
+        zot.create_items([{"key": "ABC123"}])
+        request = mock.last_request()
+        # No per-call override: the read timeout should be whatever the
+        # underlying httpx.Client was configured with (httpx default for
+        # the MockClient in tests, DEFAULT_TIMEOUT for the real client).
+        timeout_ext = request.extensions.get("timeout")
+        self.assertIsNotNone(timeout_ext)
+
     def testItemUpdate(self):
         """Tests item update using update_item"""
         mock = MockClient()
