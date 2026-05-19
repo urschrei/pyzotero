@@ -50,6 +50,7 @@ class RecordedRequest:
     url: str
     _headers: dict[str, str]
     body: bytes
+    extensions: dict[str, Any] = field(default_factory=dict)
 
     @property
     def headers(self) -> CaseInsensitiveDict:
@@ -175,6 +176,7 @@ class MockClient:
             url=str(request.url),
             _headers=dict(request.headers),
             body=request.content,
+            extensions=dict(request.extensions),
         )
         self.requests.append(recorded)
 
