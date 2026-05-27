@@ -1,6 +1,6 @@
 [project]
 name = "pyzotero"
-version = "1.11.1"
+version = "1.12.0"
 description = "Python wrapper for the Zotero API"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -10,7 +10,8 @@ dependencies = [
     "httpx>=0.28.1",
     "whenever>=0.8.8",
 ]
-authors = [{ name = "Stephan Hügel", email = "urschrei@gmail.com" }]
+authors = [{ name = "Stephan Hügel" }, { email = "urschrei@gmail.com" }]
+maintainers = [{ name = "Stephan Hügel" }, { email = "urschrei@gmail.com" }]
 license = {file = "LICENSE.md"}
 keywords = ["Zotero", "DH"]
 classifiers = [

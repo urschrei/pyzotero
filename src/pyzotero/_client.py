@@ -110,6 +110,7 @@ class Zotero:
         self.client = client or httpx.Client(
             headers=self.default_headers(),
             follow_redirects=True,
+            timeout=DEFAULT_TIMEOUT,
         )
         # these aren't valid item fields, so never send them to the server
         self.temp_keys = {"key", "etag", "group_id", "updated"}
@@ -1044,12 +1045,22 @@ class Zotero:
         payload: list[dict[str, Any]],
         parentid: str | None = None,
         last_modified: int | None = None,
+        timeout: int | float | httpx.Timeout | None = None,
     ) -> Any:
         """Create new Zotero items.
 
-        Accepts two arguments:
-            a list containing one or more item dicts
-            an optional parent item ID.
+        Accepts the following arguments:
+            payload: a list containing one or more item dicts
+            parentid: an optional parent item ID
+            last_modified: optional library version for
+                If-Unmodified-Since-Version
+            timeout: optional per-call timeout (in seconds, or an
+                ``httpx.Timeout``) for the POST request. Defaults to the
+                Zotero client's configured timeout. Bulk writes of close to
+                the 50-item maximum can take considerably longer than the
+                default to be acknowledged by the server; pass e.g.
+                ``timeout=60`` if you encounter ``httpx.ReadTimeout``.
+
         Note that this can also be used to update existing items.
         """
         if len(payload) > DEFAULT_NUM_ITEMS:
@@ -1064,14 +1075,17 @@ class Zotero:
             for item in to_send:
                 item["parentItem"] = parentid
         self._check_backoff()
-        req = self.client.post(
-            url=build_url(
+        post_kwargs: dict[str, Any] = {
+            "url": build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items",
             ),
-            content=json.dumps(to_send),
-            headers=headers,
-        )
+            "content": json.dumps(to_send),
+            "headers": headers,
+        }
+        if timeout is not None:
+            post_kwargs["timeout"] = timeout
+        req = self.client.post(**post_kwargs)
         self.request = req
         self._post_check(req)
         return req.json()
