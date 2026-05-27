@@ -1,9 +1,9 @@
 [project]
 name = "pyzotero"
-version = "1.12.0"
+version = "1.13.0"
 description = "Python wrapper for the Zotero API"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "feedparser >= 6.0.12",
     "bibtexparser>=1.4.3,<2.0.0",
@@ -16,11 +16,11 @@ license = {file = "LICENSE.md"}
 keywords = ["Zotero", "DH"]
 classifiers = [
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
