@@ -1865,7 +1865,7 @@ class ZoteroTests(unittest.TestCase):
         )
 
         # Test the current whenever behavior
-        current_dt = whenever.ZonedDateTime.now("GMT").py_datetime()
+        current_dt = whenever.ZonedDateTime.now("GMT").to_stdlib()
 
         # Assert that both produce GMT timezone
         assert old_dt.tzinfo is not None
@@ -1881,10 +1881,10 @@ class ZoteroTests(unittest.TestCase):
     def test_timezone_behavior_instant_vs_zoned(self):
         """Test that ZonedDateTime produces correct GMT while Instant produces UTC"""
         # Test Instant behavior (should be UTC)
-        instant_dt = whenever.Instant.now().py_datetime()
+        instant_dt = whenever.Instant.now().to_stdlib()
 
         # Test ZonedDateTime behavior (should be GMT)
-        zoned_dt = whenever.ZonedDateTime.now("GMT").py_datetime()
+        zoned_dt = whenever.ZonedDateTime.now("GMT").to_stdlib()
 
         # Assert timezone differences
         self.assertEqual(instant_dt.tzinfo.tzname(None), "UTC")
