@@ -149,13 +149,17 @@ class Zupload:
         return auth_req.json()
 
     def _upload_file(
-        self, authdata: dict[str, Any], attachment: str, reg_key: str
+        self,
+        authdata: dict[str, Any],
+        attachment: str,
+        reg_key: str,
+        md5: str | None = None,
     ) -> None:
         """Step 2: auth successful, and file not on server.
 
         See zotero.org/support/dev/server_api/file_upload#a_full_upload
 
-        reg_key isn't used, but we need to pass it through to Step 3.
+        reg_key and md5 aren't used here, but we pass them through to Step 3.
         """
         upload_dict = authdata["params"]
         # pass tuple of tuples (not dict!), to ensure key comes first
@@ -182,14 +186,22 @@ class Zupload:
             raise ze.UploadError(msg) from None
         self._check_response(upload)
         # now check the responses
-        return self._register_upload(authdata, reg_key)
+        return self._register_upload(authdata, reg_key, md5=md5)
 
-    def _register_upload(self, authdata: dict[str, Any], reg_key: str) -> None:
-        """Step 3: upload successful, so register it."""
-        reg_headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "If-None-Match": "*",
-        }
+    def _register_upload(
+        self, authdata: dict[str, Any], reg_key: str, md5: str | None = None
+    ) -> None:
+        """Step 3: upload successful, so register it.
+
+        For a new file we send ``If-None-Match: *``; when replacing an existing
+        file's contents we must instead send ``If-Match: <previous md5>``, matching
+        the header used in Step 1. The Zotero API returns 412 otherwise (see #322).
+        """
+        reg_headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        if md5:
+            reg_headers["If-Match"] = md5
+        else:
+            reg_headers["If-None-Match"] = "*"
         reg_data = {"upload": authdata.get("uploadKey")}
         self.zinstance._check_backoff()
         upload_reg = self.zinstance.client.post(
@@ -221,7 +233,7 @@ class Zupload:
             if authdata.get("exists"):
                 result["unchanged"].append(item)
                 continue
-            self._upload_file(authdata, attach, item["key"])
+            self._upload_file(authdata, attach, item["key"], md5=item.get("md5", None))
             result["success"].append(item)
         return result
 

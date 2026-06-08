@@ -13,6 +13,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 from urllib.parse import parse_qs, urlencode, urlparse
 
+import httpx
 import pytz
 import whenever
 from dateutil import parser
@@ -1379,6 +1380,96 @@ class ZoteroTests(unittest.TestCase):
 
         # Clean up
         os.remove(temp_file_path)
+
+    def _run_register_upload(self, payload):
+        """Drive Zupload.upload through to the register step and return that request.
+
+        _get_auth is mocked to return valid auth data and the storage (S3) POST
+        is stubbed, so the only request reaching the items/<key>/file endpoint is
+        the Step 3 register-upload call whose headers we want to inspect.
+        """
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+
+        temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload_file.txt")
+        with open(temp_file_path, "w") as f:
+            f.write("Test file content for upload")
+
+        mock_auth_data = {
+            "url": "https://uploads.zotero.org/",
+            "params": {
+                "key": "abcdef1234567890",
+                "prefix": "prefix",
+                "suffix": "suffix",
+            },
+            "uploadKey": "upload_key_123",
+        }
+
+        # Step 3: register upload endpoint
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/items/EXISTINGKEY/file",
+            content_type="application/json",
+            body=json.dumps({}),
+            status=200,
+        )
+
+        try:
+            with (
+                patch.object(z.Zupload, "_verify", return_value=None),
+                patch.object(z.Zupload, "_get_auth", return_value=mock_auth_data),
+                patch(
+                    "httpx.post",
+                    return_value=httpx.Response(
+                        201,
+                        request=httpx.Request("POST", "https://uploads.zotero.org/"),
+                    ),
+                ),
+            ):
+                upload = z.Zupload(
+                    zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+                )
+                upload.upload()
+        finally:
+            os.remove(temp_file_path)
+
+        # The register request is the one carrying the uploadKey in its body
+        for req in mock.latest_requests():
+            if req.url.endswith("/items/EXISTINGKEY/file") and b"upload" in req.body:
+                return req
+        return None
+
+    def testFileUpdateRegisterUsesIfMatch(self):
+        """Updating an existing file must send If-Match at the register step (#322)."""
+        existing_md5 = "0123456789abcdef0123456789abcdef"
+        payload = [
+            {
+                "key": "EXISTINGKEY",
+                "filename": "test_upload_file.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+                "md5": existing_md5,
+            }
+        ]
+        register_request = self._run_register_upload(payload)
+        self.assertIsNotNone(register_request, "No register-upload request was made")
+        self.assertEqual(register_request.headers.get("If-Match"), existing_md5)
+        self.assertNotIn("If-None-Match", register_request.headers)
+
+    def testFileUploadRegisterUsesIfNoneMatch(self):
+        """Uploading a new file must send If-None-Match: * at the register step."""
+        payload = [
+            {
+                "key": "EXISTINGKEY",
+                "filename": "test_upload_file.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+            }
+        ]
+        register_request = self._run_register_upload(payload)
+        self.assertIsNotNone(register_request, "No register-upload request was made")
+        self.assertEqual(register_request.headers.get("If-None-Match"), "*")
+        self.assertNotIn("If-Match", register_request.headers)
 
     def testFileUploadInvalidPayload(self):
         """Tests file upload process with invalid payload mixing items with and without keys"""
