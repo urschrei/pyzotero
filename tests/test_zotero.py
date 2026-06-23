@@ -623,6 +623,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertTrue("ABC123", resp["success"]["0"])
         request = mock.last_request()
         self.assertFalse("If-Unmodified-Since-Version" in request.headers)
+        self.assertEqual(request.headers["Content-Type"], "application/json")
 
     def testCollectionCreationLastModified(self):
         """Tests creation of a new collection with last_modified param"""
@@ -813,6 +814,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(resp, True)
         request = mock.last_request()
         self.assertEqual(request.headers["If-Unmodified-Since-Version"], "3")
+        self.assertEqual(request.headers["Content-Type"], "application/json")
 
     def testItemUpdateLastModified(self):
         """Tests item update using update_item with last_modified parameter"""
