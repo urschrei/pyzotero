@@ -1127,7 +1127,7 @@ class Zotero:
                 f"/{self.library_type}/{self.library_id}/collections",
             ),
             headers=headers,
-            content=json.dumps(payload),
+            json=payload,
         )
         self.request = req
         self._post_check(req)
@@ -1213,7 +1213,7 @@ class Zotero:
                 f"/{self.library_type}/{self.library_id}/items/{ident}",
             ),
             headers=headers,
-            content=json.dumps(to_send),
+            json=to_send,
         )
 
     def _batch_update(self, payload: list[dict[str, Any]], collection: str) -> bool:
