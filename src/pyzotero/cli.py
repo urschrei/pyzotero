@@ -1071,5 +1071,87 @@ def s2search(
     )
 
 
+@main.command()
+@click.option(
+    "--client-key",
+    envvar="ZOTERO_CLIENT_KEY",
+    required=True,
+    help="OAuth client (consumer) key, or set ZOTERO_CLIENT_KEY.",
+)
+@click.option(
+    "--client-secret",
+    envvar="ZOTERO_CLIENT_SECRET",
+    required=True,
+    help="OAuth client (consumer) secret, or set ZOTERO_CLIENT_SECRET.",
+)
+@click.option(
+    "--write",
+    is_flag=True,
+    help="Request write access to the personal library.",
+)
+@click.option(
+    "--notes",
+    is_flag=True,
+    help="Request read access to notes.",
+)
+@click.option(
+    "--no-library",
+    is_flag=True,
+    help="Do not request read access to the personal library.",
+)
+@click.option(
+    "--groups",
+    type=click.Choice(["none", "read", "write"]),
+    default="read",
+    show_default=True,
+    help="Access level for current and future groups.",
+)
+@click.option(
+    "--open",
+    "open_browser",
+    is_flag=True,
+    help="Open the authorisation URL in a browser automatically.",
+)
+@cli_error_handler
+def auth(
+    client_key: str,
+    client_secret: str,
+    write: bool,
+    notes: bool,
+    no_library: bool,
+    groups: str,
+    open_browser: bool,
+) -> None:
+    """Obtain a Zotero API key via OAuth.
+
+    Runs Zotero's OAuth handshake: prints an authorisation URL, waits for the
+    verifier code Zotero shows after you approve the application, then prints
+    the resulting library ID and API key.
+
+    Register an application at https://www.zotero.org/oauth/apps to obtain the
+    client key and secret. Requires the 'oauth' extra (pip install
+    pyzotero[oauth]).
+    """
+    from pyzotero.oauth import ZoteroOAuth  # noqa: PLC0415 - optional dependency
+
+    oauth = ZoteroOAuth(client_key, client_secret)
+    url = oauth.authorize_url(
+        library_access=not no_library,
+        write_access=write,
+        notes_access=notes,
+        all_groups=groups,
+    )
+    click.echo("Authorise this application by visiting:\n", err=True)
+    click.echo(url, err=True)
+    if open_browser:
+        click.launch(url)
+    verifier = click.prompt("\nEnter the verifier code shown by Zotero")
+    creds = oauth.complete(verifier)
+    click.echo("\nAuthorisation successful.")
+    click.echo(f"library_id: {creds.userid}")
+    click.echo(f"api_key:    {creds.api_key}")
+    click.echo(f'\nUse it with: Zotero("{creds.userid}", "user", "{creds.api_key}")')
+
+
 if __name__ == "__main__":
     main()
