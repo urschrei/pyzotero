@@ -37,6 +37,9 @@ documentation = "https://pyzotero.readthedocs.org"
 [project.optional-dependencies]
 cli = ["click>=8.0.0"]
 mcp = ["mcp[cli]>=1.0.0; python_version>='3.10'"]
+oauth = [
+    "authlib>=1.7.2",
+]
 
 [project.scripts]
 pyzotero = "pyzotero.cli:main"

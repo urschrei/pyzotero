@@ -26,6 +26,7 @@ from pyzotero.errors import (
     HTTPError,
     InvalidItemFieldsError,
     MissingCredentialsError,
+    OAuthError,
     ParamNotPassedError,
     PreConditionFailedError,
     PreConditionRequiredError,
@@ -39,6 +40,7 @@ from pyzotero.errors import (
     UploadError,
     UserNotAuthorisedError,
 )
+from pyzotero.oauth import ZoteroCredentials, ZoteroOAuth
 
 __all__ = [
     # Exceptions
@@ -49,6 +51,7 @@ __all__ = [
     "HTTPError",
     "InvalidItemFieldsError",
     "MissingCredentialsError",
+    "OAuthError",
     "ParamNotPassedError",
     "PreConditionFailedError",
     "PreConditionRequiredError",
@@ -64,6 +67,8 @@ __all__ = [
     "UserNotAuthorisedError",
     # Main classes
     "Zotero",
+    "ZoteroCredentials",
+    "ZoteroOAuth",
     "Zupload",
     # Version
     "__version__",
