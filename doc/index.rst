@@ -70,6 +70,16 @@ If you just want to use the CLI without permanently installing Pyzotero:
 
 See :ref:`cli-usage` for usage details.
 
+Optional: OAuth
+~~~~~~~~~~~~~~~
+
+Pyzotero can obtain an API key on a user's behalf using Zotero's OAuth flow. This requires the optional ``oauth`` extra:
+
+* Using `uv <https://docs.astral.sh/uv/>`_: ``uv add "pyzotero[oauth]"``
+* Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install "pyzotero[oauth]"``
+
+See :ref:`oauth` for usage details.
+
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
     .. code-block:: bash
@@ -283,6 +293,65 @@ Example:
 Errors
 ------
 Where possible, any ``ZoteroError`` which is raised will preserve the underlying error in its ``__cause__`` and ``__context__`` properties, should you wish to work with these directly.
+
+
+.. _oauth:
+
+====================
+OAuth authentication
+====================
+
+Instead of asking a user to create an API key by hand, an application can obtain one on their behalf using Zotero's `OAuth 1.0a <https://www.zotero.org/support/dev/web_api/v3/oauth>`_ flow. The flow's product is an ordinary Zotero API key plus the user's numeric ID; once obtained, the key is used exactly as a manually-created one would be. This requires the optional ``oauth`` extra (see :ref:`installation <cli-usage>` above for installation, using the ``oauth`` extra in place of ``cli``).
+
+Before using OAuth you must register an application at `https://www.zotero.org/oauth/apps <https://www.zotero.org/oauth/apps>`_ to obtain a **client key** and **client secret** (the OAuth consumer credentials). These are distinct from the API key the flow produces.
+
+The flow has three legs: fetch a request token, send the user to an authorisation URL to approve the requested permissions, then exchange the approved token plus a verifier for the API key.
+
+    .. py:class:: ZoteroOAuth(client_key, client_secret[, callback])
+
+        :param str client_key: the application's OAuth client (consumer) key
+        :param str client_secret: the application's OAuth client (consumer) secret
+        :param str callback: the OAuth callback. Defaults to ``"oob"`` (out-of-band), in which Zotero displays a verifier code for the user to copy. Web applications should pass a registered redirect URL instead.
+
+    .. py:method:: ZoteroOAuth.authorize_url([library_access, write_access, notes_access, all_groups, identity])
+
+        Fetch a request token and return the URL to send the user to. The boolean flags map to Zotero's permission parameters (``library_access`` defaults to ``True``; ``write_access`` and ``notes_access`` default to ``False``). ``all_groups`` sets the access level for current and future groups and must be one of ``"none"``, ``"read"`` (default) or ``"write"``. Setting ``identity`` requests the user's identity only, without creating a key. The request token is stored on the instance and is also available via the ``request_token`` property.
+
+    .. py:method:: ZoteroOAuth.complete(verifier[, request_token])
+
+        Exchange the approved request token for an API key, returning a ``ZoteroCredentials``. ``verifier`` is the code Zotero returns after the user approves the application. ``request_token`` is optional when the same instance performed :py:meth:`ZoteroOAuth.authorize_url`; supply it when the access leg runs in a separate process (e.g. a web request handler).
+
+    .. py:method:: ZoteroOAuth.complete_from_url(authorization_response[, request_token])
+
+        Convenience for web applications: extract the ``oauth_verifier`` query parameter from the URL Zotero redirected the user to, then delegate to :py:meth:`ZoteroOAuth.complete`.
+
+    .. py:class:: ZoteroCredentials
+
+        Returned by a completed handshake. Has ``api_key``, ``userid`` and ``username`` attributes, and a ``client(**kwargs)`` method returning a :py:class:`Zotero` instance configured with the obtained credentials (any keyword arguments are forwarded to the ``Zotero`` constructor).
+
+A failed handshake raises :py:exc:`OAuthError`.
+
+Example:
+
+    .. code-block:: python
+
+        from pyzotero.oauth import ZoteroOAuth
+
+        oauth = ZoteroOAuth(client_key, client_secret)
+        url = oauth.authorize_url(write_access=True)
+        # send the user to ``url``; they approve and receive a verifier code
+        creds = oauth.complete(verifier)
+        print(creds.userid, creds.api_key)
+        zot = creds.client()  # a ready-to-use Zotero instance
+
+From the command line
+---------------------
+
+With the ``cli`` and ``oauth`` extras installed, the ``pyzotero auth`` command runs the flow interactively: it prints (and can open) the authorisation URL, prompts for the verifier code, then prints the resulting library ID and API key. The client credentials are read from ``--client-key``/``--client-secret`` or the ``ZOTERO_CLIENT_KEY``/``ZOTERO_CLIENT_SECRET`` environment variables.
+
+    .. code-block:: bash
+
+        pyzotero auth --client-key YOUR_KEY --client-secret YOUR_SECRET --write --open
 
 
 ====================

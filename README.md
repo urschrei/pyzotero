@@ -24,6 +24,8 @@ for item in items:
     print(f"Item: {item['data']['itemType']} | Key: {item['data']['key']}")
 ```
 
+Instead of creating an API key by hand, an application can obtain one on a user's behalf using Zotero's OAuth flow. Install the optional `oauth` extra (`pip install "pyzotero[oauth]"`) and see the [OAuth documentation](http://pyzotero.readthedocs.org/en/latest/#oauth-authentication), or run `pyzotero auth`.
+
 # Documentation
 
 Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
