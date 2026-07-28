@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from unittest.mock import MagicMock, patch
 
@@ -433,6 +434,7 @@ def write_zot():
         "version": 3,
         "data": {"key": "ABC123", "version": 3, "title": "Old", "tags": []},
     }
+    mock.children.return_value = []
     with patch("pyzotero.mcp_server._write_client", return_value=mock):
         yield mock
 
@@ -560,3 +562,109 @@ class TestWriteTools:
         write_zot.create_items.side_effect = RuntimeError("boom")
         result = json.loads(write_tools["create_item"]("book"))
         assert result["error"] == "boom"
+
+
+class TestAttachmentTool:
+    def test_relative_path_rejected(self, write_tools):
+        result = json.loads(write_tools["add_attachment"]("ABC123", "notes.pdf"))
+        assert "absolute path" in result["error"]
+
+    def test_missing_file_rejected(self, write_tools, tmp_path):
+        missing = tmp_path / "nope.pdf"
+        result = json.loads(write_tools["add_attachment"]("ABC123", str(missing)))
+        assert "No file at" in result["error"]
+
+    def test_directory_rejected(self, write_tools, tmp_path):
+        result = json.loads(write_tools["add_attachment"]("ABC123", str(tmp_path)))
+        assert "No file at" in result["error"]
+
+    def test_template_carries_full_path_and_parent(
+        self, write_tools, write_zot, tmp_path
+    ):
+        target = tmp_path / "paper.pdf"
+        target.write_bytes(b"%PDF-1.4\n")
+        write_zot.upload_attachments.return_value = {
+            "success": [{"key": "ATTKEY", "filename": str(target)}],
+            "failure": [],
+            "unchanged": [],
+        }
+        result = json.loads(write_tools["add_attachment"]("ABC123", str(target)))
+        assert result["attached"] == "ATTKEY"
+        assert result["parent"] == "ABC123"
+        assert result["filename"] == "paper.pdf"
+        payload, parent = write_zot.upload_attachments.call_args[0]
+        assert parent == "ABC123"
+        # the full path is kept: Zupload reads the file from it, and sends only
+        # the basename to the API (#341)
+        assert payload[0]["filename"] == str(target)
+        assert payload[0]["itemType"] == "attachment"
+        assert payload[0]["linkMode"] == "imported_file"
+        # contentType is left out so the upload machinery detects it
+        assert "contentType" not in payload[0]
+
+    def test_title_defaults_to_filename(self, write_tools, write_zot, tmp_path):
+        target = tmp_path / "paper.pdf"
+        target.write_bytes(b"%PDF-1.4\n")
+        write_zot.upload_attachments.return_value = {
+            "success": [{"key": "ATTKEY"}],
+            "failure": [],
+            "unchanged": [],
+        }
+        write_tools["add_attachment"]("ABC123", str(target))
+        assert write_zot.upload_attachments.call_args[0][0][0]["title"] == "paper.pdf"
+        write_tools["add_attachment"]("ABC123", str(target), title="Custom")
+        assert write_zot.upload_attachments.call_args[0][0][0]["title"] == "Custom"
+
+    def test_identical_file_is_not_duplicated(self, write_tools, write_zot, tmp_path):
+        """Uploading always creates a new item, so a retry would otherwise duplicate"""
+        target = tmp_path / "paper.pdf"
+        target.write_bytes(b"%PDF-1.4\n")
+        digest = hashlib.md5(target.read_bytes()).hexdigest()  # noqa: S324
+        write_zot.children.return_value = [
+            {"key": "EXISTING", "data": {"filename": "paper.pdf", "md5": digest}}
+        ]
+        result = json.loads(write_tools["add_attachment"]("ABC123", str(target)))
+        assert result["unchanged"] == "EXISTING"
+        write_zot.upload_attachments.assert_not_called()
+
+    def test_same_name_different_contents_is_attached(
+        self, write_tools, write_zot, tmp_path
+    ):
+        target = tmp_path / "paper.pdf"
+        target.write_bytes(b"%PDF-1.4\n")
+        write_zot.children.return_value = [
+            {
+                "key": "EXISTING",
+                "data": {"filename": "paper.pdf", "md5": "differentmd5"},
+            }
+        ]
+        write_zot.upload_attachments.return_value = {
+            "success": [{"key": "ATTKEY"}],
+            "failure": [],
+            "unchanged": [],
+        }
+        result = json.loads(write_tools["add_attachment"]("ABC123", str(target)))
+        assert result["attached"] == "ATTKEY"
+
+    def test_unchanged_from_server_reported(self, write_tools, write_zot, tmp_path):
+        target = tmp_path / "paper.pdf"
+        target.write_bytes(b"%PDF-1.4\n")
+        write_zot.upload_attachments.return_value = {
+            "success": [],
+            "failure": [],
+            "unchanged": [{"filename": str(target)}],
+        }
+        result = json.loads(write_tools["add_attachment"]("ABC123", str(target)))
+        assert "unchanged" in result
+
+    def test_rejection_surfaces_server_reason(self, write_tools, write_zot, tmp_path):
+        target = tmp_path / "paper.pdf"
+        target.write_bytes(b"%PDF-1.4\n")
+        write_zot.upload_attachments.return_value = {
+            "success": [],
+            "failure": [{"filename": str(target), "error": {"message": "Too large"}}],
+            "unchanged": [],
+        }
+        result = json.loads(write_tools["add_attachment"]("ABC123", str(target)))
+        assert result["error"] == "Attachment was rejected"
+        assert result["detail"]["error"]["message"] == "Too large"

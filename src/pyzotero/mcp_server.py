@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import argparse
 import functools
+import hashlib
 import json
 import os
 import sys
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any, TypeVar
 
 from mcp.server.fastmcp import FastMCP
@@ -44,6 +46,15 @@ def _json(obj: Any) -> str:
 def _error(msg: str) -> str:
     """Return a JSON-encoded error message."""
     return _json({"error": msg})
+
+
+def _md5(path: Path) -> str:
+    """Return the hex MD5 digest of a file, read in chunks."""
+    digest = hashlib.md5()  # noqa: S324
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(8192), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _run_s2_tool_lookup(
@@ -480,19 +491,11 @@ def _write_client() -> Any:
     )
 
 
-def register_write_tools(server: FastMCP, *, enable_deletes: bool = False) -> list[str]:
-    """Register the write tools on ``server``, returning the names registered.
+AddTool = Callable[[Callable[..., str]], None]
 
-    Writes are gated by registration rather than by a check inside each tool: a
-    tool that was never registered doesn't appear in the model's tool list at
-    all, so content in the library can't induce a call to one. Nothing here runs
-    unless ``main()`` is passed --enable-writes or --enable-deletes.
-    """
-    registered: list[str] = []
 
-    def add(func: Callable[..., str]) -> None:
-        server.tool()(mcp_error_handler(func))
-        registered.append(func.__name__)  # ty: ignore[unresolved-attribute]
+def _register_item_tools(add: AddTool) -> None:
+    """Register tools that create and modify items."""
 
     def list_item_fields(item_type: str) -> str:
         """List the fields and creator types valid for a Zotero item type.
@@ -590,6 +593,13 @@ def register_write_tools(server: FastMCP, *, enable_deletes: bool = False) -> li
             {"updated": key, "tags": [t["tag"] for t in zot.item(key)["data"]["tags"]]}
         )
 
+    for tool in (list_item_fields, create_item, update_item, add_tags):
+        add(tool)
+
+
+def _register_collection_tools(add: AddTool) -> None:
+    """Register tools that create collections and file items into them."""
+
     def create_collection(name: str, parent: str = "") -> str:
         """Create a new collection.
 
@@ -625,6 +635,95 @@ def register_write_tools(server: FastMCP, *, enable_deletes: bool = False) -> li
         zot.addto_collection(collection_key, zot.item(item_key))
         return _json({"item": item_key, "addedTo": collection_key})
 
+    for tool in (create_collection, add_to_collection):
+        add(tool)
+
+
+def _register_attachment_tools(add: AddTool) -> None:
+    """Register the file attachment tool."""
+
+    def add_attachment(item_key: str, file_path: str, title: str = "") -> str:
+        """Attach a file on disk to an existing Zotero item.
+
+        The file is copied into Zotero's storage, so it remains available if the
+        original is moved or deleted. If the library syncs, the attachment syncs
+        with it.
+
+        Args:
+            item_key: The key of the item to attach the file to.
+            file_path: An absolute path to the file. Relative paths are
+                rejected: this server runs as a subprocess of the client, so its
+                working directory is not yours and a relative path would resolve
+                somewhere unintended.
+            title: Optional title for the attachment. Defaults to the filename.
+
+        Returns:
+            JSON with the new attachment's key, or the reason it was rejected.
+            Attaching a file that is already attached to the item is reported as
+            unchanged rather than duplicated, so retrying is safe. Replacing an
+            existing attachment's contents is not supported: a file whose
+            contents differ is attached as a second attachment.
+
+        """
+        path = Path(file_path)
+        if not path.is_absolute():
+            msg = f"file_path must be an absolute path, got {file_path!r}"
+            raise ValueError(msg)
+        if not path.is_file():
+            msg = f"No file at {file_path}"
+            raise FileNotFoundError(msg)
+        zot = _write_client()
+        # Uploading always creates a new attachment item, so an interrupted or
+        # retried call would otherwise silently duplicate the file. Compare
+        # against the item's existing attachments first.
+        checksum = _md5(path)
+        for child in zot.children(item_key):
+            data = child.get("data", {})
+            if data.get("filename") == path.name and data.get("md5") == checksum:
+                return _json(
+                    {
+                        "unchanged": child["key"],
+                        "parent": item_key,
+                        "detail": "this file is already attached to the item",
+                    }
+                )
+        # item_template() can't be used here: the local API has no /items/new,
+        # so the attachment template is built directly. contentType is detected
+        # from the path by the upload machinery.
+        template = {
+            "itemType": "attachment",
+            "linkMode": "imported_file",
+            "title": title or path.name,
+            "filename": str(path),
+            "note": "",
+            "tags": [],
+            "relations": {},
+        }
+        result = zot.upload_attachments([template], item_key)
+        if result["success"]:
+            return _json(
+                {
+                    "attached": result["success"][0]["key"],
+                    "parent": item_key,
+                    "filename": path.name,
+                }
+            )
+        if result["unchanged"]:
+            return _json(
+                {
+                    "unchanged": item_key,
+                    "detail": "an identical file is already attached",
+                }
+            )
+        detail = result["failure"][0] if result["failure"] else None
+        return _json({"error": "Attachment was rejected", "detail": detail})
+
+    add(add_attachment)
+
+
+def _register_delete_tools(add: AddTool) -> None:
+    """Register destructive tools. Only called for --enable-deletes."""
+
     def delete_item(key: str) -> str:
         """Permanently delete an item from the local Zotero library.
 
@@ -643,17 +742,28 @@ def register_write_tools(server: FastMCP, *, enable_deletes: bool = False) -> li
         zot.delete_item(zot.item(key))
         return _json({"deleted": key})
 
-    for tool in (
-        list_item_fields,
-        create_item,
-        update_item,
-        add_tags,
-        create_collection,
-        add_to_collection,
-    ):
-        add(tool)
+    add(delete_item)
+
+
+def register_write_tools(server: FastMCP, *, enable_deletes: bool = False) -> list[str]:
+    """Register the write tools on ``server``, returning the names registered.
+
+    Writes are gated by registration rather than by a check inside each tool: a
+    tool that was never registered doesn't appear in the model's tool list at
+    all, so content in the library can't induce a call to one. Nothing here runs
+    unless ``main()`` is passed --enable-writes or --enable-deletes.
+    """
+    registered: list[str] = []
+
+    def add(func: Callable[..., str]) -> None:
+        server.tool()(mcp_error_handler(func))
+        registered.append(func.__name__)  # ty: ignore[unresolved-attribute]
+
+    _register_item_tools(add)
+    _register_collection_tools(add)
+    _register_attachment_tools(add)
     if enable_deletes:
-        add(delete_item)
+        _register_delete_tools(add)
     return registered
 
 
