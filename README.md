@@ -19,7 +19,7 @@ from pyzotero import Zotero
 
 zot = Zotero(
     library_id, library_type, api_key
-)  # local=True for read access to local Zotero
+)  # local=True to use a running Zotero instead of the web API
 items = zot.top(limit=5)
 # we've retrieved the latest five top-level items in our library
 # we can print each item's item type and ID
@@ -31,13 +31,31 @@ for item in items:
 
 Full documentation of available Pyzotero methods, code examples, and sample output is available on [Read The Docs][3].
 
+# Local Zotero API
+
+Passing `local=True` directs Pyzotero at a running Zotero installation instead of the web API. It must first be enabled in Zotero: Settings > Advanced > "Allow other applications on this computer to communicate with Zotero".
+
+Reads need no authentication. Writes require a local API key, which Zotero grants only with the user's consent, and a Zotero version that supports local writes:
+
+``` python
+from pyzotero import Zotero
+
+zot = Zotero("0", "user", local=True)
+auth = zot.authorize_local("My Application")  # Zotero prompts the user
+zot.create_items([item])
+```
+
+`authorize_local()` returns a dict with a `key` and a `remember` flag. A key granted with "Allow" is single-use and is consumed by the first successful write; one granted with "Always Allow" has `remember` set to `True` and can be stored and passed back later as the `local_api_key` argument.
+
+Note that versions reported by the local API are unrelated to web API versions, and are typically lower than those the local API reported before write support was added. They are scoped to `zot.server_id`, which identifies the Zotero instance. Programs that persist local objects or versions should persist that ID alongside them and partition by it. See the [documentation][3] for details.
+
 # Installation
 
 * Using [uv][11]: `uv add pyzotero`
 * Using [pip][10]: `pip install pyzotero`
 * Using Anaconda: `conda install conda-forge::pyzotero`
 
-Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero".
+Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero". Both are read-only, and so need no local API key.
 
 # Command-Line Interface
 
