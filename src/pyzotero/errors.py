@@ -40,6 +40,19 @@ class TooManyItemsError(PyZoteroError):
     """Raised when too many items are passed to a Write API method."""
 
 
+class LocalAPIKeyRequiredError(UserNotAuthorisedError):
+    """401 - Raised when a local API write has no valid local API key.
+
+    Local API keys are unrelated to zotero.org API keys, and a key granted with
+    "Allow" rather than "Always Allow" is single-use: the first successful write
+    consumes it. Call ``Zotero.authorize_local()`` to obtain a new one.
+    """
+
+
+class LocalAPIDeniedError(UserNotAuthorisedError):
+    """403 - Raised when the user denies a local API authorisation request."""
+
+
 class MissingCredentialsError(PyZoteroError):
     """Raised when an attempt is made to create a Zotero instance
     without providing both the user ID and the user key.
@@ -167,6 +180,8 @@ __all__ = [
     "FileDoesNotExistError",
     "HTTPError",
     "InvalidItemFieldsError",
+    "LocalAPIDeniedError",
+    "LocalAPIKeyRequiredError",
     "MissingCredentialsError",
     "ParamNotPassedError",
     "PreConditionFailedError",
