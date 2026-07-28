@@ -257,6 +257,10 @@ class ZoteroClientProtocol(Protocol):
 
     def _capture_server_id(self, resp: httpx.Response) -> None: ...
 
+    def _ensure_server_id(self) -> str: ...
+
+    def _write(self, method: str, url: str, **kwargs: Any) -> httpx.Response: ...
+
 
 # Processor function type
 ProcessorFunc = Callable[[FeedParserResult], list[Any]]

@@ -53,6 +53,7 @@ class Zupload:
 
     def _check_response(self, req: httpx.Response) -> None:
         """Raise on HTTP error and record any server-supplied backoff."""
+        self.zinstance._capture_server_id(req)
         try:
             req.raise_for_status()
         except httpx.HTTPError as exc:
@@ -133,7 +134,8 @@ class Zupload:
                 child["parentItem"] = self.parentid
         to_send = json.dumps([self._outgoing(item) for item in self.payload])
         req = self._post_with_retry(
-            lambda: self.zinstance.client.post(
+            lambda: self.zinstance._write(
+                "POST",
                 url=build_url(
                     self.zinstance.endpoint,
                     liblevel.format(
@@ -185,7 +187,8 @@ class Zupload:
             "params": 1,
         }
         auth_req = self._post_with_retry(
-            lambda: self.zinstance.client.post(
+            lambda: self.zinstance._write(
+                "POST",
                 url=build_url(
                     self.zinstance.endpoint,
                     f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
@@ -216,6 +219,13 @@ class Zupload:
             upload_list.append((key, value))
         upload_list.append(("file", Path(attachment).read_bytes()))
         upload_pairs = tuple(upload_list)
+        headers = {"User-Agent": f"Pyzotero/{pz.__version__}"}
+        if self.zinstance.local:
+            # Locally this step posts back to Zotero's own upload receiver
+            # rather than to S3, and that endpoint rejects a POST without a
+            # Zotero-Server-ID header. It doesn't authenticate the key, though,
+            # so there's no reason to send one.
+            headers["Zotero-Server-ID"] = self.zinstance._ensure_server_id()
 
         def send() -> httpx.Response:
             # We use a fresh httpx POST because we don't want our existing Pyzotero headers
@@ -224,7 +234,7 @@ class Zupload:
                 return httpx.post(
                     url=authdata["url"],
                     files=upload_pairs,
-                    headers={"User-Agent": f"Pyzotero/{pz.__version__}"},
+                    headers=headers,
                     timeout=self.zinstance.upload_timeout,
                 )
             except httpx.ConnectError:
@@ -254,7 +264,8 @@ class Zupload:
             reg_headers["If-None-Match"] = "*"
         reg_data = {"upload": authdata.get("uploadKey")}
         self._post_with_retry(
-            lambda: self.zinstance.client.post(
+            lambda: self.zinstance._write(
+                "POST",
                 url=build_url(
                     self.zinstance.endpoint,
                     f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
