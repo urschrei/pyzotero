@@ -1395,38 +1395,62 @@ class Zotero:
             json=to_send,
         )
 
-    def _batch_update(self, payload: list[dict[str, Any]], collection: str) -> bool:
+    def _batch_update(
+        self,
+        payload: list[dict[str, Any]],
+        collection: str,
+        last_modified: int | None = None,
+    ) -> bool:
         """POST a payload to the library in chunks of DEFAULT_NUM_ITEMS.
 
         ``collection`` is the last path segment (e.g. ``"items"`` or
         ``"collections"``) - the API only accepts 50 objects at a time, so
         anything longer is split across multiple requests.
+
+        ``last_modified`` sets If-Unmodified-Since-Version on every chunk. The
+        local API requires a concurrency precondition on keyed writes - either
+        that header or a ``version`` on each object - and returns 428 without
+        one. Objects round-tripped from the API carry their own version, so
+        this is only needed for payloads built by hand.
         """
         to_send = [self.check_items([p])[0] for p in payload]
         url = build_url(
             self.endpoint,
             f"/{self.library_type}/{self.library_id}/{collection}/",
         )
+        headers = (
+            {"If-Unmodified-Since-Version": str(last_modified)}
+            if last_modified is not None
+            else {}
+        )
         for chunk in chunks(to_send, DEFAULT_NUM_ITEMS):
             self._check_backoff()
-            req = self._write("POST", url=url, json=chunk)
+            req = self._write("POST", url=url, json=chunk, headers=headers)
             self.request = req
             self._post_check(req)
         return True
 
-    def update_items(self, payload: list[dict[str, Any]]) -> bool:
+    def update_items(
+        self, payload: list[dict[str, Any]], last_modified: int | None = None
+    ) -> bool:
         """Update existing items.
 
-        Accepts one argument, a list of dicts containing Item data.
+        Accepts a list of dicts containing Item data, and an optional library
+        version for If-Unmodified-Since-Version. The version is only required
+        when the dicts carry no ``version`` of their own.
         """
-        return self._batch_update(payload, "items")
+        return self._batch_update(payload, "items", last_modified)
 
-    def update_collections(self, payload: list[dict[str, Any]]) -> bool:
+    def update_collections(
+        self, payload: list[dict[str, Any]], last_modified: int | None = None
+    ) -> bool:
         """Update existing collections.
 
-        Accepts one argument, a list of dicts containing Collection data.
+        Accepts a list of dicts containing Collection data, and an optional
+        library version for If-Unmodified-Since-Version. The version is only
+        required when the dicts carry no ``version`` of their own.
         """
-        return self._batch_update(payload, "collections")
+        return self._batch_update(payload, "collections", last_modified)
 
     @backoff_check
     def addto_collection(
