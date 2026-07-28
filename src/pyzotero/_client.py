@@ -75,6 +75,7 @@ class Zotero:
         local: bool = False,
         client: httpx.Client | None = None,
         upload_timeout: int | float = 120,
+        server_id: str | None = None,
     ) -> None:
         self.client: httpx.Client | None = None
         """Store Zotero credentials"""
@@ -84,6 +85,7 @@ class Zotero:
         else:
             self.endpoint = "http://localhost:23119/api"
             self.local = True
+        self._server_id: str | None = server_id
         if library_id is not None and library_type:
             self.library_id = library_id
             # library_type determines whether query begins w. /users or /groups
@@ -184,6 +186,77 @@ class Zotero:
         """Return the version of the pyzotero library."""
         return pz.__version__
 
+    @property
+    def server_id(self) -> str | None:
+        """The local API's stable server ID, or None if it isn't known yet.
+
+        The local API returns a ``Zotero-Server-ID`` header identifying the
+        Zotero instance the data came from. It persists with the user's
+        database. Pyzotero caches it from the first local response and sends it
+        back on subsequent requests, so a request made against a different
+        instance (or a restored database) is rejected rather than silently
+        mixing data. It is fetched automatically before the first write if it
+        isn't already known.
+
+        Versions reported by the local API are scoped to this ID and bear no
+        relation to web API versions, or to versions from any other Zotero
+        instance. Programs that persist objects or versions retrieved from the
+        local API should persist this ID alongside them and partition by it;
+        it may be set here on a subsequent run.
+        """
+        return self._server_id
+
+    @server_id.setter
+    def server_id(self, value: str | None) -> None:
+        if value is not None and not isinstance(value, str):
+            msg = f"server_id must be a str or None, not {type(value).__name__}"
+            raise TypeError(msg)
+        self._server_id = value
+
+    def _local_headers(self) -> dict[str, str]:
+        """Return the Zotero-Server-ID header to send with a local API request.
+
+        The header is optional on reads and required on writes, but it's sent
+        on both whenever it's known: that way a mismatched instance is caught
+        by the server (412) instead of producing data mixed across instances.
+        """
+        if self.local and self._server_id:
+            return {"Zotero-Server-ID": self._server_id}
+        return {}
+
+    def _capture_server_id(self, resp: httpx.Response) -> None:
+        """Cache the Zotero-Server-ID header from a local API response.
+
+        Every local API response carries the header, including error responses,
+        so ordinary reads populate it without an extra round-trip.
+        """
+        if self.local and not self._server_id:
+            if server_id := resp.headers.get("zotero-server-id"):
+                self._server_id = server_id
+
+    def _ensure_server_id(self) -> str:
+        """Fetch and cache the local server ID if it isn't already known.
+
+        Local writes are rejected with 428 unless ``Zotero-Server-ID`` is sent,
+        so it's fetched on demand before the first write. Note that the bare
+        ``/api`` path returns 404: the no-op endpoint carrying the header is
+        ``/api/``, with the trailing slash.
+        """
+        if self._server_id:
+            return self._server_id
+        self._check_backoff()
+        resp = self.client.get(f"{self.endpoint.removesuffix('/')}/")
+        self._post_check(resp)
+        if not self._server_id:
+            msg = (
+                "The local Zotero API didn't return a Zotero-Server-ID header, "
+                "which is required for writes. Local API write support needs a "
+                "Zotero version that provides it; see "
+                "https://www.zotero.org/support/beta_builds"
+            )
+            raise ze.UnsupportedParamsError(msg)
+        return self._server_id
+
     def _check_for_component(self, url: str | None, component: str) -> bool:
         """Check a url path query fragment for a specific query parameter."""
         return bool(parse_qs(url).get(component))
@@ -216,6 +289,8 @@ class Zotero:
         ``error_handler`` to produce a PyZotero exception, and any
         ``Backoff``/``Retry-After`` header is recorded on the instance.
         """
+        # done before raise_for_status: rejections carry the header too
+        self._capture_server_id(resp)
         try:
             resp.raise_for_status()
         except httpx.HTTPError as exc:
@@ -304,6 +379,7 @@ class Zotero:
                 self.request = self.client.get(
                     url=final_url,
                     params=final_params,
+                    headers=self._local_headers(),
                     timeout=DEFAULT_TIMEOUT,
                 )
                 self.request.encoding = "utf-8"
@@ -386,6 +462,7 @@ class Zotero:
                 "If-Modified-Since": payload["updated"].strftime(
                     "%a, %d %b %Y %H:%M:%S %Z",
                 ),
+                **self._local_headers(),
             }
             # perform the request, and check whether the response returns 304
             self._check_backoff()
@@ -526,7 +603,7 @@ class Zotero:
     def new_fulltext(self, since: int) -> Any:
         """Retrieve list of full-text content items and versions newer than <since>."""
         query_string = f"/{self.library_type}/{self.library_id}/fulltext"
-        headers: dict[str, str] = {}
+        headers: dict[str, str] = self._local_headers()
         params: dict[str, Any] = {"since": since}
         self._check_backoff()
         resp = self.client.get(
