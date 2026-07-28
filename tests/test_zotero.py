@@ -1554,7 +1554,9 @@ class ZoteroTests(unittest.TestCase):
             request = mock.last_request()
             payload = json.loads(request.body.decode("utf-8"))
             self.assertEqual(payload[0]["title"], "test_attachment.txt")
-            self.assertEqual(payload[0]["filename"], temp_file_path)
+            # the server rejects a filename containing a directory path (#341),
+            # so the basename is sent even though a full path was passed in
+            self.assertEqual(payload[0]["filename"], "test_attachment.txt")
 
         # Clean up
         os.remove(temp_file_path)
@@ -1657,7 +1659,9 @@ class ZoteroTests(unittest.TestCase):
             request = mock.last_request()
             payload = json.loads(request.body.decode("utf-8"))
             self.assertEqual(payload[0]["title"], custom_title)
-            self.assertEqual(payload[0]["filename"], temp_file_path)
+            # the server rejects a filename containing a directory path (#341),
+            # so the basename is sent even though a full path was passed in
+            self.assertEqual(payload[0]["filename"], "test_attachment.txt")
 
         # Clean up
         os.remove(temp_file_path)
@@ -1708,6 +1712,82 @@ class ZoteroTests(unittest.TestCase):
 
         # Clean up
         os.remove(temp_file_path)
+
+    def testAttachmentPathIsRetainedForLocalOperations(self):
+        """The prelim payload carries the basename, local steps get the path (#341)"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+
+        temp_file_path = os.path.join(self.cwd, "api_responses", "test_attachment.txt")
+        with open(temp_file_path, "w") as f:
+            f.write("Test attachment content")
+
+        mock.register(
+            "GET",
+            "https://api.zotero.org/items/new?itemType=attachment&linkMode=imported_file",
+            content_type="application/json",
+            body=json.dumps({"itemType": "attachment", "linkMode": "imported_file"}),
+        )
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/items",
+            content_type="application/json",
+            body=json.dumps({"success": {"0": "ITEMKEY123"}, "failed": {}}),
+        )
+
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(
+                z.Zupload,
+                "_get_auth",
+                return_value={
+                    "url": "https://uploads.zotero.org/",
+                    "params": {"key": "abcdef1234567890"},
+                    "uploadKey": "upload_key_123",
+                },
+            ) as mock_auth,
+            patch.object(z.Zupload, "_upload_file", return_value=None) as mock_upload,
+        ):
+            result = zot.attachment_both([("Custom Title", temp_file_path)])
+
+            # the item is registered with a bare filename, which is all the API accepts
+            sent = json.loads(mock.last_request().body.decode("utf-8"))
+            self.assertEqual(sent[0]["filename"], "test_attachment.txt")
+            # but the caller's payload and the local steps keep the full path
+            self.assertEqual(result["success"][0]["filename"], temp_file_path)
+            self.assertEqual(mock_auth.call_args[0][0], temp_file_path)
+            self.assertEqual(mock_upload.call_args[0][1], temp_file_path)
+
+        os.remove(temp_file_path)
+
+    def testUploadReportsPrelimRejection(self):
+        """A server rejection at step 0 is reported, not swallowed (#341)"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+
+        rejection = {
+            "code": 400,
+            "message": "Stored-file filename '/abs/path/paper.pdf' cannot contain a directory path",
+        }
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/items",
+            content_type="application/json",
+            body=json.dumps(
+                {"success": {}, "unchanged": {}, "failed": {"0": rejection}}
+            ),
+        )
+
+        payload = [{"filename": "test_upload_file.txt", "title": "Test File"}]
+        with patch.object(z.Zupload, "_verify", return_value=None):
+            upload = z.Zupload(
+                zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+            )
+            result = upload.upload()
+
+        self.assertEqual(len(result["failure"]), 1)
+        self.assertEqual(result["failure"][0]["error"], rejection)
+        self.assertEqual(result["success"], [])
 
     def tearDown(self):
         """Tear stuff down"""

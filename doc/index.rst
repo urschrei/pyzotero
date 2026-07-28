@@ -1093,9 +1093,12 @@ Uploading files
                 'failure': [attach3, attach4...],
                 'unchanged': [attach4, attach5...]
             }
-    
-    .. note:: 
+
+    .. note::
         unlike the space-saving responses from the server, the return value here eschews the complex index / key lookup and simply passes back the ``imported_file`` item template populated with keys (if created successfully or passed in) corresponding to each result. This is the return type for all of these methods.
+
+    .. note::
+        the ``filename`` you pass is used to locate the file on disk (relative to ``basedir``, if given), so it may be a path. The API doesn't accept a directory path in a stored-file item's ``filename`` field, so only the basename is sent when the attachment item is created. Entries returned under ``failure`` because the server rejected the item at creation time contain the server's reason under an ``error`` key, e.g. ``{'code': 400, 'message': '…'}``.
 
 Deleting items
 ~~~~~~~~~~~~~~
