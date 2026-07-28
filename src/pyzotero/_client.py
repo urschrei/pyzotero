@@ -1028,7 +1028,23 @@ class Zotero:
         # The parameters are passed per-request rather than via
         # add_parameters(), which would leave them on the client and leak
         # them into subsequent requests (#356)
-        retrieved = self._retrieve_data(query_string, params=params)
+        try:
+            retrieved = self._retrieve_data(query_string, params=params)
+        except ze.ResourceNotFoundError:
+            if not self.local:
+                raise
+            # the local API implements the item type and field endpoints but
+            # not /items/new, so there's nothing to fall back to here
+            msg = (
+                "The local Zotero API doesn't implement the /items/new "
+                "template endpoint, so item_template() (and the "
+                "attachment_simple() / attachment_both() methods that rely on "
+                "it) are unavailable in local mode. Build the item dict "
+                "directly and pass it to create_items(), or to "
+                "upload_attachments() for a file attachment. Item types and "
+                "fields are available via item_types() and item_type_fields()."
+            )
+            raise ze.CallDoesNotExistError(msg) from None
         return self._cache(retrieved, template_name)
 
     def _attachment_template(self, attachment_type: str) -> Any:
