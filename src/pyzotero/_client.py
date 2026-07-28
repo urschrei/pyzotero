@@ -274,6 +274,22 @@ class Zotero:
             headers["Zotero-API-Key"] = self.local_api_key
         return headers
 
+    def _write(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
+        """Dispatch a write request, adding the headers a local write needs.
+
+        The local API rejects writes with 428 when ``Zotero-Server-ID`` is
+        absent and 401 when there's no valid local API key, so both are added
+        here rather than in each of the write methods. Against the web API this
+        is a plain passthrough. Responses are checked by the callers, as
+        before.
+        """
+        if self.local:
+            kwargs["headers"] = {
+                **(kwargs.pop("headers", None) or {}),
+                **self._local_write_headers(),
+            }
+        return self.client.request(method, url, **kwargs)
+
     def authorize_local(self, app_name: str) -> dict[str, Any]:
         """Obtain a local API key, prompting the user for permission.
 
@@ -663,7 +679,8 @@ class Zotero:
         For PDFs, 'indexedPages' and 'totalPages'.
         """
         headers = {"Content-Type": "application/json"}
-        return self.client.put(
+        return self._write(
+            "PUT",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{itemkey}/fulltext",
@@ -1037,7 +1054,8 @@ class Zotero:
         payload = [{"name": name, "conditions": conditions}]
         headers = {"Zotero-Write-Token": token()}
         self._check_backoff()
-        req = self.client.post(
+        req = self._write(
+            "POST",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/searches",
@@ -1057,7 +1075,8 @@ class Zotero:
         """
         headers = {"Zotero-Write-Token": token()}
         self._check_backoff()
-        req = self.client.delete(
+        req = self._write(
+            "DELETE",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/searches",
@@ -1242,7 +1261,7 @@ class Zotero:
         }
         if timeout is not None:
             post_kwargs["timeout"] = timeout
-        req = self.client.post(**post_kwargs)
+        req = self._write("POST", **post_kwargs)
         self.request = req
         self._post_check(req)
         return req.json()
@@ -1278,7 +1297,8 @@ class Zotero:
         if last_modified is not None:
             headers["If-Unmodified-Since-Version"] = str(last_modified)
         self._check_backoff()
-        req = self.client.post(
+        req = self._write(
+            "POST",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/collections",
@@ -1305,7 +1325,8 @@ class Zotero:
         key = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update({"Content-Type": "application/json"})
-        return self.client.put(
+        return self._write(
+            "PUT",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/collections/{key}",
@@ -1364,7 +1385,8 @@ class Zotero:
         modified = payload["version"] if last_modified is None else last_modified
         ident = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.patch(
+        return self._write(
+            "PATCH",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{ident}",
@@ -1387,7 +1409,7 @@ class Zotero:
         )
         for chunk in chunks(to_send, DEFAULT_NUM_ITEMS):
             self._check_backoff()
-            req = self.client.post(url=url, json=chunk)
+            req = self._write("POST", url=url, json=chunk)
             self.request = req
             self._post_check(req)
         return True
@@ -1419,7 +1441,8 @@ class Zotero:
         # add the collection data from the item
         modified_collections = payload["data"]["collections"] + [collection]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.patch(
+        return self._write(
+            "PATCH",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{ident}",
@@ -1443,7 +1466,8 @@ class Zotero:
             c for c in payload["data"]["collections"] if c != collection
         ]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.patch(
+        return self._write(
+            "PATCH",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{ident}",
@@ -1469,7 +1493,8 @@ class Zotero:
                 "last-modified-version"
             ],
         }
-        return self.client.delete(
+        return self._write(
+            "DELETE",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/tags",
@@ -1505,7 +1530,7 @@ class Zotero:
             )
             url = build_url(self.endpoint, f"{base}/{payload['key']}")
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.delete(url=url, params=params, headers=headers)
+        return self._write("DELETE", url=url, params=params, headers=headers)
 
     @backoff_check
     def delete_item(
