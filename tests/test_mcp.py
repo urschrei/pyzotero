@@ -402,3 +402,161 @@ class TestSearchSemanticScholar:
             sort=None,
             min_citations=0,
         )
+
+
+# Write tools (#333): registered only when the server is started with
+# --enable-writes, so that they're absent from the tool list otherwise.
+
+
+class _FakeServer:
+    """Minimal stand-in for FastMCP that records what gets registered."""
+
+    def __init__(self):
+        self.tools = {}
+
+    def tool(self):
+        def decorator(fn):
+            self.tools[fn.__name__] = fn
+            return fn
+
+        return decorator
+
+
+@pytest.fixture
+def write_zot():
+    """Patch _write_client to return a mock, and return the mock."""
+    mock = MagicMock()
+    mock.create_items.return_value = {"success": {"0": "NEWKEY"}, "failed": {}}
+    mock.create_collections.return_value = {"success": {"0": "NEWCOLL"}, "failed": {}}
+    mock.item.return_value = {
+        "key": "ABC123",
+        "version": 3,
+        "data": {"key": "ABC123", "version": 3, "title": "Old", "tags": []},
+    }
+    with patch("pyzotero.mcp_server._write_client", return_value=mock):
+        yield mock
+
+
+@pytest.fixture
+def write_tools(write_zot):
+    """Register the write tools, deletes included, onto a fake server."""
+    server = _FakeServer()
+    mcp_server.register_write_tools(server, enable_deletes=True)
+    return server.tools
+
+
+class TestWriteGating:
+    def test_write_tools_are_not_importable_symbols(self):
+        """They're closures registered on demand, so nothing leaks at import"""
+        for name in ("create_item", "update_item", "delete_item"):
+            assert not hasattr(mcp_server, name)
+
+    def test_deletes_excluded_by_default(self):
+        server = _FakeServer()
+        names = mcp_server.register_write_tools(server)
+        assert "create_item" in names
+        assert "delete_item" not in names
+        assert "delete_item" not in server.tools
+
+    def test_deletes_registered_when_enabled(self):
+        server = _FakeServer()
+        names = mcp_server.register_write_tools(server, enable_deletes=True)
+        assert "delete_item" in names
+        assert "delete_item" in server.tools
+
+    def test_registered_names_match_registered_tools(self):
+        server = _FakeServer()
+        names = mcp_server.register_write_tools(server, enable_deletes=True)
+        assert sorted(names) == sorted(server.tools)
+
+
+class TestWriteClient:
+    def test_missing_key_raises_with_remedy(self, monkeypatch):
+        monkeypatch.delenv(mcp_server.WRITE_KEY_ENV, raising=False)
+        with pytest.raises(RuntimeError, match="pyzotero authorize"):
+            mcp_server._write_client()
+
+    def test_key_and_server_id_passed_through(self, monkeypatch):
+        monkeypatch.setenv(mcp_server.WRITE_KEY_ENV, "key123")
+        monkeypatch.setenv(mcp_server.SERVER_ID_ENV, "srv123")
+        with patch("pyzotero.mcp_server.get_zotero_client") as client:
+            mcp_server._write_client()
+        client.assert_called_once_with(server_id="srv123", local_api_key="key123")
+
+    def test_absent_server_id_is_none(self, monkeypatch):
+        monkeypatch.setenv(mcp_server.WRITE_KEY_ENV, "key123")
+        monkeypatch.delenv(mcp_server.SERVER_ID_ENV, raising=False)
+        with patch("pyzotero.mcp_server.get_zotero_client") as client:
+            mcp_server._write_client()
+        client.assert_called_once_with(server_id=None, local_api_key="key123")
+
+
+class TestWriteTools:
+    def test_create_item_builds_payload(self, write_tools, write_zot):
+        result = json.loads(
+            write_tools["create_item"](
+                "book",
+                fields={"title": "A Book"},
+                creators=[{"creatorType": "author", "lastName": "Doe"}],
+                tags=["one", "two"],
+                collections=["COLL1"],
+            )
+        )
+        assert result["created"] == "NEWKEY"
+        payload = write_zot.create_items.call_args[0][0][0]
+        assert payload == {
+            "itemType": "book",
+            "title": "A Book",
+            "creators": [{"creatorType": "author", "lastName": "Doe"}],
+            "tags": [{"tag": "one"}, {"tag": "two"}],
+            "collections": ["COLL1"],
+        }
+
+    def test_create_item_reports_rejection(self, write_tools, write_zot):
+        write_zot.create_items.return_value = {
+            "success": {},
+            "failed": {"0": {"code": 400, "message": "Invalid field"}},
+        }
+        result = json.loads(write_tools["create_item"]("book"))
+        assert "error" in result
+        assert result["detail"]["0"]["message"] == "Invalid field"
+
+    def test_update_item_merges_fields(self, write_tools, write_zot):
+        result = json.loads(write_tools["update_item"]("ABC123", {"title": "New"}))
+        assert result["updated"] == "ABC123"
+        sent = write_zot.update_item.call_args[0][0]
+        assert sent["data"]["title"] == "New"
+        # the existing version is preserved, so the precondition still applies
+        assert sent["data"]["version"] == 3
+
+    def test_add_tags(self, write_tools, write_zot):
+        write_tools["add_tags"]("ABC123", ["alpha", "beta"])
+        assert write_zot.add_tags.call_args[0][1:] == ("alpha", "beta")
+
+    def test_create_collection_with_parent(self, write_tools, write_zot):
+        result = json.loads(write_tools["create_collection"]("Kids", parent="PARENT1"))
+        assert result["created"] == "NEWCOLL"
+        assert write_zot.create_collections.call_args[0][0][0] == {
+            "name": "Kids",
+            "parentCollection": "PARENT1",
+        }
+
+    def test_create_collection_without_parent(self, write_tools, write_zot):
+        write_tools["create_collection"]("Top")
+        assert write_zot.create_collections.call_args[0][0][0] == {"name": "Top"}
+
+    def test_add_to_collection(self, write_tools, write_zot):
+        write_tools["add_to_collection"]("ABC123", "COLL1")
+        args = write_zot.addto_collection.call_args[0]
+        assert args[0] == "COLL1"
+        assert args[1]["key"] == "ABC123"
+
+    def test_delete_item(self, write_tools, write_zot):
+        result = json.loads(write_tools["delete_item"]("ABC123"))
+        assert result["deleted"] == "ABC123"
+        assert write_zot.delete_item.call_args[0][0]["key"] == "ABC123"
+
+    def test_errors_are_returned_as_json(self, write_tools, write_zot):
+        write_zot.create_items.side_effect = RuntimeError("boom")
+        result = json.loads(write_tools["create_item"]("book"))
+        assert result["error"] == "boom"
