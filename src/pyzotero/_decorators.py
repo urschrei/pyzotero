@@ -86,6 +86,7 @@ def backoff_check(
             self._check_backoff()
             # resp is a Requests response object
             resp = func(self, *args, **kwargs)
+            self._capture_server_id(resp)
             try:
                 resp.raise_for_status()
             except httpx.HTTPError as exc:
