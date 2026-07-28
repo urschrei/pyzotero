@@ -209,7 +209,10 @@ Then pass the key in the server's environment and enable writes:
 | `add_tags` | Add tags to an existing item |
 | `create_collection` | Create a collection, optionally nested |
 | `add_to_collection` | File an existing item under a collection |
+| `add_attachment` | Attach a file on disk to an existing item |
 | `delete_item` | Permanently delete an item. Requires `--enable-deletes` |
+
+`add_attachment` requires an **absolute** path. The server runs as a subprocess of your MCP client, so its working directory is not yours, and a relative path would resolve somewhere unintended; relative paths are rejected rather than guessed at. The file is copied into Zotero's storage, and syncs with the library if sync is enabled. Attaching a file that is already attached to the item is reported as unchanged rather than duplicated, so a retried call is safe.
 
 `delete_item` is behind a second flag because deletion via the local API is irreversible: items are erased outright rather than moved to the trash, and the deletion propagates on sync. `--enable-deletes` implies `--enable-writes`.
 
