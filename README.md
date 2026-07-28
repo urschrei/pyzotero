@@ -55,7 +55,7 @@ Note that versions reported by the local API are unrelated to web API versions, 
 * Using [pip][10]: `pip install pyzotero`
 * Using Anaconda: `conda install conda-forge::pyzotero`
 
-Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero". Both are read-only, and so need no local API key.
+Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero". The CLI does not modify your library; its `authorize` command exists to obtain a local API key for granting write access to the MCP server. The MCP server is read-only by default, and needs that key only if started with `--enable-writes`.
 
 # Command-Line Interface
 
@@ -94,6 +94,9 @@ pyzotero listcollections
 
 # List available item types
 pyzotero itemtypes
+
+# Obtain a local API key, for granting write access to the MCP server
+pyzotero authorize --app-name "Claude Desktop"
 ```
 
 ## Search Behaviour
@@ -173,6 +176,44 @@ Or, without installing, using uvx:
 | `search_semantic_scholar` | Search across Semantic Scholar's paper index |
 
 The Semantic Scholar tools can optionally check whether results already exist in your local Zotero library (enabled by default via the `check_library` parameter).
+
+### Write Tools (opt-in)
+
+The server is read-only unless started with `--enable-writes`. Write tools are not merely disabled without it: they are never registered, so they do not appear in the model's tool list at all, and content in your library cannot induce a call to one.
+
+Obtain a local API key first, choosing "Always Allow" so that it persists:
+
+```
+pyzotero authorize --app-name "Claude Desktop"
+```
+
+Then pass the key in the server's environment and enable writes:
+
+```json
+{
+  "mcpServers": {
+    "zotero": {
+      "command": "pyzotero-mcp",
+      "args": ["--enable-writes"],
+      "env": { "PYZOTERO_LOCAL_API_KEY": "your-key-here" }
+    }
+  }
+}
+```
+
+| Tool | Description |
+|------|-------------|
+| `list_item_fields` | List the fields and creator types valid for an item type |
+| `create_item` | Create a new item |
+| `update_item` | Update fields on an existing item |
+| `add_tags` | Add tags to an existing item |
+| `create_collection` | Create a collection, optionally nested |
+| `add_to_collection` | File an existing item under a collection |
+| `delete_item` | Permanently delete an item. Requires `--enable-deletes` |
+
+`delete_item` is behind a second flag because deletion via the local API is irreversible: items are erased outright rather than moved to the trash, and the deletion propagates on sync. `--enable-deletes` implies `--enable-writes`.
+
+`PYZOTERO_LOCAL_SERVER_ID` is also read if set, saving one request at startup; it is otherwise fetched automatically.
 
 # Development
 
