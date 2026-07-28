@@ -990,7 +990,8 @@ Differences from the web API
 ----------------------------
 
 * :py:meth:`Zotero.item_template()` is unavailable: the local API implements the item
-  type and field endpoints, but not ``/items/new``. Build item dicts directly and pass
+  type and field endpoints, but not ``/items/new``. Zotero may add it in future, in which
+  case the method starts working with no change to Pyzotero. Build item dicts directly and pass
   them to :py:meth:`Zotero.create_items()`, using :py:meth:`Zotero.item_types()` and
   :py:meth:`Zotero.item_type_fields()` to discover the valid fields. Calling it in local
   mode raises :py:class:`CallDoesNotExistError`.
