@@ -13,6 +13,7 @@ import httpx
 
 from pyzotero import errors as ze
 from pyzotero import zotero as z
+from pyzotero._helpers import get_zotero_client
 
 from .mock_client import MockClient
 
@@ -462,6 +463,25 @@ class ItemTemplateTests(unittest.TestCase):
         zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
         with self.assertRaises(ze.ResourceNotFoundError):
             zot.item_template("book")
+
+
+class HelperTests(unittest.TestCase):
+    """get_zotero_client() can build a write-capable client."""
+
+    def test_defaults_are_unchanged(self):
+        zot = get_zotero_client()
+        self.assertTrue(zot.local)
+        self.assertEqual(zot.locale, "en-US")
+        self.assertIsNone(zot.server_id)
+        self.assertIsNone(zot.local_api_key)
+
+    def test_credentials_are_passed_through(self):
+        zot = get_zotero_client(
+            locale="de-DE", server_id=SERVER_ID, local_api_key="abc123"
+        )
+        self.assertEqual(zot.locale, "de-DE")
+        self.assertEqual(zot.server_id, SERVER_ID)
+        self.assertEqual(zot.local_api_key, "abc123")
 
 
 if __name__ == "__main__":
