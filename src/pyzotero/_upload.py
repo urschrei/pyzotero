@@ -70,6 +70,21 @@ class Zupload:
                 msg = f"The file at {filepath!s} couldn't be opened or found."
                 raise ze.FileDoesNotExistError(msg) from None
 
+    @staticmethod
+    def _outgoing(item: JsonDict) -> JsonDict:
+        """Return a copy of an attachment item that's safe to send to the API.
+
+        Zupload resolves ``filename`` against ``basedir`` in order to read the
+        local file, so callers pass a path. The API rejects a stored-file item
+        whose ``filename`` contains a directory path ("Stored-file filename
+        cannot contain a directory path"), so the outgoing copy contains the
+        basename only. See #341.
+        """
+        filename = item.get("filename")
+        if not filename:
+            return item
+        return {**item, "filename": Path(filename).name}
+
     def _create_prelim(self) -> dict | None:
         """Step 0: Register intent to upload files."""
         self._verify(self.payload)
@@ -91,7 +106,7 @@ class Zupload:
         if self.parentid:
             for child in self.payload:
                 child["parentItem"] = self.parentid
-        to_send = json.dumps(self.payload)
+        to_send = json.dumps([self._outgoing(item) for item in self.payload])
         self.zinstance._check_backoff()
         req = self.zinstance.client.post(
             url=build_url(
@@ -220,12 +235,17 @@ class Zupload:
         Goes through upload steps 0 - 3 (private class methods), and returns
         a dict noting success, failure, or unchanged
         (returning the payload entries with that property as a list for each status).
+
+        Entries the server rejected at step 0 are returned under ``failure``
+        with the server's reason attached as an ``error`` key.
         """
         result: dict[str, list] = {"success": [], "failure": [], "unchanged": []}
-        self._create_prelim()
-        for item in self.payload:
+        prelim = self._create_prelim()
+        rejected = prelim.get("failed") or {} if prelim else {}
+        for idx, item in enumerate(self.payload):
             if "key" not in item:
-                result["failure"].append(item)
+                reason = rejected.get(str(idx))
+                result["failure"].append({**item, "error": reason} if reason else item)
                 continue
             attach = str(self.basedir.joinpath(item["filename"]))
             authdata = self._get_auth(attach, item["key"], md5=item.get("md5", None))
