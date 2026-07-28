@@ -75,6 +75,7 @@ class Zotero:
         client: httpx.Client | None = None,
         upload_timeout: int | float = 120,
         server_id: str | None = None,
+        local_api_key: str | None = None,
     ) -> None:
         self.client: httpx.Client | None = None
         """Store Zotero credentials"""
@@ -85,6 +86,8 @@ class Zotero:
             self.endpoint = "http://localhost:23119/api"
             self.local = True
         self._server_id: str | None = server_id
+        self.local_api_key: str | None = local_api_key
+        """Key authorising local API writes; see :meth:`authorize_local`."""
         if library_id is not None and library_type:
             self.library_id = library_id
             # library_type determines whether query begins w. /users or /groups
@@ -255,6 +258,83 @@ class Zotero:
             )
             raise ze.UnsupportedParamsError(msg)
         return self._server_id
+
+    def _local_write_headers(self) -> dict[str, str]:
+        """Return the headers a local API write requires.
+
+        Writes are rejected with 428 without ``Zotero-Server-ID`` and with 401
+        without a local API key, so the server ID is fetched here if it isn't
+        already known. A missing key is left to the server to reject, so that
+        the caller gets the same error whether the key is absent or expired.
+        """
+        if not self.local:
+            return {}
+        headers = {"Zotero-Server-ID": self._ensure_server_id()}
+        if self.local_api_key:
+            headers["Zotero-API-Key"] = self.local_api_key
+        return headers
+
+    def authorize_local(self, app_name: str) -> dict[str, Any]:
+        """Obtain a local API key, prompting the user for permission.
+
+        Local API writes require a key that is unrelated to a zotero.org API
+        key. Calling this displays a dialog in Zotero offering "Allow"
+        (one-time access), "Always Allow" (persistent access) and "Deny". On
+        approval the key is stored on this instance as ``local_api_key`` and
+        sent with subsequent local writes.
+
+        Zotero rate-limits this endpoint, so it should not be called in a retry
+        loop.
+
+        Args:
+            app_name: the caller's display name, shown in the dialog.
+
+        Returns:
+            The server's response: a dict with a ``key`` str and a ``remember``
+            bool. When ``remember`` is False the key is single-use -- the first
+            successful write consumes it, and the next write raises
+            :class:`LocalAPIKeyRequiredError`, at which point this method must
+            be called again. When it is True the key may be stored by the
+            caller and passed back as the ``local_api_key`` argument to
+            ``Zotero()`` on a later run.
+
+        Raises:
+            LocalAPIDeniedError: if the user denies the request.
+            TooManyRequestsError: if the endpoint is being rate-limited.
+
+        """
+        if not self.local:
+            msg = "authorize_local() is only available in local mode (local=True)"
+            raise ze.UnsupportedParamsError(msg)
+        if not app_name or not app_name.strip():
+            msg = "app_name is required: it identifies the caller in the dialog"
+            raise ze.ParamNotPassedError(msg)
+        headers = {
+            "Content-Type": "application/json",
+            "Zotero-Server-ID": self._ensure_server_id(),
+        }
+        self._check_backoff()
+        req = self.client.post(
+            url=build_url(self.endpoint, "/local/authorize"),
+            headers=headers,
+            json={"appName": app_name.strip()},
+        )
+        self.request = req
+        if req.status_code == httpx.codes.FORBIDDEN:
+            msg = f"Zotero denied the local API authorisation request from {app_name!r}"
+            raise ze.LocalAPIDeniedError(msg)
+        if req.status_code == httpx.codes.TOO_MANY_REQUESTS:
+            # error_handler records a backoff and returns for 429 rather than
+            # raising, which would leave us parsing a text/plain body as JSON
+            retry_after = get_backoff_duration(req.headers)
+            msg = "Zotero is rate-limiting local API authorisation requests"
+            if retry_after:
+                msg = f"{msg}; retry in {retry_after}s"
+            raise ze.TooManyRequestsError(msg)
+        self._post_check(req)
+        authorised = req.json()
+        self.local_api_key = authorised["key"]
+        return authorised
 
     def _check_for_component(self, url: str | None, component: str) -> bool:
         """Check a url path query fragment for a specific query parameter."""
