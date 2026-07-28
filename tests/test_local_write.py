@@ -433,5 +433,36 @@ class BatchUpdateTests(unittest.TestCase):
         )
 
 
+class ItemTemplateTests(unittest.TestCase):
+    """The local API doesn't implement /items/new."""
+
+    def test_local_404_explains_the_gap(self):
+        mock = MockClient()
+        mock.register(
+            "GET",
+            f"{LOCAL}/items/new",
+            body="No endpoint found",
+            status=404,
+            content_type="text/plain",
+        )
+        zot = local_zotero(mock)
+        with self.assertRaises(ze.CallDoesNotExistError) as caught:
+            zot.item_template("book")
+        self.assertIn("create_items()", str(caught.exception))
+
+    def test_web_404_is_unchanged(self):
+        mock = MockClient()
+        mock.register(
+            "GET",
+            "https://api.zotero.org/items/new",
+            body="Not found",
+            status=404,
+            content_type="text/plain",
+        )
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        with self.assertRaises(ze.ResourceNotFoundError):
+            zot.item_template("book")
+
+
 if __name__ == "__main__":
     unittest.main()

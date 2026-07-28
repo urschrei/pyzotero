@@ -976,6 +976,31 @@ Local API keys are unrelated to zotero.org API keys, and are obtained by asking 
 Differences from the web API
 ----------------------------
 
+* :py:meth:`Zotero.item_template()` is unavailable: the local API implements the item
+  type and field endpoints, but not ``/items/new``. Build item dicts directly and pass
+  them to :py:meth:`Zotero.create_items()`, using :py:meth:`Zotero.item_types()` and
+  :py:meth:`Zotero.item_type_fields()` to discover the valid fields. Calling it in local
+  mode raises :py:class:`CallDoesNotExistError`.
+* For the same reason :py:meth:`Zotero.attachment_simple()` and
+  :py:meth:`Zotero.attachment_both()`, which build an attachment template internally, are
+  unavailable. Build the attachment dict yourself and pass it to
+  :py:meth:`Zotero.upload_attachments()`, which works normally:
+
+    .. code-block:: python
+
+        attachment = {
+            'itemType': 'attachment',
+            'linkMode': 'imported_file',
+            'title': 'paper.pdf',
+            'filename': '/path/to/paper.pdf',
+            'contentType': 'application/pdf',
+            'charset': '',
+            'note': '',
+            'tags': [],
+            'relations': {},
+        }
+        zot.upload_attachments([attachment], parent_item_key)
+
 * Keyed writes require a concurrency precondition: either a ``version`` on each object,
   which objects retrieved from the API already carry, or an explicit ``last_modified``
   argument. Payloads built by hand without either are rejected.
