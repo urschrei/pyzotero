@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import argparse
 import functools
 import json
+import os
+import sys
 from collections.abc import Callable
 from typing import Any, TypeVar
 
@@ -451,8 +454,232 @@ def search_semantic_scholar(
     return _json({"count": len(output_papers), "total": total, "papers": output_papers})
 
 
+WRITE_KEY_ENV = "PYZOTERO_LOCAL_API_KEY"
+SERVER_ID_ENV = "PYZOTERO_LOCAL_SERVER_ID"
+
+
+def _write_client() -> Any:
+    """Return a Zotero client authorised for local writes.
+
+    The key is supplied out of band rather than obtained here. MCP servers are
+    spawned and restarted by the client, so authorising at startup would raise
+    a Zotero dialog with no visible cause, and would fail outright if Zotero
+    weren't running yet. Run ``pyzotero authorize`` to obtain a persistent key.
+    """
+    key = os.environ.get(WRITE_KEY_ENV)
+    if not key:
+        msg = (
+            f"No local API key: set {WRITE_KEY_ENV} in this server's environment. "
+            "Run 'pyzotero authorize' to obtain one, choosing 'Always Allow' so "
+            "that the key persists."
+        )
+        raise RuntimeError(msg)
+    return get_zotero_client(
+        server_id=os.environ.get(SERVER_ID_ENV) or None,
+        local_api_key=key,
+    )
+
+
+def register_write_tools(server: FastMCP, *, enable_deletes: bool = False) -> list[str]:
+    """Register the write tools on ``server``, returning the names registered.
+
+    Writes are gated by registration rather than by a check inside each tool: a
+    tool that was never registered doesn't appear in the model's tool list at
+    all, so content in the library can't induce a call to one. Nothing here runs
+    unless ``main()`` is passed --enable-writes or --enable-deletes.
+    """
+    registered: list[str] = []
+
+    def add(func: Callable[..., str]) -> None:
+        server.tool()(mcp_error_handler(func))
+        registered.append(func.__name__)  # ty: ignore[unresolved-attribute]
+
+    def list_item_fields(item_type: str) -> str:
+        """List the fields and creator types valid for a Zotero item type.
+
+        Call this before create_item to discover what a given item type accepts.
+
+        Args:
+            item_type: A Zotero item type, e.g. "journalArticle" or "book".
+
+        Returns:
+            JSON with the field names and creator types for that item type.
+
+        """
+        zot = get_zotero_client()
+        return _json(
+            {
+                "itemType": item_type,
+                "fields": [
+                    f["field"]  # ty: ignore[invalid-argument-type]
+                    for f in zot.item_type_fields(item_type)
+                ],
+                "creatorTypes": [
+                    c["creatorType"]  # ty: ignore[invalid-argument-type]
+                    for c in zot.item_creator_types(item_type)
+                ],
+            }
+        )
+
+    def create_item(
+        item_type: str,
+        fields: dict[str, Any] | None = None,
+        creators: list[dict[str, str]] | None = None,
+        tags: list[str] | None = None,
+        collections: list[str] | None = None,
+    ) -> str:
+        """Create a new item in the local Zotero library.
+
+        Args:
+            item_type: A Zotero item type, e.g. "journalArticle" or "book".
+            fields: Field values, e.g. {"title": "...", "date": "2024"}. Use
+                list_item_fields to discover what the item type accepts.
+            creators: Creator dicts, each with creatorType and either
+                (firstName, lastName) or name.
+            tags: Tag names to attach.
+            collections: Collection keys to file the item under.
+
+        Returns:
+            JSON with the created item's key, or the server's rejection reason.
+
+        """
+        zot = _write_client()
+        item: dict[str, Any] = {"itemType": item_type, **(fields or {})}
+        if creators:
+            item["creators"] = creators
+        if tags:
+            item["tags"] = [{"tag": tag} for tag in tags]
+        if collections:
+            item["collections"] = collections
+        resp = zot.create_items([item])
+        if resp.get("success"):
+            return _json({"created": resp["success"]["0"], "itemType": item_type})
+        return _json({"error": "Item was rejected", "detail": resp.get("failed")})
+
+    def update_item(key: str, fields: dict[str, Any]) -> str:
+        """Update fields on an existing item, leaving other fields unchanged.
+
+        Args:
+            key: The item key.
+            fields: Field values to set, e.g. {"title": "New title"}.
+
+        Returns:
+            JSON confirming the key and the fields written.
+
+        """
+        zot = _write_client()
+        item = zot.item(key)
+        item["data"].update(fields)
+        zot.update_item(item)
+        return _json({"updated": key, "fields": sorted(fields)})
+
+    def add_tags(key: str, tags: list[str]) -> str:
+        """Add one or more tags to an existing item.
+
+        Args:
+            key: The item key.
+            tags: Tag names to add.
+
+        Returns:
+            JSON confirming the key and the item's full tag list.
+
+        """
+        zot = _write_client()
+        zot.add_tags(zot.item(key), *tags)
+        return _json(
+            {"updated": key, "tags": [t["tag"] for t in zot.item(key)["data"]["tags"]]}
+        )
+
+    def create_collection(name: str, parent: str = "") -> str:
+        """Create a new collection.
+
+        Args:
+            name: The collection name.
+            parent: Optional parent collection key, to nest the new collection.
+
+        Returns:
+            JSON with the created collection's key.
+
+        """
+        zot = _write_client()
+        payload: dict[str, Any] = {"name": name}
+        if parent:
+            payload["parentCollection"] = parent
+        resp = zot.create_collections([payload])
+        if resp.get("success"):
+            return _json({"created": resp["success"]["0"], "name": name})
+        return _json({"error": "Collection was rejected", "detail": resp.get("failed")})
+
+    def add_to_collection(item_key: str, collection_key: str) -> str:
+        """File an existing item under a collection.
+
+        Args:
+            item_key: The item key.
+            collection_key: The collection key.
+
+        Returns:
+            JSON confirming the item and collection.
+
+        """
+        zot = _write_client()
+        zot.addto_collection(collection_key, zot.item(item_key))
+        return _json({"item": item_key, "addedTo": collection_key})
+
+    def delete_item(key: str) -> str:
+        """Permanently delete an item from the local Zotero library.
+
+        This cannot be undone. The local API erases the item outright rather
+        than moving it to the trash, and the deletion propagates on sync.
+        Confirm with the user before calling this.
+
+        Args:
+            key: The item key.
+
+        Returns:
+            JSON confirming the deleted key.
+
+        """
+        zot = _write_client()
+        zot.delete_item(zot.item(key))
+        return _json({"deleted": key})
+
+    for tool in (
+        list_item_fields,
+        create_item,
+        update_item,
+        add_tags,
+        create_collection,
+        add_to_collection,
+    ):
+        add(tool)
+    if enable_deletes:
+        add(delete_item)
+    return registered
+
+
 def main() -> None:
     """Run the MCP server over stdio transport."""
+    parser = argparse.ArgumentParser(
+        prog="pyzotero-mcp",
+        description="MCP server exposing a local Zotero library. Read-only by default.",
+    )
+    parser.add_argument(
+        "--enable-writes",
+        action="store_true",
+        help="register tools that create and modify library items",
+    )
+    parser.add_argument(
+        "--enable-deletes",
+        action="store_true",
+        help=(
+            "additionally register delete_item. Deletions via the local API are "
+            "permanent, not moves to the trash. Implies --enable-writes"
+        ),
+    )
+    args = parser.parse_args()
+    if args.enable_writes or args.enable_deletes:
+        names = register_write_tools(mcp, enable_deletes=args.enable_deletes)
+        print(f"pyzotero-mcp: write tools enabled: {', '.join(names)}", file=sys.stderr)
     mcp.run(transport="stdio")
 
 
