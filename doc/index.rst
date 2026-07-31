@@ -836,7 +836,7 @@ Example:
 
         z = zot.top(limit=5)
         lazy = zot.iterfollow()
-        lazy.next() # the next() call has returned the next five items
+        next(lazy) # the next() call has returned the next five items
 
 .. py:method:: Zotero.makeiter(API call)
 
@@ -850,8 +850,8 @@ Example:
     .. code-block:: python
 
         gen = zot.makeiter(zot.top(limit=5))
-        gen.next() # this will return the first five items
-        gen.next() # this will return the next five items
+        next(gen) # this will return the first five items
+        next(gen) # this will return the next five items
 
 
 
