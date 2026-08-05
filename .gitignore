@@ -7,3 +7,5 @@ src/_version.py
 *.pyo
 *.pyd
 __pycache__/
+.coverage
+coverage.xml
