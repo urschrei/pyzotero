@@ -551,8 +551,14 @@ class Zotero:
 
     def last_modified_version(self, **kwargs: Any) -> int:
         """Get the last modified user or group library version."""
-        # This MUST be a multiple-object request, limit param notwithstanding
-        self.items(limit=1)
+        # This MUST be a multiple-object request, limit param notwithstanding.
+        # Call _retrieve_data directly (as _totals does) rather than items(),
+        # which would overwrite self.links and break any in-progress
+        # pagination via follow() / iterfollow()
+        self.add_parameters(limit=1)
+        query = self._build_query("/{t}/{u}/items")
+        self._retrieve_data(query)
+        self.url_params = None
         lmv = self.request.headers.get("last-modified-version", 0)
         return int(lmv)
 
