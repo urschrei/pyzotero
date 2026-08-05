@@ -793,6 +793,8 @@ These methods (currently experimental) aim to make Pyzotero a little more RESTfu
 
 .. py:method:: Zotero.follow()
 
+    Returns ``None`` once all available items have been retrieved.
+
 Example:
 
     .. code-block:: python
@@ -805,6 +807,17 @@ Example:
         # now we can start retrieving subsequent items
         next_item = zot.follow()
         third_item = zot.follow()
+
+    ``follow()`` can thus be used to page through an entire library:
+
+    .. code-block:: python
+
+        items = zot.items()
+        while items:
+            for item in items:
+                # do stuff with the item
+                ...
+            items = zot.follow()
 
 
 .. py:method:: Zotero.everything()
