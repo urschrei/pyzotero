@@ -1986,6 +1986,34 @@ class ZoteroTests(unittest.TestCase):
         # The 'next' link used by follow() must be unchanged
         self.assertEqual(zot.links["next"], next_link)
 
+    def test_follow_exhausted_returns_none(self):
+        """follow() must return None once pagination is exhausted (#350)"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+
+        # Final page of results: no 'next' relation in the Link header
+        mock.register(
+            "GET",
+            "https://api.zotero.org/users/myuserID/items",
+            body=self.items_doc,
+            content_type="application/json",
+        )
+
+        items = zot.items()
+        self.assertTrue(items)
+        request_count = len(mock.latest_requests())
+
+        # No 'next' link, so follow() must return None without
+        # making a request (previously it hit the bare API root,
+        # returning b'Nothing to see here.')
+        self.assertIsNone(zot.follow())
+        self.assertEqual(len(mock.latest_requests()), request_count)
+
+    def test_follow_without_previous_call_returns_none(self):
+        """follow() before any API call must return None, not raise"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        self.assertIsNone(zot.follow())
+
     def test_makeiter(self):
         """Test the makeiter method that wraps iterfollow"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
