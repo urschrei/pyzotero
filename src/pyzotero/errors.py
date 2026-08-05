@@ -100,6 +100,14 @@ class UploadError(PyZoteroError):
     """
 
 
+class OAuthError(PyZoteroError):
+    """Raised when the OAuth handshake used to obtain an API key fails.
+
+    Wraps the underlying authlib/transport failure so callers only need to
+    catch a single Pyzotero exception type.
+    """
+
+
 # Mapping of HTTP status codes to exception classes
 ERROR_CODES: dict[int, type[PyZoteroError]] = {
     400: UnsupportedParamsError,
