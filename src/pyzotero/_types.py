@@ -246,10 +246,20 @@ class ZoteroClientProtocol(Protocol):
     request: httpx.Response | None
     templates: dict[str, Any]
     backoff_until: float
+    local: bool
+    server_id: str | None
 
     def _check_backoff(self) -> None: ...
 
     def _set_backoff(self, duration: str | float) -> None: ...
+
+    def _local_headers(self) -> dict[str, str]: ...
+
+    def _capture_server_id(self, resp: httpx.Response) -> None: ...
+
+    def _ensure_server_id(self) -> str: ...
+
+    def _write(self, method: str, url: str, **kwargs: Any) -> httpx.Response: ...
 
 
 # Processor function type

@@ -74,6 +74,8 @@ class Zotero:
         local: bool = False,
         client: httpx.Client | None = None,
         upload_timeout: int | float = 120,
+        server_id: str | None = None,
+        local_api_key: str | None = None,
     ) -> None:
         self.client: httpx.Client | None = None
         """Store Zotero credentials"""
@@ -83,6 +85,9 @@ class Zotero:
         else:
             self.endpoint = "http://localhost:23119/api"
             self.local = True
+        self._server_id: str | None = server_id
+        self.local_api_key: str | None = local_api_key
+        """Key authorising local API writes; see :meth:`authorize_local`."""
         if library_id is not None and library_type:
             self.library_id = library_id
             # library_type determines whether query begins w. /users or /groups
@@ -183,6 +188,170 @@ class Zotero:
         """Return the version of the pyzotero library."""
         return pz.__version__
 
+    @property
+    def server_id(self) -> str | None:
+        """The local API's stable server ID, or None if it isn't known yet.
+
+        The local API returns a ``Zotero-Server-ID`` header identifying the
+        Zotero instance the data came from. It persists with the user's
+        database. Pyzotero caches it from the first local response and sends it
+        back on subsequent requests, so a request made against a different
+        instance (or a restored database) is rejected rather than silently
+        mixing data. It is fetched automatically before the first write if it
+        isn't already known.
+
+        Versions reported by the local API are scoped to this ID and bear no
+        relation to web API versions, or to versions from any other Zotero
+        instance. Programs that persist objects or versions retrieved from the
+        local API should persist this ID alongside them and partition by it;
+        it may be set here on a subsequent run.
+        """
+        return self._server_id
+
+    @server_id.setter
+    def server_id(self, value: str | None) -> None:
+        if value is not None and not isinstance(value, str):
+            msg = f"server_id must be a str or None, not {type(value).__name__}"
+            raise TypeError(msg)
+        self._server_id = value
+
+    def _local_headers(self) -> dict[str, str]:
+        """Return the Zotero-Server-ID header to send with a local API request.
+
+        The header is optional on reads and required on writes, but it's sent
+        on both whenever it's known: that way a mismatched instance is caught
+        by the server (412) instead of producing data mixed across instances.
+        """
+        if self.local and self._server_id:
+            return {"Zotero-Server-ID": self._server_id}
+        return {}
+
+    def _capture_server_id(self, resp: httpx.Response) -> None:
+        """Cache the Zotero-Server-ID header from a local API response.
+
+        Every local API response carries the header, including error responses,
+        so ordinary reads populate it without an extra round-trip.
+        """
+        if self.local and not self._server_id:
+            if server_id := resp.headers.get("zotero-server-id"):
+                self._server_id = server_id
+
+    def _ensure_server_id(self) -> str:
+        """Fetch and cache the local server ID if it isn't already known.
+
+        Local writes are rejected with 428 unless ``Zotero-Server-ID`` is sent,
+        so it's fetched on demand before the first write. Note that the bare
+        ``/api`` path returns 404: the no-op endpoint carrying the header is
+        ``/api/``, with the trailing slash.
+        """
+        if self._server_id:
+            return self._server_id
+        self._check_backoff()
+        resp = self.client.get(f"{self.endpoint.removesuffix('/')}/")
+        self._post_check(resp)
+        if not self._server_id:
+            msg = (
+                "The local Zotero API didn't return a Zotero-Server-ID header, "
+                "which is required for writes. Local API write support needs a "
+                "Zotero version that provides it; see "
+                "https://www.zotero.org/support/beta_builds"
+            )
+            raise ze.UnsupportedParamsError(msg)
+        return self._server_id
+
+    def _local_write_headers(self) -> dict[str, str]:
+        """Return the headers a local API write requires.
+
+        Writes are rejected with 428 without ``Zotero-Server-ID`` and with 401
+        without a local API key, so the server ID is fetched here if it isn't
+        already known. A missing key is left to the server to reject, so that
+        the caller gets the same error whether the key is absent or expired.
+        """
+        if not self.local:
+            return {}
+        headers = {"Zotero-Server-ID": self._ensure_server_id()}
+        if self.local_api_key:
+            headers["Zotero-API-Key"] = self.local_api_key
+        return headers
+
+    def _write(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
+        """Dispatch a write request, adding the headers a local write needs.
+
+        The local API rejects writes with 428 when ``Zotero-Server-ID`` is
+        absent and 401 when there's no valid local API key, so both are added
+        here rather than in each of the write methods. Against the web API this
+        is a plain passthrough. Responses are checked by the callers, as
+        before.
+        """
+        if self.local:
+            kwargs["headers"] = {
+                **(kwargs.pop("headers", None) or {}),
+                **self._local_write_headers(),
+            }
+        return self.client.request(method, url, **kwargs)
+
+    def authorize_local(self, app_name: str) -> dict[str, Any]:
+        """Obtain a local API key, prompting the user for permission.
+
+        Local API writes require a key that is unrelated to a zotero.org API
+        key. Calling this displays a dialog in Zotero offering "Allow"
+        (one-time access), "Always Allow" (persistent access) and "Deny". On
+        approval the key is stored on this instance as ``local_api_key`` and
+        sent with subsequent local writes.
+
+        Zotero rate-limits this endpoint, so it should not be called in a retry
+        loop.
+
+        Args:
+            app_name: the caller's display name, shown in the dialog.
+
+        Returns:
+            The server's response: a dict with a ``key`` str and a ``remember``
+            bool. When ``remember`` is False the key is single-use -- the first
+            successful write consumes it, and the next write raises
+            :class:`LocalAPIKeyRequiredError`, at which point this method must
+            be called again. When it is True the key may be stored by the
+            caller and passed back as the ``local_api_key`` argument to
+            ``Zotero()`` on a later run.
+
+        Raises:
+            LocalAPIDeniedError: if the user denies the request.
+            TooManyRequestsError: if the endpoint is being rate-limited.
+
+        """
+        if not self.local:
+            msg = "authorize_local() is only available in local mode (local=True)"
+            raise ze.UnsupportedParamsError(msg)
+        if not app_name or not app_name.strip():
+            msg = "app_name is required: it identifies the caller in the dialog"
+            raise ze.ParamNotPassedError(msg)
+        headers = {
+            "Content-Type": "application/json",
+            "Zotero-Server-ID": self._ensure_server_id(),
+        }
+        self._check_backoff()
+        req = self.client.post(
+            url=build_url(self.endpoint, "/local/authorize"),
+            headers=headers,
+            json={"appName": app_name.strip()},
+        )
+        self.request = req
+        if req.status_code == httpx.codes.FORBIDDEN:
+            msg = f"Zotero denied the local API authorisation request from {app_name!r}"
+            raise ze.LocalAPIDeniedError(msg)
+        if req.status_code == httpx.codes.TOO_MANY_REQUESTS:
+            # error_handler records a backoff and returns for 429 rather than
+            # raising, which would leave us parsing a text/plain body as JSON
+            retry_after = get_backoff_duration(req.headers)
+            msg = "Zotero is rate-limiting local API authorisation requests"
+            if retry_after:
+                msg = f"{msg}; retry in {retry_after}s"
+            raise ze.TooManyRequestsError(msg)
+        self._post_check(req)
+        authorised = req.json()
+        self.local_api_key = authorised["key"]
+        return authorised
+
     def _check_for_component(self, url: str | None, component: str) -> bool:
         """Check a url path query fragment for a specific query parameter."""
         return bool(parse_qs(url).get(component))
@@ -215,6 +384,8 @@ class Zotero:
         ``error_handler`` to produce a PyZotero exception, and any
         ``Backoff``/``Retry-After`` header is recorded on the instance.
         """
+        # done before raise_for_status: rejections carry the header too
+        self._capture_server_id(resp)
         try:
             resp.raise_for_status()
         except httpx.HTTPError as exc:
@@ -302,6 +473,7 @@ class Zotero:
             self.request = self.client.get(
                 url=final_url,
                 params=final_params,
+                headers=self._local_headers(),
                 timeout=DEFAULT_TIMEOUT,
             )
             self.request.encoding = "utf-8"
@@ -378,6 +550,7 @@ class Zotero:
                 "If-Modified-Since": payload["updated"].strftime(
                     "%a, %d %b %Y %H:%M:%S %Z",
                 ),
+                **self._local_headers(),
             }
             # perform the request, and check whether the response returns 304
             self._check_backoff()
@@ -506,7 +679,8 @@ class Zotero:
         For PDFs, 'indexedPages' and 'totalPages'.
         """
         headers = {"Content-Type": "application/json"}
-        return self.client.put(
+        return self._write(
+            "PUT",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{itemkey}/fulltext",
@@ -518,7 +692,7 @@ class Zotero:
     def new_fulltext(self, since: int) -> Any:
         """Retrieve list of full-text content items and versions newer than <since>."""
         query_string = f"/{self.library_type}/{self.library_id}/fulltext"
-        headers: dict[str, str] = {}
+        headers: dict[str, str] = self._local_headers()
         params: dict[str, Any] = {"since": since}
         self._check_backoff()
         resp = self.client.get(
@@ -844,7 +1018,23 @@ class Zotero:
         ):
             return copy.deepcopy(self.templates[template_name]["tmplt"])
         # otherwise perform a normal request and cache the response
-        retrieved = self._retrieve_data(query_string)
+        try:
+            retrieved = self._retrieve_data(query_string)
+        except ze.ResourceNotFoundError:
+            if not self.local:
+                raise
+            # the local API implements the item type and field endpoints but
+            # not /items/new, so there's nothing to fall back to here
+            msg = (
+                "The local Zotero API doesn't implement the /items/new "
+                "template endpoint, so item_template() (and the "
+                "attachment_simple() / attachment_both() methods that rely on "
+                "it) are unavailable in local mode. Build the item dict "
+                "directly and pass it to create_items(), or to "
+                "upload_attachments() for a file attachment. Item types and "
+                "fields are available via item_types() and item_type_fields()."
+            )
+            raise ze.CallDoesNotExistError(msg) from None
         return self._cache(retrieved, template_name)
 
     def _attachment_template(self, attachment_type: str) -> Any:
@@ -895,7 +1085,8 @@ class Zotero:
         payload = [{"name": name, "conditions": conditions}]
         headers = {"Zotero-Write-Token": token()}
         self._check_backoff()
-        req = self.client.post(
+        req = self._write(
+            "POST",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/searches",
@@ -915,7 +1106,8 @@ class Zotero:
         """
         headers = {"Zotero-Write-Token": token()}
         self._check_backoff()
-        req = self.client.delete(
+        req = self._write(
+            "DELETE",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/searches",
@@ -1100,7 +1292,7 @@ class Zotero:
         }
         if timeout is not None:
             post_kwargs["timeout"] = timeout
-        req = self.client.post(**post_kwargs)
+        req = self._write("POST", **post_kwargs)
         self.request = req
         self._post_check(req)
         return req.json()
@@ -1136,7 +1328,8 @@ class Zotero:
         if last_modified is not None:
             headers["If-Unmodified-Since-Version"] = str(last_modified)
         self._check_backoff()
-        req = self.client.post(
+        req = self._write(
+            "POST",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/collections",
@@ -1163,7 +1356,8 @@ class Zotero:
         key = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
         headers.update({"Content-Type": "application/json"})
-        return self.client.put(
+        return self._write(
+            "PUT",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/collections/{key}",
@@ -1222,7 +1416,8 @@ class Zotero:
         modified = payload["version"] if last_modified is None else last_modified
         ident = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.patch(
+        return self._write(
+            "PATCH",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{ident}",
@@ -1231,38 +1426,62 @@ class Zotero:
             json=to_send,
         )
 
-    def _batch_update(self, payload: list[dict[str, Any]], collection: str) -> bool:
+    def _batch_update(
+        self,
+        payload: list[dict[str, Any]],
+        collection: str,
+        last_modified: int | None = None,
+    ) -> bool:
         """POST a payload to the library in chunks of DEFAULT_NUM_ITEMS.
 
         ``collection`` is the last path segment (e.g. ``"items"`` or
         ``"collections"``) - the API only accepts 50 objects at a time, so
         anything longer is split across multiple requests.
+
+        ``last_modified`` sets If-Unmodified-Since-Version on every chunk. The
+        local API requires a concurrency precondition on keyed writes - either
+        that header or a ``version`` on each object - and returns 428 without
+        one. Objects round-tripped from the API carry their own version, so
+        this is only needed for payloads built by hand.
         """
         to_send = [self.check_items([p])[0] for p in payload]
         url = build_url(
             self.endpoint,
             f"/{self.library_type}/{self.library_id}/{collection}/",
         )
+        headers = (
+            {"If-Unmodified-Since-Version": str(last_modified)}
+            if last_modified is not None
+            else {}
+        )
         for chunk in chunks(to_send, DEFAULT_NUM_ITEMS):
             self._check_backoff()
-            req = self.client.post(url=url, json=chunk)
+            req = self._write("POST", url=url, json=chunk, headers=headers)
             self.request = req
             self._post_check(req)
         return True
 
-    def update_items(self, payload: list[dict[str, Any]]) -> bool:
+    def update_items(
+        self, payload: list[dict[str, Any]], last_modified: int | None = None
+    ) -> bool:
         """Update existing items.
 
-        Accepts one argument, a list of dicts containing Item data.
+        Accepts a list of dicts containing Item data, and an optional library
+        version for If-Unmodified-Since-Version. The version is only required
+        when the dicts carry no ``version`` of their own.
         """
-        return self._batch_update(payload, "items")
+        return self._batch_update(payload, "items", last_modified)
 
-    def update_collections(self, payload: list[dict[str, Any]]) -> bool:
+    def update_collections(
+        self, payload: list[dict[str, Any]], last_modified: int | None = None
+    ) -> bool:
         """Update existing collections.
 
-        Accepts one argument, a list of dicts containing Collection data.
+        Accepts a list of dicts containing Collection data, and an optional
+        library version for If-Unmodified-Since-Version. The version is only
+        required when the dicts carry no ``version`` of their own.
         """
-        return self._batch_update(payload, "collections")
+        return self._batch_update(payload, "collections", last_modified)
 
     @backoff_check
     def addto_collection(
@@ -1277,7 +1496,8 @@ class Zotero:
         # add the collection data from the item
         modified_collections = payload["data"]["collections"] + [collection]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.patch(
+        return self._write(
+            "PATCH",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{ident}",
@@ -1301,7 +1521,8 @@ class Zotero:
             c for c in payload["data"]["collections"] if c != collection
         ]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.patch(
+        return self._write(
+            "PATCH",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{ident}",
@@ -1327,7 +1548,8 @@ class Zotero:
                 "last-modified-version"
             ],
         }
-        return self.client.delete(
+        return self._write(
+            "DELETE",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/tags",
@@ -1363,7 +1585,7 @@ class Zotero:
             )
             url = build_url(self.endpoint, f"{base}/{payload['key']}")
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self.client.delete(url=url, params=params, headers=headers)
+        return self._write("DELETE", url=url, params=params, headers=headers)
 
     @backoff_check
     def delete_item(

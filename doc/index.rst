@@ -22,7 +22,7 @@ Getting started (short version)
 3. You'll also need [*]_ to get an **API key** from the Zotero `site <https://www.zotero.org/settings/keys/new>`_
 4. Are you accessing your own Zotero library? Set``library_type`` to ``'user'``
 5. Are you accessing a shared group library? Set``library_type`` to ``'group'``
-6. **Read-only** access to your local Zotero library is available: set ``local=True``
+6. Access to your local Zotero library is available: set ``local=True``. Reads need no authentication; writes require a local API key and a recent Zotero version — see :ref:`localapi`
 
 
 .. _hello-world:
@@ -255,15 +255,17 @@ General Usage
 First, create a new Zotero instance:
 
 
-    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order, locale, local, upload_timeout])
+    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order, locale, local, upload_timeout, server_id, local_api_key])
 
         :param str library_id: a valid Zotero API user ID
         :param str library_type: a valid Zotero API library type: **user** or **group**
         :param str api_key: a valid Zotero API user key
         :param bool preserve_json_order: Load JSON returns with OrderedDict to preserve their order
         :param str locale: Set the `locale <https://www.zotero.org/support/dev/web_api/v3/types_and_fields#zotero_web_api_item_typefield_requests>`_, allowing retrieval of localised item types, field types, and creator types. Defaults to "en-US".
-        :param str local: use the local Zotero http server instead of the remote API. Note that the local server currently (November 2024) only allows **read** requests
+        :param str local: use the local Zotero http server instead of the remote API. See :ref:`localapi`
         :param int/float upload_timeout: timeout in seconds for file uploads to storage (default: 120). Increase this for very large files or slow connections.
+        :param str server_id: a local API server ID retained from a previous session. Only meaningful when ``local`` is ``True``; see :ref:`localapi`
+        :param str local_api_key: a persistent local API key retained from a previous session, obtained from :py:meth:`Zotero.authorize_local()`. Only meaningful when ``local`` is ``True``
 
 
 Example:
@@ -283,6 +285,15 @@ Example:
 Errors
 ------
 Where possible, any ``ZoteroError`` which is raised will preserve the underlying error in its ``__cause__`` and ``__context__`` properties, should you wish to work with these directly.
+
+The local API reuses several status codes for more than one condition, so Pyzotero
+inspects the response body and raises a more specific exception. Each subclasses the
+exception the status code alone would have produced, so existing handlers are unaffected:
+
+    * :py:class:`LocalAPIKeyRequiredError` (401, subclasses ``UserNotAuthorisedError``): no valid local API key. Call :py:meth:`Zotero.authorize_local()`.
+    * :py:class:`LocalAPIDeniedError` (403, subclasses ``UserNotAuthorisedError``): the user denied an authorisation request.
+    * :py:class:`ServerIDMismatchError` (412, subclasses ``PreConditionFailedError``): the request reached a different Zotero instance or database.
+    * :py:class:`ServerIDRequiredError` (428, subclasses ``PreConditionRequiredError``): a local write carried no ``Zotero-Server-ID`` header.
 
 
 ====================
@@ -898,6 +909,123 @@ If you wish to retrieve the last modified version of a user or group library, yo
 
     :rtype: int
 
+.. _localapi:
+
+====================
+The Local Zotero API
+====================
+
+Setting ``local=True`` directs Pyzotero at the HTTP API served by a running Zotero
+installation (``http://localhost:23119/api``) instead of ``api.zotero.org``. It must
+first be enabled in Zotero, under Settings > Advanced > "Allow other applications on
+this computer to communicate with Zotero".
+
+Read requests need no authentication. Write requests need two things: a server ID,
+which Pyzotero handles for you, and a local API key, which requires the user's consent.
+
+Server IDs
+----------
+
+Every local API response carries a ``Zotero-Server-ID`` header identifying the Zotero
+instance the data came from. It persists with the user's database. Pyzotero caches it
+from the first local response and sends it back on subsequent requests, so that a
+request made against a different instance — or the same one after a database restore —
+is rejected rather than silently mixing data.
+
+    .. py:attribute:: Zotero.server_id
+
+        The local API's server ID, or ``None`` if it isn't known yet. Readable and
+        writable, so that a program can persist it alongside its own data and supply it
+        on a later run via the ``server_id`` constructor argument. Pyzotero fetches it
+        automatically before the first write if it isn't already set.
+
+.. warning::
+    Versions reported by the local API are scoped to a server ID. They bear **no relation**
+    to web API versions, nor to versions from any other Zotero instance, and because local
+    changes need no sync they are typically **lower** than the versions the local API
+    reported before write support was added. Any program that persists objects or versions
+    retrieved from the local API — for ``since=`` queries, or its own change tracking —
+    must partition that data by ``server_id``, and should discard data cached against a
+    different one. A mismatch raises :py:class:`ServerIDMismatchError`.
+
+Authorising writes
+------------------
+
+Local API keys are unrelated to zotero.org API keys, and are obtained by asking the user.
+
+    .. py:method:: Zotero.authorize_local(app_name)
+
+        Request a local API key. Zotero displays a dialog offering "Allow" (one-time
+        access), "Always Allow" (persistent access) and "Deny". On approval the key is
+        stored on the instance as ``local_api_key`` and sent with subsequent local writes.
+
+        :param str app_name: the caller's display name, shown to the user in the dialog
+        :rtype: dict containing a ``key`` string and a ``remember`` boolean
+
+        A key granted with "Allow" is **single-use**: the first successful write consumes
+        it, and the next write raises :py:class:`LocalAPIKeyRequiredError`. A key granted
+        with "Always Allow" has ``remember`` set to ``True`` and may be stored by the
+        caller, then passed back as the ``local_api_key`` constructor argument later.
+
+        Raises :py:class:`LocalAPIDeniedError` if the user denies the request. Zotero
+        rate-limits this endpoint, so it should not be called in a retry loop.
+
+    .. code-block:: python
+
+        from pyzotero import Zotero, LocalAPIKeyRequiredError
+
+        zot = Zotero('0', 'user', local=True)
+        auth = zot.authorize_local('My Application')
+        if auth['remember']:
+            save_somewhere(zot.server_id, auth['key'])
+
+        try:
+            zot.create_items([item])
+        except LocalAPIKeyRequiredError:
+            # the key was single-use, or has been revoked
+            zot.authorize_local('My Application')
+            zot.create_items([item])
+
+Differences from the web API
+----------------------------
+
+* :py:meth:`Zotero.item_template()` is unavailable: the local API implements the item
+  type and field endpoints, but not ``/items/new``. Zotero may add it in future, in which
+  case the method starts working with no change to Pyzotero. Build item dicts directly and pass
+  them to :py:meth:`Zotero.create_items()`, using :py:meth:`Zotero.item_types()` and
+  :py:meth:`Zotero.item_type_fields()` to discover the valid fields. Calling it in local
+  mode raises :py:class:`CallDoesNotExistError`.
+* For the same reason :py:meth:`Zotero.attachment_simple()` and
+  :py:meth:`Zotero.attachment_both()`, which build an attachment template internally, are
+  unavailable. Build the attachment dict yourself and pass it to
+  :py:meth:`Zotero.upload_attachments()`, which works normally:
+
+    .. code-block:: python
+
+        attachment = {
+            'itemType': 'attachment',
+            'linkMode': 'imported_file',
+            'title': 'paper.pdf',
+            'filename': '/path/to/paper.pdf',
+            'contentType': 'application/pdf',
+            'charset': '',
+            'note': '',
+            'tags': [],
+            'relations': {},
+        }
+        zot.upload_attachments([attachment], parent_item_key)
+
+* Keyed writes require a concurrency precondition: either a ``version`` on each object,
+  which objects retrieved from the API already carry, or an explicit ``last_modified``
+  argument. Payloads built by hand without either are rejected.
+* Item type and field endpoints return names in the user's locale; the ``locale``
+  parameter is ignored. :py:meth:`Zotero.creator_fields()` always returns English.
+* Atom is not supported, and there are no rate limits on ordinary requests.
+* Results are not paginated by default, so :py:meth:`Zotero.everything()` is rarely needed.
+
+For the full list, see the `local API documentation
+<https://github.com/zotero/zotero/blob/main/chrome/content/zotero/xpcom/server/server_localAPI.js>`_.
+
 .. _write:
 
 =================
@@ -1049,11 +1177,12 @@ Example:
         i[0]['data']['creators'][0]['lastName'] = 'Bowles'
         zot.update_item(i[0])
 
-  .. py:method:: Zotero.update_items(items)
+  .. py:method:: Zotero.update_items(items[, last_modified])
 
       Update items in your library. The API only accepts 50 items per call, so longer updates are chunked
 
       :param list items: a list of dicts containing Item data. Fields not in item will be left unmodified.
+      :param int last_modified: optional library version, sent as ``If-Unmodified-Since-Version``. Only needed when the dicts carry no ``version`` of their own; the local API rejects keyed writes that have neither.
       :rtype: Boolean
 
       Will return ``True`` if the request was successful, or will raise an error.
@@ -1200,11 +1329,12 @@ Collection Methods
         :param dict collection: a dict containing collection data, previously retrieved using one of the Collections calls (e.g. :py:meth:`collections()`)
         :rtype: Boolean
 
-    .. py:method:: Zotero.update_collections(collection_items)
+    .. py:method:: Zotero.update_collections(collection_items[, last_modified])
 
         Update multiple existing collection metadata. The API only accepts 50 collections per call, so longer updates are chunked
 
         :param list collection_items: a list of dicts containing Collection data. Fields not in collection_item will be left unmodified.
+        :param int last_modified: optional library version, sent as ``If-Unmodified-Since-Version``. Only needed when the dicts carry no ``version`` of their own; the local API rejects keyed writes that have neither.
         :rtype: Boolean
 
         Will return ``True`` if the request was successful, or will raise an error.

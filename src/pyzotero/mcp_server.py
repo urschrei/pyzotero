@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+import argparse
 import functools
+import hashlib
 import json
+import os
+import sys
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any, TypeVar
 
 from mcp.server.fastmcp import FastMCP
@@ -41,6 +46,15 @@ def _json(obj: Any) -> str:
 def _error(msg: str) -> str:
     """Return a JSON-encoded error message."""
     return _json({"error": msg})
+
+
+def _md5(path: Path) -> str:
+    """Return the hex MD5 digest of a file, read in chunks."""
+    digest = hashlib.md5()  # noqa: S324
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(8192), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _run_s2_tool_lookup(
@@ -451,8 +465,331 @@ def search_semantic_scholar(
     return _json({"count": len(output_papers), "total": total, "papers": output_papers})
 
 
+WRITE_KEY_ENV = "PYZOTERO_LOCAL_API_KEY"
+SERVER_ID_ENV = "PYZOTERO_LOCAL_SERVER_ID"
+
+
+def _write_client() -> Any:
+    """Return a Zotero client authorised for local writes.
+
+    The key is supplied out of band rather than obtained here. MCP servers are
+    spawned and restarted by the client, so authorising at startup would raise
+    a Zotero dialog with no visible cause, and would fail outright if Zotero
+    weren't running yet. Run ``pyzotero authorize`` to obtain a persistent key.
+    """
+    key = os.environ.get(WRITE_KEY_ENV)
+    if not key:
+        msg = (
+            f"No local API key: set {WRITE_KEY_ENV} in this server's environment. "
+            "Run 'pyzotero authorize' to obtain one, choosing 'Always Allow' so "
+            "that the key persists."
+        )
+        raise RuntimeError(msg)
+    return get_zotero_client(
+        server_id=os.environ.get(SERVER_ID_ENV) or None,
+        local_api_key=key,
+    )
+
+
+AddTool = Callable[[Callable[..., str]], None]
+
+
+def _register_item_tools(add: AddTool) -> None:
+    """Register tools that create and modify items."""
+
+    def list_item_fields(item_type: str) -> str:
+        """List the fields and creator types valid for a Zotero item type.
+
+        Call this before create_item to discover what a given item type accepts.
+
+        Args:
+            item_type: A Zotero item type, e.g. "journalArticle" or "book".
+
+        Returns:
+            JSON with the field names and creator types for that item type.
+
+        """
+        zot = get_zotero_client()
+        return _json(
+            {
+                "itemType": item_type,
+                "fields": [
+                    f["field"]  # ty: ignore[invalid-argument-type]
+                    for f in zot.item_type_fields(item_type)
+                ],
+                "creatorTypes": [
+                    c["creatorType"]  # ty: ignore[invalid-argument-type]
+                    for c in zot.item_creator_types(item_type)
+                ],
+            }
+        )
+
+    def create_item(
+        item_type: str,
+        fields: dict[str, Any] | None = None,
+        creators: list[dict[str, str]] | None = None,
+        tags: list[str] | None = None,
+        collections: list[str] | None = None,
+    ) -> str:
+        """Create a new item in the local Zotero library.
+
+        Args:
+            item_type: A Zotero item type, e.g. "journalArticle" or "book".
+            fields: Field values, e.g. {"title": "...", "date": "2024"}. Use
+                list_item_fields to discover what the item type accepts.
+            creators: Creator dicts, each with creatorType and either
+                (firstName, lastName) or name.
+            tags: Tag names to attach.
+            collections: Collection keys to file the item under.
+
+        Returns:
+            JSON with the created item's key, or the server's rejection reason.
+
+        """
+        zot = _write_client()
+        item: dict[str, Any] = {"itemType": item_type, **(fields or {})}
+        if creators:
+            item["creators"] = creators
+        if tags:
+            item["tags"] = [{"tag": tag} for tag in tags]
+        if collections:
+            item["collections"] = collections
+        resp = zot.create_items([item])
+        if resp.get("success"):
+            return _json({"created": resp["success"]["0"], "itemType": item_type})
+        return _json({"error": "Item was rejected", "detail": resp.get("failed")})
+
+    def update_item(key: str, fields: dict[str, Any]) -> str:
+        """Update fields on an existing item, leaving other fields unchanged.
+
+        Args:
+            key: The item key.
+            fields: Field values to set, e.g. {"title": "New title"}.
+
+        Returns:
+            JSON confirming the key and the fields written.
+
+        """
+        zot = _write_client()
+        item = zot.item(key)
+        item["data"].update(fields)
+        zot.update_item(item)
+        return _json({"updated": key, "fields": sorted(fields)})
+
+    def add_tags(key: str, tags: list[str]) -> str:
+        """Add one or more tags to an existing item.
+
+        Args:
+            key: The item key.
+            tags: Tag names to add.
+
+        Returns:
+            JSON confirming the key and the item's full tag list.
+
+        """
+        zot = _write_client()
+        zot.add_tags(zot.item(key), *tags)
+        return _json(
+            {"updated": key, "tags": [t["tag"] for t in zot.item(key)["data"]["tags"]]}
+        )
+
+    for tool in (list_item_fields, create_item, update_item, add_tags):
+        add(tool)
+
+
+def _register_collection_tools(add: AddTool) -> None:
+    """Register tools that create collections and file items into them."""
+
+    def create_collection(name: str, parent: str = "") -> str:
+        """Create a new collection.
+
+        Args:
+            name: The collection name.
+            parent: Optional parent collection key, to nest the new collection.
+
+        Returns:
+            JSON with the created collection's key.
+
+        """
+        zot = _write_client()
+        payload: dict[str, Any] = {"name": name}
+        if parent:
+            payload["parentCollection"] = parent
+        resp = zot.create_collections([payload])
+        if resp.get("success"):
+            return _json({"created": resp["success"]["0"], "name": name})
+        return _json({"error": "Collection was rejected", "detail": resp.get("failed")})
+
+    def add_to_collection(item_key: str, collection_key: str) -> str:
+        """File an existing item under a collection.
+
+        Args:
+            item_key: The item key.
+            collection_key: The collection key.
+
+        Returns:
+            JSON confirming the item and collection.
+
+        """
+        zot = _write_client()
+        zot.addto_collection(collection_key, zot.item(item_key))
+        return _json({"item": item_key, "addedTo": collection_key})
+
+    for tool in (create_collection, add_to_collection):
+        add(tool)
+
+
+def _register_attachment_tools(add: AddTool) -> None:
+    """Register the file attachment tool."""
+
+    def add_attachment(item_key: str, file_path: str, title: str = "") -> str:
+        """Attach a file on disk to an existing Zotero item.
+
+        The file is copied into Zotero's storage, so it remains available if the
+        original is moved or deleted. If the library syncs, the attachment syncs
+        with it.
+
+        Args:
+            item_key: The key of the item to attach the file to.
+            file_path: An absolute path to the file. Relative paths are
+                rejected: this server runs as a subprocess of the client, so its
+                working directory is not yours and a relative path would resolve
+                somewhere unintended.
+            title: Optional title for the attachment. Defaults to the filename.
+
+        Returns:
+            JSON with the new attachment's key, or the reason it was rejected.
+            Attaching a file that is already attached to the item is reported as
+            unchanged rather than duplicated, so retrying is safe. Replacing an
+            existing attachment's contents is not supported: a file whose
+            contents differ is attached as a second attachment.
+
+        """
+        path = Path(file_path)
+        if not path.is_absolute():
+            msg = f"file_path must be an absolute path, got {file_path!r}"
+            raise ValueError(msg)
+        if not path.is_file():
+            msg = f"No file at {file_path}"
+            raise FileNotFoundError(msg)
+        zot = _write_client()
+        # Uploading always creates a new attachment item, so an interrupted or
+        # retried call would otherwise silently duplicate the file. Compare
+        # against the item's existing attachments first.
+        checksum = _md5(path)
+        for child in zot.children(item_key):
+            data = child.get("data", {})
+            if data.get("filename") == path.name and data.get("md5") == checksum:
+                return _json(
+                    {
+                        "unchanged": child["key"],
+                        "parent": item_key,
+                        "detail": "this file is already attached to the item",
+                    }
+                )
+        # item_template() can't be used here: the local API has no /items/new,
+        # so the attachment template is built directly. contentType is detected
+        # from the path by the upload machinery.
+        template = {
+            "itemType": "attachment",
+            "linkMode": "imported_file",
+            "title": title or path.name,
+            "filename": str(path),
+            "note": "",
+            "tags": [],
+            "relations": {},
+        }
+        result = zot.upload_attachments([template], item_key)
+        if result["success"]:
+            return _json(
+                {
+                    "attached": result["success"][0]["key"],
+                    "parent": item_key,
+                    "filename": path.name,
+                }
+            )
+        if result["unchanged"]:
+            return _json(
+                {
+                    "unchanged": item_key,
+                    "detail": "an identical file is already attached",
+                }
+            )
+        detail = result["failure"][0] if result["failure"] else None
+        return _json({"error": "Attachment was rejected", "detail": detail})
+
+    add(add_attachment)
+
+
+def _register_delete_tools(add: AddTool) -> None:
+    """Register destructive tools. Only called for --enable-deletes."""
+
+    def delete_item(key: str) -> str:
+        """Permanently delete an item from the local Zotero library.
+
+        This cannot be undone. The local API erases the item outright rather
+        than moving it to the trash, and the deletion propagates on sync.
+        Confirm with the user before calling this.
+
+        Args:
+            key: The item key.
+
+        Returns:
+            JSON confirming the deleted key.
+
+        """
+        zot = _write_client()
+        zot.delete_item(zot.item(key))
+        return _json({"deleted": key})
+
+    add(delete_item)
+
+
+def register_write_tools(server: FastMCP, *, enable_deletes: bool = False) -> list[str]:
+    """Register the write tools on ``server``, returning the names registered.
+
+    Writes are gated by registration rather than by a check inside each tool: a
+    tool that was never registered doesn't appear in the model's tool list at
+    all, so content in the library can't induce a call to one. Nothing here runs
+    unless ``main()`` is passed --enable-writes or --enable-deletes.
+    """
+    registered: list[str] = []
+
+    def add(func: Callable[..., str]) -> None:
+        server.tool()(mcp_error_handler(func))
+        registered.append(func.__name__)  # ty: ignore[unresolved-attribute]
+
+    _register_item_tools(add)
+    _register_collection_tools(add)
+    _register_attachment_tools(add)
+    if enable_deletes:
+        _register_delete_tools(add)
+    return registered
+
+
 def main() -> None:
     """Run the MCP server over stdio transport."""
+    parser = argparse.ArgumentParser(
+        prog="pyzotero-mcp",
+        description="MCP server exposing a local Zotero library. Read-only by default.",
+    )
+    parser.add_argument(
+        "--enable-writes",
+        action="store_true",
+        help="register tools that create and modify library items",
+    )
+    parser.add_argument(
+        "--enable-deletes",
+        action="store_true",
+        help=(
+            "additionally register delete_item. Deletions via the local API are "
+            "permanent, not moves to the trash. Implies --enable-writes"
+        ),
+    )
+    args = parser.parse_args()
+    if args.enable_writes or args.enable_deletes:
+        names = register_write_tools(mcp, enable_deletes=args.enable_deletes)
+        print(f"pyzotero-mcp: write tools enabled: {', '.join(names)}", file=sys.stderr)
     mcp.run(transport="stdio")
 
 
