@@ -18,8 +18,8 @@ import bibtexparser
 import feedparser
 import httpx
 
-from ._utils import DEFAULT_TIMEOUT, get_backoff_duration
-from .errors import error_handler
+from ._utils import DEFAULT_TIMEOUT, MAX_RETRY_ATTEMPTS, get_backoff_duration
+from .errors import TooManyRetriesError, error_handler
 
 if TYPE_CHECKING:
     from ._client import Zotero
@@ -82,19 +82,27 @@ def backoff_check(
 
     @wraps(func)
     def wrapped_f(self: Zotero, *args: Any, **kwargs: Any) -> bool:
-        self._check_backoff()
-        # resp is a Requests response object
-        resp = func(self, *args, **kwargs)
-        try:
-            resp.raise_for_status()
-        except httpx.HTTPError as exc:
-            error_handler(self, resp, exc)
-        self.request = resp
-        backoff = get_backoff_duration(resp.headers)
-        if backoff:
-            self._set_backoff(backoff)
+        for _ in range(MAX_RETRY_ATTEMPTS):
+            self._check_backoff()
+            # resp is a Requests response object
+            resp = func(self, *args, **kwargs)
+            try:
+                resp.raise_for_status()
+            except httpx.HTTPError as exc:
+                error_handler(self, resp, exc)
+            self.request = resp
+            # On 429 the write was refused and error_handler recorded the
+            # server's backoff; _check_backoff waits it out, so retry
+            # rather than reporting success
+            if resp.status_code == httpx.codes.TOO_MANY_REQUESTS:
+                continue
+            backoff = get_backoff_duration(resp.headers)
+            if backoff:
+                self._set_backoff(backoff)
 
-        return True
+            return True
+        msg = f"Still rate-limited after {MAX_RETRY_ATTEMPTS} attempts. Try again later"
+        raise TooManyRetriesError(msg)
 
     return wrapped_f
 

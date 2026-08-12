@@ -39,6 +39,7 @@ from ._utils import (
     DEFAULT_ITEM_LIMIT,
     DEFAULT_NUM_ITEMS,
     DEFAULT_TIMEOUT,
+    MAX_RETRY_ATTEMPTS,
     ONE_HOUR,
     build_url,
     chunks,
@@ -274,8 +275,6 @@ class Zotero:
         if request is None:
             request = ""
         full_url = build_url(self.endpoint, request)
-        # ensure that we wait if there's an active backoff
-        self._check_backoff()
         # don't set locale if the url already contains it
         # we always add a locale if it's a "standalone" or first call
         needs_locale = not self.links or not self._check_for_component(
@@ -297,31 +296,40 @@ class Zotero:
         # Unfortunately, httpx doesn't like to merge query parameters in the url string and passed params
         # so we strip the url params, combining them with our existing url_params
         final_url, final_params = merge_params(full_url, merged_params)
-        # file URI errors are raised immediately so we have to try here
-        try:
-            self.request = self.client.get(
-                url=final_url,
-                params=final_params,
-                timeout=DEFAULT_TIMEOUT,
-            )
-            self.request.encoding = "utf-8"
-            # The API doesn't return this any more, so we have to cheat
-            self.self_link = self.request.url
-        except httpx.UnsupportedProtocol:
-            # File URI handler logic
-            fc = File_Client()
-            response = fc.get(
-                url=final_url,
-                params=final_params,
-                headers=self.default_headers(),
-                timeout=DEFAULT_TIMEOUT,
-                follow_redirects=True,
-            )
-            self.request = response
-            # since we'll be writing bytes, we need to set this to a type that will trigger the bytes processor
-            self.request.headers["Content-Type"] = "text/plain"
-        self._post_check(self.request)
-        return self.request
+        for _ in range(MAX_RETRY_ATTEMPTS):
+            # ensure that we wait if there's an active backoff
+            self._check_backoff()
+            # file URI errors are raised immediately so we have to try here
+            try:
+                self.request = self.client.get(
+                    url=final_url,
+                    params=final_params,
+                    timeout=DEFAULT_TIMEOUT,
+                )
+                self.request.encoding = "utf-8"
+                # The API doesn't return this any more, so we have to cheat
+                self.self_link = self.request.url
+            except httpx.UnsupportedProtocol:
+                # File URI handler logic
+                fc = File_Client()
+                response = fc.get(
+                    url=final_url,
+                    params=final_params,
+                    headers=self.default_headers(),
+                    timeout=DEFAULT_TIMEOUT,
+                    follow_redirects=True,
+                )
+                self.request = response
+                # since we'll be writing bytes, we need to set this to a type that will trigger the bytes processor
+                self.request.headers["Content-Type"] = "text/plain"
+            self._post_check(self.request)
+            # On 429, error_handler records the server's backoff instead of
+            # raising; _check_backoff waits it out, so retry rather than
+            # handing the error body back as though it were a payload
+            if self.request.status_code != httpx.codes.TOO_MANY_REQUESTS:
+                return self.request
+        msg = f"Still rate-limited after {MAX_RETRY_ATTEMPTS} attempts. Try again later"
+        raise ze.TooManyRetriesError(msg)
 
     def _extract_links(self) -> dict[str, str] | None:
         """Extract self, first, next, last links from a request response."""
