@@ -21,6 +21,10 @@ ONE_HOUR = 3600
 DEFAULT_NUM_ITEMS = 50
 DEFAULT_ITEM_LIMIT = 100
 
+# How many times a request is attempted when the server rate-limits us (429)
+# before TooManyRetriesError is raised
+MAX_RETRY_ATTEMPTS = 3
+
 T = TypeVar("T")
 
 
@@ -80,6 +84,7 @@ __all__ = [
     "DEFAULT_ITEM_LIMIT",
     "DEFAULT_NUM_ITEMS",
     "DEFAULT_TIMEOUT",
+    "MAX_RETRY_ATTEMPTS",
     "ONE_HOUR",
     "build_url",
     "chunks",
