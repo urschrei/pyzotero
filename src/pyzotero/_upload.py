@@ -17,10 +17,12 @@ import httpx
 import pyzotero as pz
 
 from . import errors as ze
-from ._utils import build_url, get_backoff_duration, token
+from ._utils import MAX_RETRY_ATTEMPTS, build_url, get_backoff_duration, token
 from .errors import error_handler
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from ._client import Zotero
     from ._types import JsonDict
 
@@ -53,6 +55,22 @@ class Zupload:
         backoff = get_backoff_duration(req.headers)
         if backoff:
             self.zinstance._set_backoff(backoff)
+
+    def _post_with_retry(self, send: Callable[[], httpx.Response]) -> httpx.Response:
+        """Issue a request via ``send``, retrying while the server rate-limits us.
+
+        On 429, error_handler records the server's backoff instead of raising;
+        _check_backoff waits it out before the next attempt. This stops a
+        rate-limited step from being mistaken for a successful one (#352).
+        """
+        for _ in range(MAX_RETRY_ATTEMPTS):
+            self.zinstance._check_backoff()
+            req = send()
+            self._check_response(req)
+            if req.status_code != httpx.codes.TOO_MANY_REQUESTS:
+                return req
+        msg = f"Still rate-limited after {MAX_RETRY_ATTEMPTS} attempts. Try again later"
+        raise ze.TooManyRetriesError(msg)
 
     def _verify(self, payload: list[dict]) -> None:
         """Ensure that all files to be attached exist.
@@ -107,19 +125,19 @@ class Zupload:
             for child in self.payload:
                 child["parentItem"] = self.parentid
         to_send = json.dumps([self._outgoing(item) for item in self.payload])
-        self.zinstance._check_backoff()
-        req = self.zinstance.client.post(
-            url=build_url(
-                self.zinstance.endpoint,
-                liblevel.format(
-                    t=self.zinstance.library_type,
-                    u=self.zinstance.library_id,
+        req = self._post_with_retry(
+            lambda: self.zinstance.client.post(
+                url=build_url(
+                    self.zinstance.endpoint,
+                    liblevel.format(
+                        t=self.zinstance.library_type,
+                        u=self.zinstance.library_id,
+                    ),
                 ),
-            ),
-            content=to_send,
-            headers=headers,
+                content=to_send,
+                headers=headers,
+            )
         )
-        self._check_response(req)
         data = req.json()
         for k in data["success"]:
             self.payload[int(k)]["key"] = data["success"][k]
@@ -151,16 +169,16 @@ class Zupload:
             "charset": mtypes[1],
             "params": 1,
         }
-        self.zinstance._check_backoff()
-        auth_req = self.zinstance.client.post(
-            url=build_url(
-                self.zinstance.endpoint,
-                f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
-            ),
-            data=data,
-            headers=auth_headers,
+        auth_req = self._post_with_retry(
+            lambda: self.zinstance.client.post(
+                url=build_url(
+                    self.zinstance.endpoint,
+                    f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
+                ),
+                data=data,
+                headers=auth_headers,
+            )
         )
-        self._check_response(auth_req)
         return auth_req.json()
 
     def _upload_file(
@@ -183,23 +201,25 @@ class Zupload:
             upload_list.append((key, value))
         upload_list.append(("file", Path(attachment).read_bytes()))
         upload_pairs = tuple(upload_list)
-        try:
-            self.zinstance._check_backoff()
+
+        def send() -> httpx.Response:
             # We use a fresh httpx POST because we don't want our existing Pyzotero headers
             # for a call to the storage upload URL (currently S3)
-            upload = httpx.post(
-                url=authdata["url"],
-                files=upload_pairs,
-                headers={"User-Agent": f"Pyzotero/{pz.__version__}"},
-                timeout=self.zinstance.upload_timeout,
-            )
-        except httpx.ConnectError:
-            msg = "ConnectionError"
-            raise ze.UploadError(msg) from None
-        except httpx.TimeoutException:
-            msg = "Upload timed out. Try increasing upload_timeout when creating the Zotero instance."
-            raise ze.UploadError(msg) from None
-        self._check_response(upload)
+            try:
+                return httpx.post(
+                    url=authdata["url"],
+                    files=upload_pairs,
+                    headers={"User-Agent": f"Pyzotero/{pz.__version__}"},
+                    timeout=self.zinstance.upload_timeout,
+                )
+            except httpx.ConnectError:
+                msg = "ConnectionError"
+                raise ze.UploadError(msg) from None
+            except httpx.TimeoutException:
+                msg = "Upload timed out. Try increasing upload_timeout when creating the Zotero instance."
+                raise ze.UploadError(msg) from None
+
+        self._post_with_retry(send)
         # now check the responses
         return self._register_upload(authdata, reg_key, md5=md5)
 
@@ -218,16 +238,16 @@ class Zupload:
         else:
             reg_headers["If-None-Match"] = "*"
         reg_data = {"upload": authdata.get("uploadKey")}
-        self.zinstance._check_backoff()
-        upload_reg = self.zinstance.client.post(
-            url=build_url(
-                self.zinstance.endpoint,
-                f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
-            ),
-            data=reg_data,
-            headers=reg_headers,
+        self._post_with_retry(
+            lambda: self.zinstance.client.post(
+                url=build_url(
+                    self.zinstance.endpoint,
+                    f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
+                ),
+                data=reg_data,
+                headers=reg_headers,
+            )
         )
-        self._check_response(upload_reg)
 
     def upload(self) -> dict[str, list]:
         """File upload functionality.
