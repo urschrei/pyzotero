@@ -45,6 +45,11 @@ class Zupload:
         self.payload = payload
         self.parentid = parentid
         self.basedir = Path() if basedir is None else Path(basedir)
+        # Tracks the Last-Modified-Version header across upload steps: every
+        # write in this flow sets the objects it modifies to that version,
+        # so the value after an item's final write step is that item's
+        # current version (see #354)
+        self.last_modified_version: int | None = None
 
     def _check_response(self, req: httpx.Response) -> None:
         """Raise on HTTP error and record any server-supplied backoff."""
@@ -68,6 +73,8 @@ class Zupload:
             req = send()
             self._check_response(req)
             if req.status_code != httpx.codes.TOO_MANY_REQUESTS:
+                if lmv := req.headers.get("last-modified-version"):
+                    self.last_modified_version = int(lmv)
                 return req
         msg = f"Still rate-limited after {MAX_RETRY_ATTEMPTS} attempts. Try again later"
         raise ze.TooManyRetriesError(msg)
@@ -139,8 +146,16 @@ class Zupload:
             )
         )
         data = req.json()
+        # 'successful' holds the full saved objects, including their versions;
+        # fall back to the response's Last-Modified-Version, which every
+        # object written by this request was set to
+        successful = data.get("successful") or {}
         for k in data["success"]:
-            self.payload[int(k)]["key"] = data["success"][k]
+            entry = self.payload[int(k)]
+            entry["key"] = data["success"][k]
+            version = successful.get(k, {}).get("version") or self.last_modified_version
+            if version:
+                entry["version"] = version
         return data
 
     def _get_auth(
@@ -271,11 +286,24 @@ class Zupload:
             authdata = self._get_auth(attach, item["key"], md5=item.get("md5", None))
             # no need to keep going if the file exists
             if authdata.get("exists"):
+                self._set_version(item)
                 result["unchanged"].append(item)
                 continue
             self._upload_file(authdata, attach, item["key"], md5=item.get("md5", None))
+            self._set_version(item)
             result["success"].append(item)
         return result
+
+    def _set_version(self, item: JsonDict) -> None:
+        """Stamp an item with the version its last write step set it to.
+
+        Registering an upload (and, for existing files, authorisation)
+        modifies the attachment item again after creation, so the version
+        captured at creation time would be stale by the time upload()
+        returns (#354).
+        """
+        if self.last_modified_version:
+            item["version"] = self.last_modified_version
 
 
 __all__ = ["Zupload"]

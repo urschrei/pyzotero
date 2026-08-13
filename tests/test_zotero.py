@@ -1202,6 +1202,102 @@ class ZoteroTests(unittest.TestCase):
             upload._register_upload({"uploadKey": "upload_key_123"}, "ITEMKEY123")
         self.assertEqual(len(mock.latest_requests()), MAX_RETRY_ATTEMPTS)
 
+    def testFileUploadCapturesVersion(self):
+        """Uploaded entries carry the version set by upload registration (#354)"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+
+        temp_file_path = os.path.join(self.cwd, "api_responses", "test_upload_file.txt")
+        with open(temp_file_path, "w") as f:
+            f.write("Test file content for upload")
+
+        # Step 0: creation response carries versions in 'successful'
+        prelim_response = {
+            "success": {"0": "ITEMKEY123"},
+            "successful": {"0": {"key": "ITEMKEY123", "version": 100}},
+            "unchanged": {},
+            "failed": {},
+        }
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/items",
+            body=json.dumps(prelim_response),
+            headers={"last-modified-version": "100"},
+        )
+        # Step 3: registration bumps the item's version again
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/items/ITEMKEY123/file",
+            status=204,
+            body="",
+            headers={"last-modified-version": "101"},
+        )
+
+        payload = [
+            {
+                "filename": "test_upload_file.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+            }
+        ]
+        mock_auth_data = {
+            "url": "https://uploads.zotero.org/",
+            "params": {"key": "abcdef1234567890"},
+            "uploadKey": "upload_key_123",
+        }
+        s3_response = httpx.Response(
+            201, request=httpx.Request("POST", "https://uploads.zotero.org/")
+        )
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(z.Zupload, "_get_auth", return_value=mock_auth_data),
+            patch("pyzotero._upload.httpx.post", return_value=s3_response),
+        ):
+            upload = z.Zupload(
+                zot, payload, basedir=os.path.join(self.cwd, "api_responses")
+            )
+            result = upload.upload()
+
+        # the registration step's version, not the creation step's
+        self.assertEqual(result["success"][0]["key"], "ITEMKEY123")
+        self.assertEqual(result["success"][0]["version"], 101)
+
+        os.remove(temp_file_path)
+
+    def testFileUploadExistsCapturesVersion(self):
+        """Entries for already-existing files carry the creation version (#354)"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+
+        prelim_response = {
+            "success": {"0": "ITEMKEY123"},
+            "successful": {"0": {"key": "ITEMKEY123", "version": 100}},
+            "unchanged": {},
+            "failed": {},
+        }
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/items",
+            body=json.dumps(prelim_response),
+            headers={"last-modified-version": "100"},
+        )
+
+        payload = [
+            {
+                "filename": "test_upload_file.txt",
+                "title": "Test File",
+                "linkMode": "imported_file",
+            }
+        ]
+        with (
+            patch.object(z.Zupload, "_verify", return_value=None),
+            patch.object(z.Zupload, "_get_auth", return_value={"exists": True}),
+        ):
+            upload = z.Zupload(zot, payload)
+            result = upload.upload()
+
+        self.assertEqual(result["unchanged"][0]["version"], 100)
+
     def testFileUploadWithParentItem(self):
         """Tests file upload process with a parent item ID"""
         mock = MockClient()
