@@ -9,3 +9,5 @@ src/_version.py
 __pycache__/
 .coverage
 coverage.xml
+ip
+shell.py
