@@ -571,6 +571,36 @@ class ZoteroTests(unittest.TestCase):
         t = zot.item_template("book")
         self.assertEqual("book", t["itemType"])
 
+    def testTemplateParamsDontLeak(self):
+        """item_template()'s parameters must not leak into later requests (#356)
+
+        Covers both the template-cache miss (first call) and hit (second call):
+        neither may leave itemType on the client, where it would filter e.g. a
+        subsequent children() call server-side.
+        """
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        mock.register(
+            "GET",
+            "https://api.zotero.org/items/new",
+            content_type="application/json",
+            body='{"itemType": "note", "note": "", "tags": []}',
+        )
+        mock.register(
+            "GET",
+            "https://api.zotero.org/users/myuserID/items/ABCD1234/children",
+            content_type="application/json",
+            body=self.items_doc,
+        )
+        for pass_name in ("cache miss", "cache hit"):
+            zot.item_template("note")
+            zot.children("ABCD1234")
+            url = mock.last_request().url
+            self.assertNotIn("itemType", url, f"itemType leaked on {pass_name}")
+        # the template request itself must still carry its parameter
+        template_url = mock.latest_requests()[0].url
+        self.assertIn("itemType=note", template_url)
+
     def testCreateCollectionError(self):
         """Ensure that collection creation fails with the wrong dict"""
         zot = z.Zotero("myuserID", "user", "myuserkey")
