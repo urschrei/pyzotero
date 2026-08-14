@@ -843,7 +843,6 @@ class Zotero:
         # Set linkMode parameter for API request if itemtype is attachment
         if itemtype == "attachment":
             params["linkMode"] = linkmode
-        self.add_parameters(**params)
         query_string = "/items/new"
         if self.templates.get(template_name) and not self._updated(
             query_string,
@@ -851,8 +850,11 @@ class Zotero:
             template_name,
         ):
             return copy.deepcopy(self.templates[template_name]["tmplt"])
-        # otherwise perform a normal request and cache the response
-        retrieved = self._retrieve_data(query_string)
+        # otherwise perform a normal request and cache the response.
+        # The parameters are passed per-request rather than via
+        # add_parameters(), which would leave them on the client and leak
+        # them into subsequent requests (#356)
+        retrieved = self._retrieve_data(query_string, params=params)
         return self._cache(retrieved, template_name)
 
     def _attachment_template(self, attachment_type: str) -> Any:
