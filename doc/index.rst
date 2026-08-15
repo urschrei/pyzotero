@@ -923,21 +923,30 @@ this computer to communicate with Zotero".
 Read requests need no authentication. Write requests need two things: a server ID,
 which Pyzotero handles for you, and a local API key, which requires the user's consent.
 
+This section is organised in three parts: :ref:`localapi-explanation` covers the
+concepts behind local write access, :ref:`localapi-howto` gives step-by-step recipes
+for common tasks, and :ref:`localapi-reference` describes the attribute, the method,
+and the behavioural differences from the web API.
+
+.. _localapi-explanation:
+
+How local write access works
+----------------------------
+
 Server IDs
-----------
+~~~~~~~~~~
 
 Every local API response carries a ``Zotero-Server-ID`` header identifying the Zotero
 instance the data came from. It persists with the user's database. Pyzotero caches it
 from the first local response and sends it back on subsequent requests, so that a
 request made against a different instance — or the same one after a database restore —
-is rejected rather than silently mixing data.
+is rejected with :py:class:`ServerIDMismatchError` rather than silently mixing data.
+You never need to fetch the ID yourself: Pyzotero obtains it automatically before the
+first write. It matters to you only if your program persists data between runs, in
+which case see the warning below and :ref:`localapi-howto-persist`.
 
-    .. py:attribute:: Zotero.server_id
-
-        The local API's server ID, or ``None`` if it isn't known yet. Readable and
-        writable, so that a program can persist it alongside its own data and supply it
-        on a later run via the ``server_id`` constructor argument. Pyzotero fetches it
-        automatically before the first write if it isn't already set.
+Versions
+~~~~~~~~
 
 .. warning::
     Versions reported by the local API are scoped to a server ID. They bear **no relation**
@@ -948,10 +957,108 @@ is rejected rather than silently mixing data.
     must partition that data by ``server_id``, and should discard data cached against a
     different one. A mismatch raises :py:class:`ServerIDMismatchError`.
 
-Authorising writes
-------------------
+Local API keys
+~~~~~~~~~~~~~~
 
-Local API keys are unrelated to zotero.org API keys, and are obtained by asking the user.
+Local API keys are unrelated to zotero.org API keys: they are granted by the running
+Zotero application itself, and only with the user's consent. Requesting one makes
+Zotero display a dialog offering three choices. "Allow" grants a **single-use** key:
+the first successful write consumes it, and the next write fails with
+:py:class:`LocalAPIKeyRequiredError`. "Always Allow" grants a persistent key, which
+the caller may store and reuse across sessions. "Deny" raises
+:py:class:`LocalAPIDeniedError`.
+
+.. _localapi-howto:
+
+How-to guides
+-------------
+
+How to make your first local write
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Create a client with ``local=True``.
+2. Call :py:meth:`Zotero.authorize_local()` and approve the dialog Zotero displays.
+3. Call any write method.
+
+.. code-block:: python
+
+    from pyzotero import Zotero
+
+    zot = Zotero('0', 'user', local=True)
+    zot.authorize_local('My Application')  # Zotero prompts the user
+    zot.create_items([item])
+
+.. _localapi-howto-persist:
+
+How to keep write access across sessions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Call :py:meth:`Zotero.authorize_local()` and have the user choose "Always Allow".
+2. Check the ``remember`` flag on the returned dict: it is ``True`` only for a
+   persistent key. Store the key together with :py:attr:`Zotero.server_id`.
+3. On a later run, pass both back to the constructor.
+
+.. code-block:: python
+
+    auth = zot.authorize_local('My Application')
+    if auth['remember']:
+        save_somewhere(zot.server_id, auth['key'])
+
+    # on a later run
+    zot = Zotero('0', 'user', local=True,
+                 server_id=saved_server_id, local_api_key=saved_key)
+
+How to recover from a consumed or revoked key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A single-use key is consumed by the first successful write, and the user can revoke a
+persistent key in Zotero's settings. In both cases the next write raises
+:py:class:`LocalAPIKeyRequiredError`. Catch it and re-authorise:
+
+.. code-block:: python
+
+    from pyzotero import Zotero, LocalAPIKeyRequiredError
+
+    try:
+        zot.create_items([item])
+    except LocalAPIKeyRequiredError:
+        zot.authorize_local('My Application')
+        zot.create_items([item])
+
+How to add a file attachment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:py:meth:`Zotero.attachment_simple()` and :py:meth:`Zotero.attachment_both()` are
+unavailable in local mode (see :ref:`localapi-differences`). Build the attachment
+dict yourself and pass it to :py:meth:`Zotero.upload_attachments()`, which works
+normally:
+
+.. code-block:: python
+
+    attachment = {
+        'itemType': 'attachment',
+        'linkMode': 'imported_file',
+        'title': 'paper.pdf',
+        'filename': '/path/to/paper.pdf',
+        'contentType': 'application/pdf',
+        'charset': '',
+        'note': '',
+        'tags': [],
+        'relations': {},
+    }
+    zot.upload_attachments([attachment], parent_item_key)
+
+.. _localapi-reference:
+
+Reference
+---------
+
+    .. py:attribute:: Zotero.server_id
+
+        The local API's server ID, or ``None`` if it is not yet known. Readable and
+        writable: a program can persist it alongside its own data and supply it on a
+        later run via the ``server_id`` constructor argument. Pyzotero fetches it
+        automatically before the first write if it is not already set.
 
     .. py:method:: Zotero.authorize_local(app_name)
 
@@ -962,32 +1069,20 @@ Local API keys are unrelated to zotero.org API keys, and are obtained by asking 
         :param str app_name: the caller's display name, shown to the user in the dialog
         :rtype: dict containing a ``key`` string and a ``remember`` boolean
 
-        A key granted with "Allow" is **single-use**: the first successful write consumes
-        it, and the next write raises :py:class:`LocalAPIKeyRequiredError`. A key granted
-        with "Always Allow" has ``remember`` set to ``True`` and may be stored by the
-        caller, then passed back as the ``local_api_key`` constructor argument later.
+        ``remember`` is ``True`` only for a persistent key; a single-use key must be
+        replaced by a further call once a write has consumed it.
 
         Raises :py:class:`LocalAPIDeniedError` if the user denies the request. Zotero
-        rate-limits this endpoint, so it should not be called in a retry loop.
+        rate-limits this endpoint, so it must not be called in a retry loop.
 
-    .. code-block:: python
+The exceptions specific to the local API — :py:class:`LocalAPIKeyRequiredError`,
+:py:class:`LocalAPIDeniedError`, :py:class:`ServerIDMismatchError` and
+:py:class:`ServerIDRequiredError` — are listed under `Errors`_.
 
-        from pyzotero import Zotero, LocalAPIKeyRequiredError
-
-        zot = Zotero('0', 'user', local=True)
-        auth = zot.authorize_local('My Application')
-        if auth['remember']:
-            save_somewhere(zot.server_id, auth['key'])
-
-        try:
-            zot.create_items([item])
-        except LocalAPIKeyRequiredError:
-            # the key was single-use, or has been revoked
-            zot.authorize_local('My Application')
-            zot.create_items([item])
+.. _localapi-differences:
 
 Differences from the web API
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * :py:meth:`Zotero.item_template()` is unavailable: the local API implements the item
   type and field endpoints, but not ``/items/new``. Zotero may add it in future, in which
@@ -997,24 +1092,8 @@ Differences from the web API
   mode raises :py:class:`CallDoesNotExistError`.
 * For the same reason :py:meth:`Zotero.attachment_simple()` and
   :py:meth:`Zotero.attachment_both()`, which build an attachment template internally, are
-  unavailable. Build the attachment dict yourself and pass it to
-  :py:meth:`Zotero.upload_attachments()`, which works normally:
-
-    .. code-block:: python
-
-        attachment = {
-            'itemType': 'attachment',
-            'linkMode': 'imported_file',
-            'title': 'paper.pdf',
-            'filename': '/path/to/paper.pdf',
-            'contentType': 'application/pdf',
-            'charset': '',
-            'note': '',
-            'tags': [],
-            'relations': {},
-        }
-        zot.upload_attachments([attachment], parent_item_key)
-
+  unavailable. Use :py:meth:`Zotero.upload_attachments()` with a hand-built attachment
+  dict instead: see :ref:`localapi-howto`.
 * Keyed writes require a concurrency precondition: either a ``version`` on each object,
   which objects retrieved from the API already carry, or an explicit ``last_modified``
   argument. Payloads built by hand without either are rejected.

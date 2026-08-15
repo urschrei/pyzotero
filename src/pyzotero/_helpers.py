@@ -12,13 +12,13 @@ def get_zotero_client(
     server_id: str | None = None,
     local_api_key: str | None = None,
 ) -> zotero.Zotero:
-    """Get a Zotero client configured for local access.
+    """Get a Zotero client that is configured for local access.
 
-    The CLI and MCP server are read-only, so neither argument is needed for
-    their use. They're accepted so that callers building on this helper can
-    write: ``local_api_key`` authorises writes (see
-    :meth:`Zotero.authorize_local`), and ``server_id`` supplies a server ID
-    retained from a previous session, saving a bootstrap request.
+    The CLI and the MCP server are read-only, so they do not use the two
+    optional arguments. The arguments let other callers write:
+    ``local_api_key`` permits writes (see :meth:`Zotero.authorize_local`),
+    and ``server_id`` supplies a server ID that was kept from an earlier
+    session, which prevents one initial request.
     """
     return zotero.Zotero(
         library_id="0",

@@ -33,9 +33,13 @@ Full documentation of available Pyzotero methods, code examples, and sample outp
 
 # Local Zotero API
 
-Passing `local=True` directs Pyzotero at a running Zotero installation instead of the web API. It must first be enabled in Zotero: Settings > Advanced > "Allow other applications on this computer to communicate with Zotero".
+Passing `local=True` directs Pyzotero at a running Zotero installation instead of the web API. Reads need no authentication. Writes need the user's consent, given through a dialog in Zotero, and a Zotero version that supports local writes.
 
-Reads need no authentication. Writes require a local API key, which Zotero grants only with the user's consent, and a Zotero version that supports local writes:
+## Using the local API
+
+1. In Zotero, enable Settings > Advanced > "Allow other applications on this computer to communicate with Zotero".
+2. Create a client with `local=True`. You can now read from the library.
+3. To write, call `authorize_local()` first, and approve the dialog Zotero displays:
 
 ``` python
 from pyzotero import Zotero
@@ -45,9 +49,11 @@ auth = zot.authorize_local("My Application")  # Zotero prompts the user
 zot.create_items([item])
 ```
 
-`authorize_local()` returns a dict with a `key` and a `remember` flag. A key granted with "Allow" is single-use and is consumed by the first successful write; one granted with "Always Allow" has `remember` set to `True` and can be stored and passed back later as the `local_api_key` argument.
+## How local write access works
 
-Note that versions reported by the local API are unrelated to web API versions, and are typically lower than those the local API reported before write support was added. They are scoped to `zot.server_id`, which identifies the Zotero instance. Programs that persist local objects or versions should persist that ID alongside them and partition by it. See the [documentation][3] for details.
+`authorize_local()` returns a dict with a `key` and a `remember` flag. A key granted with "Allow" is single-use: the first successful write consumes it. A key granted with "Always Allow" has `remember` set to `True`; you can store it and pass it back on a later run as the `local_api_key` argument.
+
+Versions reported by the local API are unrelated to web API versions, and are typically lower than those the local API reported before write support was added. They are scoped to `zot.server_id`, which identifies the Zotero instance. A program that persists local objects or versions must persist that ID alongside them and partition by it. See the [documentation][3] for a full explanation, more how-to guides, and reference material.
 
 # Installation
 
@@ -179,27 +185,33 @@ The Semantic Scholar tools can optionally check whether results already exist in
 
 ### Write Tools (opt-in)
 
-The server is read-only unless started with `--enable-writes`. Write tools are not merely disabled without it: they are never registered, so they do not appear in the model's tool list at all, and content in your library cannot induce a call to one.
+The server is read-only unless started with `--enable-writes`.
 
-Obtain a local API key first, choosing "Always Allow" so that it persists:
+#### Enabling write tools
 
-```
-pyzotero authorize --app-name "Claude Desktop"
-```
+1. Obtain a persistent local API key, choosing "Always Allow" in Zotero's dialog:
 
-Then pass the key in the server's environment and enable writes:
+   ```
+   pyzotero authorize --app-name "Claude Desktop"
+   ```
 
-```json
-{
-  "mcpServers": {
-    "zotero": {
-      "command": "pyzotero-mcp",
-      "args": ["--enable-writes"],
-      "env": { "PYZOTERO_LOCAL_API_KEY": "your-key-here" }
-    }
-  }
-}
-```
+2. Pass the key in the server's environment, and add the `--enable-writes` flag:
+
+   ```json
+   {
+     "mcpServers": {
+       "zotero": {
+         "command": "pyzotero-mcp",
+         "args": ["--enable-writes"],
+         "env": { "PYZOTERO_LOCAL_API_KEY": "your-key-here" }
+       }
+     }
+   }
+   ```
+
+3. Optional: set `PYZOTERO_LOCAL_SERVER_ID` in the same `env` block to save one request at startup. Without it, the server fetches the ID automatically.
+
+#### Available write tools
 
 | Tool | Description |
 |------|-------------|
@@ -212,11 +224,13 @@ Then pass the key in the server's environment and enable writes:
 | `add_attachment` | Attach a file on disk to an existing item |
 | `delete_item` | Permanently delete an item. Requires `--enable-deletes` |
 
+#### How the write tools behave
+
+Without `--enable-writes`, the write tools are not merely disabled: they are never registered, so they do not appear in the model's tool list at all, and content in your library cannot induce a call to one.
+
 `add_attachment` requires an **absolute** path. The server runs as a subprocess of your MCP client, so its working directory is not yours, and a relative path would resolve somewhere unintended; relative paths are rejected rather than guessed at. The file is copied into Zotero's storage, and syncs with the library if sync is enabled. Attaching a file that is already attached to the item is reported as unchanged rather than duplicated, so a retried call is safe.
 
 `delete_item` is behind a second flag because deletion via the local API is irreversible: items are erased outright rather than moved to the trash, and the deletion propagates on sync. `--enable-deletes` implies `--enable-writes`.
-
-`PYZOTERO_LOCAL_SERVER_ID` is also read if set, saving one request at startup; it is otherwise fetched automatically.
 
 # Development
 

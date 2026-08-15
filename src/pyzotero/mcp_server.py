@@ -49,7 +49,7 @@ def _error(msg: str) -> str:
 
 
 def _md5(path: Path) -> str:
-    """Return the hex MD5 digest of a file, read in chunks."""
+    """Return the hex MD5 digest of a file. Read the file in chunks."""
     digest = hashlib.md5()  # noqa: S324
     with path.open("rb") as fh:
         for chunk in iter(lambda: fh.read(8192), b""):
@@ -470,12 +470,13 @@ SERVER_ID_ENV = "PYZOTERO_LOCAL_SERVER_ID"
 
 
 def _write_client() -> Any:
-    """Return a Zotero client authorised for local writes.
+    """Return a Zotero client that has write access to the local API.
 
-    The key is supplied out of band rather than obtained here. MCP servers are
-    spawned and restarted by the client, so authorising at startup would raise
-    a Zotero dialog with no visible cause, and would fail outright if Zotero
-    weren't running yet. Run ``pyzotero authorize`` to obtain a persistent key.
+    The key comes from the environment. This function does not request one
+    itself: the MCP client starts and restarts this server, so a request at
+    startup would show a Zotero dialog with no clear cause, and would fail if
+    Zotero were not running. Run ``pyzotero authorize`` to get a permanent
+    key.
     """
     key = os.environ.get(WRITE_KEY_ENV)
     if not key:
@@ -500,7 +501,7 @@ def _register_item_tools(add: AddTool) -> None:
     def list_item_fields(item_type: str) -> str:
         """List the fields and creator types valid for a Zotero item type.
 
-        Call this before create_item to discover what a given item type accepts.
+        Call this before create_item to find the fields that an item type accepts.
 
         Args:
             item_type: A Zotero item type, e.g. "journalArticle" or "book".
@@ -536,7 +537,7 @@ def _register_item_tools(add: AddTool) -> None:
         Args:
             item_type: A Zotero item type, e.g. "journalArticle" or "book".
             fields: Field values, e.g. {"title": "...", "date": "2024"}. Use
-                list_item_fields to discover what the item type accepts.
+                list_item_fields to find the fields that the item type accepts.
             creators: Creator dicts, each with creatorType and either
                 (firstName, lastName) or name.
             tags: Tag names to attach.
@@ -560,7 +561,7 @@ def _register_item_tools(add: AddTool) -> None:
         return _json({"error": "Item was rejected", "detail": resp.get("failed")})
 
     def update_item(key: str, fields: dict[str, Any]) -> str:
-        """Update fields on an existing item, leaving other fields unchanged.
+        """Update fields on an existing item. Other fields stay unchanged.
 
         Args:
             key: The item key.
@@ -645,24 +646,26 @@ def _register_attachment_tools(add: AddTool) -> None:
     def add_attachment(item_key: str, file_path: str, title: str = "") -> str:
         """Attach a file on disk to an existing Zotero item.
 
-        The file is copied into Zotero's storage, so it remains available if the
-        original is moved or deleted. If the library syncs, the attachment syncs
-        with it.
+        Zotero copies the file into its storage. The attachment stays
+        available if the source file moves or is deleted. If the library
+        syncs, the attachment also syncs.
 
         Args:
-            item_key: The key of the item to attach the file to.
-            file_path: An absolute path to the file. Relative paths are
-                rejected: this server runs as a subprocess of the client, so its
-                working directory is not yours and a relative path would resolve
-                somewhere unintended.
-            title: Optional title for the attachment. Defaults to the filename.
+            item_key: The key of the item that gets the attachment.
+            file_path: An absolute path to the file. This server runs as a
+                subprocess of the MCP client, so its working directory is not
+                yours. A relative path would point to an unknown location.
+                Thus the server rejects relative paths.
+            title: Optional title for the attachment. The default is the
+                filename.
 
         Returns:
-            JSON with the new attachment's key, or the reason it was rejected.
-            Attaching a file that is already attached to the item is reported as
-            unchanged rather than duplicated, so retrying is safe. Replacing an
-            existing attachment's contents is not supported: a file whose
-            contents differ is attached as a second attachment.
+            JSON with the key of the new attachment, or the reason for a
+            rejection. If the file is already attached to the item, the
+            result reports it as unchanged and no copy occurs. Thus a retried
+            call is safe. The server does not replace the contents of an
+            attachment: a file with different contents becomes a second
+            attachment.
 
         """
         path = Path(file_path)
@@ -673,9 +676,9 @@ def _register_attachment_tools(add: AddTool) -> None:
             msg = f"No file at {file_path}"
             raise FileNotFoundError(msg)
         zot = _write_client()
-        # Uploading always creates a new attachment item, so an interrupted or
-        # retried call would otherwise silently duplicate the file. Compare
-        # against the item's existing attachments first.
+        # An upload always creates a new attachment item. Without a check, a
+        # call that stops or is retried would attach the file a second time.
+        # Thus, compare the file with the item's attachments first.
         checksum = _md5(path)
         for child in zot.children(item_key):
             data = child.get("data", {})
@@ -687,9 +690,9 @@ def _register_attachment_tools(add: AddTool) -> None:
                         "detail": "this file is already attached to the item",
                     }
                 )
-        # item_template() can't be used here: the local API has no /items/new,
-        # so the attachment template is built directly. contentType is detected
-        # from the path by the upload machinery.
+        # item_template() is not available here: the local API has no
+        # /items/new. Thus, build the attachment template directly. The
+        # upload code finds the contentType from the path.
         template = {
             "itemType": "attachment",
             "linkMode": "imported_file",
@@ -722,14 +725,15 @@ def _register_attachment_tools(add: AddTool) -> None:
 
 
 def _register_delete_tools(add: AddTool) -> None:
-    """Register destructive tools. Only called for --enable-deletes."""
+    """Register the delete tools. This runs only for --enable-deletes."""
 
     def delete_item(key: str) -> str:
         """Permanently delete an item from the local Zotero library.
 
-        This cannot be undone. The local API erases the item outright rather
-        than moving it to the trash, and the deletion propagates on sync.
-        Confirm with the user before calling this.
+        You cannot undo this operation. The local API erases the item. It
+        does not move the item to the trash. If the library syncs, the
+        deletion also syncs. Get the user's confirmation before you call
+        this tool.
 
         Args:
             key: The item key.
@@ -746,12 +750,12 @@ def _register_delete_tools(add: AddTool) -> None:
 
 
 def register_write_tools(server: FastMCP, *, enable_deletes: bool = False) -> list[str]:
-    """Register the write tools on ``server``, returning the names registered.
+    """Register the write tools on ``server``. Return the registered names.
 
-    Writes are gated by registration rather than by a check inside each tool: a
-    tool that was never registered doesn't appear in the model's tool list at
-    all, so content in the library can't induce a call to one. Nothing here runs
-    unless ``main()`` is passed --enable-writes or --enable-deletes.
+    Registration is the gate for writes, not a check in each tool. A tool
+    that is not registered does not appear in the model's tool list. Thus
+    content in the library cannot cause a call to it. Nothing here runs
+    unless ``main()`` receives --enable-writes or --enable-deletes.
     """
     registered: list[str] = []
 
