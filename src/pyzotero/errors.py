@@ -43,9 +43,10 @@ class TooManyItemsError(PyZoteroError):
 class LocalAPIKeyRequiredError(UserNotAuthorisedError):
     """401 - Raised when a local API write has no valid local API key.
 
-    Local API keys are unrelated to zotero.org API keys, and a key granted with
-    "Allow" rather than "Always Allow" is single-use: the first successful write
-    consumes it. Call ``Zotero.authorize_local()`` to obtain a new one.
+    Local API keys have no relation to zotero.org API keys. A key that the
+    user grants with "Allow", not "Always Allow", is valid for one write only:
+    the first successful write uses it. Call ``Zotero.authorize_local()`` to
+    get a new key.
     """
 
 
@@ -94,19 +95,20 @@ class PreConditionRequiredError(PyZoteroError):
 
 
 class ServerIDMismatchError(PreConditionFailedError):
-    """412 - Raised when Zotero-Server-ID doesn't match the local server.
+    """412 - Raised when Zotero-Server-ID does not match the local server.
 
-    The request reached a different Zotero instance, or the same one with a
-    restored or replaced database. Object data and versions retrieved from the
-    local API are scoped to a server ID and cannot be carried across one.
+    The request went to a different Zotero instance, or to the same instance
+    with a restored or replaced database. Object data and versions from the
+    local API apply only to one server ID. Do not use them with a different
+    server ID.
     """
 
 
 class ServerIDRequiredError(PreConditionRequiredError):
-    """428 - Raised when a local API write was sent without Zotero-Server-ID.
+    """428 - Raised when a local API write had no Zotero-Server-ID header.
 
-    Pyzotero fetches and sends the header automatically, so this indicates a
-    request that bypassed ``Zotero._write``.
+    Pyzotero gets and sends the header automatically. Thus this error shows
+    that a request did not go through ``Zotero._write``.
     """
 
 
@@ -144,9 +146,10 @@ ERROR_CODES: dict[int, type[PyZoteroError]] = {
 }
 
 
-# The local API reuses 401, 412 and 428 for more than one condition each, so
-# the plain-text response body has to be consulted to tell them apart. Ordered
-# pairs of (body fragment, exception class), checked against the response text.
+# The local API uses the status codes 401, 412 and 428 for more than one
+# condition each. To identify the condition, examine the plain-text response
+# body. Each entry is a sequence of (body fragment, exception class) pairs.
+# The fragments are compared with the response text in the given order.
 _LOCAL_API_ERRORS: dict[int, tuple[tuple[str, type[PyZoteroError]], ...]] = {
     401: (
         ("API key required", LocalAPIKeyRequiredError),
@@ -156,8 +159,8 @@ _LOCAL_API_ERRORS: dict[int, tuple[tuple[str, type[PyZoteroError]], ...]] = {
     428: (("Zotero-Server-ID not provided", ServerIDRequiredError),),
 }
 
-# Remedies appended to the message for errors whose fix isn't obvious from the
-# server's own response text.
+# The message for these errors gets a hint, because the server's own response
+# text does not show the corrective action.
 _ERROR_HINTS: dict[type[PyZoteroError], str] = {
     LocalAPIKeyRequiredError: (
         "Hint: call Zotero.authorize_local() to obtain a local API key. A key "
@@ -175,8 +178,8 @@ _ERROR_HINTS: dict[type[PyZoteroError], str] = {
 def _error_class(req: httpx.Response) -> type[PyZoteroError]:
     """Return the most specific exception class for a response.
 
-    Falls back to a status-code lookup when the body doesn't identify one of
-    the local API's overloaded conditions.
+    If the body does not identify one of the local API's special conditions,
+    fall back to a lookup by status code.
     """
     for fragment, error_cls in _LOCAL_API_ERRORS.get(req.status_code, ()):
         if fragment in req.text:

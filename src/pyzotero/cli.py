@@ -456,18 +456,18 @@ def itemtypes(ctx: Any) -> None:
     "--app-name",
     default="Pyzotero",
     show_default=True,
-    help="Name shown to you in Zotero's authorisation dialog.",
+    help="The name that Zotero shows in the authorisation dialog.",
 )
 @click.pass_context
 @cli_error_handler
 def authorize(ctx: Any, app_name: str) -> None:
-    """Obtain a local API key, for write access to your Zotero library.
+    """Get a local API key, which permits writes to your Zotero library.
 
-    Zotero displays a dialog offering "Allow" (one-time access), "Always Allow"
-    (persistent access) and "Deny". Choose "Always Allow" for a key you can
-    keep: one-time keys are consumed by the first write.
+    Zotero shows a dialog with the options "Allow" (one-time access),
+    "Always Allow" (permanent access) and "Deny". Select "Always Allow" to
+    get a key that you can keep: the first write uses a one-time key.
 
-    Local API keys are unrelated to zotero.org API keys.
+    Local API keys have no relation to zotero.org API keys.
 
     Examples:
         pyzotero authorize

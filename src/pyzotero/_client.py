@@ -88,7 +88,7 @@ class Zotero:
             self.local = True
         self._server_id: str | None = server_id
         self.local_api_key: str | None = local_api_key
-        """Key authorising local API writes; see :meth:`authorize_local`."""
+        """The key that permits local API writes. See :meth:`authorize_local`."""
         if library_id is not None and library_type:
             self.library_id = library_id
             # library_type determines whether query begins w. /users or /groups
@@ -191,21 +191,22 @@ class Zotero:
 
     @property
     def server_id(self) -> str | None:
-        """The local API's stable server ID, or None if it isn't known yet.
+        """The server ID of the local API, or None if it is not known.
 
-        The local API returns a ``Zotero-Server-ID`` header identifying the
-        Zotero instance the data came from. It persists with the user's
-        database. Pyzotero caches it from the first local response and sends it
-        back on subsequent requests, so a request made against a different
-        instance (or a restored database) is rejected rather than silently
-        mixing data. It is fetched automatically before the first write if it
-        isn't already known.
+        Each local API response has a ``Zotero-Server-ID`` header. The header
+        identifies the Zotero instance that sent the data, and the ID stays
+        with the user's database. Pyzotero keeps the ID from the first local
+        response and sends it with the requests that follow. As a result, the
+        server rejects a request that goes to a different instance, or to a
+        restored database, and data from different instances does not mix. If
+        the ID is not known before the first write, Pyzotero gets it
+        automatically.
 
-        Versions reported by the local API are scoped to this ID and bear no
-        relation to web API versions, or to versions from any other Zotero
-        instance. Programs that persist objects or versions retrieved from the
-        local API should persist this ID alongside them and partition by it;
-        it may be set here on a subsequent run.
+        The versions that the local API reports apply only to this server ID.
+        They have no relation to web API versions, or to versions from a
+        different Zotero instance. A program that stores objects or versions
+        from the local API must store this ID with them, and must partition
+        the data by ID. The program can set this attribute on a later run.
         """
         return self._server_id
 
@@ -217,33 +218,35 @@ class Zotero:
         self._server_id = value
 
     def _local_headers(self) -> dict[str, str]:
-        """Return the Zotero-Server-ID header to send with a local API request.
+        """Return the Zotero-Server-ID header for a local API request.
 
-        The header is optional on reads and required on writes, but it's sent
-        on both whenever it's known: that way a mismatched instance is caught
-        by the server (412) instead of producing data mixed across instances.
+        Read requests do not need the header. Write requests must have it.
+        Pyzotero sends the header with all requests when the ID is known. As a
+        result, the server rejects a request to a different instance with a
+        412 error, and data from different instances does not mix.
         """
         if self.local and self._server_id:
             return {"Zotero-Server-ID": self._server_id}
         return {}
 
     def _capture_server_id(self, resp: httpx.Response) -> None:
-        """Cache the Zotero-Server-ID header from a local API response.
+        """Keep the Zotero-Server-ID header from a local API response.
 
-        Every local API response carries the header, including error responses,
-        so ordinary reads populate it without an extra round-trip.
+        Each local API response has the header. Error responses also have it.
+        As a result, normal read requests set the ID with no extra request.
         """
         if self.local and not self._server_id:
             if server_id := resp.headers.get("zotero-server-id"):
                 self._server_id = server_id
 
     def _ensure_server_id(self) -> str:
-        """Fetch and cache the local server ID if it isn't already known.
+        """Get and keep the local server ID if it is not already known.
 
-        Local writes are rejected with 428 unless ``Zotero-Server-ID`` is sent,
-        so it's fetched on demand before the first write. Note that the bare
-        ``/api`` path returns 404: the no-op endpoint carrying the header is
-        ``/api/``, with the trailing slash.
+        The local API rejects a write with a 428 error if the request does not
+        have the ``Zotero-Server-ID`` header. Thus this method gets the ID
+        before the first write. Note: the bare ``/api`` path returns a 404
+        error. The no-op endpoint that has the header is ``/api/``, with the
+        slash at the end.
         """
         if self._server_id:
             return self._server_id
@@ -261,12 +264,14 @@ class Zotero:
         return self._server_id
 
     def _local_write_headers(self) -> dict[str, str]:
-        """Return the headers a local API write requires.
+        """Return the headers that a local API write must have.
 
-        Writes are rejected with 428 without ``Zotero-Server-ID`` and with 401
-        without a local API key, so the server ID is fetched here if it isn't
-        already known. A missing key is left to the server to reject, so that
-        the caller gets the same error whether the key is absent or expired.
+        The local API rejects a write with a 428 error if the request does not
+        have ``Zotero-Server-ID``, and with a 401 error if there is no local
+        API key. Thus this method gets the server ID if it is not known. It
+        does not examine the key: the server rejects a missing key and an
+        expired key with the same error, so the caller gets one error type for
+        the two conditions.
         """
         if not self.local:
             return {}
@@ -276,13 +281,13 @@ class Zotero:
         return headers
 
     def _write(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
-        """Dispatch a write request, adding the headers a local write needs.
+        """Send a write request. Add the headers that a local write must have.
 
-        The local API rejects writes with 428 when ``Zotero-Server-ID`` is
-        absent and 401 when there's no valid local API key, so both are added
-        here rather than in each of the write methods. Against the web API this
-        is a plain passthrough. Responses are checked by the callers, as
-        before.
+        The local API rejects a write with a 428 error if ``Zotero-Server-ID``
+        is not sent, and with a 401 error if there is no valid local API key.
+        This method adds the two headers in one place, not in each write
+        method. For the web API, this method only passes the request through.
+        The callers examine the responses, as before.
         """
         if self.local:
             kwargs["headers"] = {
@@ -292,32 +297,34 @@ class Zotero:
         return self.client.request(method, url, **kwargs)
 
     def authorize_local(self, app_name: str) -> dict[str, Any]:
-        """Obtain a local API key, prompting the user for permission.
+        """Get a local API key. Zotero asks the user for permission.
 
-        Local API writes require a key that is unrelated to a zotero.org API
-        key. Calling this displays a dialog in Zotero offering "Allow"
-        (one-time access), "Always Allow" (persistent access) and "Deny". On
-        approval the key is stored on this instance as ``local_api_key`` and
-        sent with subsequent local writes.
+        Each local API write must have a key. This key has no relation to a
+        zotero.org API key. This method makes Zotero show a dialog with the
+        options "Allow" (one-time access), "Always Allow" (permanent access)
+        and "Deny". If the user approves, the method stores the key on this
+        instance as ``local_api_key`` and sends it with the local writes that
+        follow.
 
-        Zotero rate-limits this endpoint, so it should not be called in a retry
-        loop.
+        Zotero applies a rate limit to this endpoint. Do not call this method
+        in a retry loop.
 
         Args:
-            app_name: the caller's display name, shown in the dialog.
+            app_name: The display name of the caller. Zotero shows it in the
+                dialog.
 
         Returns:
-            The server's response: a dict with a ``key`` str and a ``remember``
-            bool. When ``remember`` is False the key is single-use -- the first
-            successful write consumes it, and the next write raises
-            :class:`LocalAPIKeyRequiredError`, at which point this method must
-            be called again. When it is True the key may be stored by the
-            caller and passed back as the ``local_api_key`` argument to
-            ``Zotero()`` on a later run.
+            The server's response: a dict with a ``key`` str and a
+            ``remember`` bool. If ``remember`` is False, the key is valid for
+            one write only: the first successful write uses it, and the write
+            that follows raises :class:`LocalAPIKeyRequiredError`. Then you
+            must call this method again. If ``remember`` is True, you can
+            store the key and give it to ``Zotero()`` as the
+            ``local_api_key`` argument on a later run.
 
         Raises:
-            LocalAPIDeniedError: if the user denies the request.
-            TooManyRequestsError: if the endpoint is being rate-limited.
+            LocalAPIDeniedError: The user denied the request.
+            TooManyRequestsError: The endpoint applied its rate limit.
 
         """
         if not self.local:
@@ -341,8 +348,9 @@ class Zotero:
             msg = f"Zotero denied the local API authorisation request from {app_name!r}"
             raise ze.LocalAPIDeniedError(msg)
         if req.status_code == httpx.codes.TOO_MANY_REQUESTS:
-            # error_handler records a backoff and returns for 429 rather than
-            # raising, which would leave us parsing a text/plain body as JSON
+            # error_handler does not raise for a 429 response: it records a
+            # backoff and returns. The code that follows would then try to
+            # parse a text/plain body as JSON. To prevent this, raise here.
             retry_after = get_backoff_duration(req.headers)
             msg = "Zotero is rate-limiting local API authorisation requests"
             if retry_after:
@@ -385,7 +393,7 @@ class Zotero:
         ``error_handler`` to produce a PyZotero exception, and any
         ``Backoff``/``Retry-After`` header is recorded on the instance.
         """
-        # done before raise_for_status: rejections carry the header too
+        # Do this before raise_for_status: error responses also have the header
         self._capture_server_id(resp)
         try:
             resp.raise_for_status()
@@ -1033,8 +1041,8 @@ class Zotero:
         except ze.ResourceNotFoundError:
             if not self.local:
                 raise
-            # the local API implements the item type and field endpoints but
-            # not /items/new, so there's nothing to fall back to here
+            # The local API has the item type and field endpoints, but it does
+            # not have /items/new. Thus there is no fallback here.
             msg = (
                 "The local Zotero API doesn't implement the /items/new "
                 "template endpoint, so item_template() (and the "
@@ -1444,15 +1452,16 @@ class Zotero:
     ) -> bool:
         """POST a payload to the library in chunks of DEFAULT_NUM_ITEMS.
 
-        ``collection`` is the last path segment (e.g. ``"items"`` or
-        ``"collections"``) - the API only accepts 50 objects at a time, so
-        anything longer is split across multiple requests.
+        ``collection`` is the last path segment, for example ``"items"`` or
+        ``"collections"``. The API accepts a maximum of 50 objects for each
+        request, so this method divides longer payloads across requests.
 
-        ``last_modified`` sets If-Unmodified-Since-Version on every chunk. The
-        local API requires a concurrency precondition on keyed writes - either
-        that header or a ``version`` on each object - and returns 428 without
-        one. Objects round-tripped from the API carry their own version, so
-        this is only needed for payloads built by hand.
+        ``last_modified`` sets If-Unmodified-Since-Version on each chunk. A
+        keyed write to the local API must have a concurrency precondition:
+        that header, or a ``version`` value on each object. Without one, the
+        local API returns a 428 error. Objects that come from the API have
+        their own version. Thus only payloads that the caller makes by hand
+        need ``last_modified``.
         """
         to_send = [self.check_items([p])[0] for p in payload]
         url = build_url(
@@ -1476,9 +1485,9 @@ class Zotero:
     ) -> bool:
         """Update existing items.
 
-        Accepts a list of dicts containing Item data, and an optional library
-        version for If-Unmodified-Since-Version. The version is only required
-        when the dicts carry no ``version`` of their own.
+        Accepts a list of dicts that contain item data, and an optional
+        library version for If-Unmodified-Since-Version. The version is
+        necessary only when the dicts do not have a ``version`` of their own.
         """
         return self._batch_update(payload, "items", last_modified)
 
@@ -1487,9 +1496,9 @@ class Zotero:
     ) -> bool:
         """Update existing collections.
 
-        Accepts a list of dicts containing Collection data, and an optional
-        library version for If-Unmodified-Since-Version. The version is only
-        required when the dicts carry no ``version`` of their own.
+        Accepts a list of dicts that contain collection data, and an optional
+        library version for If-Unmodified-Since-Version. The version is
+        necessary only when the dicts do not have a ``version`` of their own.
         """
         return self._batch_update(payload, "collections", last_modified)
 

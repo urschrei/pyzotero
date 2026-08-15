@@ -221,10 +221,10 @@ class Zupload:
         upload_pairs = tuple(upload_list)
         headers = {"User-Agent": f"Pyzotero/{pz.__version__}"}
         if self.zinstance.local:
-            # Locally this step posts back to Zotero's own upload receiver
-            # rather than to S3, and that endpoint rejects a POST without a
-            # Zotero-Server-ID header. It doesn't authenticate the key, though,
-            # so there's no reason to send one.
+            # In local mode, this step sends the POST to Zotero's own upload
+            # receiver, not to S3. That endpoint rejects a POST that has no
+            # Zotero-Server-ID header. The endpoint does not check the API
+            # key, so we do not send one.
             headers["Zotero-Server-ID"] = self.zinstance._ensure_server_id()
 
         def send() -> httpx.Response:
