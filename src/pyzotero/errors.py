@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import httpx
+import httpx2
 
 from ._utils import get_backoff_duration
 
@@ -175,7 +175,7 @@ _ERROR_HINTS: dict[type[PyZoteroError], str] = {
 }
 
 
-def _error_class(req: httpx.Response) -> type[PyZoteroError]:
+def _error_class(req: httpx2.Response) -> type[PyZoteroError]:
     """Return the most specific exception class for a response.
 
     If the body does not identify one of the local API's special conditions,
@@ -187,7 +187,7 @@ def _error_class(req: httpx.Response) -> type[PyZoteroError]:
     return ERROR_CODES.get(req.status_code, HTTPError)
 
 
-def _err_msg(req: httpx.Response, hint: str = "") -> str:
+def _err_msg(req: httpx2.Response, hint: str = "") -> str:
     """Return a nicely-formatted error message for an HTTP response."""
     return (
         f"\nCode: {req.status_code}\n"
@@ -198,7 +198,7 @@ def _err_msg(req: httpx.Response, hint: str = "") -> str:
 
 
 def error_handler(
-    zot: ZoteroClientProtocol, req: httpx.Response, exc: BaseException | None = None
+    zot: ZoteroClientProtocol, req: httpx2.Response, exc: BaseException | None = None
 ) -> None:
     """Error handler for HTTP requests.
 
@@ -215,7 +215,7 @@ def error_handler(
         exc: Optional exception that triggered this handler.
 
     """
-    if req.status_code == httpx.codes.TOO_MANY_REQUESTS:
+    if req.status_code == httpx2.codes.TOO_MANY_REQUESTS:
         delay = get_backoff_duration(req.headers)
         if not delay:
             msg = (

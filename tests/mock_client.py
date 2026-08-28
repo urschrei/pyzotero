@@ -1,4 +1,4 @@
-"""Mock HTTP client for testing using httpx MockTransport."""
+"""Mock HTTP client for testing using httpx2 MockTransport."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-import httpx
+import httpx2
 
 
 class CaseInsensitiveDict(dict):
@@ -79,7 +79,7 @@ class MockRoute:
     content_type: str = "application/json"
     headers: dict[str, str] = field(default_factory=dict)
 
-    def matches(self, request: httpx.Request) -> bool:
+    def matches(self, request: httpx2.Request) -> bool:
         """Check if this route matches the request."""
         if request.method != self.method:
             return False
@@ -88,8 +88,8 @@ class MockRoute:
         return request_url == route_url
 
     def respond(
-        self, request: httpx.Request, recorded: RecordedRequest
-    ) -> httpx.Response:
+        self, request: httpx2.Request, recorded: RecordedRequest
+    ) -> httpx2.Response:
         """Generate response for this route."""
         # Ensure all header values are strings
         response_headers = {"content-type": self.content_type}
@@ -104,12 +104,12 @@ class MockRoute:
                 body = body.encode("utf-8")
             # Ensure callback response headers are strings too
             resp_headers = {k: str(v) for k, v in resp_headers.items()}
-            return httpx.Response(status, headers=resp_headers, content=body)
+            return httpx2.Response(status, headers=resp_headers, content=body)
 
         body = self.body
         if isinstance(body, str):
             body = body.encode("utf-8")
-        return httpx.Response(self.status, headers=response_headers, content=body)
+        return httpx2.Response(self.status, headers=response_headers, content=body)
 
 
 class MockClient:
@@ -118,14 +118,14 @@ class MockClient:
     def __init__(self):
         self.routes: list[MockRoute] = []
         self.requests: list[RecordedRequest] = []
-        self._client: httpx.Client | None = None
+        self._client: httpx2.Client | None = None
 
     @property
-    def client(self) -> httpx.Client:
-        """Get the httpx Client with mock transport."""
+    def client(self) -> httpx2.Client:
+        """Get the httpx2 Client with mock transport."""
         if self._client is None:
-            self._client = httpx.Client(
-                transport=httpx.MockTransport(self._handle),
+            self._client = httpx2.Client(
+                transport=httpx2.MockTransport(self._handle),
                 follow_redirects=True,
             )
         return self._client
@@ -169,7 +169,7 @@ class MockClient:
         """Get all recorded requests."""
         return self.requests.copy()
 
-    def _handle(self, request: httpx.Request) -> httpx.Response:
+    def _handle(self, request: httpx2.Request) -> httpx2.Response:
         """Handle an HTTP request."""
         recorded = RecordedRequest(
             method=request.method,
@@ -184,4 +184,4 @@ class MockClient:
             if route.matches(request):
                 return route.respond(request, recorded)
 
-        return httpx.Response(404, content=b"Not Found")
+        return httpx2.Response(404, content=b"Not Found")

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Literal, Protocol, TypedDict
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    import httpx
+    import httpx2
 
 
 # Type aliases
@@ -242,8 +242,8 @@ class ZoteroClientProtocol(Protocol):
     library_id: str | int
     library_type: str
     api_key: str | None
-    client: httpx.Client | None
-    request: httpx.Response | None
+    client: httpx2.Client | None
+    request: httpx2.Response | None
     templates: dict[str, Any]
     backoff_until: float
     local: bool
@@ -255,11 +255,11 @@ class ZoteroClientProtocol(Protocol):
 
     def _local_headers(self) -> dict[str, str]: ...
 
-    def _capture_server_id(self, resp: httpx.Response) -> None: ...
+    def _capture_server_id(self, resp: httpx2.Response) -> None: ...
 
     def _ensure_server_id(self) -> str: ...
 
-    def _write(self, method: str, url: str, **kwargs: Any) -> httpx.Response: ...
+    def _write(self, method: str, url: str, **kwargs: Any) -> httpx2.Response: ...
 
 
 # Processor function type

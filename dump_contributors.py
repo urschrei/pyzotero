@@ -1,7 +1,7 @@
-import httpx
+import httpx2
 
 url = "https://api.github.com/repos/urschrei/pyzotero/contributors"
-result = httpx.get(url)
+result = httpx2.get(url)
 result.raise_for_status()
 contributors = result.json()
 # filter out dependabot and meeee

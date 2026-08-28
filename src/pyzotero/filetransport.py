@@ -1,7 +1,7 @@
-# This is a modified version of httpx_file:
+# This is a modified version of httpx2_file:
 # The aiofiles dependency has been removed by modifying the async functionality to use
 # asyncio instead. A specific test for this modification can be found in tests/test_async.py
-# https://github.com/nuno-andre/httpx-file
+# https://github.com/nuno-andre/httpx2-file
 
 
 # The license and copyright notice are reproduced below
@@ -36,24 +36,24 @@ import asyncio
 from pathlib import Path
 from typing import Any
 
-import httpx
-from httpx import (
+import httpx2
+from httpx2 import (
     AsyncBaseTransport,
     BaseTransport,
     ByteStream,
     Request,
     Response,
 )
-from httpx import (
+from httpx2 import (
     AsyncClient as _AsyncClient,
 )
-from httpx import (
+from httpx2 import (
     Client as _Client,
 )
-from httpx._utils import URLPattern
+from httpx2._utils import URLPattern
 
 
-# monkey patch to fix httpx URL parsing
+# monkey patch to fix httpx2 URL parsing
 def is_relative_url(self):
     return not (self._uri_reference.scheme or self._uri_reference.host)
 
@@ -62,12 +62,12 @@ def is_absolute_url(self):
     return not self.is_relative_url
 
 
-httpx.URL.is_relative_url = property(is_relative_url)
-httpx.URL.is_absolute_url = property(is_absolute_url)
+httpx2.URL.is_relative_url = property(is_relative_url)
+httpx2.URL.is_absolute_url = property(is_absolute_url)
 
 
 class FileTransport(AsyncBaseTransport, BaseTransport):
-    def _handle(self, request: Request) -> tuple[int | None, httpx.Headers]:
+    def _handle(self, request: Request) -> tuple[int | None, httpx2.Headers]:
         if request.url.host and request.url.host != "localhost":
             raise NotImplementedError("Only local paths are allowed")
         if request.method in {"PUT", "DELETE"}:
@@ -88,7 +88,7 @@ class FileTransport(AsyncBaseTransport, BaseTransport):
 
     @staticmethod
     def _build_response(
-        status: int, headers: httpx.Headers, stream: ByteStream | None
+        status: int, headers: httpx2.Headers, stream: ByteStream | None
     ) -> Response:
         return Response(
             status_code=status,

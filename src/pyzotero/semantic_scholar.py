@@ -10,9 +10,8 @@ from __future__ import annotations
 
 from typing import Any
 
-import httpx
-from httpx import codes as http
-
+import httpx2
+from httpx2 import codes as http
 
 BASE_URL = "https://api.semanticscholar.org/graph/v1"
 RECOMMENDATIONS_URL = "https://api.semanticscholar.org/recommendations/v1"
@@ -75,18 +74,18 @@ def _make_request(
         SemanticScholarError: For other API errors
 
     """
-    with httpx.Client(timeout=REQUEST_TIMEOUT) as client:
+    with httpx2.Client(timeout=REQUEST_TIMEOUT) as client:
         response = client.get(url, params=params)
 
         _check_response(response)
         return response.json()
 
 
-def _check_response(response: httpx.Response) -> None:
+def _check_response(response: httpx2.Response) -> None:
     """Check HTTP response and raise appropriate exceptions.
 
     Args:
-        response: httpx Response object
+        response: httpx2 Response object
 
     Raises:
         RateLimitError: If rate limit is exceeded (HTTP 429)
@@ -356,7 +355,7 @@ def get_recommendations(
     }
 
     # POST request with paper IDs in body
-    with httpx.Client(timeout=REQUEST_TIMEOUT) as client:
+    with httpx2.Client(timeout=REQUEST_TIMEOUT) as client:
         response = client.post(
             url,
             params=params,
