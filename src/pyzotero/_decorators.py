@@ -16,7 +16,7 @@ from urllib.parse import urlencode
 
 import bibtexparser
 import feedparser
-import httpx
+import httpx2
 
 from ._utils import DEFAULT_TIMEOUT, MAX_RETRY_ATTEMPTS, get_backoff_duration
 from .errors import TooManyRetriesError, error_handler
@@ -67,7 +67,7 @@ def tcache(
 
 
 def backoff_check(
-    func: Callable[..., httpx.Response],
+    func: Callable[..., httpx2.Response],
 ) -> Callable[..., bool]:
     """Perform backoff processing for write operations.
 
@@ -89,13 +89,13 @@ def backoff_check(
             self._capture_server_id(resp)
             try:
                 resp.raise_for_status()
-            except httpx.HTTPError as exc:
+            except httpx2.HTTPError as exc:
                 error_handler(self, resp, exc)
             self.request = resp
             # On 429 the write was refused and error_handler recorded the
             # server's backoff; _check_backoff waits it out, so retry
             # rather than reporting success
-            if resp.status_code == httpx.codes.TOO_MANY_REQUESTS:
+            if resp.status_code == httpx2.codes.TOO_MANY_REQUESTS:
                 continue
             backoff = get_backoff_duration(resp.headers)
             if backoff:
@@ -108,7 +108,7 @@ def backoff_check(
     return wrapped_f
 
 
-def _extract_zip_attachment(retrieved: httpx.Response) -> bytes:
+def _extract_zip_attachment(retrieved: httpx2.Response) -> bytes:
     """Extract the single file from a Zotero-compressed attachment response.
 
     The Zotero API zips plain-text attachments when the redirect carries the

@@ -27,7 +27,7 @@ from urllib.parse import (
     urlunparse,
 )
 
-import httpx
+import httpx2
 import whenever
 
 import pyzotero as pz
@@ -73,12 +73,12 @@ class Zotero:
         preserve_json_order: bool = False,
         locale: str = "en-US",
         local: bool = False,
-        client: httpx.Client | None = None,
+        client: httpx2.Client | None = None,
         upload_timeout: int | float = 120,
         server_id: str | None = None,
         local_api_key: str | None = None,
     ) -> None:
-        self.client: httpx.Client | None = None
+        self.client: httpx2.Client | None = None
         """Store Zotero credentials"""
         if not local:
             self.endpoint = "https://api.zotero.org"
@@ -110,10 +110,10 @@ class Zotero:
         self.locale = locale
         self.url_params: dict[str, Any] | None = None
         self.tag_data = False
-        self.request: httpx.Response | None = None
+        self.request: httpx2.Response | None = None
         self.snapshot = False
         self.upload_timeout = upload_timeout
-        self.client = client or httpx.Client(
+        self.client = client or httpx2.Client(
             headers=self.default_headers(),
             follow_redirects=True,
             timeout=DEFAULT_TIMEOUT,
@@ -172,7 +172,7 @@ class Zotero:
             "html": self._bib_processor,
         }
         self.links: dict[str, str] | None = None
-        self.self_link: httpx.URL | None = None
+        self.self_link: httpx2.URL | None = None
         self.templates: dict[str, Any] = {}
         self.savedsearch: Any = None
         # backoff handling: timestamp when backoff expires (0.0 = no backoff)
@@ -229,7 +229,7 @@ class Zotero:
             return {"Zotero-Server-ID": self._server_id}
         return {}
 
-    def _capture_server_id(self, resp: httpx.Response) -> None:
+    def _capture_server_id(self, resp: httpx2.Response) -> None:
         """Keep the Zotero-Server-ID header from a local API response.
 
         Each local API response has the header. Error responses also have it.
@@ -280,7 +280,7 @@ class Zotero:
             headers["Zotero-API-Key"] = self.local_api_key
         return headers
 
-    def _write(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
+    def _write(self, method: str, url: str, **kwargs: Any) -> httpx2.Response:
         """Send a write request. Add the headers that a local write must have.
 
         The local API rejects a write with a 428 error if ``Zotero-Server-ID``
@@ -344,10 +344,10 @@ class Zotero:
             json={"appName": app_name.strip()},
         )
         self.request = req
-        if req.status_code == httpx.codes.FORBIDDEN:
+        if req.status_code == httpx2.codes.FORBIDDEN:
             msg = f"Zotero denied the local API authorisation request from {app_name!r}"
             raise ze.LocalAPIDeniedError(msg)
-        if req.status_code == httpx.codes.TOO_MANY_REQUESTS:
+        if req.status_code == httpx2.codes.TOO_MANY_REQUESTS:
             # error_handler does not raise for a 429 response: it records a
             # backoff and returns. The code that follows would then try to
             # parse a text/plain body as JSON. To prevent this, raise here.
@@ -385,7 +385,7 @@ class Zotero:
         if remainder > 0.0:
             time.sleep(remainder)
 
-    def _post_check(self, resp: httpx.Response) -> None:
+    def _post_check(self, resp: httpx2.Response) -> None:
         """Raise on HTTP error and record any server-supplied backoff.
 
         Centralises the post-request pattern used by every method that
@@ -397,7 +397,7 @@ class Zotero:
         self._capture_server_id(resp)
         try:
             resp.raise_for_status()
-        except httpx.HTTPError as exc:
+        except httpx2.HTTPError as exc:
             error_handler(self, resp, exc)
         backoff = get_backoff_duration(resp.headers)
         if backoff:
@@ -413,7 +413,7 @@ class Zotero:
             _headers["Authorization"] = f"Bearer {self.api_key}"
         return _headers
 
-    def _cache(self, response: httpx.Response, key: str) -> Any:
+    def _cache(self, response: httpx2.Response, key: str) -> Any:
         """Add a retrieved template to the cache for 304 checking.
 
         Accepts a dict and key name, adds the retrieval time, and adds both
@@ -445,7 +445,7 @@ class Zotero:
 
     def _retrieve_data(
         self, request: str | None = None, params: dict[str, Any] | None = None
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         """Retrieve Zotero items via the API.
 
         Combine endpoint and request to access the specific resource.
@@ -472,7 +472,7 @@ class Zotero:
             self.url_params = {}
         merged_params = {**self.url_params, **params}
         # our incoming url might be from the "links" dict, in which case it will contain url parameters.
-        # Unfortunately, httpx doesn't like to merge query parameters in the url string and passed params
+        # Unfortunately, httpx2 doesn't like to merge query parameters in the url string and passed params
         # so we strip the url params, combining them with our existing url_params
         final_url, final_params = merge_params(full_url, merged_params)
         for _ in range(MAX_RETRY_ATTEMPTS):
@@ -489,7 +489,7 @@ class Zotero:
                 self.request.encoding = "utf-8"
                 # The API doesn't return this any more, so we have to cheat
                 self.self_link = self.request.url
-            except httpx.UnsupportedProtocol:
+            except httpx2.UnsupportedProtocol:
                 # File URI handler logic
                 fc = File_Client()
                 response = fc.get(
@@ -506,7 +506,7 @@ class Zotero:
             # On 429, error_handler records the server's backoff instead of
             # raising; _check_backoff waits it out, so retry rather than
             # handing the error body back as though it were a payload
-            if self.request.status_code != httpx.codes.TOO_MANY_REQUESTS:
+            if self.request.status_code != httpx2.codes.TOO_MANY_REQUESTS:
                 return self.request
         msg = f"Still rate-limited after {MAX_RETRY_ATTEMPTS} attempts. Try again later"
         raise ze.TooManyRetriesError(msg)
@@ -572,7 +572,7 @@ class Zotero:
             self._check_backoff()
             req = self.client.get(query, headers=headers)
             self._post_check(req)
-            return req.status_code == httpx.codes.NOT_MODIFIED
+            return req.status_code == httpx2.codes.NOT_MODIFIED
         # Still plenty of life left in't
         return False
 
@@ -685,7 +685,7 @@ class Zotero:
         return self._build_query(query_string)
 
     @backoff_check
-    def set_fulltext(self, itemkey: str, payload: dict[str, Any]) -> httpx.Response:
+    def set_fulltext(self, itemkey: str, payload: dict[str, Any]) -> httpx2.Response:
         """Set full-text data for an item.
 
         <itemkey> should correspond to an existing attachment item.
@@ -1270,7 +1270,7 @@ class Zotero:
         payload: list[dict[str, Any]],
         parentid: str | None = None,
         last_modified: int | None = None,
-        timeout: int | float | httpx.Timeout | None = None,
+        timeout: int | float | httpx2.Timeout | None = None,
     ) -> Any:
         """Create new Zotero items.
 
@@ -1280,11 +1280,11 @@ class Zotero:
             last_modified: optional library version for
                 If-Unmodified-Since-Version
             timeout: optional per-call timeout (in seconds, or an
-                ``httpx.Timeout``) for the POST request. Defaults to the
+                ``httpx2.Timeout``) for the POST request. Defaults to the
                 Zotero client's configured timeout. Bulk writes of close to
                 the 50-item maximum can take considerably longer than the
                 default to be acknowledged by the server; pass e.g.
-                ``timeout=60`` if you encounter ``httpx.ReadTimeout``.
+                ``timeout=60`` if you encounter ``httpx2.ReadTimeout``.
 
         Note that this can also be used to update existing items.
         """
@@ -1362,7 +1362,7 @@ class Zotero:
     @backoff_check
     def update_collection(
         self, payload: dict[str, Any], last_modified: int | None = None
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         """Update a Zotero collection property such as 'name'.
 
         Accepts one argument, a dict containing collection data retrieved
@@ -1425,7 +1425,7 @@ class Zotero:
     @backoff_check
     def update_item(
         self, payload: dict[str, Any], last_modified: int | None = None
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         """Update an existing item.
 
         Accepts one argument, a dict containing Item data.
@@ -1505,7 +1505,7 @@ class Zotero:
     @backoff_check
     def addto_collection(
         self, collection: str, payload: dict[str, Any]
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         """Add item to a collection.
 
         Accepts two arguments: The collection ID, and an item dict.
@@ -1528,7 +1528,7 @@ class Zotero:
     @backoff_check
     def deletefrom_collection(
         self, collection: str, payload: dict[str, Any]
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         """Delete an item from a collection.
 
         Accepts two arguments: The collection ID, and an item dict.
@@ -1551,7 +1551,7 @@ class Zotero:
         )
 
     @backoff_check
-    def delete_tags(self, *payload: str) -> httpx.Response:
+    def delete_tags(self, *payload: str) -> httpx2.Response:
         """Delete a group of tags.
 
         Pass in up to 50 tags, or use *[tags].
@@ -1583,7 +1583,7 @@ class Zotero:
         last_modified: int | None,
         collection: str,
         key_param: str,
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         """Dispatch a DELETE against one or many entities of the same type.
 
         ``collection`` is the path segment (e.g. ``"items"``); ``key_param``
@@ -1611,7 +1611,7 @@ class Zotero:
         self,
         payload: dict[str, Any] | list[dict[str, Any]],
         last_modified: int | None = None,
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         """Delete Items from a Zotero library.
 
         Accepts a single argument:
@@ -1625,7 +1625,7 @@ class Zotero:
         self,
         payload: dict[str, Any] | list[dict[str, Any]],
         last_modified: int | None = None,
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         """Delete a Collection from a Zotero library.
 
         Accepts a single argument:

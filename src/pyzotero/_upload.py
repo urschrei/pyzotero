@@ -12,7 +12,7 @@ import mimetypes
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import httpx
+import httpx2
 
 import pyzotero as pz
 
@@ -51,18 +51,18 @@ class Zupload:
         # current version (see #354)
         self.last_modified_version: int | None = None
 
-    def _check_response(self, req: httpx.Response) -> None:
+    def _check_response(self, req: httpx2.Response) -> None:
         """Raise on HTTP error and record any server-supplied backoff."""
         self.zinstance._capture_server_id(req)
         try:
             req.raise_for_status()
-        except httpx.HTTPError as exc:
+        except httpx2.HTTPError as exc:
             error_handler(self.zinstance, req, exc)
         backoff = get_backoff_duration(req.headers)
         if backoff:
             self.zinstance._set_backoff(backoff)
 
-    def _post_with_retry(self, send: Callable[[], httpx.Response]) -> httpx.Response:
+    def _post_with_retry(self, send: Callable[[], httpx2.Response]) -> httpx2.Response:
         """Issue a request via ``send``, retrying while the server rate-limits us.
 
         On 429, error_handler records the server's backoff instead of raising;
@@ -73,7 +73,7 @@ class Zupload:
             self.zinstance._check_backoff()
             req = send()
             self._check_response(req)
-            if req.status_code != httpx.codes.TOO_MANY_REQUESTS:
+            if req.status_code != httpx2.codes.TOO_MANY_REQUESTS:
                 if lmv := req.headers.get("last-modified-version"):
                     self.last_modified_version = int(lmv)
                 return req
@@ -227,20 +227,20 @@ class Zupload:
             # key, so we do not send one.
             headers["Zotero-Server-ID"] = self.zinstance._ensure_server_id()
 
-        def send() -> httpx.Response:
-            # We use a fresh httpx POST because we don't want our existing Pyzotero headers
+        def send() -> httpx2.Response:
+            # We use a fresh httpx2 POST because we don't want our existing Pyzotero headers
             # for a call to the storage upload URL (currently S3)
             try:
-                return httpx.post(
+                return httpx2.post(
                     url=authdata["url"],
                     files=upload_pairs,
                     headers=headers,
                     timeout=self.zinstance.upload_timeout,
                 )
-            except httpx.ConnectError:
+            except httpx2.ConnectError:
                 msg = "ConnectionError"
                 raise ze.UploadError(msg) from None
-            except httpx.TimeoutException:
+            except httpx2.TimeoutException:
                 msg = "Upload timed out. Try increasing upload_timeout when creating the Zotero instance."
                 raise ze.UploadError(msg) from None
 

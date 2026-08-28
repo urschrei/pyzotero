@@ -13,7 +13,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 from urllib.parse import parse_qs, urlencode, urlparse
 
-import httpx
+import httpx2
 import pytz
 import whenever
 from dateutil import parser
@@ -798,7 +798,7 @@ class ZoteroTests(unittest.TestCase):
         )
         zot.create_items([{"key": "ABC123"}], timeout=60)
         request = mock.last_request()
-        # httpx records per-request timeouts in request.extensions["timeout"]
+        # httpx2 records per-request timeouts in request.extensions["timeout"]
         # as a dict with connect/read/write/pool keys
         timeout_ext = request.extensions.get("timeout")
         self.assertIsNotNone(timeout_ext)
@@ -818,7 +818,7 @@ class ZoteroTests(unittest.TestCase):
         zot.create_items([{"key": "ABC123"}])
         request = mock.last_request()
         # No per-call override: the read timeout should be whatever the
-        # underlying httpx.Client was configured with (httpx default for
+        # underlying httpx2.Client was configured with (httpx2 default for
         # the MockClient in tests, DEFAULT_TIMEOUT for the real client).
         timeout_ext = request.extensions.get("timeout")
         self.assertIsNotNone(timeout_ext)
@@ -1275,13 +1275,13 @@ class ZoteroTests(unittest.TestCase):
             "params": {"key": "abcdef1234567890"},
             "uploadKey": "upload_key_123",
         }
-        s3_response = httpx.Response(
-            201, request=httpx.Request("POST", "https://uploads.zotero.org/")
+        s3_response = httpx2.Response(
+            201, request=httpx2.Request("POST", "https://uploads.zotero.org/")
         )
         with (
             patch.object(z.Zupload, "_verify", return_value=None),
             patch.object(z.Zupload, "_get_auth", return_value=mock_auth_data),
-            patch("pyzotero._upload.httpx.post", return_value=s3_response),
+            patch("pyzotero._upload.httpx2.post", return_value=s3_response),
         ):
             upload = z.Zupload(
                 zot, payload, basedir=os.path.join(self.cwd, "api_responses")
@@ -1659,10 +1659,10 @@ class ZoteroTests(unittest.TestCase):
                 patch.object(z.Zupload, "_verify", return_value=None),
                 patch.object(z.Zupload, "_get_auth", return_value=mock_auth_data),
                 patch(
-                    "httpx.post",
-                    return_value=httpx.Response(
+                    "httpx2.post",
+                    return_value=httpx2.Response(
                         201,
-                        request=httpx.Request("POST", "https://uploads.zotero.org/"),
+                        request=httpx2.Request("POST", "https://uploads.zotero.org/"),
                     ),
                 ),
             ):

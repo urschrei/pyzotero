@@ -9,7 +9,7 @@ from collections.abc import Callable
 from typing import Any, TypeVar
 
 import click
-import httpx
+import httpx2
 
 from pyzotero import __version__
 from pyzotero._helpers import (
@@ -513,7 +513,7 @@ def test(ctx: Any) -> None:
         # Call settings() to test the connection
         # This should return {} if Zotero is running and listening
         result = zot.settings()
-    except httpx.ConnectError:
+    except httpx2.ConnectError:
         click.echo(
             "✗ Connection failed: Could not connect to Zotero.\n\n"
             "Possible causes:\n"

@@ -9,7 +9,7 @@ import os
 import unittest
 from unittest.mock import patch
 
-import httpx
+import httpx2
 
 from pyzotero import errors as ze
 from pyzotero import zotero as z
@@ -308,10 +308,10 @@ class UploadTests(unittest.TestCase):
         upload = z.Zupload(zot, [{"filename": __file__}])
         with (
             patch.object(
-                httpx,
+                httpx2,
                 "post",
-                return_value=httpx.Response(
-                    201, request=httpx.Request("POST", authdata["url"])
+                return_value=httpx2.Response(
+                    201, request=httpx2.Request("POST", authdata["url"])
                 ),
             ) as mock_post,
             patch.object(z.Zupload, "_register_upload", return_value=None),
@@ -334,10 +334,10 @@ class UploadTests(unittest.TestCase):
         upload = z.Zupload(zot, [{"filename": __file__}])
         with (
             patch.object(
-                httpx,
+                httpx2,
                 "post",
-                return_value=httpx.Response(
-                    201, request=httpx.Request("POST", authdata["url"])
+                return_value=httpx2.Response(
+                    201, request=httpx2.Request("POST", authdata["url"])
                 ),
             ) as mock_post,
             patch.object(z.Zupload, "_register_upload", return_value=None),

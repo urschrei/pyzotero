@@ -7,8 +7,8 @@ requires-python = ">=3.10"
 dependencies = [
     "feedparser >= 6.0.12",
     "bibtexparser>=1.4.3,<2.0.0",
-    "httpx>=0.28.1",
     "whenever>=0.8.8",
+    "httpx2>=2.12.0",
 ]
 authors = [{ name = "Stephan Hügel" }, { email = "urschrei@gmail.com" }]
 maintainers = [{ name = "Stephan Hügel" }, { email = "urschrei@gmail.com" }]
