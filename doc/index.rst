@@ -1401,6 +1401,22 @@ Collection Methods
 
         See the :py:meth:`delete_item()` example for multiple-item removal.
 
+    .. py:method:: Zotero.moveto_collection(from_collection, to_collection, item)
+
+        Move the specified item from one collection to another, in a single request
+
+        :param str from_collection: the key of the collection to remove the item from
+        :param str to_collection: the key of the collection to add the item to
+        :param dict item: an item dict retrieved using an API call
+        :rtype: Boolean
+
+        The item's membership of other collections is unchanged. If the item is not in ``from_collection``, it is still added to ``to_collection``. Calling :py:meth:`deletefrom_collection()` followed by :py:meth:`addto_collection()` does not work for this: the first call changes the item's version, so the second call fails its version check.
+
+        .. code-block:: python
+
+            item = zot.item("ITEMKEY")
+            zot.moveto_collection("OLDCOLL", "NEWCOLL", item)
+
     .. py:method:: Zotero.update_collection(collection , last_modified])
 
         Update existing collection metadata (name etc.)
