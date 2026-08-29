@@ -20,6 +20,7 @@ from pyzotero._helpers import (
     format_s2_paper,
     get_zotero_client,
     normalise_doi,
+    save_local_key,
 )
 from pyzotero.semantic_scholar import (
     PaperNotFoundError,
@@ -458,20 +459,32 @@ def itemtypes(ctx: Any) -> None:
     show_default=True,
     help="The name that Zotero shows in the authorisation dialog.",
 )
+@click.option(
+    "--no-store",
+    is_flag=True,
+    help="Print the key only. Do not write it to the key file.",
+)
 @click.pass_context
 @cli_error_handler
-def authorize(ctx: Any, app_name: str) -> None:
+def authorize(ctx: Any, app_name: str, no_store: bool) -> None:
     """Get a local API key, which permits writes to your Zotero library.
 
     Zotero shows a dialog with the options "Allow" (one-time access),
     "Always Allow" (permanent access) and "Deny". Select "Always Allow" to
     get a key that you can keep: the first write uses a one-time key.
 
+    A permanent key is stored in a file that only you can read
+    ($XDG_CONFIG_HOME/pyzotero/local-api-key.json, or the same path under
+    ~/.config). The CLI's collection commands and the MCP server, when
+    started with --enable-writes, read the key from that file. Setting
+    PYZOTERO_LOCAL_API_KEY in the environment takes precedence over it.
+
     Local API keys have no relation to zotero.org API keys.
 
     Examples:
         pyzotero authorize
         pyzotero authorize --app-name "My MCP server"
+        pyzotero authorize --no-store
 
     """
     zot = _zot_from_ctx(ctx)
@@ -479,7 +492,14 @@ def authorize(ctx: Any, app_name: str) -> None:
     result = zot.authorize_local(app_name)
     click.echo(f"Key:       {result['key']}")
     click.echo(f"Server ID: {zot.server_id}")
-    if result["remember"]:
+    if not result["remember"]:
+        click.echo(
+            "\nThis key is single-use: the first successful write consumes it.\n"
+            "Re-run and choose 'Always Allow' if you need a persistent key.",
+            err=True,
+        )
+        return
+    if no_store:
         click.echo(
             "\nThis key persists. To give the MCP server write access, set it in\n"
             "the server's environment and pass --enable-writes:\n\n"
@@ -487,12 +507,14 @@ def authorize(ctx: Any, app_name: str) -> None:
             '    "args": ["--enable-writes"]',
             err=True,
         )
-    else:
-        click.echo(
-            "\nThis key is single-use: the first successful write consumes it.\n"
-            "Re-run and choose 'Always Allow' if you need a persistent key.",
-            err=True,
-        )
+        return
+    path = save_local_key(result["key"], zot.server_id)
+    click.echo(
+        f"\nThis key persists. Stored it in {path}.\n"
+        "The CLI's collection commands use it. So does the MCP server when\n"
+        "started with --enable-writes; no environment variable is needed.",
+        err=True,
+    )
 
 
 @main.command()

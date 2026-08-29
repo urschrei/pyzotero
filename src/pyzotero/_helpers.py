@@ -2,9 +2,16 @@
 
 from __future__ import annotations
 
+import json
+import os
+import stat
+from pathlib import Path
 from typing import Any
 
 from pyzotero import zotero
+
+LOCAL_KEY_ENV = "PYZOTERO_LOCAL_API_KEY"
+LOCAL_SERVER_ID_ENV = "PYZOTERO_LOCAL_SERVER_ID"
 
 
 def get_zotero_client(
@@ -14,11 +21,11 @@ def get_zotero_client(
 ) -> zotero.Zotero:
     """Get a Zotero client that is configured for local access.
 
-    The CLI and the MCP server are read-only, so they do not use the two
-    optional arguments. The arguments let other callers write:
+    Without the two optional arguments the client can only read.
     ``local_api_key`` permits writes (see :meth:`Zotero.authorize_local`),
     and ``server_id`` supplies a server ID that was kept from an earlier
-    session, which prevents one initial request.
+    session, which prevents one initial request. :func:`get_write_client`
+    fills both in from the stored key.
     """
     return zotero.Zotero(
         library_id="0",
@@ -28,6 +35,69 @@ def get_zotero_client(
         server_id=server_id,
         local_api_key=local_api_key,
     )
+
+
+def local_key_path() -> Path:
+    """Return the path of the file that holds a stored local API key.
+
+    The file is ``pyzotero/local-api-key.json`` under ``$XDG_CONFIG_HOME``,
+    or under ``~/.config`` if that variable is not set.
+    """
+    base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
+    return Path(base) / "pyzotero" / "local-api-key.json"
+
+
+def load_local_key() -> tuple[str | None, str | None]:
+    """Return ``(server_id, key)`` for local writes.
+
+    The environment variables ``PYZOTERO_LOCAL_API_KEY`` and
+    ``PYZOTERO_LOCAL_SERVER_ID`` take precedence. If the key variable is not
+    set, the key file from :func:`local_key_path` supplies both values. Each
+    value is None if no source supplies it.
+    """
+    key = os.environ.get(LOCAL_KEY_ENV)
+    if key:
+        return os.environ.get(LOCAL_SERVER_ID_ENV) or None, key
+    try:
+        data = json.loads(local_key_path().read_text())
+    except (OSError, ValueError):
+        return None, None
+    if not isinstance(data, dict):
+        return None, None
+    return data.get("server_id") or None, data.get("key") or None
+
+
+def save_local_key(key: str, server_id: str | None) -> Path:
+    """Write ``key`` and ``server_id`` to the key file. Return its path.
+
+    The file gets mode 0600, so that only the user can read it.
+    """
+    path = local_key_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"server_id": server_id, "key": key}, indent=2) + "\n")
+    path.chmod(stat.S_IRUSR | stat.S_IWUSR)
+    return path
+
+
+def get_write_client(locale: str = "en-US") -> zotero.Zotero:
+    """Get a local client that can write, using the stored local API key.
+
+    This function does not request a key itself. The MCP client starts and
+    restarts the server, so a request at startup would show a Zotero dialog
+    with no clear cause. Run ``pyzotero authorize`` to get a permanent key.
+
+    Raises:
+        RuntimeError: No key is stored and none is set in the environment.
+
+    """
+    server_id, key = load_local_key()
+    if not key:
+        msg = (
+            "No local API key. Run 'pyzotero authorize' and choose 'Always Allow' "
+            f"so that the key persists, or set {LOCAL_KEY_ENV} in the environment."
+        )
+        raise RuntimeError(msg)
+    return get_zotero_client(locale, server_id=server_id, local_api_key=key)
 
 
 def normalise_doi(doi: str) -> str:

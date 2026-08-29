@@ -6,7 +6,6 @@ import argparse
 import functools
 import hashlib
 import json
-import os
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -15,10 +14,13 @@ from typing import Any, TypeVar
 from mcp.server.fastmcp import FastMCP
 
 from pyzotero._helpers import (
+    LOCAL_KEY_ENV,
+    LOCAL_SERVER_ID_ENV,
     annotate_with_library,
     build_doi_index,
     format_creators,
     format_s2_paper,
+    get_write_client,
     get_zotero_client,
 )
 from pyzotero.semantic_scholar import (
@@ -465,31 +467,17 @@ def search_semantic_scholar(
     return _json({"count": len(output_papers), "total": total, "papers": output_papers})
 
 
-WRITE_KEY_ENV = "PYZOTERO_LOCAL_API_KEY"
-SERVER_ID_ENV = "PYZOTERO_LOCAL_SERVER_ID"
+WRITE_KEY_ENV = LOCAL_KEY_ENV
+SERVER_ID_ENV = LOCAL_SERVER_ID_ENV
 
 
 def _write_client() -> Any:
     """Return a Zotero client that has write access to the local API.
 
-    The key comes from the environment. This function does not request one
-    itself: the MCP client starts and restarts this server, so a request at
-    startup would show a Zotero dialog with no clear cause, and would fail if
-    Zotero were not running. Run ``pyzotero authorize`` to get a permanent
-    key.
+    The key comes from the environment, or else from the file that
+    ``pyzotero authorize`` writes. See :func:`get_write_client`.
     """
-    key = os.environ.get(WRITE_KEY_ENV)
-    if not key:
-        msg = (
-            f"No local API key: set {WRITE_KEY_ENV} in this server's environment. "
-            "Run 'pyzotero authorize' to obtain one, choosing 'Always Allow' so "
-            "that the key persists."
-        )
-        raise RuntimeError(msg)
-    return get_zotero_client(
-        server_id=os.environ.get(SERVER_ID_ENV) or None,
-        local_api_key=key,
-    )
+    return get_write_client()
 
 
 AddTool = Callable[[Callable[..., str]], None]
