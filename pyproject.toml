@@ -39,8 +39,8 @@ cli = ["click>=8.0.0"]
 mcp = ["mcp[cli]>=1.0.0; python_version>='3.10'"]
 
 [project.scripts]
-pyzotero = "pyzotero.cli:main"
-pyzotero-mcp = "pyzotero.mcp_server:main"
+pyzotero = "pyzotero._entry:cli"
+pyzotero-mcp = "pyzotero._entry:mcp"
 
 [dependency-groups]
 dev = [

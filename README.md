@@ -61,7 +61,7 @@ Versions reported by the local API are unrelated to web API versions, and are ty
 * Using [pip][10]: `pip install pyzotero`
 * Using Anaconda: `conda install conda-forge::pyzotero`
 
-Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero". The CLI does not modify your library; its `authorize` command exists to obtain a local API key for granting write access to the MCP server. The MCP server is read-only by default, and needs that key only if started with `--enable-writes`.
+Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero". The CLI does not modify your library; its `authorize` command exists to obtain a local API key for granting write access to the MCP server. The MCP server is read-only by default, and needs that key only if started with `--enable-writes`. Both console scripts are installed whichever extra you choose; one whose extra is missing exits with a message naming the extra to install.
 
 # Command-Line Interface
 
@@ -129,6 +129,7 @@ Pyzotero includes an optional [MCP](https://modelcontextprotocol.io) server that
 * Using [uv][11]: `uv add "pyzotero[mcp]"`
 * Using [pip][10]: `pip install "pyzotero[mcp]"`
 * As a standalone tool: `uv tool install "pyzotero[mcp]"`
+* CLI and MCP server together: `uv tool install "pyzotero[cli,mcp]"`
 
 ## Claude Desktop Configuration
 
