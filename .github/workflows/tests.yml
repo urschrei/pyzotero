@@ -45,7 +45,7 @@ jobs:
         cache-dependency-glob: "**/pyproject.toml"
 
     - name: Install the project and deps
-      run: uv sync --dev --locked
+      run: uv sync --dev --extra cli --extra oauth --extra mcp --locked
 
     - name: Run tests
       run: uv run pytest --junit-xml=junit.xml

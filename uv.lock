@@ -70,6 +70,19 @@ wheels = [
 ]
 
 [[package]]
+name = "authlib"
+version = "1.7.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+    { name = "joserfc" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/36/98/7d93f30d029643c0275dbc0bd6d5a6f670661ee6c9a94d93af7ab4887600/authlib-1.7.2.tar.gz", hash = "sha256:2cea25fefcd4e7173bdf1372c0afc265c8034b23a8cd5dcb6a9164b826c64231", size = 176511, upload-time = "2026-05-06T08:10:23.116Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fb/95/adcb68e20c34162e9135f370d6e31737719c2b6f94bc953fe7ed1f10fe21/authlib-1.7.2-py2.py3-none-any.whl", hash = "sha256:3e1faedc9d87e7d56a164eca3ccb6ace0d61b94abe83e92242f8dc8bba9b4a9f", size = 259548, upload-time = "2026-05-06T08:10:21.436Z" },
+]
+
+[[package]]
 name = "babel"
 version = "2.18.0"
 source = { registry = "https://pypi.org/simple" }
@@ -762,6 +775,18 @@ wheels = [
 ]
 
 [[package]]
+name = "joserfc"
+version = "1.7.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/44/90/25cb27518750218e4f850be63d8bbb2343efaad1c01c3571aaa4b3c33bd7/joserfc-1.7.1.tar.gz", hash = "sha256:77d0b76514879c68c6f433bc5b7357a4ab72008ff1e33d8379fd11d72bd8ca81", size = 233181, upload-time = "2026-06-08T07:21:33.412Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b3/00/fa62404c3e347f946faa13aa21085205f9cc06ad17671e37f81a51662ae8/joserfc-1.7.1-py3-none-any.whl", hash = "sha256:b3e3d655612e2e1ef67b2600f2f420e12e537b020208fab1761fad647319c164", size = 70423, upload-time = "2026-06-08T07:21:32.001Z" },
+]
+
+[[package]]
 name = "jsonschema"
 version = "4.26.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1352,6 +1377,9 @@ cli = [
 mcp = [
     { name = "mcp", extra = ["cli"] },
 ]
+oauth = [
+    { name = "authlib" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -1373,6 +1401,7 @@ doc = [
 
 [package.metadata]
 requires-dist = [
+    { name = "authlib", marker = "extra == 'oauth'", specifier = ">=1.7.2" },
     { name = "bibtexparser", specifier = ">=1.4.3,<2.0.0" },
     { name = "click", marker = "extra == 'cli'", specifier = ">=8.0.0" },
     { name = "feedparser", specifier = ">=6.0.12" },
@@ -1380,7 +1409,7 @@ requires-dist = [
     { name = "mcp", extras = ["cli"], marker = "python_full_version >= '3.10' and extra == 'mcp'", specifier = ">=1.0.0" },
     { name = "whenever", specifier = ">=0.8.8" },
 ]
-provides-extras = ["cli", "mcp"]
+provides-extras = ["cli", "mcp", "oauth"]
 
 [package.metadata.requires-dev]
 dev = [
