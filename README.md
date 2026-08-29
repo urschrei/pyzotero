@@ -101,7 +101,7 @@ pyzotero listcollections
 # List available item types
 pyzotero itemtypes
 
-# Obtain a local API key, for granting write access to the MCP server
+# Obtain and store a local API key, which permits writes from the CLI and the MCP server
 pyzotero authorize --app-name "Claude Desktop"
 ```
 
@@ -196,21 +196,22 @@ The server is read-only unless started with `--enable-writes`.
    pyzotero authorize --app-name "Claude Desktop"
    ```
 
-2. Pass the key in the server's environment, and add the `--enable-writes` flag:
+   The key and the Zotero server ID are stored in `$XDG_CONFIG_HOME/pyzotero/local-api-key.json` (`~/.config/pyzotero/local-api-key.json` if that variable is unset), readable only by you. The server reads the key from that file.
+
+2. Add the `--enable-writes` flag:
 
    ```json
    {
      "mcpServers": {
        "zotero": {
          "command": "pyzotero-mcp",
-         "args": ["--enable-writes"],
-         "env": { "PYZOTERO_LOCAL_API_KEY": "your-key-here" }
+         "args": ["--enable-writes"]
        }
      }
    }
    ```
 
-3. Optional: set `PYZOTERO_LOCAL_SERVER_ID` in the same `env` block to save one request at startup. Without it, the server fetches the ID automatically.
+3. Optional: to supply the key some other way, set `PYZOTERO_LOCAL_API_KEY` in the server's `env` block, and `PYZOTERO_LOCAL_SERVER_ID` beside it to save one request at startup. The environment takes precedence over the key file. `pyzotero authorize --no-store` prints a key without writing the file.
 
 #### Available write tools
 
