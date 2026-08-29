@@ -459,6 +459,8 @@ class TestWriteGating:
         server = _FakeServer()
         names = mcp_server.register_write_tools(server)
         assert "create_item" in names
+        assert "remove_from_collection" in names
+        assert "move_to_collection" in names
         assert "delete_item" not in names
         assert "delete_item" not in server.tools
 
@@ -577,6 +579,20 @@ class TestWriteTools:
         args = write_zot.addto_collection.call_args[0]
         assert args[0] == "COLL1"
         assert args[1]["key"] == "ABC123"
+
+    def test_remove_from_collection(self, write_tools, write_zot):
+        result = json.loads(write_tools["remove_from_collection"]("ABC123", "COLL1"))
+        assert result == {"item": "ABC123", "removedFrom": "COLL1"}
+        args = write_zot.deletefrom_collection.call_args[0]
+        assert args[0] == "COLL1"
+        assert args[1]["key"] == "ABC123"
+
+    def test_move_to_collection(self, write_tools, write_zot):
+        result = json.loads(write_tools["move_to_collection"]("ABC123", "OLD", "NEW"))
+        assert result == {"item": "ABC123", "movedFrom": "OLD", "movedTo": "NEW"}
+        args = write_zot.moveto_collection.call_args[0]
+        assert args[:2] == ("OLD", "NEW")
+        assert args[2]["key"] == "ABC123"
 
     def test_delete_item(self, write_tools, write_zot):
         result = json.loads(write_tools["delete_item"]("ABC123"))

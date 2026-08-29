@@ -223,6 +223,8 @@ The server is read-only unless started with `--enable-writes`.
 | `add_tags` | Add tags to an existing item |
 | `create_collection` | Create a collection, optionally nested |
 | `add_to_collection` | File an existing item under a collection |
+| `remove_from_collection` | Remove an item from a collection; the item itself is unchanged |
+| `move_to_collection` | Move an item from one collection to another in one step |
 | `add_attachment` | Attach a file on disk to an existing item |
 | `delete_item` | Permanently delete an item. Requires `--enable-deletes` |
 
