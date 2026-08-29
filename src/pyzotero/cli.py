@@ -18,6 +18,7 @@ from pyzotero._helpers import (
     build_doi_index_full,
     format_creators,
     format_s2_paper,
+    get_write_client,
     get_zotero_client,
     normalise_doi,
     save_local_key,
@@ -71,6 +72,37 @@ def _zot_from_ctx(ctx: Any) -> Any:
     return get_zotero_client(ctx.obj.get("locale", "en-US"))
 
 
+def _write_zot_from_ctx(ctx: Any) -> Any:
+    """Build a local-mode client that can write, from the stored local API key.
+
+    Raises RuntimeError, which the error handler reports, if no key is stored.
+    """
+    return get_write_client(ctx.obj.get("locale", "en-US"))
+
+
+def _change_membership(
+    zot: Any, keys: tuple[str, ...], change: Callable[[dict[str, Any]], Any]
+) -> list[str]:
+    """Fetch each item in ``keys`` and apply ``change`` to it. Return the keys.
+
+    The items change one at a time. If one fails, the error names it and
+    lists the items that had already changed, so that the caller can resume.
+    """
+    done: list[str] = []
+    for key in keys:
+        try:
+            change(zot.item(key))
+        except Exception as exc:
+            changed = ", ".join(done) if done else "none"
+            msg = (
+                f"{key}: {exc} "
+                f"(changed {len(done)} of {len(keys)} items before this: {changed})"
+            )
+            raise RuntimeError(msg) from exc
+        done.append(key)
+    return done
+
+
 def _run_s2_lookup(
     ctx: Any,
     doi: str,
@@ -120,7 +152,7 @@ def _run_s2_lookup(
 )
 @click.pass_context
 def main(ctx: Any, locale: str) -> None:
-    """Search local Zotero library."""
+    """Search and manage a local Zotero library."""
     ctx.ensure_object(dict)
     ctx.obj["locale"] = locale
 
@@ -515,6 +547,188 @@ def authorize(ctx: Any, app_name: str, no_store: bool) -> None:
         "started with --enable-writes; no environment variable is needed.",
         err=True,
     )
+
+
+@main.command()
+@click.argument("name")
+@click.option(
+    "--parent",
+    help="Key of the parent collection. The new collection nests under it.",
+)
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+@cli_error_handler
+def createcollection(
+    ctx: Any, name: str, parent: str | None, output_json: bool
+) -> None:
+    """Create a collection, at the top level or under --parent.
+
+    Needs a stored local API key: run 'pyzotero authorize' first.
+
+    Examples:
+        pyzotero createcollection "Frankenstein Cities"
+
+        pyzotero createcollection "Frankenstein Cities" --parent FD9AUNP2 --json
+
+    """
+    zot = _write_zot_from_ctx(ctx)
+    payload: dict[str, Any] = {"name": name}
+    if parent:
+        payload["parentCollection"] = parent
+    resp = zot.create_collections([payload])
+    if not resp.get("success"):
+        msg = f"Collection was rejected: {resp.get('failed')}"
+        raise RuntimeError(msg)
+    key = resp["success"]["0"]
+    if output_json:
+        click.echo(
+            json.dumps(
+                {"created": key, "name": name, "parent": parent or None}, indent=2
+            )
+        )
+    else:
+        where = f" under {parent}" if parent else ""
+        click.echo(f"Created collection {name!r} with key {key}{where}")
+
+
+@main.command()
+@click.argument("collection_key")
+@click.argument("item_keys", nargs=-1, required=True)
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+@cli_error_handler
+def addtocollection(
+    ctx: Any, collection_key: str, item_keys: tuple[str, ...], output_json: bool
+) -> None:
+    """Add one or more items to a collection.
+
+    Needs a stored local API key: run 'pyzotero authorize' first.
+
+    Examples:
+        pyzotero addtocollection FD9AUNP2 ABC123 DEF456
+
+        pyzotero addtocollection FD9AUNP2 ABC123 --json
+
+    """
+    zot = _write_zot_from_ctx(ctx)
+    done = _change_membership(
+        zot, item_keys, lambda item: zot.addto_collection(collection_key, item)
+    )
+    if output_json:
+        click.echo(json.dumps({"collection": collection_key, "added": done}, indent=2))
+    else:
+        click.echo(f"Added {len(done)} items to {collection_key}: {', '.join(done)}")
+
+
+@main.command()
+@click.argument("collection_key")
+@click.argument("item_keys", nargs=-1, required=True)
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+@cli_error_handler
+def removefromcollection(
+    ctx: Any, collection_key: str, item_keys: tuple[str, ...], output_json: bool
+) -> None:
+    """Remove one or more items from a collection. The items are unchanged.
+
+    Needs a stored local API key: run 'pyzotero authorize' first.
+
+    Examples:
+        pyzotero removefromcollection FD9AUNP2 ABC123 DEF456
+
+        pyzotero removefromcollection FD9AUNP2 ABC123 --json
+
+    """
+    zot = _write_zot_from_ctx(ctx)
+    done = _change_membership(
+        zot, item_keys, lambda item: zot.deletefrom_collection(collection_key, item)
+    )
+    if output_json:
+        click.echo(
+            json.dumps({"collection": collection_key, "removed": done}, indent=2)
+        )
+    else:
+        click.echo(
+            f"Removed {len(done)} items from {collection_key}: {', '.join(done)}"
+        )
+
+
+@main.command()
+@click.argument("item_keys", nargs=-1, required=True)
+@click.option(
+    "--from",
+    "from_collection",
+    required=True,
+    help="Key of the collection to remove the items from",
+)
+@click.option(
+    "--to",
+    "to_collection",
+    required=True,
+    help="Key of the collection to add the items to",
+)
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+@cli_error_handler
+def movetocollection(
+    ctx: Any,
+    item_keys: tuple[str, ...],
+    from_collection: str,
+    to_collection: str,
+    output_json: bool,
+) -> None:
+    """Move one or more items from one collection to another.
+
+    Each item leaves the --from collection and joins the --to collection in
+    one request. Membership of other collections is unchanged. An item that
+    is not in the --from collection still joins the --to collection.
+
+    Needs a stored local API key: run 'pyzotero authorize' first.
+
+    Examples:
+        pyzotero movetocollection --from FD9AUNP2 --to X7Y8Z9W0 ABC123 DEF456
+
+        pyzotero movetocollection --from FD9AUNP2 --to X7Y8Z9W0 ABC123 --json
+
+    """
+    zot = _write_zot_from_ctx(ctx)
+    done = _change_membership(
+        zot,
+        item_keys,
+        lambda item: zot.moveto_collection(from_collection, to_collection, item),
+    )
+    if output_json:
+        click.echo(
+            json.dumps(
+                {"from": from_collection, "to": to_collection, "moved": done},
+                indent=2,
+            )
+        )
+    else:
+        click.echo(
+            f"Moved {len(done)} items from {from_collection} to {to_collection}: "
+            f"{', '.join(done)}"
+        )
 
 
 @main.command()

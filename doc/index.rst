@@ -56,7 +56,7 @@ Using `Anaconda <https://www.anaconda.com/distribution/>`_: ``conda install cond
 Optional: Command-Line Interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Pyzotero includes an optional command-line interface for searching and querying your local Zotero library.
+Pyzotero includes an optional command-line interface for searching and querying your local Zotero library, and for managing its collections.
 
 To install Pyzotero with the CLI:
 
@@ -100,7 +100,7 @@ Run ``pytest .`` from the top-level directory.
 Command-Line Interface Usage
 ----------------------------
 
-The Pyzotero CLI connects to your local Zotero installation and allows you to search your library, list collections, and view item types.
+The Pyzotero CLI connects to your local Zotero installation and allows you to search your library, list collections, view item types, and manage collection membership.
 
 Basic Commands
 ~~~~~~~~~~~~~~
@@ -200,6 +200,43 @@ List tags from a specific collection:
     .. code-block:: bash
 
         pyzotero tags --collection ABC123
+
+Collection Commands
+~~~~~~~~~~~~~~~~~~~
+
+These commands write to your library, so they need a local API key. Run ``pyzotero authorize`` once and choose "Always Allow" in Zotero's dialog. The key is stored in ``$XDG_CONFIG_HOME/pyzotero/local-api-key.json`` (``~/.config/pyzotero/local-api-key.json`` if that variable is unset), readable only by you. Setting ``PYZOTERO_LOCAL_API_KEY`` in the environment takes precedence over the file. Without a key, the commands exit with a message that says so.
+
+Obtain and store a key:
+
+    .. code-block:: bash
+
+        pyzotero authorize --app-name "My tool"
+
+Create a collection, at the top level or nested under ``--parent``:
+
+    .. code-block:: bash
+
+        pyzotero createcollection "Frankenstein Cities" --parent FD9AUNP2
+
+Add items to a collection:
+
+    .. code-block:: bash
+
+        pyzotero addtocollection FD9AUNP2 ABC123 DEF456
+
+Remove items from a collection (the items themselves are unchanged):
+
+    .. code-block:: bash
+
+        pyzotero removefromcollection FD9AUNP2 ABC123
+
+Move items from one collection to another:
+
+    .. code-block:: bash
+
+        pyzotero movetocollection --from FD9AUNP2 --to X7Y8Z9W0 ABC123 DEF456
+
+Each command accepts ``--json`` and reports the keys it touched. The membership commands change items one at a time. If one fails, the error names that item and lists the items already changed, so that you can resume. ``movetocollection`` changes each item in one request: its membership of other collections is kept.
 
 DOI Index
 ~~~~~~~~~
