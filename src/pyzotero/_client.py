@@ -1502,6 +1502,25 @@ class Zotero:
         """
         return self._batch_update(payload, "collections", last_modified)
 
+    def _patch_collections(
+        self, payload: dict[str, Any], collections: list[str]
+    ) -> httpx2.Response:
+        """Replace the collection list of one item with ``collections``.
+
+        ``payload`` is an item dict from the API. Its ``version`` becomes the
+        If-Unmodified-Since-Version precondition.
+        """
+        headers = {"If-Unmodified-Since-Version": str(payload["version"])}
+        return self._write(
+            "PATCH",
+            url=build_url(
+                self.endpoint,
+                f"/{self.library_type}/{self.library_id}/items/{payload['key']}",
+            ),
+            json={"collections": collections},
+            headers=headers,
+        )
+
     @backoff_check
     def addto_collection(
         self, collection: str, payload: dict[str, Any]
@@ -1510,20 +1529,9 @@ class Zotero:
 
         Accepts two arguments: The collection ID, and an item dict.
         """
-        ident = payload["key"]
-        modified = payload["version"]
         # add the collection data from the item
         modified_collections = payload["data"]["collections"] + [collection]
-        headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self._write(
-            "PATCH",
-            url=build_url(
-                self.endpoint,
-                f"/{self.library_type}/{self.library_id}/items/{ident}",
-            ),
-            json={"collections": modified_collections},
-            headers=headers,
-        )
+        return self._patch_collections(payload, modified_collections)
 
     @backoff_check
     def deletefrom_collection(
@@ -1533,22 +1541,33 @@ class Zotero:
 
         Accepts two arguments: The collection ID, and an item dict.
         """
-        ident = payload["key"]
-        modified = payload["version"]
         # strip the collection data from the item
         modified_collections = [
             c for c in payload["data"]["collections"] if c != collection
         ]
-        headers = {"If-Unmodified-Since-Version": str(modified)}
-        return self._write(
-            "PATCH",
-            url=build_url(
-                self.endpoint,
-                f"/{self.library_type}/{self.library_id}/items/{ident}",
-            ),
-            json={"collections": modified_collections},
-            headers=headers,
-        )
+        return self._patch_collections(payload, modified_collections)
+
+    @backoff_check
+    def moveto_collection(
+        self, from_collection: str, to_collection: str, payload: dict[str, Any]
+    ) -> httpx2.Response:
+        """Move an item from one collection to another.
+
+        Accepts three arguments: the source collection ID, the destination
+        collection ID, and an item dict. This is one request, unlike a
+        :meth:`deletefrom_collection` call followed by an
+        :meth:`addto_collection` call: the second of those would fail its
+        version precondition. Membership of other collections is unchanged.
+        If the item is not in the source collection, it is added to the
+        destination collection all the same.
+        """
+        modified_collections = [
+            c
+            for c in payload["data"]["collections"]
+            if c not in (from_collection, to_collection)
+        ]
+        modified_collections.append(to_collection)
+        return self._patch_collections(payload, modified_collections)
 
     @backoff_check
     def delete_tags(self, *payload: str) -> httpx2.Response:

@@ -1005,6 +1005,43 @@ class ZoteroTests(unittest.TestCase):
 
         self.assertTrue(resp)
 
+    def testMoveToCollection(self):
+        """Tests moving an item between collections in one request"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        mock.register(
+            "PATCH",
+            "https://api.zotero.org/users/myuserID/items/ITEMKEY",
+            status=204,
+        )
+        item = {
+            "key": "ITEMKEY",
+            "version": 5,
+            "data": {"collections": ["FROM", "OTHER"]},
+        }
+        resp = zot.moveto_collection("FROM", "TO", item)
+        request = mock.last_request()
+        self.assertEqual(request.method, "PATCH")
+        self.assertEqual(request.headers["If-Unmodified-Since-Version"], "5")
+        body = json.loads(request.body.decode("utf-8"))
+        # the source is gone, the destination is present, others are kept
+        self.assertEqual(body["collections"], ["OTHER", "TO"])
+        self.assertTrue(resp)
+
+    def testMoveToCollectionIsIdempotent(self):
+        """An item already in the destination is not listed there twice"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        mock.register(
+            "PATCH",
+            "https://api.zotero.org/users/myuserID/items/ITEMKEY",
+            status=204,
+        )
+        item = {"key": "ITEMKEY", "version": 5, "data": {"collections": ["TO"]}}
+        zot.moveto_collection("FROM", "TO", item)
+        body = json.loads(mock.last_request().body.decode("utf-8"))
+        self.assertEqual(body["collections"], ["TO"])
+
     def testDeleteItem(self):
         """Tests deleting an item"""
         mock = MockClient()
