@@ -30,11 +30,37 @@ def runner():
     return CliRunner()
 
 
+ITEM_TYPE_FIELDS = {
+    "book": ["title", "abstractNote", "date", "publisher", "numPages"],
+    "journalArticle": ["title", "abstractNote", "date", "publicationTitle", "DOI"],
+}
+
+CREATOR_TYPES = {
+    "book": ["author", "editor"],
+    "journalArticle": ["author", "contributor"],
+}
+
+
+def _schema_mock(mock):
+    """Give a mock client the schema calls that item validation makes."""
+    mock.item_types.return_value = [
+        {"itemType": name, "localized": name} for name in ITEM_TYPE_FIELDS
+    ]
+    mock.item_type_fields.side_effect = lambda t: [
+        {"field": f, "localized": f} for f in ITEM_TYPE_FIELDS[t]
+    ]
+    mock.item_creator_types.side_effect = lambda t: [
+        {"creatorType": c, "localized": c} for c in CREATOR_TYPES[t]
+    ]
+    return mock
+
+
 @pytest.fixture
 def write_zot():
     """Patch get_write_client to return a mock, and return the mock."""
-    mock = MagicMock()
+    mock = _schema_mock(MagicMock())
     mock.create_collections.return_value = {"success": {"0": "NEWCOLL"}, "failed": {}}
+    mock.create_items.return_value = {"success": {"0": "NEWITEM"}, "failed": {}}
     mock.item.side_effect = lambda key: {
         "key": key,
         "version": 3,
@@ -42,6 +68,18 @@ def write_zot():
     }
     with patch("pyzotero.cli.get_write_client", return_value=mock):
         yield mock
+
+
+@pytest.fixture
+def item_file(tmp_path):
+    """Return a function that writes a payload to a JSON file and names it."""
+
+    def write(payload, name="items.json"):
+        path = tmp_path / name
+        path.write_text(json.dumps(payload))
+        return str(path)
+
+    return write
 
 
 class TestKeyGate:
@@ -59,10 +97,199 @@ class TestKeyGate:
         assert result.exit_code == 1
         assert "pyzotero authorize" in result.output
 
+    def test_createitem_refuses_without_key(self, runner, item_file):
+        """The createitem argument is a file, so it needs its own case"""
+        path = item_file({"itemType": "book", "title": "A Book"})
+        result = runner.invoke(cli.main, ["createitem", path])
+        assert result.exit_code == 1
+        assert "pyzotero authorize" in result.output
+
     def test_locale_reaches_write_client(self, runner, write_zot):
         with patch("pyzotero.cli.get_write_client", return_value=write_zot) as gwc:
             runner.invoke(cli.main, ["--locale", "de-DE", "createcollection", "N"])
         gwc.assert_called_once_with("de-DE")
+
+
+class TestCreateItem:
+    def test_single_item(self, runner, write_zot, item_file):
+        path = item_file({"itemType": "book", "title": "A Book"})
+        result = runner.invoke(cli.main, ["createitem", path])
+        assert result.exit_code == 0, result.output
+        assert "Created 1 items: NEWITEM" in result.output
+        assert write_zot.create_items.call_args[0][0] == [
+            {"itemType": "book", "title": "A Book"}
+        ]
+
+    def test_list_of_items(self, runner, write_zot, item_file):
+        write_zot.create_items.return_value = {
+            "success": {"0": "KEY1", "1": "KEY2"},
+            "failed": {},
+        }
+        path = item_file(
+            [
+                {"itemType": "book", "title": "One"},
+                {"itemType": "journalArticle", "title": "Two", "DOI": "10.1234/x"},
+            ]
+        )
+        result = runner.invoke(cli.main, ["createitem", path])
+        assert result.exit_code == 0, result.output
+        assert "Created 2 items: KEY1, KEY2" in result.output
+        assert len(write_zot.create_items.call_args[0][0]) == len(["One", "Two"])
+
+    def test_stdin(self, runner, write_zot):
+        result = runner.invoke(
+            cli.main,
+            ["createitem", "-"],
+            input=json.dumps({"itemType": "book", "title": "Piped"}),
+        )
+        assert result.exit_code == 0, result.output
+        assert "NEWITEM" in result.output
+        assert write_zot.create_items.call_args[0][0] == [
+            {"itemType": "book", "title": "Piped"}
+        ]
+
+    def test_creators_and_other_common_keys_are_accepted(
+        self, runner, write_zot, item_file
+    ):
+        path = item_file(
+            {
+                "itemType": "book",
+                "title": "A Book",
+                "creators": [{"creatorType": "author", "lastName": "Shelley"}],
+                "collections": ["EXISTING"],
+                "relations": {},
+            }
+        )
+        result = runner.invoke(cli.main, ["createitem", path])
+        assert result.exit_code == 0, result.output
+
+    def test_invalid_itemtype(self, runner, write_zot, item_file):
+        path = item_file(
+            [{"itemType": "book", "title": "Fine"}, {"itemType": "notAType"}]
+        )
+        result = runner.invoke(cli.main, ["createitem", path])
+        assert result.exit_code == 1
+        assert "index 1" in result.output
+        assert "notAType" in result.output
+        write_zot.create_items.assert_not_called()
+
+    def test_invalid_field(self, runner, write_zot, item_file):
+        path = item_file({"itemType": "book", "title": "A Book", "issue": "3"})
+        result = runner.invoke(cli.main, ["createitem", path])
+        assert result.exit_code == 1
+        assert "index 0" in result.output
+        assert "issue" in result.output
+        write_zot.create_items.assert_not_called()
+
+    def test_missing_itemtype(self, runner, write_zot, item_file):
+        path = item_file({"title": "No type"})
+        result = runner.invoke(cli.main, ["createitem", path])
+        assert result.exit_code == 1
+        assert "no itemType" in result.output
+
+    def test_collection_option(self, runner, write_zot, item_file):
+        path = item_file(
+            [
+                {"itemType": "book", "title": "One"},
+                {"itemType": "book", "title": "Two", "collections": ["FD9AUNP2"]},
+            ]
+        )
+        result = runner.invoke(
+            cli.main, ["createitem", path, "--collection", "FD9AUNP2"]
+        )
+        assert result.exit_code == 0, result.output
+        sent = write_zot.create_items.call_args[0][0]
+        # the key is added once, and an item that already has it is unchanged
+        assert [i["collections"] for i in sent] == [["FD9AUNP2"], ["FD9AUNP2"]]
+
+    def test_tag_option(self, runner, write_zot, item_file):
+        path = item_file({"itemType": "book", "title": "One", "tags": ["existing"]})
+        result = runner.invoke(
+            cli.main, ["createitem", path, "--tag", "one", "--tag", "two"]
+        )
+        assert result.exit_code == 0, result.output
+        sent = write_zot.create_items.call_args[0][0]
+        # a string tag becomes a tag object, and the new tags follow it
+        assert sent[0]["tags"] == [
+            {"tag": "existing"},
+            {"tag": "one"},
+            {"tag": "two"},
+        ]
+
+    def test_tag_is_not_repeated(self, runner, write_zot, item_file):
+        path = item_file({"itemType": "book", "title": "One", "tags": [{"tag": "one"}]})
+        runner.invoke(cli.main, ["createitem", path, "--tag", "one"])
+        sent = write_zot.create_items.call_args[0][0]
+        assert sent[0]["tags"] == [{"tag": "one"}]
+
+    def test_json_output(self, runner, write_zot, item_file):
+        path = item_file({"itemType": "book", "title": "A Book"})
+        result = runner.invoke(
+            cli.main,
+            ["createitem", path, "--collection", "COLL1", "--tag", "t", "--json"],
+        )
+        assert result.exit_code == 0, result.output
+        assert json.loads(result.output) == {
+            "created": ["NEWITEM"],
+            "collection": "COLL1",
+            "tags": ["t"],
+        }
+
+    def test_rejection_names_failures_and_progress(self, runner, write_zot, item_file):
+        write_zot.create_items.return_value = {
+            "success": {"0": "KEY1"},
+            "failed": {"1": {"code": 400, "message": "Invalid field"}},
+        }
+        path = item_file(
+            [{"itemType": "book", "title": "One"}, {"itemType": "book", "title": "Two"}]
+        )
+        result = runner.invoke(cli.main, ["createitem", path])
+        assert result.exit_code == 1
+        assert "rejected 1 of 2 items" in result.output
+        assert "Invalid field" in result.output
+        assert "KEY1" in result.output
+
+    def test_malformed_json(self, runner, write_zot, tmp_path):
+        path = tmp_path / "broken.json"
+        path.write_text("{not json")
+        result = runner.invoke(cli.main, ["createitem", str(path)])
+        assert result.exit_code == 1
+        assert "valid JSON" in result.output
+
+    def test_scalar_json(self, runner, write_zot, item_file):
+        result = runner.invoke(cli.main, ["createitem", item_file("a string")])
+        assert result.exit_code == 1
+        assert "object or a list of objects" in result.output
+
+    def test_empty_list(self, runner, write_zot, item_file):
+        result = runner.invoke(cli.main, ["createitem", item_file([])])
+        assert result.exit_code == 1
+        assert "No items to create" in result.output
+
+    def test_missing_file(self, runner, write_zot, tmp_path):
+        result = runner.invoke(cli.main, ["createitem", str(tmp_path / "absent.json")])
+        assert result.exit_code == USAGE_ERROR
+
+
+class TestListItemFields:
+    @pytest.fixture
+    def read_zot(self):
+        mock = _schema_mock(MagicMock())
+        with patch("pyzotero.cli.get_zotero_client", return_value=mock):
+            yield mock
+
+    def test_fields_and_creator_types(self, runner, read_zot):
+        result = runner.invoke(cli.main, ["listitemfields", "book"])
+        assert result.exit_code == 0, result.output
+        assert json.loads(result.output) == {
+            "itemType": "book",
+            "fields": ITEM_TYPE_FIELDS["book"],
+            "creatorTypes": CREATOR_TYPES["book"],
+        }
+
+    def test_requires_an_item_type(self, runner, read_zot):
+        result = runner.invoke(cli.main, ["listitemfields"])
+        assert result.exit_code == USAGE_ERROR
 
 
 class TestCreateCollection:
