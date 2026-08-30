@@ -159,6 +159,12 @@ List available item types:
 
         pyzotero itemtypes
 
+List the fields and creator types that one item type accepts:
+
+    .. code-block:: bash
+
+        pyzotero listitemfields journalArticle
+
 Item and Attachment Commands
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -201,8 +207,8 @@ List tags from a specific collection:
 
         pyzotero tags --collection ABC123
 
-Collection Commands
-~~~~~~~~~~~~~~~~~~~
+Write Commands
+~~~~~~~~~~~~~~
 
 These commands write to your library, so they need a local API key. Run ``pyzotero authorize`` once and choose "Always Allow" in Zotero's dialog. The key is stored in ``$XDG_CONFIG_HOME/pyzotero/local-api-key.json`` (``~/.config/pyzotero/local-api-key.json`` if that variable is unset), readable only by you. Setting ``PYZOTERO_LOCAL_API_KEY`` in the environment takes precedence over the file. Without a key, the commands exit with a message that says so.
 
@@ -211,6 +217,29 @@ Obtain and store a key:
     .. code-block:: bash
 
         pyzotero authorize --app-name "My tool"
+
+Create items from a JSON file, or from standard input:
+
+    .. code-block:: bash
+
+        pyzotero createitem item.json
+        cat items.json | pyzotero createitem -
+        pyzotero createitem items.json --collection FD9AUNP2 --tag "to read" --json
+
+The file holds one item object, or a list of them, in Zotero's item-data format:
+
+    .. code-block:: json
+
+        [
+          {
+            "itemType": "book",
+            "title": "Frankenstein",
+            "creators": [{"creatorType": "author", "lastName": "Shelley", "firstName": "Mary"}],
+            "date": "1818"
+          }
+        ]
+
+``--collection`` files every created item under one collection, and ``--tag``, which you can repeat, tags every created item. Collections and tags that an item already carries are kept. The item type and the field names of every item are checked against the library's schema before anything is sent, so one invalid item stops the whole batch and the message names its position in the list. ``pyzotero itemtypes`` lists the item types, and ``pyzotero listitemfields TYPE`` lists the fields of one type. Zotero accepts up to 50 items in one call.
 
 Create a collection, at the top level or nested under ``--parent``:
 
@@ -236,7 +265,7 @@ Move items from one collection to another:
 
         pyzotero movetocollection --from FD9AUNP2 --to X7Y8Z9W0 ABC123 DEF456
 
-Each command accepts ``--json`` and reports the keys it touched. The membership commands change items one at a time. If one fails, the error names that item and lists the items already changed, so that you can resume. ``movetocollection`` changes each item in one request: its membership of other collections is kept.
+Each command accepts ``--json`` and reports the keys it touched. The membership commands change items one at a time. If one fails, the error names that item and lists the items already changed, so that you can resume. ``movetocollection`` changes each item in one request: its membership of other collections is kept. If Zotero rejects an item that ``createitem`` sends, the error gives its reason and names the items that were created.
 
 DOI Index
 ~~~~~~~~~

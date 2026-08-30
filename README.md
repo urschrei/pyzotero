@@ -61,11 +61,11 @@ Versions reported by the local API are unrelated to web API versions, and are ty
 * Using [pip][10]: `pip install pyzotero`
 * Using Anaconda: `conda install conda-forge::pyzotero`
 
-Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero". Both are read-only unless you run `pyzotero authorize`, which stores a local API key. With that key, the CLI's collection commands can write, and the MCP server can write if started with `--enable-writes`. Both console scripts are installed whichever extra you choose; one whose extra is missing exits with a message naming the extra to install.
+Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero". Both are read-only unless you run `pyzotero authorize`, which stores a local API key. With that key, the CLI's write commands can write, and the MCP server can write if started with `--enable-writes`. Both console scripts are installed whichever extra you choose; one whose extra is missing exits with a message naming the extra to install.
 
 # Command-Line Interface
 
-Pyzotero includes an optional CLI for searching and querying your local Zotero library, and for managing its collections.
+Pyzotero includes an optional CLI for searching and querying your local Zotero library, and for adding items to it and managing its collections.
 
 ## Installing the CLI
 
@@ -101,8 +101,15 @@ pyzotero listcollections
 # List available item types
 pyzotero itemtypes
 
+# List the fields and creator types that one item type accepts
+pyzotero listitemfields journalArticle
+
 # Obtain and store a local API key, which permits writes from the CLI and the MCP server
 pyzotero authorize --app-name "Claude Desktop"
+
+# Create items from a JSON file, or from standard input
+pyzotero createitem items.json --collection FD9AUNP2 --tag "to read"
+cat items.json | pyzotero createitem -
 
 # Create a collection, nested under an existing one
 pyzotero createcollection "Frankenstein Cities" --parent FD9AUNP2
@@ -113,9 +120,24 @@ pyzotero removefromcollection FD9AUNP2 ABC123
 pyzotero movetocollection --from FD9AUNP2 --to X7Y8Z9W0 ABC123 DEF456
 ```
 
-## Collection Commands
+## Write Commands
 
-`createcollection`, `addtocollection`, `removefromcollection` and `movetocollection` write to your library. They need a stored local API key: run `pyzotero authorize` once and choose "Always Allow". Without a key, they exit with a message that says so. Each accepts `--json` and reports the keys it touched. The membership commands change items one at a time; if one fails, the error names the item and lists the items already changed, so that you can resume from there. `movetocollection` changes each item in one request, so an item's membership of other collections is kept.
+`createitem`, `createcollection`, `addtocollection`, `removefromcollection` and `movetocollection` write to your library. They need a stored local API key: run `pyzotero authorize` once and choose "Always Allow". Without a key, they exit with a message that says so. Each accepts `--json` and reports the keys it touched. The membership commands change items one at a time; if one fails, the error names the item and lists the items already changed, so that you can resume from there. `movetocollection` changes each item in one request, so an item's membership of other collections is kept.
+
+`createitem` takes the path of a JSON file, or `-` for standard input. The file holds one item object, or a list of them, in Zotero's item-data format:
+
+```json
+[
+  {
+    "itemType": "book",
+    "title": "Frankenstein",
+    "creators": [{"creatorType": "author", "lastName": "Shelley", "firstName": "Mary"}],
+    "date": "1818"
+  }
+]
+```
+
+`--collection` files every created item under one collection, and `--tag`, which you can repeat, tags every created item; collections and tags that an item already carries are kept. The item type and the field names of every item are checked against the library's schema before anything is sent, so one invalid item stops the whole batch and the message names its position in the list. `pyzotero itemtypes` lists the item types, and `pyzotero listitemfields TYPE` lists the fields of one type. Zotero accepts up to 50 items in one call.
 
 ## Search Behaviour
 
