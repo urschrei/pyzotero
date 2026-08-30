@@ -9,9 +9,26 @@ from pathlib import Path
 from typing import Any
 
 from pyzotero import zotero
+from pyzotero.errors import InvalidItemFieldsError
 
 LOCAL_KEY_ENV = "PYZOTERO_LOCAL_API_KEY"
 LOCAL_SERVER_ID_ENV = "PYZOTERO_LOCAL_SERVER_ID"
+
+# Keys that Zotero accepts on an item of any type, so no per-type field list
+# contains them.
+COMMON_ITEM_KEYS = frozenset(
+    {
+        "collections",
+        "creators",
+        "dateAdded",
+        "dateModified",
+        "itemType",
+        "key",
+        "relations",
+        "tags",
+        "version",
+    }
+)
 
 
 def get_zotero_client(
@@ -98,6 +115,74 @@ def get_write_client(locale: str = "en-US") -> zotero.Zotero:
         )
         raise RuntimeError(msg)
     return get_zotero_client(locale, server_id=server_id, local_api_key=key)
+
+
+def describe_item_type(zot: zotero.Zotero, item_type: str) -> dict[str, Any]:
+    """Return the fields and creator types that ``item_type`` accepts.
+
+    Args:
+        zot: a Zotero client.
+        item_type: a Zotero item type, e.g. "journalArticle".
+
+    Returns:
+        A dict with the item type, its field names and its creator types.
+
+    """
+    return {
+        "itemType": item_type,
+        "fields": [
+            f["field"]  # ty: ignore[invalid-argument-type]
+            for f in zot.item_type_fields(item_type)
+        ],
+        "creatorTypes": [
+            c["creatorType"]  # ty: ignore[invalid-argument-type]
+            for c in zot.item_creator_types(item_type)
+        ],
+    }
+
+
+def validate_items(zot: zotero.Zotero, items: list[Any]) -> None:
+    """Check the type and the field names of each item against the schema.
+
+    Args:
+        zot: a Zotero client.
+        items: items in Zotero's item-data format, before they are sent.
+
+    Raises:
+        InvalidItemFieldsError: an item is not an object, has no item type,
+            has an item type that the library does not know, or has a field
+            that its item type does not accept. The message names the
+            position of the item in ``items``.
+
+    """
+    valid_types = {
+        t["itemType"]  # ty: ignore[invalid-argument-type]
+        for t in zot.item_types()
+    }
+    fields_by_type: dict[str, set[str]] = {}
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            msg = f"Item at index {index} is not a JSON object"
+            raise InvalidItemFieldsError(msg)
+        item_type = item.get("itemType")
+        if not item_type:
+            msg = f"Item at index {index} has no itemType"
+            raise InvalidItemFieldsError(msg)
+        if item_type not in valid_types:
+            msg = f"Item at index {index} has unknown itemType {item_type!r}"
+            raise InvalidItemFieldsError(msg)
+        if item_type not in fields_by_type:
+            fields_by_type[item_type] = {
+                f["field"]  # ty: ignore[invalid-argument-type]
+                for f in zot.item_type_fields(item_type)
+            }
+        unknown = sorted(set(item) - fields_by_type[item_type] - COMMON_ITEM_KEYS)
+        if unknown:
+            msg = (
+                f"Item at index {index} of type {item_type!r} has fields that "
+                f"the type does not accept: {', '.join(unknown)}"
+            )
+            raise InvalidItemFieldsError(msg)
 
 
 def normalise_doi(doi: str) -> str:
