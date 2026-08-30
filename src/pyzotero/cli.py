@@ -6,7 +6,7 @@ import functools
 import json
 import sys
 from collections.abc import Callable
-from typing import Any, TypeVar
+from typing import IO, Any, TypeVar
 
 import click
 import httpx2
@@ -16,12 +16,14 @@ from pyzotero._helpers import (
     annotate_with_library,
     build_doi_index,
     build_doi_index_full,
+    describe_item_type,
     format_creators,
     format_s2_paper,
     get_write_client,
     get_zotero_client,
     normalise_doi,
     save_local_key,
+    validate_items,
 )
 from pyzotero.semantic_scholar import (
     PaperNotFoundError,
@@ -101,6 +103,47 @@ def _change_membership(
             raise RuntimeError(msg) from exc
         done.append(key)
     return done
+
+
+def _read_items(source: IO[str]) -> list[Any]:
+    """Read one item, or a list of items, from an open JSON source.
+
+    A single object becomes a list of one item, so that the caller always
+    gets a list. Raises RuntimeError, which the error handler reports, if
+    the content is not JSON, or holds neither an object nor a list.
+    """
+    name = getattr(source, "name", "input")
+    try:
+        parsed = json.loads(source.read())
+    except ValueError as exc:
+        msg = f"{name} does not hold valid JSON: {exc}"
+        raise RuntimeError(msg) from exc
+    if isinstance(parsed, dict):
+        return [parsed]
+    if not isinstance(parsed, list):
+        msg = f"{name} must hold a JSON object or a list of objects"
+        raise TypeError(msg)
+    return parsed
+
+
+def _attach(
+    item: dict[str, Any], tags: tuple[str, ...], collection: str | None
+) -> None:
+    """Add ``tags`` and ``collection`` to an item, in place.
+
+    Tags and collections that the item already has are kept. A tag that the
+    item gives as a plain string becomes a Zotero tag object.
+    """
+    attached = [t if isinstance(t, dict) else {"tag": t} for t in item.get("tags", [])]
+    present = {t.get("tag") for t in attached}
+    attached.extend({"tag": tag} for tag in tags if tag not in present)
+    if attached:
+        item["tags"] = attached
+    if collection:
+        collections = list(item.get("collections", []))
+        if collection not in collections:
+            collections.append(collection)
+        item["collections"] = collections
 
 
 def _run_s2_lookup(
@@ -485,6 +528,27 @@ def itemtypes(ctx: Any) -> None:
 
 
 @main.command()
+@click.argument("itemtype")
+@click.pass_context
+@cli_error_handler
+def listitemfields(ctx: Any, itemtype: str) -> None:
+    """List the fields and creator types that one item type accepts.
+
+    Run this before 'pyzotero createitem' to find the fields of an item
+    type. 'pyzotero itemtypes' lists the types themselves.
+
+    Examples:
+        pyzotero listitemfields journalArticle
+
+        pyzotero listitemfields book
+
+    """
+    zot = _zot_from_ctx(ctx)
+
+    click.echo(json.dumps(describe_item_type(zot, itemtype), indent=2))
+
+
+@main.command()
 @click.option(
     "--app-name",
     default="Pyzotero",
@@ -547,6 +611,92 @@ def authorize(ctx: Any, app_name: str, no_store: bool) -> None:
         "started with --enable-writes; no environment variable is needed.",
         err=True,
     )
+
+
+@main.command()
+@click.argument("source", type=click.File("r"))
+@click.option(
+    "--collection",
+    help="Key of a collection. Every created item is filed under it.",
+)
+@click.option(
+    "--tag",
+    "tags",
+    multiple=True,
+    help="Tag for every created item (can be specified multiple times)",
+)
+@click.option(
+    "--json",
+    "output_json",
+    is_flag=True,
+    help="Output results as JSON",
+)
+@click.pass_context
+@cli_error_handler
+def createitem(
+    ctx: Any,
+    source: IO[str],
+    collection: str | None,
+    tags: tuple[str, ...],
+    output_json: bool,
+) -> None:
+    """Create one or more items from a JSON file, or from '-' for stdin.
+
+    SOURCE holds one item object, or a list of them, in Zotero's item-data
+    format: an "itemType" and the fields that the type accepts, for example
+    {"itemType": "book", "title": "Frankenstein", "creators": [...]}. Run
+    'pyzotero itemtypes' for the item types, and 'pyzotero listitemfields
+    TYPE' for the fields of one type.
+
+    The item type and the field names of every item are checked before
+    anything is sent. One invalid item stops the whole batch, and the
+    message names its position in the list. Zotero accepts up to 50 items
+    in one call.
+
+    Needs a stored local API key: run 'pyzotero authorize' first.
+
+    Examples:
+        pyzotero createitem item.json
+
+        cat items.json | pyzotero createitem -
+
+        pyzotero createitem items.json --collection FD9AUNP2 --tag "to read"
+
+        pyzotero createitem items.json --json
+
+    """
+    zot = _write_zot_from_ctx(ctx)
+    items = _read_items(source)
+    if not items:
+        msg = "No items to create"
+        raise RuntimeError(msg)
+    validate_items(zot, items)
+    for item in items:
+        _attach(item, tags, collection)
+    resp = zot.create_items(items)
+    success = resp.get("success") or {}
+    created = [success[pos] for pos in sorted(success, key=int)]
+    failed = resp.get("failed") or {}
+    if failed:
+        made = ", ".join(created) if created else "none"
+        msg = (
+            f"Zotero rejected {len(failed)} of {len(items)} items: {failed} "
+            f"(created {len(created)}: {made})"
+        )
+        raise RuntimeError(msg)
+    if output_json:
+        click.echo(
+            json.dumps(
+                {
+                    "created": created,
+                    "collection": collection or None,
+                    "tags": list(tags),
+                },
+                indent=2,
+            )
+        )
+    else:
+        click.echo(f"Created {len(created)} items: {', '.join(created)}")
 
 
 @main.command()
