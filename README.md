@@ -33,13 +33,7 @@ Full documentation of available Pyzotero methods, code examples, and sample outp
 
 # Local Zotero API
 
-Passing `local=True` directs Pyzotero at a running Zotero installation instead of the web API. Reads need no authentication. Writes need the user's consent, given through a dialog in Zotero, and a Zotero version that supports local writes.
-
-## Using the local API
-
-1. In Zotero, enable Settings > Advanced > "Allow other applications on this computer to communicate with Zotero".
-2. Create a client with `local=True`. You can now read from the library.
-3. To write, call `authorize_local()` first, and approve the dialog Zotero displays:
+Passing `local=True` directs Pyzotero at a running Zotero installation instead of the web API. Reads need no authentication; writes need the user's consent, given through a dialog in Zotero, and a Zotero version that supports local writes:
 
 ``` python
 from pyzotero import Zotero
@@ -49,11 +43,7 @@ auth = zot.authorize_local("My Application")  # Zotero prompts the user
 zot.create_items([item])
 ```
 
-## How local write access works
-
-`authorize_local()` returns a dict with a `key` and a `remember` flag. A key granted with "Allow" is single-use: the first successful write consumes it. A key granted with "Always Allow" has `remember` set to `True`; you can store it and pass it back on a later run as the `local_api_key` argument.
-
-Versions reported by the local API are unrelated to web API versions, and are typically lower than those the local API reported before write support was added. They are scoped to `zot.server_id`, which identifies the Zotero instance. A program that persists local objects or versions must persist that ID alongside them and partition by it. See the [documentation][3] for a full explanation, more how-to guides, and reference material.
+A key granted with "Always Allow" can be stored and passed back later as `local_api_key`. Versions and keys are scoped to a single Zotero instance, identified by `zot.server_id`. See the [local API documentation][12] for how this works, how-to guides, and reference material.
 
 # Installation
 
@@ -65,111 +55,31 @@ Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP serve
 
 # Command-Line Interface
 
-Pyzotero includes an optional CLI for searching and querying your local Zotero library, and for adding items to it and managing its collections.
-
-## Installing the CLI
+Pyzotero includes an optional CLI for searching your local Zotero library, adding items to it, and managing its collections.
 
 * Using [uv][11]: `uv add "pyzotero[cli]"`
 * Using [pip][10]: `pip install "pyzotero[cli]"`
-
-Or run it directly without installing:
-
-* Using [uvx][11]: `uvx --from "pyzotero[cli]" pyzotero search -q "your query"`
-* Using [pipx][10]: `pipx run --spec "pyzotero[cli]" pyzotero search -q "your query"`
-
-## Usage
+* Without installing: `uvx --from "pyzotero[cli]" pyzotero search -q "your query"`
 
 ```bash
-# Search for top-level items
-pyzotero search -q "machine learning"
-
-# Search with full-text mode
+pyzotero search -q "machine learning" --json
 pyzotero search -q "climate change" --fulltext
-
-# Filter by item type
-pyzotero search -q "methodology" --itemtype book --itemtype journalArticle
-
-# Search for top-level items within a collection
-pyzotero search --collection ABC123 -q "test"
-
-# Output as JSON for machine processing
-pyzotero search -q "climate" --json
-
-# List all collections
 pyzotero listcollections
-
-# List available item types
-pyzotero itemtypes
-
-# List the fields and creator types that one item type accepts
-pyzotero listitemfields journalArticle
-
-# Obtain and store a local API key, which permits writes from the CLI and the MCP server
-pyzotero authorize --app-name "Claude Desktop"
-
-# Create items from a JSON file, or from standard input
+pyzotero authorize --app-name "My tool"   # store a local API key, which the write commands need
 pyzotero createitem items.json --collection FD9AUNP2 --tag "to read"
-cat items.json | pyzotero createitem -
-
-# Create a collection, nested under an existing one
-pyzotero createcollection "Frankenstein Cities" --parent FD9AUNP2
-
-# Add items to, remove items from, or move items between collections
-pyzotero addtocollection FD9AUNP2 ABC123 DEF456
-pyzotero removefromcollection FD9AUNP2 ABC123
-pyzotero movetocollection --from FD9AUNP2 --to X7Y8Z9W0 ABC123 DEF456
 ```
 
-## Write Commands
-
-`createitem`, `createcollection`, `addtocollection`, `removefromcollection` and `movetocollection` write to your library. They need a stored local API key: run `pyzotero authorize` once and choose "Always Allow". Without a key, they exit with a message that says so. Each accepts `--json` and reports the keys it touched. The membership commands change items one at a time; if one fails, the error names the item and lists the items already changed, so that you can resume from there. `movetocollection` changes each item in one request, so an item's membership of other collections is kept.
-
-`createitem` takes the path of a JSON file, or `-` for standard input. The file holds one item object, or a list of them, in Zotero's item-data format:
-
-```json
-[
-  {
-    "itemType": "book",
-    "title": "Frankenstein",
-    "creators": [{"creatorType": "author", "lastName": "Shelley", "firstName": "Mary"}],
-    "date": "1818"
-  }
-]
-```
-
-`--collection` files every created item under one collection, and `--tag`, which you can repeat, tags every created item; collections and tags that an item already carries are kept. The item type and the field names of every item are checked against the library's schema before anything is sent, so one invalid item stops the whole batch and the message names its position in the list. `pyzotero itemtypes` lists the item types, and `pyzotero listitemfields TYPE` lists the fields of one type. Zotero accepts up to 50 items in one call.
-
-## Search Behaviour
-
-By default, `pyzotero search` searches only top-level item titles and metadata fields.
-
-When the `--fulltext` flag is used, the search expands to include all full-text indexed content, including PDFs and other attachments. Since most full-text content comes from PDF attachments rather than top-level items, the CLI automatically retrieves the parent bibliographic items for any matching attachments. This ensures you receive useful bibliographic records (journal articles, books, etc.) rather than raw attachment items.
-
-## Output Format
-
-By default, the CLI outputs human-readable text with a subset of metadata including:
-- Title, authors, date, publication
-- Volume, issue, DOI, URL
-- PDF attachments (with local file paths)
-
-Use the `--json` flag to output structured JSON.
+Run `pyzotero --help` for the full list of commands, and see the [CLI documentation][13] for details of the write commands, search behaviour, and output formats.
 
 # MCP Server
 
-Pyzotero includes an optional [MCP](https://modelcontextprotocol.io) server that exposes your local Zotero library and Semantic Scholar integration as tools for LLMs. This lets sandboxed applications such as Claude Desktop access your Zotero library without needing direct CLI access.
-
-## Installing the MCP server
+Pyzotero includes an optional [MCP](https://modelcontextprotocol.io) server that exposes your local Zotero library and Semantic Scholar integration as tools for LLM applications such as Claude Desktop.
 
 * Using [uv][11]: `uv add "pyzotero[mcp]"`
 * Using [pip][10]: `pip install "pyzotero[mcp]"`
 * As a standalone tool: `uv tool install "pyzotero[mcp]"`
-* CLI and MCP server together: `uv tool install "pyzotero[cli,mcp]"`
 
-## Claude Desktop Configuration
-
-Add the following to your Claude Desktop configuration file:
-
-If `pyzotero-mcp` is installed:
+Add it to your Claude Desktop configuration:
 
 ```json
 {
@@ -181,94 +91,7 @@ If `pyzotero-mcp` is installed:
 }
 ```
 
-Or, without installing, using uvx:
-
-```json
-{
-  "mcpServers": {
-    "zotero": {
-      "command": "uvx",
-      "args": ["--from", "pyzotero[mcp]", "pyzotero-mcp"]
-    }
-  }
-}
-```
-
-## Available Tools
-
-### Zotero Library Tools
-
-| Tool | Description |
-|------|-------------|
-| `search` | Search the local Zotero library by query, item type, collection, tag, or full-text content |
-| `get_item` | Get a single Zotero item by its key |
-| `get_children` | Get child items (attachments, notes) of a Zotero item |
-| `list_collections` | List all collections in the library |
-| `list_tags` | List all tags, optionally filtered by collection |
-| `get_fulltext` | Get full-text content of a PDF or other attachment |
-
-### Semantic Scholar Tools
-
-| Tool | Description |
-|------|-------------|
-| `find_related` | Find semantically similar papers using SPECTER2 embeddings |
-| `get_citations` | Find papers that cite a given paper |
-| `get_references` | Find papers referenced by a given paper |
-| `search_semantic_scholar` | Search across Semantic Scholar's paper index |
-
-The Semantic Scholar tools can optionally check whether results already exist in your local Zotero library (enabled by default via the `check_library` parameter).
-
-### Write Tools (opt-in)
-
-The server is read-only unless started with `--enable-writes`.
-
-#### Enabling write tools
-
-1. Obtain a persistent local API key, choosing "Always Allow" in Zotero's dialog:
-
-   ```
-   pyzotero authorize --app-name "Claude Desktop"
-   ```
-
-   The key and the Zotero server ID are stored in `$XDG_CONFIG_HOME/pyzotero/local-api-key.json` (`~/.config/pyzotero/local-api-key.json` if that variable is unset), readable only by you. The server reads the key from that file.
-
-2. Add the `--enable-writes` flag:
-
-   ```json
-   {
-     "mcpServers": {
-       "zotero": {
-         "command": "pyzotero-mcp",
-         "args": ["--enable-writes"]
-       }
-     }
-   }
-   ```
-
-3. Optional: to supply the key some other way, set `PYZOTERO_LOCAL_API_KEY` in the server's `env` block, and `PYZOTERO_LOCAL_SERVER_ID` beside it to save one request at startup. The environment takes precedence over the key file. `pyzotero authorize --no-store` prints a key without writing the file.
-
-#### Available write tools
-
-| Tool | Description |
-|------|-------------|
-| `list_item_fields` | List the fields and creator types valid for an item type |
-| `create_item` | Create a new item |
-| `update_item` | Update fields on an existing item |
-| `add_tags` | Add tags to an existing item |
-| `create_collection` | Create a collection, optionally nested |
-| `add_to_collection` | File an existing item under a collection |
-| `remove_from_collection` | Remove an item from a collection; the item itself is unchanged |
-| `move_to_collection` | Move an item from one collection to another in one step |
-| `add_attachment` | Attach a file on disk to an existing item |
-| `delete_item` | Permanently delete an item. Requires `--enable-deletes` |
-
-#### How the write tools behave
-
-Without `--enable-writes`, the write tools are not merely disabled: they are never registered, so they do not appear in the model's tool list at all, and content in your library cannot induce a call to one.
-
-`add_attachment` requires an **absolute** path. The server runs as a subprocess of your MCP client, so its working directory is not yours, and a relative path would resolve somewhere unintended; relative paths are rejected rather than guessed at. The file is copied into Zotero's storage, and syncs with the library if sync is enabled. Attaching a file that is already attached to the item is reported as unchanged rather than duplicated, so a retried call is safe.
-
-`delete_item` is behind a second flag because deletion via the local API is irreversible: items are erased outright rather than moved to the trash, and the deletion propagates on sync. `--enable-deletes` implies `--enable-writes`.
+The server is read-only by default. Starting it with `--enable-writes` registers tools that create and modify items and collections, and `--enable-deletes` additionally registers permanent deletion. See the [MCP server documentation][14] for the configuration, the full list of tools, and how the write tools behave.
 
 # Development
 
@@ -322,4 +145,7 @@ Pyzotero is licensed under the [Blue Oak Model Licence 1.0.0][8]. See [LICENSE.m
 [9]: https://github.com/urschrei/pyzotero/tree/main
 [10]: http://www.pip-installer.org/en/latest/index.html
 [11]: https://docs.astral.sh/uv
+[12]: https://pyzotero.readthedocs.io/en/latest/#the-local-zotero-api
+[13]: https://pyzotero.readthedocs.io/en/latest/#command-line-interface-usage
+[14]: https://pyzotero.readthedocs.io/en/latest/#mcp-server
 † This isn't strictly true: you only need an API key for personal libraries and non-public group libraries.
