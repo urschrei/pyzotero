@@ -33,7 +33,7 @@ Full documentation of available Pyzotero methods, code examples, and sample outp
 
 # Local Zotero API
 
-Passing `local=True` directs Pyzotero at a running Zotero installation instead of the web API. Reads need no authentication; writes need the user's consent, given through a dialog in Zotero, and a Zotero version that supports local writes:
+Passing `local=True` directs Pyzotero at a running Zotero installation instead of the web API. Reads do not require authentication; writes require consent via a dialog in Zotero, and a Zotero version that supports local writes:
 
 ``` python
 from pyzotero import Zotero
@@ -51,7 +51,7 @@ A key granted with "Always Allow" can be stored and passed back later as `local_
 * Using [pip][10]: `pip install pyzotero`
 * Using Anaconda: `conda install conda-forge::pyzotero`
 
-Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero 7 with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero". Both are read-only unless you run `pyzotero authorize`, which stores a local API key. With that key, the CLI's write commands can write, and the MCP server can write if started with `--enable-writes`. Both console scripts are installed whichever extra you choose; one whose extra is missing exits with a message naming the extra to install.
+Pyzotero also provides an optional [CLI](#command-line-interface) and [MCP server](#mcp-server) for working with a local Zotero library. Both require Zotero >= 7 (>= 10 for local writes) with local API access enabled: Zotero > Settings > Advanced > "Allow other applications on this computer to communicate with Zotero". Both are read-only unless you run `pyzotero authorize`, which stores a local API key. Both console scripts are installed whichever extra you choose.
 
 # Command-Line Interface
 
@@ -73,7 +73,7 @@ Run `pyzotero --help` for the full list of commands, and see the [CLI documentat
 
 # MCP Server
 
-Pyzotero includes an optional [MCP](https://modelcontextprotocol.io) server that exposes your local Zotero library and Semantic Scholar integration as tools for LLM applications such as Claude Desktop.
+Pyzotero includes an optional [MCP](https://modelcontextprotocol.io) server that exposes your local Zotero library and Semantic Scholar integration as tools.
 
 * Using [uv][11]: `uv add "pyzotero[mcp]"`
 * Using [pip][10]: `pip install "pyzotero[mcp]"`

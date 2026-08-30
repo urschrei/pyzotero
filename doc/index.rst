@@ -75,7 +75,7 @@ See :ref:`cli-usage` for usage details.
 Optional: MCP Server
 ~~~~~~~~~~~~~~~~~~~~
 
-Pyzotero includes an optional `MCP <https://modelcontextprotocol.io>`_ server that exposes your local Zotero library and the Semantic Scholar integration as tools for LLM applications such as Claude Desktop.
+Pyzotero includes an optional `MCP <https://modelcontextprotocol.io>`_ server that exposes your local Zotero library and the Semantic Scholar integration.
 
 To install Pyzotero with the MCP server:
 
@@ -226,7 +226,7 @@ List tags from a specific collection:
 Write Commands
 ~~~~~~~~~~~~~~
 
-These commands write to your library, so they need a local API key. Run ``pyzotero authorize`` once and choose "Always Allow" in Zotero's dialog. The key is stored in ``$XDG_CONFIG_HOME/pyzotero/local-api-key.json`` (``~/.config/pyzotero/local-api-key.json`` if that variable is unset), readable only by you. Setting ``PYZOTERO_LOCAL_API_KEY`` in the environment takes precedence over the file. Without a key, the commands exit with a message that says so.
+These commands write to your library, so they need a local API key. Run ``pyzotero authorize`` once and choose "Always Allow" in Zotero's dialog. The key is stored in ``$XDG_CONFIG_HOME/pyzotero/local-api-key.json`` (``~/.config/pyzotero/local-api-key.json`` if that variable is unset). Setting ``PYZOTERO_LOCAL_API_KEY`` in the environment takes precedence over the file.
 
 Obtain and store a key:
 
@@ -242,7 +242,7 @@ Create items from a JSON file, or from standard input:
         cat items.json | pyzotero createitem -
         pyzotero createitem items.json --collection FD9AUNP2 --tag "to read" --json
 
-The file holds one item object, or a list of them, in Zotero's item-data format:
+The file contains one item object, or a list of them, in Zotero's item-data format:
 
     .. code-block:: json
 
@@ -255,7 +255,7 @@ The file holds one item object, or a list of them, in Zotero's item-data format:
           }
         ]
 
-``--collection`` files every created item under one collection, and ``--tag``, which you can repeat, tags every created item. Collections and tags that an item already carries are kept. The item type and the field names of every item are checked against the library's schema before anything is sent, so one invalid item stops the whole batch and the message names its position in the list. ``pyzotero itemtypes`` lists the item types, and ``pyzotero listitemfields TYPE`` lists the fields of one type. Zotero accepts up to 50 items in one call.
+``--collection`` files every created item under one collection, and ``--tag``, which you can repeat, tags every created item. Collections and tags that an item already has are kept. The item type and the field names of every item are checked against the library's schema before anything is sent. ``pyzotero itemtypes`` lists the item types, and ``pyzotero listitemfields TYPE`` lists the fields of one type. Zotero accepts up to 50 items in one call.
 
 Create a collection, at the top level or nested under ``--parent``:
 
@@ -281,7 +281,7 @@ Move items from one collection to another:
 
         pyzotero movetocollection --from FD9AUNP2 --to X7Y8Z9W0 ABC123 DEF456
 
-Each command accepts ``--json`` and reports the keys it touched. The membership commands change items one at a time. If one fails, the error names that item and lists the items already changed, so that you can resume. ``movetocollection`` changes each item in one request: its membership of other collections is kept. If Zotero rejects an item that ``createitem`` sends, the error gives its reason and names the items that were created.
+Each command accepts ``--json`` and reports the keys it touched. The membership commands change items one at a time. ``movetocollection`` changes each item in one request: its membership of other collections is kept. If Zotero rejects an item that ``createitem`` sends, the error gives its reason and names the items that were created.
 
 DOI Index
 ~~~~~~~~~
@@ -318,7 +318,7 @@ Use the ``--json`` flag to output structured JSON suitable for consumption by ot
 MCP Server
 ----------
 
-The ``pyzotero-mcp`` command starts an `MCP <https://modelcontextprotocol.io>`_ server over standard input and output. It exposes your local Zotero library, and the Semantic Scholar integration, as tools that an LLM application can call. This lets sandboxed applications such as Claude Desktop use your library without access to the CLI. See :ref:`installation` for how to install it.
+The ``pyzotero-mcp`` command starts an `MCP <https://modelcontextprotocol.io>`_ server over standard input and output. It exposes your local Zotero library, and the Semantic Scholar integration. This lets sandboxed applications use your library without access to the CLI. See :ref:`installation` for how to install it.
 
 The server is read-only unless it is started with ``--enable-writes``.
 
@@ -456,7 +456,7 @@ How the write tools behave
 
 Without ``--enable-writes``, the write tools are not merely disabled: they are never registered, so they do not appear in the model's tool list at all, and content in your library cannot induce a call to one.
 
-``add_attachment`` requires an **absolute** path. The server runs as a subprocess of your MCP client, so its working directory is not yours, and a relative path would resolve somewhere unintended; relative paths are rejected rather than guessed at. The file is copied into Zotero's storage, and syncs with the library if sync is enabled. Attaching a file that is already attached to the item is reported as unchanged rather than duplicated, so a retried call is safe.
+``add_attachment`` requires an **absolute** path. The server runs as a subprocess of your MCP client, so its working directory is not yours, and a relative path would resolve somewhere unintended; relative paths are rejected. The file is copied into Zotero's storage, and syncs with the library if sync is enabled. Attaching a file that is already attached to the item is reported as unchanged rather than duplicated.
 
 ``delete_item`` is behind a second flag because deletion via the local API is irreversible: items are erased outright rather than moved to the trash, and the deletion propagates on sync. ``--enable-deletes`` implies ``--enable-writes``.
 
