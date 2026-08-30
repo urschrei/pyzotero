@@ -45,6 +45,8 @@ Refer to the :ref:`read` and :ref:`write`.
 Installation, testing, usage (longer version)
 =============================================
 
+.. _installation:
+
 Installation
 ------------
 Using `uv <https://docs.astral.sh/uv/concepts/projects/dependencies/#adding-dependencies>`_: ``uv add pyzotero``
@@ -69,6 +71,20 @@ If you just want to use the CLI without permanently installing Pyzotero:
 * Using `pipx <https://pipx.pypa.io/>`_: ``pipx run --spec "pyzotero[cli]" pyzotero search -q "your query"``
 
 See :ref:`cli-usage` for usage details.
+
+Optional: MCP Server
+~~~~~~~~~~~~~~~~~~~~
+
+Pyzotero includes an optional `MCP <https://modelcontextprotocol.io>`_ server that exposes your local Zotero library and the Semantic Scholar integration as tools for LLM applications such as Claude Desktop.
+
+To install Pyzotero with the MCP server:
+
+* Using `uv <https://docs.astral.sh/uv/>`_: ``uv add "pyzotero[mcp]"``
+* Using `pip <http://www.pip-installer.org/en/latest/index.html>`_: ``pip install "pyzotero[mcp]"``
+* As a standalone tool: ``uv tool install "pyzotero[mcp]"``
+* CLI and MCP server together: ``uv tool install "pyzotero[cli,mcp]"``
+
+See :ref:`mcp-server` for configuration and the list of tools.
 
 From a local clone, if you wish to install Pyzotero from a specific branch:
 
@@ -295,6 +311,154 @@ By default, the CLI outputs human-readable text with all relevant metadata inclu
 * PDF attachments (with local file paths)
 
 Use the ``--json`` flag to output structured JSON suitable for consumption by other tools and agents.
+
+
+.. _mcp-server:
+
+MCP Server
+----------
+
+The ``pyzotero-mcp`` command starts an `MCP <https://modelcontextprotocol.io>`_ server over standard input and output. It exposes your local Zotero library, and the Semantic Scholar integration, as tools that an LLM application can call. This lets sandboxed applications such as Claude Desktop use your library without access to the CLI. See :ref:`installation` for how to install it.
+
+The server is read-only unless it is started with ``--enable-writes``.
+
+Claude Desktop Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add one of the following to your Claude Desktop configuration file.
+
+If ``pyzotero-mcp`` is installed:
+
+    .. code-block:: json
+
+        {
+          "mcpServers": {
+            "zotero": {
+              "command": "pyzotero-mcp"
+            }
+          }
+        }
+
+Or, without installing, using ``uvx``:
+
+    .. code-block:: json
+
+        {
+          "mcpServers": {
+            "zotero": {
+              "command": "uvx",
+              "args": ["--from", "pyzotero[mcp]", "pyzotero-mcp"]
+            }
+          }
+        }
+
+Zotero Library Tools
+~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Tool
+     - Description
+   * - ``search``
+     - Search the local Zotero library by query, item type, collection, tag, or full-text content
+   * - ``get_item``
+     - Get a single Zotero item by its key
+   * - ``get_children``
+     - Get the child items (attachments, notes) of a Zotero item
+   * - ``list_collections``
+     - List all collections in the library
+   * - ``list_tags``
+     - List all tags, optionally filtered by collection
+   * - ``get_fulltext``
+     - Get the full-text content of a PDF or other attachment
+
+Semantic Scholar Tools
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Tool
+     - Description
+   * - ``find_related``
+     - Find semantically similar papers using SPECTER2 embeddings
+   * - ``get_citations``
+     - Find papers that cite a given paper
+   * - ``get_references``
+     - Find papers referenced by a given paper
+   * - ``search_semantic_scholar``
+     - Search across Semantic Scholar's paper index
+
+Each Semantic Scholar tool accepts a ``check_library`` parameter, ``True`` by default, which annotates each result with whether the paper is already in your local Zotero library.
+
+Write Tools
+~~~~~~~~~~~
+
+The write tools are opt-in. To enable them:
+
+1. Obtain a persistent local API key, choosing "Always Allow" in Zotero's dialog:
+
+    .. code-block:: bash
+
+        pyzotero authorize --app-name "Claude Desktop"
+
+   The key and the Zotero server ID are stored in ``$XDG_CONFIG_HOME/pyzotero/local-api-key.json`` (``~/.config/pyzotero/local-api-key.json`` if that variable is unset), readable only by you. The server reads the key from that file.
+
+2. Add the ``--enable-writes`` flag to the server's arguments:
+
+    .. code-block:: json
+
+        {
+          "mcpServers": {
+            "zotero": {
+              "command": "pyzotero-mcp",
+              "args": ["--enable-writes"]
+            }
+          }
+        }
+
+3. Optional: to supply the key some other way, set ``PYZOTERO_LOCAL_API_KEY`` in the server's ``env`` block, and ``PYZOTERO_LOCAL_SERVER_ID`` beside it to save one request at startup. The environment takes precedence over the key file. ``pyzotero authorize --no-store`` prints a key without writing the file.
+
+With ``--enable-writes``, the server registers these tools:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Tool
+     - Description
+   * - ``list_item_fields``
+     - List the fields and creator types valid for an item type
+   * - ``create_item``
+     - Create a new item
+   * - ``update_item``
+     - Update fields on an existing item
+   * - ``add_tags``
+     - Add tags to an existing item
+   * - ``create_collection``
+     - Create a collection, optionally nested
+   * - ``add_to_collection``
+     - File an existing item under a collection
+   * - ``remove_from_collection``
+     - Remove an item from a collection; the item itself is unchanged
+   * - ``move_to_collection``
+     - Move an item from one collection to another in one step
+   * - ``add_attachment``
+     - Attach a file on disk to an existing item
+   * - ``delete_item``
+     - Permanently delete an item. Requires ``--enable-deletes``
+
+How the write tools behave
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Without ``--enable-writes``, the write tools are not merely disabled: they are never registered, so they do not appear in the model's tool list at all, and content in your library cannot induce a call to one.
+
+``add_attachment`` requires an **absolute** path. The server runs as a subprocess of your MCP client, so its working directory is not yours, and a relative path would resolve somewhere unintended; relative paths are rejected rather than guessed at. The file is copied into Zotero's storage, and syncs with the library if sync is enabled. Attaching a file that is already attached to the item is reported as unchanged rather than duplicated, so a retried call is safe.
+
+``delete_item`` is behind a second flag because deletion via the local API is irreversible: items are erased outright rather than moved to the trash, and the deletion propagates on sync. ``--enable-deletes`` implies ``--enable-writes``.
 
 
 Building Documentation
