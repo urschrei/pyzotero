@@ -11,7 +11,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, TypeVar
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from pyzotero._helpers import (
     LOCAL_KEY_ENV,
@@ -35,7 +35,7 @@ from pyzotero.semantic_scholar import (
 )
 from pyzotero.zotero import chunks
 
-mcp = FastMCP("zotero")
+mcp = MCPServer("zotero")
 
 F = TypeVar("F", bound=Callable[..., str])
 
@@ -791,7 +791,9 @@ def _register_delete_tools(add: AddTool) -> None:
     add(delete_item)
 
 
-def register_write_tools(server: FastMCP, *, enable_deletes: bool = False) -> list[str]:
+def register_write_tools(
+    server: MCPServer, *, enable_deletes: bool = False
+) -> list[str]:
     """Register the write tools on ``server``. Return the registered names.
 
     Registration is the gate for writes, not a check in each tool. A tool

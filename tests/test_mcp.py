@@ -13,10 +13,11 @@ import pytest
 from pyzotero._helpers import save_local_key
 
 
-# The mcp extra requires Python >= 3.10, so skip the entire module on older versions
-mcp_server = pytest.importorskip(
-    "pyzotero.mcp_server", reason="mcp extra requires Python >= 3.10"
-)
+# Skip only when the optional mcp extra is absent. Import the module itself
+# directly, so that an incompatible mcp release fails the tests instead of
+# skipping them.
+pytest.importorskip("mcp", reason="mcp extra is not installed")
+from pyzotero import mcp_server
 
 
 # Fixtures
@@ -412,7 +413,7 @@ class TestSearchSemanticScholar:
 
 
 class _FakeServer:
-    """Minimal stand-in for FastMCP that records what gets registered."""
+    """Minimal stand-in for MCPServer that records what gets registered."""
 
     def __init__(self):
         self.tools = {}
