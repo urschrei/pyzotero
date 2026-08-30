@@ -571,7 +571,7 @@ def authorize(ctx: Any, app_name: str, no_store: bool) -> None:
 
     A permanent key is stored in a file that only you can read
     ($XDG_CONFIG_HOME/pyzotero/local-api-key.json, or the same path under
-    ~/.config). The CLI's collection commands and the MCP server, when
+    ~/.config). The CLI's write commands and the MCP server, when
     started with --enable-writes, read the key from that file. Setting
     PYZOTERO_LOCAL_API_KEY in the environment takes precedence over it.
 
@@ -607,7 +607,7 @@ def authorize(ctx: Any, app_name: str, no_store: bool) -> None:
     path = save_local_key(result["key"], zot.server_id)
     click.echo(
         f"\nThis key persists. Stored it in {path}.\n"
-        "The CLI's collection commands use it. So does the MCP server when\n"
+        "The CLI's write commands use it. So does the MCP server when\n"
         "started with --enable-writes; no environment variable is needed.",
         err=True,
     )
