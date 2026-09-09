@@ -1185,6 +1185,8 @@ class Zotero:
             "collections",
             "dateModified",
             "relations",
+            # trashed objects are returned carrying this, and setting it trashes
+            "deleted",
             #  attachment items
             "parentItem",
             "mtime",
