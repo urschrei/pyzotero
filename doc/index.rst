@@ -1500,6 +1500,8 @@ Example:
 
       Check whether items to be created on the server contain only valid keys. This method first creates a set of valid keys by calling :py:meth:`item_fields()`, then compares the user-created dicts to it. If any keys in the user-created dicts are unknown, a ``InvalidItemFields`` exception is raised, detailing the invalid fields.
 
+      ``deleted`` is a valid key: the API returns it on trashed objects, and accepts it on write.
+
       :param list items: one or more dicts containing item data
       :rtype: List. Each list item is a valid dict containing item data.
 
@@ -1560,6 +1562,15 @@ Deleting items
 
         :param list item: a list of one or more dicts containing item data. You must first retrieve the item(s) you wish to delete, as ``version`` data is required.
         :param str/int last_modified: If not ``None``, will set the value of the If-Unmodified-Since-Version header. 
+
+    .. note::
+        :py:meth:`delete_item()` is permanent. To move an item to the trash instead, set ``deleted`` to ``1`` on it and pass it to :py:meth:`update_item()`. Setting ``deleted`` to ``0`` restores it.
+
+    .. code-block:: python
+
+        item = zot.item('ABC123')
+        item['data']['deleted'] = 1
+        zot.update_item(item['data'])
 
 Deleting tags
 ~~~~~~~~~~~~~

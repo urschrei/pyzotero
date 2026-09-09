@@ -872,6 +872,42 @@ class ZoteroTests(unittest.TestCase):
         request = mock.last_request()
         self.assertEqual(request.headers["If-Unmodified-Since-Version"], "5")
 
+    def testCheckItemsAcceptsDeleted(self):
+        """A trashed item is returned carrying deleted, so it must validate"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        mock.register(
+            "GET",
+            "https://api.zotero.org/itemFields",
+            body=self.item_fields,
+            content_type="application/json",
+        )
+        trashed = json.loads(self.item_doc)
+        trashed["data"]["deleted"] = 1
+        checked = zot.check_items([trashed])
+        self.assertEqual(checked[0]["deleted"], 1)
+
+    def testItemUpdateTrashesItem(self):
+        """An item is moved to the trash by updating it with deleted set"""
+        mock = MockClient()
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        mock.register(
+            "GET",
+            "https://api.zotero.org/itemFields",
+            body=self.item_fields,
+            content_type="application/json",
+        )
+        mock.register(
+            "PATCH",
+            "https://api.zotero.org/users/myuserID/items/ABC123",
+            body="",
+            content_type="application/json",
+            status=204,
+        )
+        update = {"key": "ABC123", "version": 3, "itemType": "book", "deleted": 1}
+        self.assertEqual(zot.update_item(update), True)
+        self.assertEqual(mock.last_request().json()["deleted"], 1)
+
     def testTooManyItems(self):
         """Should fail because we're passing too many items"""
         itms = [i for i in range(51)]
