@@ -236,6 +236,8 @@ class Zupload:
                     files=upload_pairs,
                     headers=headers,
                     timeout=self.zinstance.upload_timeout,
+                    # Zotero's own upload receiver is on the loopback interface
+                    trust_env=not self.zinstance.local,
                 )
             except httpx2.ConnectError:
                 msg = "ConnectionError"

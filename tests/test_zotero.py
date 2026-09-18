@@ -2183,6 +2183,16 @@ class ZoteroTests(unittest.TestCase):
         result = zot._striplocal(url)
         self.assertEqual(result, url)
 
+    def test_local_mode_ignores_environment_proxies(self):
+        """The default client in local mode sends requests directly"""
+        zot = z.Zotero("0", "user", local=True)
+        self.assertFalse(zot.client.trust_env)
+
+    def test_remote_mode_uses_environment_proxies(self):
+        """The default client in remote mode keeps the environment settings"""
+        zot = z.Zotero("myuserID", "user", "myuserkey")
+        self.assertTrue(zot.client.trust_env)
+
     def test_set_fulltext(self):
         """Test set_fulltext method for setting full-text data"""
         mock = MockClient()

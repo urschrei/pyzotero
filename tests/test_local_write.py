@@ -322,6 +322,8 @@ class UploadTests(unittest.TestCase):
         )
         # the receiver doesn't authenticate, so no key is leaked to it
         self.assertNotIn("Zotero-API-Key", mock_post.call_args.kwargs["headers"])
+        # the receiver is on the loopback interface, so no proxy is used
+        self.assertFalse(mock_post.call_args.kwargs["trust_env"])
 
     def test_upload_step_two_stays_bare_for_web(self):
         mock = MockClient()
@@ -344,6 +346,7 @@ class UploadTests(unittest.TestCase):
         ):
             upload._upload_file(authdata, __file__, "ITEMKEY")
         self.assertEqual(list(mock_post.call_args.kwargs["headers"]), ["User-Agent"])
+        self.assertTrue(mock_post.call_args.kwargs["trust_env"])
 
 
 class ErrorMappingTests(unittest.TestCase):
