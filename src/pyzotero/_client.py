@@ -84,7 +84,7 @@ class Zotero:
             self.endpoint = "https://api.zotero.org"
             self.local = False
         else:
-            self.endpoint = "http://localhost:23119/api"
+            self.endpoint = "http://127.0.0.1:23119/api"
             self.local = True
         self._server_id: str | None = server_id
         self.local_api_key: str | None = local_api_key

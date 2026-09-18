@@ -17,7 +17,7 @@ from pyzotero._helpers import get_zotero_client
 
 from .mock_client import MockClient
 
-LOCAL = "http://localhost:23119/api"
+LOCAL = "http://127.0.0.1:23119/api"
 SERVER_ID = "Teu5iBeFPFcF"
 
 
