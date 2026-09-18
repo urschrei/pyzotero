@@ -117,6 +117,9 @@ class Zotero:
             headers=self.default_headers(),
             follow_redirects=True,
             timeout=DEFAULT_TIMEOUT,
+            # The local API is on the loopback interface. Do not send its
+            # requests through a proxy from the environment.
+            trust_env=not local,
         )
         # these aren't valid item fields, so never send them to the server
         self.temp_keys = {"key", "etag", "group_id", "updated"}
