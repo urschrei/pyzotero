@@ -485,7 +485,7 @@ General Usage
 First, create a new Zotero instance:
 
 
-    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order, locale, local, upload_timeout, server_id, local_api_key])
+    .. py:class:: Zotero(library_id, library_type[, api_key, preserve_json_order, locale, local, client, upload_timeout, server_id, local_api_key])
 
         :param str library_id: a valid Zotero API user ID
         :param str library_type: a valid Zotero API library type: **user** or **group**
@@ -493,6 +493,7 @@ First, create a new Zotero instance:
         :param bool preserve_json_order: Load JSON returns with OrderedDict to preserve their order
         :param str locale: Set the `locale <https://www.zotero.org/support/dev/web_api/v3/types_and_fields#zotero_web_api_item_typefield_requests>`_, allowing retrieval of localised item types, field types, and creator types. Defaults to "en-US".
         :param str local: use the local Zotero http server instead of the remote API. See :ref:`localapi`
+        :param httpx2.Client client: the HTTP client for API requests. If it is ``None`` (the default), Pyzotero creates a client with its default headers and timeout. In local mode, that client ignores proxy settings from the environment. Pyzotero does not change a client that you supply: it does not add the ``Authorization``, ``Zotero-API-Version`` or ``User-Agent`` headers, and it uses the proxy settings of the client. To use the local API when your environment sets a proxy, create the client with ``trust_env=False``
         :param int/float upload_timeout: timeout in seconds for file uploads to storage (default: 120). Increase this for very large files or slow connections.
         :param str server_id: a local API server ID retained from a previous session. Only meaningful when ``local`` is ``True``; see :ref:`localapi`
         :param str local_api_key: a persistent local API key retained from a previous session, obtained from :py:meth:`Zotero.authorize_local()`. Only meaningful when ``local`` is ``True``
