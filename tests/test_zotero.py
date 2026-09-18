@@ -63,10 +63,10 @@ class ZoteroTests(unittest.TestCase):
 
     def testBuildUrlCorrectHandleEndpoint(self):
         """Url should be concat correctly by build_url"""
-        url = z.build_url("http://localhost:23119/api", "/users/0")
-        self.assertEqual(url, "http://localhost:23119/api/users/0")
-        url = z.build_url("http://localhost:23119/api/", "/users/0")
-        self.assertEqual(url, "http://localhost:23119/api/users/0")
+        url = z.build_url("http://127.0.0.1:23119/api", "/users/0")
+        self.assertEqual(url, "http://127.0.0.1:23119/api/users/0")
+        url = z.build_url("http://127.0.0.1:23119/api/", "/users/0")
+        self.assertEqual(url, "http://127.0.0.1:23119/api/users/0")
 
     def testFailWithoutCredentials(self):
         """Instance creation should fail, because we're leaving out a
@@ -2162,15 +2162,15 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero("myuserID", "user", "myuserkey", local=True, client=mock.client)
 
         # Test stripping local API path
-        url = "http://localhost:23119/api/users/myuserID/items"
+        url = "http://127.0.0.1:23119/api/users/myuserID/items"
         result = zot._striplocal(url)
-        self.assertEqual(result, "http://localhost:23119/users/myuserID/items")
+        self.assertEqual(result, "http://127.0.0.1:23119/users/myuserID/items")
 
         # Test with more complex path
-        url = "http://localhost:23119/api/users/myuserID/collections/ABC123/items"
+        url = "http://127.0.0.1:23119/api/users/myuserID/collections/ABC123/items"
         result = zot._striplocal(url)
         self.assertEqual(
-            result, "http://localhost:23119/users/myuserID/collections/ABC123/items"
+            result, "http://127.0.0.1:23119/users/myuserID/collections/ABC123/items"
         )
 
     def test_striplocal_remote_mode(self):
