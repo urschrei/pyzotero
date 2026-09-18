@@ -1146,7 +1146,7 @@ The Local Zotero API
 ====================
 
 Setting ``local=True`` directs Pyzotero at the HTTP API served by a running Zotero
-installation (``http://localhost:23119/api``) instead of ``api.zotero.org``. It must
+installation (``http://127.0.0.1:23119/api``) instead of ``api.zotero.org``. It must
 first be enabled in Zotero, under Settings > Advanced > "Allow other applications on
 this computer to communicate with Zotero".
 
@@ -1331,6 +1331,9 @@ Differences from the web API
   parameter is ignored. :py:meth:`Zotero.creator_fields()` always returns English.
 * Atom is not supported, and there are no rate limits on ordinary requests.
 * Results are not paginated by default, so :py:meth:`Zotero.everything()` is rarely needed.
+* Requests go to ``127.0.0.1``, not ``localhost``: Zotero listens on the IPv4 loopback
+  address only. The default client ignores proxy settings from the environment
+  (``HTTP_PROXY``, ``ALL_PROXY`` and the system proxy configuration).
 
 For the full list, see the `local API documentation
 <https://github.com/zotero/zotero/blob/main/chrome/content/zotero/xpcom/server/server_localAPI.js>`_.
