@@ -2193,6 +2193,61 @@ class ZoteroTests(unittest.TestCase):
         zot = z.Zotero("myuserID", "user", "myuserkey")
         self.assertTrue(zot.client.trust_env)
 
+    def test_supplied_client_sends_default_headers(self):
+        """A client that the caller supplies sends the default headers"""
+        mock = MockClient()
+        mock.register("GET", "https://api.zotero.org/users/myuserID/items", body="[]")
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        zot.items()
+        headers = mock.requests[0].headers
+        self.assertEqual(headers["Authorization"], "Bearer myuserkey")
+        self.assertEqual(headers["Zotero-API-Version"], "3")
+        self.assertTrue(headers["User-Agent"].startswith("Pyzotero/"))
+
+    def test_supplied_client_sends_default_headers_on_writes(self):
+        """Request headers and default headers go together on a write"""
+        mock = MockClient()
+        mock.register(
+            "POST",
+            "https://api.zotero.org/users/myuserID/collections",
+            body=json.dumps({"success": {"0": "COLLKEY"}}),
+        )
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        zot.create_collections([{"name": "Test"}])
+        headers = mock.requests[0].headers
+        self.assertEqual(headers["Authorization"], "Bearer myuserkey")
+        self.assertEqual(headers["Content-Type"], "application/json")
+        self.assertIn("Zotero-Write-Token", headers)
+
+    def test_supplied_client_is_not_changed(self):
+        """The client keeps its own headers and gets none of the defaults"""
+        mock = MockClient()
+        mock.client.headers["X-Custom"] = "kept"
+        mock.register("GET", "https://api.zotero.org/users/myuserID/items", body="[]")
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        zot.items()
+        self.assertEqual(mock.requests[0].headers["X-Custom"], "kept")
+        self.assertNotIn("Authorization", mock.client.headers)
+        self.assertNotIn("Zotero-API-Version", mock.client.headers)
+
+    def test_default_headers_replace_client_headers(self):
+        """A default header replaces a client header of the same name"""
+        mock = MockClient()
+        mock.client.headers["User-Agent"] = "custom"
+        mock.register("GET", "https://api.zotero.org/users/myuserID/items", body="[]")
+        zot = z.Zotero("myuserID", "user", "myuserkey", client=mock.client)
+        zot.items()
+        self.assertTrue(mock.requests[0].headers["User-Agent"].startswith("Pyzotero/"))
+
+    def test_client_authorization_kept_without_api_key(self):
+        """Without an API key, the Authorization header of the client is sent"""
+        mock = MockClient()
+        mock.client.headers["Authorization"] = "Bearer fromclient"
+        mock.register("GET", "https://api.zotero.org/users/myuserID/items", body="[]")
+        zot = z.Zotero("myuserID", "user", client=mock.client)
+        zot.items()
+        self.assertEqual(mock.requests[0].headers["Authorization"], "Bearer fromclient")
+
     def test_set_fulltext(self):
         """Test set_fulltext method for setting full-text data"""
         mock = MockClient()
