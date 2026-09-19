@@ -692,6 +692,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual(True, resp)
         request = mock.last_request()
         self.assertEqual(request.headers["If-Unmodified-Since-Version"], "3")
+        self.assertEqual(request.headers["Content-Type"], "application/json")
 
     def testCollectionUpdateLastModified(self):
         """Tests update of a collection with last_modified set"""
@@ -748,6 +749,7 @@ class ZoteroTests(unittest.TestCase):
         self.assertEqual("ABC123", resp["success"]["0"])
         request = mock.last_request()
         self.assertFalse("If-Unmodified-Since-Version" in request.headers)
+        self.assertEqual(request.headers["Content-Type"], "application/json")
 
     def testItemCreationWithParentId(self):
         """Checks that parentItem is set in the POST payload when parentid is given"""
@@ -1863,6 +1865,7 @@ class ZoteroTests(unittest.TestCase):
 
             # Verify that the correct attachment template was used
             request = mock.last_request()
+            self.assertEqual(request.headers["Content-Type"], "application/json")
             payload = json.loads(request.body.decode("utf-8"))
             self.assertEqual(payload[0]["title"], "test_attachment.txt")
             # the server rejects a filename containing a directory path (#341),

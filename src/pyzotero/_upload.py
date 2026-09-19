@@ -7,7 +7,6 @@ and uploads to the Zotero API.
 from __future__ import annotations
 
 import hashlib
-import json
 import mimetypes
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -127,12 +126,12 @@ class Zupload:
                 item["contentType"] = detected_type or "application/octet-stream"
         liblevel = "/{t}/{u}/items"
         # Create one or more new attachments
-        headers = {"Zotero-Write-Token": token(), "Content-Type": "application/json"}
+        headers = {"Zotero-Write-Token": token()}
         # If we have a Parent ID, add it as a parentItem
         if self.parentid:
             for child in self.payload:
                 child["parentItem"] = self.parentid
-        to_send = json.dumps([self._outgoing(item) for item in self.payload])
+        to_send = [self._outgoing(item) for item in self.payload]
         req = self._post_with_retry(
             lambda: self.zinstance._write(
                 "POST",
@@ -143,7 +142,7 @@ class Zupload:
                         u=self.zinstance.library_id,
                     ),
                 ),
-                content=to_send,
+                json=to_send,
                 headers=headers,
             )
         )
