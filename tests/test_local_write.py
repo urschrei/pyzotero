@@ -167,6 +167,7 @@ class AuthorizeLocalTests(unittest.TestCase):
         request = self.mock.requests[0]
         self.assertEqual(request.json(), {"appName": "Pyzotero test"})
         self.assertEqual(request.headers["Zotero-Server-ID"], SERVER_ID)
+        self.assertEqual(request.headers["Content-Type"], "application/json")
 
     def test_authorize_requires_server_id(self):
         """The authorize endpoint validates the header like any other write"""

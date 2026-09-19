@@ -350,10 +350,7 @@ class Zotero:
         if not app_name or not app_name.strip():
             msg = "app_name is required: it identifies the caller in the dialog"
             raise ze.ParamNotPassedError(msg)
-        headers = {
-            "Content-Type": "application/json",
-            "Zotero-Server-ID": self._ensure_server_id(),
-        }
+        headers = {"Zotero-Server-ID": self._ensure_server_id()}
         self._check_backoff()
         req = self._send(
             "POST",
@@ -713,14 +710,12 @@ class Zotero:
         For text documents, 'indexedChars' and 'totalChars' OR
         For PDFs, 'indexedPages' and 'totalPages'.
         """
-        headers = {"Content-Type": "application/json"}
         return self._write(
             "PUT",
             url=build_url(
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items/{itemkey}/fulltext",
             ),
-            headers=headers,
             json=payload,
         )
 
@@ -1314,7 +1309,7 @@ class Zotero:
             msg = f"You may only create up to {DEFAULT_NUM_ITEMS} items per call"
             raise ze.TooManyItemsError(msg)
         # TODO: strip extra data if it's an existing item
-        headers = {"Zotero-Write-Token": token(), "Content-Type": "application/json"}
+        headers = {"Zotero-Write-Token": token()}
         if last_modified is not None:
             headers["If-Unmodified-Since-Version"] = str(last_modified)
         to_send = list(self._cleanup(*payload, allow=("key",)))
@@ -1327,7 +1322,7 @@ class Zotero:
                 self.endpoint,
                 f"/{self.library_type}/{self.library_id}/items",
             ),
-            "content": json.dumps(to_send),
+            "json": to_send,
             "headers": headers,
         }
         if timeout is not None:
@@ -1395,7 +1390,6 @@ class Zotero:
             modified = last_modified
         key = payload["key"]
         headers = {"If-Unmodified-Since-Version": str(modified)}
-        headers.update({"Content-Type": "application/json"})
         return self._write(
             "PUT",
             url=build_url(
@@ -1403,7 +1397,7 @@ class Zotero:
                 f"/{self.library_type}/{self.library_id}/collections/{key}",
             ),
             headers=headers,
-            content=json.dumps(payload),
+            json=payload,
         )
 
     def attachment_simple(self, files: list[str], parentid: str | None = None) -> Any:
