@@ -435,7 +435,7 @@ class Zotero:
         to self.templates as a new dict using the specified key.
         """
         # cache template and retrieval time for subsequent calls
-        thetime = whenever.ZonedDateTime.now("Europe/London").to_stdlib()
+        thetime = whenever.ZonedDateTime.now("Europe/London").py_datetime()
         self.templates[key] = {"tmplt": response.json(), "updated": thetime}
         return copy.deepcopy(response.json())
 
@@ -569,7 +569,7 @@ class Zotero:
             return False
         if (
             abs(
-                whenever.ZonedDateTime.now("Europe/London").to_stdlib()
+                whenever.ZonedDateTime.now("Europe/London").py_datetime()
                 - self.templates[template]["updated"],
             ).seconds
             > ONE_HOUR
