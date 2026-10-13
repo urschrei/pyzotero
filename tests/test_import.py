@@ -101,6 +101,42 @@ class TestCSL:
         ]
 
     @pytest.mark.parametrize(
+        ("license_", "expected"),
+        [
+            ("CC BY 4.0", "CC BY 4.0"),
+            # Crossref's form, with one URL for each content version
+            (
+                [
+                    {
+                        "start": {"date-parts": [[2018, 2, 13]]},
+                        "content-version": "vor",
+                        "URL": "http://creativecommons.org/licenses/by/4.0/",
+                    },
+                    {
+                        "content-version": "tdm",
+                        "URL": "http://creativecommons.org/licenses/by/4.0/",
+                    },
+                    {
+                        "content-version": "am",
+                        "URL": "https://example.org/terms",
+                    },
+                ],
+                "http://creativecommons.org/licenses/by/4.0/, "
+                "https://example.org/terms",
+            ),
+        ],
+    )
+    def test_license(self, license_, expected):
+        csl = {**CROSSREF_CSL, "license": license_}
+        item, _ = fit(csl_to_zotero(csl), {"title", "rights"})
+        assert item["rights"] == expected
+
+    def test_license_without_urls_is_dropped(self):
+        csl = {**CROSSREF_CSL, "license": [{"content-version": "vor"}]}
+        item, _ = fit(csl_to_zotero(csl), {"title", "rights"})
+        assert "rights" not in item
+
+    @pytest.mark.parametrize(
         ("csl_type", "zotero_type"),
         [
             ("journal-article", "journalArticle"),

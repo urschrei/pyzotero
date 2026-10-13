@@ -359,6 +359,17 @@ def _text(value: Any) -> str:
     return str(value).strip()
 
 
+def _csl_license(value: Any) -> str:
+    """Return a CSL license as a string.
+
+    Crossref sends a list of license objects, not a string. Use their URLs.
+    """
+    if isinstance(value, list):
+        urls = [v.get("URL") if isinstance(v, dict) else v for v in value]
+        return ", ".join(dict.fromkeys(str(u) for u in urls if u))
+    return _text(value)
+
+
 def _csl_date(value: Any) -> str:
     """Format a CSL date object as YYYY, YYYY-MM or YYYY-MM-DD."""
     if not isinstance(value, dict):
@@ -396,9 +407,12 @@ def csl_to_zotero(csl: dict[str, Any]) -> dict[str, Any]:
         value = csl.get(var)
         if value in (None, "", []):
             continue
+        text = _csl_license(value) if var == "license" else _text(value)
+        if not text:
+            continue
         # The candidates are alternatives for different item types. Keep them
         # all; fit_to_schema keeps the first that the type accepts.
-        item.setdefault("_candidates", {})[var] = (candidates, _text(value))
+        item.setdefault("_candidates", {})[var] = (candidates, text)
     for var, field in CSL_DATE_FIELDS.items():
         if csl.get(var):
             date = _csl_date(csl[var])
