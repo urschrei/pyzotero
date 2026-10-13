@@ -477,6 +477,9 @@ class TestWriteGating:
         assert sorted(names) == sorted(server.tools)
 
 
+USER_LIBRARY = {"library_id": "0", "library_type": "user"}
+
+
 class TestWriteClient:
     @pytest.fixture(autouse=True)
     def _no_stored_key(self, monkeypatch, tmp_path):
@@ -495,14 +498,16 @@ class TestWriteClient:
         with patch("pyzotero._helpers.get_zotero_client") as client:
             mcp_server._write_client()
         client.assert_called_once_with(
-            "en-US", server_id="srv123", local_api_key="key123"
+            "en-US", server_id="srv123", local_api_key="key123", **USER_LIBRARY
         )
 
     def test_absent_server_id_is_none(self, monkeypatch):
         monkeypatch.setenv(mcp_server.WRITE_KEY_ENV, "key123")
         with patch("pyzotero._helpers.get_zotero_client") as client:
             mcp_server._write_client()
-        client.assert_called_once_with("en-US", server_id=None, local_api_key="key123")
+        client.assert_called_once_with(
+            "en-US", server_id=None, local_api_key="key123", **USER_LIBRARY
+        )
 
     def test_key_file_used_when_env_absent(self):
         """The file that 'pyzotero authorize' writes serves the MCP server too"""
@@ -510,7 +515,7 @@ class TestWriteClient:
         with patch("pyzotero._helpers.get_zotero_client") as client:
             mcp_server._write_client()
         client.assert_called_once_with(
-            "en-US", server_id="filesrv", local_api_key="filekey"
+            "en-US", server_id="filesrv", local_api_key="filekey", **USER_LIBRARY
         )
 
     def test_env_takes_precedence_over_key_file(self, monkeypatch):
@@ -518,7 +523,9 @@ class TestWriteClient:
         monkeypatch.setenv(mcp_server.WRITE_KEY_ENV, "envkey")
         with patch("pyzotero._helpers.get_zotero_client") as client:
             mcp_server._write_client()
-        client.assert_called_once_with("en-US", server_id=None, local_api_key="envkey")
+        client.assert_called_once_with(
+            "en-US", server_id=None, local_api_key="envkey", **USER_LIBRARY
+        )
 
 
 class TestWriteTools:
@@ -710,3 +717,467 @@ class TestAttachmentTool:
         result = json.loads(write_tools["add_attachment"]("ABC123", str(target)))
         assert result["error"] == "Attachment was rejected"
         assert result["detail"]["error"]["message"] == "Too large"
+
+
+# Search sorting, notes, annotations and BibTeX export
+
+
+class TestSearchSort:
+    def test_sort_and_direction_passed(self, mock_zot):
+        mcp_server.search(sort="dateAdded", direction="desc", limit=5)
+        params = mock_zot.top.call_args[1]
+        assert params == {"limit": 5, "sort": "dateAdded", "direction": "desc"}
+
+    def test_no_sort_by_default(self, mock_zot):
+        mcp_server.search(query="x")
+        assert "sort" not in mock_zot.top.call_args[1]
+
+
+NOTE_ITEM = {
+    "key": "NOTE01",
+    "data": {
+        "key": "NOTE01",
+        "itemType": "note",
+        "parentItem": "ABC123",
+        "note": "<h1>Title</h1><p>First &amp; para</p><ul><li>one</li><li>two</li></ul>",
+        "tags": [{"tag": "summary"}],
+        "dateModified": "2026-01-01T00:00:00Z",
+    },
+}
+
+
+class TestGetNotes:
+    def test_child_notes_of_item(self, mock_zot):
+        mock_zot.everything.side_effect = lambda x: x
+        mock_zot.children.return_value = [CHILDREN_FIXTURE[0], NOTE_ITEM]
+        result = json.loads(mcp_server.get_notes(key="ABC123"))
+        assert result["count"] == 1
+        note = result["notes"][0]
+        assert note["key"] == "NOTE01"
+        assert note["text"] == "Title\n\nFirst & para\n\n- one\n- two"
+        assert note["tags"] == ["summary"]
+
+    def test_query_searches_all_notes(self, mock_zot):
+        mock_zot.items.return_value = [NOTE_ITEM]
+        mcp_server.get_notes(query="para", limit=5)
+        mock_zot.items.assert_called_once_with(
+            itemType="note", limit=5, q="para", qmode="everything"
+        )
+
+    def test_recent_notes_without_key_or_query(self, mock_zot):
+        mock_zot.items.return_value = []
+        mcp_server.get_notes()
+        assert mock_zot.items.call_args[1]["sort"] == "dateModified"
+
+
+def _annotation(key, sort_index, **fields):
+    return {
+        "key": key,
+        "data": {
+            "key": key,
+            "itemType": "annotation",
+            "annotationSortIndex": sort_index,
+            "tags": [],
+            **fields,
+        },
+    }
+
+
+class TestGetAnnotations:
+    @pytest.fixture
+    def annotated(self, mock_zot):
+        pdf = {
+            "key": "PDF01",
+            "data": {
+                "key": "PDF01",
+                "itemType": "attachment",
+                "title": "Full Text PDF",
+            },
+        }
+        annotations = [
+            _annotation(
+                "ANN2",
+                "00002|000100|00050",
+                annotationType="note",
+                annotationComment="Later",
+            ),
+            _annotation(
+                "ANN1",
+                "00001|000200|00100",
+                annotationType="highlight",
+                annotationText="Quoted",
+                annotationColor="#ffd400",
+                annotationPageLabel="3",
+            ),
+        ]
+        mock_zot.everything.side_effect = lambda x: x
+        mock_zot.item.side_effect = lambda key: pdf if key == "PDF01" else ITEM_FIXTURE
+        mock_zot.children.side_effect = lambda key: (
+            annotations if key == "PDF01" else [pdf, NOTE_ITEM]
+        )
+        return mock_zot
+
+    def test_from_parent_item(self, annotated):
+        result = json.loads(mcp_server.get_annotations("ABC123"))
+        assert result["count"] == 2
+        [attachment] = result["attachments"]
+        assert attachment["key"] == "PDF01"
+        first, second = attachment["annotations"]
+        assert first == {
+            "key": "ANN1",
+            "type": "highlight",
+            "text": "Quoted",
+            "color": "#ffd400",
+            "page": "3",
+            "tags": [],
+        }
+        assert second["comment"] == "Later"
+
+    def test_from_attachment(self, annotated):
+        result = json.loads(mcp_server.get_annotations("PDF01"))
+        assert result["count"] == 2
+        assert [c[0][0] for c in annotated.children.call_args_list] == ["PDF01"]
+
+
+class TestExportBibtex:
+    def test_export_chunks_keys_and_dumps(self, mock_zot):
+        import bibtexparser
+
+        def fake_items(**kwargs):
+            db = bibtexparser.bibdatabase.BibDatabase()
+            db.entries = [
+                {"ENTRYTYPE": "article", "ID": k, "title": f"T {k}"}
+                for k in kwargs["itemKey"].split(",")
+            ]
+            return db
+
+        mock_zot.items.side_effect = fake_items
+        keys = [f"K{i}" for i in range(51)]
+        result = json.loads(mcp_server.export_bibtex(keys))
+        assert result["count"] == 51
+        assert mock_zot.items.call_count == 2
+        assert mock_zot.items.call_args_list[0][1]["format"] == "bibtex"
+        assert "@article{K50," in result["bibtex"]
+
+
+class TestNoteHTML:
+    def test_line_breaks_are_single(self):
+        assert mcp_server._note_to_text("<p>a<br/>b<br>c</p>") == "a\nb\nc"
+
+    def test_plain_text_is_escaped_into_paragraphs(self):
+        html = mcp_server._text_to_note_html("a < b\nnext line\n\nsecond")
+        assert html == "<p>a &lt; b<br>next line</p><p>second</p>"
+
+
+# Write tools added for notes, collections and imports
+
+
+class TestNewWriteTools:
+    def test_registered(self, write_tools):
+        for name in (
+            "create_note",
+            "update_note",
+            "update_collection",
+            "add_by_doi",
+            "import_items",
+        ):
+            assert name in write_tools
+
+    def test_create_child_note(self, write_tools, write_zot):
+        result = json.loads(
+            write_tools["create_note"]("Hello <world>", parent_key="ABC123", tags=["t"])
+        )
+        assert result["created"] == "NEWKEY"
+        payload = write_zot.create_items.call_args[0][0][0]
+        assert payload == {
+            "itemType": "note",
+            "note": "<p>Hello &lt;world&gt;</p>",
+            "tags": [{"tag": "t"}],
+            "parentItem": "ABC123",
+        }
+
+    def test_create_note_html_kept(self, write_tools, write_zot):
+        write_tools["create_note"]("<p><b>x</b></p>", is_html=True, collections=["C1"])
+        payload = write_zot.create_items.call_args[0][0][0]
+        assert payload["note"] == "<p><b>x</b></p>"
+        assert payload["collections"] == ["C1"]
+        assert "parentItem" not in payload
+
+    def test_child_note_with_collections_rejected(self, write_tools, write_zot):
+        result = json.loads(
+            write_tools["create_note"]("x", parent_key="ABC123", collections=["C1"])
+        )
+        assert "error" in result
+        write_zot.create_items.assert_not_called()
+
+    def test_update_note(self, write_tools, write_zot):
+        write_zot.item.return_value = {
+            "key": "NOTE01",
+            "data": {"key": "NOTE01", "version": 2, "itemType": "note", "note": ""},
+        }
+        write_tools["update_note"]("NOTE01", "new text")
+        assert (
+            write_zot.update_item.call_args[0][0]["data"]["note"] == "<p>new text</p>"
+        )
+
+    def test_update_note_rejects_other_items(self, write_tools, write_zot):
+        result = json.loads(write_tools["update_note"]("ABC123", "x"))
+        assert "not a note" in result["error"]
+        write_zot.update_item.assert_not_called()
+
+    @pytest.fixture
+    def collection(self, write_zot):
+        write_zot.collection.return_value = {
+            "key": "COLL1",
+            "data": {
+                "key": "COLL1",
+                "version": 4,
+                "name": "Old",
+                "parentCollection": "PARENT",
+            },
+        }
+        return write_zot
+
+    def test_rename_collection(self, write_tools, collection):
+        result = json.loads(write_tools["update_collection"]("COLL1", name="New"))
+        assert result == {"updated": "COLL1", "name": "New", "parent": "PARENT"}
+        assert collection.update_collection.call_args[0][0]["version"] == 4
+
+    def test_move_collection_to_top_level(self, write_tools, collection):
+        result = json.loads(write_tools["update_collection"]("COLL1", parent=""))
+        sent = collection.update_collection.call_args[0][0]
+        assert sent["parentCollection"] is False
+        assert sent["name"] == "Old"
+        assert result["parent"] is None
+
+    def test_update_collection_needs_a_change(self, write_tools, collection):
+        result = json.loads(write_tools["update_collection"]("COLL1"))
+        assert "error" in result
+        collection.update_collection.assert_not_called()
+
+    def test_collection_cannot_be_own_parent(self, write_tools, collection):
+        result = json.loads(write_tools["update_collection"]("COLL1", parent="COLL1"))
+        assert "own parent" in result["error"]
+
+
+BIB_SOURCE = r"""
+@article{one, title={First Paper}, author={Doe, Jane}, journal={J}, year=2020,
+          doi={10.1234/ONE}}
+@book{two, title={Second Book}, author={Roe, Rick}, year=2021}
+"""
+
+
+@pytest.fixture
+def import_zot(write_zot):
+    """Give the write client a schema and an empty library."""
+    fields = {
+        "journalArticle": ["title", "publicationTitle", "date", "DOI", "extra"],
+        "book": ["title", "date", "publisher", "extra"],
+    }
+    write_zot.item_type_fields.side_effect = lambda t: [{"field": f} for f in fields[t]]
+    write_zot.item_creator_types.side_effect = lambda t: [
+        {"creatorType": "author"},
+        {"creatorType": "editor"},
+    ]
+    write_zot.items.return_value = []
+    write_zot.top.return_value = []
+    write_zot.create_items.return_value = {
+        "success": {"0": "KEY0", "1": "KEY1"},
+        "failed": {},
+    }
+    return write_zot
+
+
+class TestImportItems:
+    def test_bibtex_creates_items(self, write_tools, import_zot):
+        result = json.loads(
+            write_tools["import_items"](
+                BIB_SOURCE, collections=["C1"], tags=["imported"]
+            )
+        )
+        assert result["counts"] == {"created": 2}
+        assert [i["key"] for i in result["items"]] == ["KEY0", "KEY1"]
+        sent = import_zot.create_items.call_args[0][0]
+        assert sent[0]["DOI"] == "10.1234/ONE"
+        assert sent[0]["collections"] == ["C1"]
+        assert sent[0]["tags"] == [{"tag": "imported"}]
+        assert sent[1]["itemType"] == "book"
+        # citationKey isn't a field in this schema, so it went to Extra
+        assert sent[1]["extra"] == "Citation Key: two"
+
+    def test_existing_doi_is_skipped(self, write_tools, import_zot):
+        existing = {
+            "key": "OLD1",
+            "data": {
+                "key": "OLD1",
+                "DOI": "https://doi.org/10.1234/one",
+                "collections": [],
+            },
+        }
+        import_zot.items.return_value = [existing]
+        import_zot.create_items.return_value = {"success": {"0": "KEY1"}, "failed": {}}
+        result = json.loads(write_tools["import_items"](BIB_SOURCE))
+        assert result["counts"] == {"exists": 1, "created": 1}
+        assert result["items"][0] == {
+            "title": "First Paper",
+            "itemType": "journalArticle",
+            "key": "OLD1",
+            "status": "exists",
+        }
+        assert len(import_zot.create_items.call_args[0][0]) == 1
+        import_zot.addto_collection.assert_not_called()
+
+    def test_existing_title_is_filed(self, write_tools, import_zot):
+        existing = {
+            "key": "OLD2",
+            "data": {
+                "key": "OLD2",
+                "title": "Second book",
+                "date": "2021",
+                "collections": [],
+            },
+        }
+        import_zot.top.return_value = [existing]
+        import_zot.item.return_value = existing
+        import_zot.create_items.return_value = {"success": {"0": "KEY0"}, "failed": {}}
+        result = json.loads(
+            write_tools["import_items"](
+                BIB_SOURCE, collections=["C1"], tags=["t"], if_exists="file"
+            )
+        )
+        assert result["items"][1]["status"] == "filed"
+        import_zot.addto_collection.assert_called_once_with("C1", existing)
+        import_zot.add_tags.assert_called_once_with(existing, "t")
+
+    def test_title_match_needs_same_year(self, write_tools, import_zot):
+        import_zot.top.return_value = [
+            {
+                "key": "OLD2",
+                "data": {"key": "OLD2", "title": "Second Book", "date": "1999"},
+            }
+        ]
+        result = json.loads(write_tools["import_items"](BIB_SOURCE))
+        assert result["counts"] == {"created": 2}
+
+    def test_create_mode_skips_lookup(self, write_tools, import_zot):
+        write_tools["import_items"](BIB_SOURCE, if_exists="create")
+        import_zot.items.assert_not_called()
+        import_zot.top.assert_not_called()
+
+    def test_rejected_item_reported(self, write_tools, import_zot):
+        import_zot.create_items.return_value = {
+            "success": {"0": "KEY0"},
+            "failed": {"1": {"code": 400, "message": "bad field"}},
+        }
+        result = json.loads(write_tools["import_items"](BIB_SOURCE))
+        assert result["counts"] == {"created": 1, "failed": 1}
+        assert result["items"][1]["error"] == "bad field"
+
+    def test_csljson_single_object(self, write_tools, import_zot):
+        source = json.dumps({"type": "book", "title": "CSL Book"})
+        result = json.loads(write_tools["import_items"](source, format="csljson"))
+        assert result["counts"] == {"created": 1}
+
+    def test_file_path(self, write_tools, import_zot, tmp_path):
+        bib = tmp_path / "refs.bib"
+        bib.write_text(BIB_SOURCE, encoding="utf-8")
+        result = json.loads(write_tools["import_items"](file_path=str(bib)))
+        assert result["counts"] == {"created": 2}
+
+    @pytest.mark.parametrize(
+        ("kwargs", "message"),
+        [
+            ({}, "either data or file_path"),
+            ({"data": "x", "file_path": "/x"}, "either data or file_path"),
+            ({"file_path": "refs.bib"}, "absolute"),
+            ({"data": "x", "format": "ris"}, "format must be"),
+            ({"data": "no entries here"}, "No entries"),
+            ({"data": BIB_SOURCE, "if_exists": "merge"}, "if_exists must be"),
+        ],
+    )
+    def test_bad_arguments(self, write_tools, import_zot, kwargs, message):
+        result = json.loads(write_tools["import_items"](**kwargs))
+        assert message in result["error"]
+        import_zot.create_items.assert_not_called()
+
+
+class TestAddByDOI:
+    def test_mixed_success_and_failure(self, write_tools, import_zot):
+        csl = {"type": "article-journal", "title": "By DOI", "DOI": "10.1/a"}
+
+        def fake_fetch(doi):
+            if doi == "10.1/bad":
+                msg = "DOI not found: 10.1/bad"
+                raise mcp_server.DOILookupError(msg)
+            return csl
+
+        with patch("pyzotero.mcp_server.fetch_doi_csl", side_effect=fake_fetch):
+            result = json.loads(write_tools["add_by_doi"](["10.1/bad", "10.1/a"]))
+        assert result["counts"] == {"failed": 1, "created": 1}
+        assert result["items"][0] == {
+            "doi": "10.1/bad",
+            "status": "failed",
+            "error": "DOI not found: 10.1/bad",
+        }
+        assert result["items"][1]["key"] == "KEY0"
+        assert import_zot.create_items.call_args[0][0][0]["DOI"] == "10.1/a"
+
+
+# Server flags
+
+
+class TestMain:
+    @pytest.fixture
+    def run(self, monkeypatch):
+        monkeypatch.setattr(mcp_server, "_LIBRARY", dict(mcp_server._LIBRARY))
+        registered = MagicMock(return_value=["create_item"])
+        monkeypatch.setattr(mcp_server, "register_write_tools", registered)
+        server_run = MagicMock()
+        monkeypatch.setattr(mcp_server.mcp, "run", server_run)
+
+        def main(*argv):
+            monkeypatch.setattr("sys.argv", ["pyzotero-mcp", *argv])
+            mcp_server.main()
+            return server_run, registered
+
+        return main
+
+    def test_defaults(self, run):
+        server_run, registered = run()
+        server_run.assert_called_once_with(transport="stdio")
+        registered.assert_not_called()
+        assert mcp_server._LIBRARY == {"library_id": "0", "library_type": "user"}
+
+    def test_group(self, run):
+        run("--group", "12345")
+        assert mcp_server._LIBRARY == {"library_id": "12345", "library_type": "group"}
+
+    def test_group_must_be_numeric(self, run):
+        with pytest.raises(SystemExit):
+            run("--group", "my-group")
+
+    def test_http_transport(self, run):
+        server_run, _ = run("--transport", "streamable-http", "--port", "9000")
+        server_run.assert_called_once_with(
+            transport="streamable-http", host="127.0.0.1", port=9000
+        )
+
+    def test_writes_refused_off_loopback(self, run):
+        with pytest.raises(SystemExit):
+            run(
+                "--transport",
+                "streamable-http",
+                "--host",
+                "0.0.0.0",  # noqa: S104
+                "--enable-writes",
+            )
+
+    def test_writes_allowed_on_loopback_http(self, run):
+        _, registered = run("--transport", "sse", "--enable-writes")
+        registered.assert_called_once()
+
+    def test_read_client_uses_group(self, run):
+        run("--group", "42")
+        with patch("pyzotero.mcp_server.get_zotero_client") as client:
+            mcp_server._read_client()
+        client.assert_called_once_with(library_id="42", library_type="group")

@@ -318,7 +318,7 @@ Use the ``--json`` flag to output structured JSON suitable for consumption by ot
 MCP Server
 ----------
 
-The ``pyzotero-mcp`` command starts an `MCP <https://modelcontextprotocol.io>`_ server over standard input and output. It exposes your local Zotero library, and the Semantic Scholar integration. This lets sandboxed applications use your library without access to the CLI. See :ref:`installation` for how to install it.
+The ``pyzotero-mcp`` command starts an `MCP <https://modelcontextprotocol.io>`_ server over standard input and output (see :ref:`mcp-http` for HTTP). It exposes your local Zotero library, and the Semantic Scholar integration. This lets sandboxed applications use your library without access to the CLI. See :ref:`installation` for how to install it.
 
 The server is read-only unless it is started with ``--enable-writes``.
 
@@ -362,7 +362,7 @@ Zotero Library Tools
    * - Tool
      - Description
    * - ``search``
-     - Search the local Zotero library by query, item type, collection, tag, or full-text content
+     - Search the local Zotero library by query, item type, collection, tag, or full-text content. ``sort="dateAdded"`` lists recently added items
    * - ``get_item``
      - Get a single Zotero item by its key
    * - ``get_children``
@@ -373,6 +373,12 @@ Zotero Library Tools
      - List all tags, optionally filtered by collection
    * - ``get_fulltext``
      - Get the full-text content of a PDF or other attachment
+   * - ``get_notes``
+     - Get an item's notes as plain text, search the text of all notes, or list recently modified notes
+   * - ``get_annotations``
+     - Get the highlights, comments and other annotations made in Zotero's reader, for an item or one attachment
+   * - ``export_bibtex``
+     - Export items as BibTeX, using Zotero's own exporter
 
 Semantic Scholar Tools
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -440,6 +446,8 @@ With ``--enable-writes``, the server registers these tools:
      - Add tags to an existing item
    * - ``create_collection``
      - Create a collection, optionally nested
+   * - ``update_collection``
+     - Rename a collection, or move it under another collection or to the top level
    * - ``add_to_collection``
      - File an existing item under a collection
    * - ``remove_from_collection``
@@ -448,6 +456,14 @@ With ``--enable-writes``, the server registers these tools:
      - Move an item from one collection to another in one step
    * - ``add_attachment``
      - Attach a file on disk to an existing item
+   * - ``create_note``
+     - Create a note, attached to an item or standalone, from plain text or HTML
+   * - ``update_note``
+     - Replace the text of a note
+   * - ``add_by_doi``
+     - Add items by DOI, with metadata from doi.org
+   * - ``import_items``
+     - Add items from BibTeX or CSL JSON, given inline or as a file
    * - ``delete_item``
      - Permanently delete an item. Requires ``--enable-deletes``
 
@@ -458,7 +474,45 @@ Without ``--enable-writes``, the write tools are not merely disabled: they are n
 
 ``add_attachment`` requires an **absolute** path. The server runs as a subprocess of your MCP client, so its working directory is not yours, and a relative path would resolve somewhere unintended; relative paths are rejected. The file is copied into Zotero's storage, and syncs with the library if sync is enabled. Attaching a file that is already attached to the item is reported as unchanged rather than duplicated.
 
-``delete_item`` is behind a second flag because deletion via the local API is irreversible: items are erased outright rather than moved to the trash, and the deletion propagates on sync. ``--enable-deletes`` implies ``--enable-writes``.
+``delete_item`` is behind a second flag because deletion via the local API is irreversible: items are erased outright rather than moved to the trash, and the deletion propagates on sync. ``--enable-deletes`` implies ``--enable-writes``. It also deletes notes.
+
+``add_by_doi`` is the only write tool that contacts a service other than Zotero: it fetches CSL JSON from ``doi.org``, which passes the request to the DOI's registration agency (Crossref, DataCite or mEDRA).
+
+``add_by_doi`` and ``import_items`` map each record to the closest Zotero item type, following the CSL mappings in the `Zotero schema <https://github.com/zotero/zotero-schema>`_. A DOI, ISBN, ISSN, PMID, PMCID or citation key that the item type has no field for is kept in Extra as a ``Label: value`` line, which Zotero reads back as that field. Other values that the type does not accept are dropped, and the result lists them. Before each item is created, the library is searched for it: by DOI, or for a record without one, by title and year. ``if_exists`` decides what happens to a match: ``"skip"`` (the default) reports the existing key and changes nothing, ``"file"`` adds the existing item to the collections and tags that the call gives, and ``"create"`` adds a duplicate anyway.
+
+``create_note`` and ``update_note`` take plain text by default, which is escaped, with a paragraph for each blank-line-separated block. Pass ``is_html=True`` to store HTML as given. To move a note or attachment to another parent, use ``update_item`` with ``{"parentItem": "<key>"}``; ``{"parentItem": false}`` makes it standalone.
+
+Group Libraries
+~~~~~~~~~~~~~~~
+
+By default the server uses your personal library. To use a group library instead, pass its numeric ID with ``--group``:
+
+    .. code-block:: json
+
+        {
+          "mcpServers": {
+            "zotero-lab-group": {
+              "command": "pyzotero-mcp",
+              "args": ["--group", "1234567"]
+            }
+          }
+        }
+
+The ID is the number in the group's URL on zotero.org (``https://www.zotero.org/groups/1234567/...``). Every tool then reads from, and writes to, that group. To use several libraries, add a server entry for each.
+
+.. _mcp-http:
+
+HTTP Transport
+~~~~~~~~~~~~~~
+
+For MCP clients that connect over HTTP rather than starting a subprocess, pass ``--transport streamable-http`` (or ``--transport sse`` for older clients). The server listens on ``127.0.0.1:8000`` by default; ``--host`` and ``--port`` change this. On a loopback address, the server rejects requests whose ``Host`` header names any other host, as a guard against DNS rebinding.
+
+    .. code-block:: bash
+
+        pyzotero-mcp --transport streamable-http --port 8000
+        # the endpoint is http://127.0.0.1:8000/mcp
+
+The HTTP server has no authentication: anything that can reach the address can use every registered tool. For that reason ``--enable-writes`` and ``--enable-deletes`` are refused unless ``--host`` is a loopback address.
 
 
 Building Documentation

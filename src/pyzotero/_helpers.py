@@ -35,6 +35,8 @@ def get_zotero_client(
     locale: str = "en-US",
     server_id: str | None = None,
     local_api_key: str | None = None,
+    library_id: str = "0",
+    library_type: str = "user",
 ) -> zotero.Zotero:
     """Get a Zotero client that is configured for local access.
 
@@ -43,10 +45,13 @@ def get_zotero_client(
     and ``server_id`` supplies a server ID that was kept from an earlier
     session, which prevents one initial request. :func:`get_write_client`
     fills both in from the stored key.
+
+    The client uses your personal library ("0" is the local API's alias for
+    it) unless ``library_type`` is "group" and ``library_id`` a group ID.
     """
     return zotero.Zotero(
-        library_id="0",
-        library_type="user",
+        library_id=library_id,
+        library_type=library_type,
         local=True,
         locale=locale,
         server_id=server_id,
@@ -96,7 +101,9 @@ def save_local_key(key: str, server_id: str | None) -> Path:
     return path
 
 
-def get_write_client(locale: str = "en-US") -> zotero.Zotero:
+def get_write_client(
+    locale: str = "en-US", library_id: str = "0", library_type: str = "user"
+) -> zotero.Zotero:
     """Get a local client that can write, using the stored local API key.
 
     This function does not request a key itself. The MCP client starts and
@@ -114,7 +121,13 @@ def get_write_client(locale: str = "en-US") -> zotero.Zotero:
             f"so that the key persists, or set {LOCAL_KEY_ENV} in the environment."
         )
         raise RuntimeError(msg)
-    return get_zotero_client(locale, server_id=server_id, local_api_key=key)
+    return get_zotero_client(
+        locale,
+        server_id=server_id,
+        local_api_key=key,
+        library_id=library_id,
+        library_type=library_type,
+    )
 
 
 def describe_item_type(zot: zotero.Zotero, item_type: str) -> dict[str, Any]:
