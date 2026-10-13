@@ -131,6 +131,24 @@ class TestCSL:
         item, _ = fit(csl_to_zotero(csl), {"title", "rights"})
         assert item["rights"] == expected
 
+    @pytest.mark.parametrize(
+        ("abstract", "expected"),
+        [
+            ("Plain text, & no markup", "Plain text, & no markup"),
+            (
+                "<jats:title>Abstract</jats:title>"
+                "<jats:p>First &amp; <jats:italic>in</jats:italic>\n  line &lt;5</jats:p>"
+                "<jats:sec><jats:title>Methods</jats:title>"
+                "<jats:p>Second</jats:p></jats:sec>",
+                "First & in line <5\nMethods\nSecond",
+            ),
+        ],
+    )
+    def test_jats_abstract(self, abstract, expected):
+        csl = {**CROSSREF_CSL, "abstract": abstract}
+        item, _ = fit(csl_to_zotero(csl), {"title", "abstractNote"})
+        assert item["abstractNote"] == expected
+
     def test_license_without_urls_is_dropped(self):
         csl = {**CROSSREF_CSL, "license": [{"content-version": "vor"}]}
         item, _ = fit(csl_to_zotero(csl), {"title", "rights"})

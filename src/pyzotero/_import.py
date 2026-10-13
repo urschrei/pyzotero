@@ -8,6 +8,7 @@ its item type uses, and moves what the type does not accept into Extra.
 
 from __future__ import annotations
 
+import html
 import re
 from pathlib import Path
 from typing import Any
@@ -370,6 +371,34 @@ def _csl_license(value: Any) -> str:
     return _text(value)
 
 
+JATS_HEADING = re.compile(r"^\s*<jats:title>\s*Abstract\s*</jats:title>", re.IGNORECASE)
+JATS_BLOCK_END = re.compile(r"</jats:(?:p|title)>")
+JATS_TAG = re.compile(r"</?jats:[^>]*>")
+
+
+def _jats_to_text(value: str) -> str:
+    """Convert a JATS abstract, as Crossref sends it, to plain text.
+
+    Each paragraph and section title becomes one line. A leading "Abstract"
+    title is removed.
+    """
+    if "<jats:" not in value:
+        return value
+    text = JATS_HEADING.sub("", " ".join(value.split()))
+    text = JATS_TAG.sub("", JATS_BLOCK_END.sub("\n", text))
+    lines = (html.unescape(line).strip() for line in text.splitlines())
+    return "\n".join(line for line in lines if line)
+
+
+def _csl_text(var: str, value: Any) -> str:
+    """Return the text of a CSL variable, for a Zotero field."""
+    if var == "license":
+        return _csl_license(value)
+    if var == "abstract":
+        return _jats_to_text(_text(value))
+    return _text(value)
+
+
 def _csl_date(value: Any) -> str:
     """Format a CSL date object as YYYY, YYYY-MM or YYYY-MM-DD."""
     if not isinstance(value, dict):
@@ -407,7 +436,7 @@ def csl_to_zotero(csl: dict[str, Any]) -> dict[str, Any]:
         value = csl.get(var)
         if value in (None, "", []):
             continue
-        text = _csl_license(value) if var == "license" else _text(value)
+        text = _csl_text(var, value)
         if not text:
             continue
         # The candidates are alternatives for different item types. Keep them
