@@ -381,6 +381,8 @@ Zotero Library Tools
      - Export items as BibTeX, using Zotero's own exporter
    * - ``find_duplicates``
      - Find probable duplicates: items with the same DOI, or the same type, title and year
+   * - ``find_by_citation_key``
+     - Find items by citation key, such as the keys in a LaTeX document's ``\cite`` commands
 
 Semantic Scholar Tools
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -462,8 +464,8 @@ With ``--enable-writes``, the server registers these tools:
      - Create a note, attached to an item or standalone, from plain text or HTML
    * - ``update_note``
      - Replace the text of a note
-   * - ``add_by_doi``
-     - Add items by DOI, with metadata from doi.org, and optionally an open-access PDF
+   * - ``add_by_identifier``
+     - Add items by DOI, arXiv ID or ISBN, looking up their metadata, and optionally attach open-access PDFs
    * - ``import_items``
      - Add items from BibTeX or CSL JSON, given inline or as a file
    * - ``merge_items``
@@ -484,9 +486,15 @@ Without ``--enable-writes``, the write tools are not merely disabled: they are n
 
 Wherever a tool takes a collection, you can give its key, its name, or its path from the top level, such as ``"Physics/Quantum"``. Names are matched exactly first, then without regard to case. A name that more than one collection has is refused, and the error lists their paths and keys.
 
-``add_by_doi`` is the only write tool that contacts a service other than Zotero: it fetches CSL JSON from ``doi.org``, which passes the request to the DOI's registration agency (Crossref, DataCite or mEDRA). With ``attach_pdf=True`` it also looks for an open-access PDF of each new item: on arXiv for an arXiv DOI, and otherwise through Semantic Scholar, which gives the paper's arXiv ID or another open-access location. The PDF is downloaded from that location and attached as "Full Text PDF". A location that serves a web page rather than a PDF is skipped, and each item's result says what happened.
+``add_by_identifier`` is the only write tool that contacts services other than Zotero. It takes DOIs, arXiv IDs and ISBNs in any mix, and recognises each by its form:
 
-``add_by_doi`` and ``import_items`` map each record to the closest Zotero item type, following the CSL mappings in the `Zotero schema <https://github.com/zotero/zotero-schema>`_. A DOI, ISBN, ISSN, PMID, PMCID or citation key that the item type has no field for is kept in Extra as a ``Label: value`` line, which Zotero reads back as that field. Other values that the type does not accept are dropped, and the result lists them. Before each item is created, the library is searched for it: by DOI, or for a record without one, by title and year. ``if_exists`` decides what happens to a match: ``"skip"`` (the default) reports the existing key and changes nothing, ``"file"`` adds the existing item to the collections and tags that the call gives, and ``"create"`` adds a duplicate anyway.
+* A DOI's metadata comes from ``doi.org`` as CSL JSON, which passes the request to the DOI's registration agency (Crossref, DataCite or mEDRA).
+* An arXiv ID (``2001.00001``, ``arXiv:hep-th/9901001``, or an arxiv.org URL; any version suffix is dropped) goes through the DOI that arXiv registers for every paper, ``10.48550/arXiv.<id>``, and becomes a preprint.
+* An ISBN (ISBN-10 or ISBN-13, with or without hyphens; the check digit must be valid) is looked up on Open Library, and then on Google Books if Open Library has no record.
+
+With ``attach_pdf=True`` it also looks for an open-access PDF of each new article or preprint: on arXiv for an arXiv paper, and otherwise through Semantic Scholar, which gives the paper's arXiv ID or another open-access location. The PDF is downloaded from that location and attached as "Full Text PDF". A location that serves a web page rather than a PDF is skipped, and each item's result says what happened.
+
+``add_by_identifier`` and ``import_items`` map each record to the closest Zotero item type, following the CSL mappings in the `Zotero schema <https://github.com/zotero/zotero-schema>`_. A DOI, ISBN, ISSN, PMID, PMCID or citation key that the item type has no field for is kept in Extra as a ``Label: value`` line, which Zotero reads back as that field. Other values that the type does not accept are dropped, and the result lists them. Before each item is created, the library is searched for it: by DOI, or for a record without one, by title and year. When both the new record and a title match have ISBNs, they must share one, so that another edition of a book is not taken for a duplicate. ``if_exists`` decides what happens to a match: ``"skip"`` (the default) reports the existing key and changes nothing, ``"file"`` adds the existing item to the collections and tags that the call gives, and ``"create"`` adds a duplicate anyway.
 
 ``merge_items`` follows Zotero's own merge. The kept item gets the duplicates' notes and attachments, tags, collections and related items, and any field that it has empty and a duplicate has filled. The duplicates then move to Zotero's trash, so a merge can be undone by restoring them. Without ``confirm=True`` the tool changes nothing and returns what it would do. When the library's zotero.org ID is known (see below), the kept item also records that it replaces the duplicates, so that citations of a duplicate in a word processor document still resolve.
 

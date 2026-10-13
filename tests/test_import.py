@@ -7,14 +7,20 @@ from unittest.mock import MagicMock, patch
 import httpx2
 import pytest
 
+from pyzotero import _import
 from pyzotero._import import (
     DOILookupError,
+    MetadataLookupError,
     PDFDownloadError,
     bibtex_to_zotero,
+    classify_identifier,
     csl_to_zotero,
     download_pdf,
     fetch_doi_csl,
+    fetch_isbn,
     fit_to_schema,
+    isbn_set,
+    lookup_identifier,
     open_access_pdf_url,
     parse_bibtex,
 )
@@ -338,3 +344,183 @@ class TestDownloadPDF:
     def test_only_web_urls(self, tmp_path):
         with pytest.raises(PDFDownloadError, match="Not a web URL"):
             download_pdf("file:///etc/passwd", tmp_path / "a.pdf")
+
+
+class TestIdentifiers:
+    @pytest.mark.parametrize(
+        ("text", "expected"),
+        [
+            ("10.1038/nature14539", ("doi", "10.1038/nature14539")),
+            ("https://doi.org/10.1/X", ("doi", "10.1/x")),
+            ("doi:10.1/x", ("doi", "10.1/x")),
+            ("2001.00001", ("arxiv", "2001.00001")),
+            ("arXiv:2001.00001v3", ("arxiv", "2001.00001")),
+            ("https://arxiv.org/abs/hep-th/9901001v2", ("arxiv", "hep-th/9901001")),
+            ("https://arxiv.org/pdf/2101.12345.pdf", ("arxiv", "2101.12345")),
+            ("math.GT/0309136", ("arxiv", "math.GT/0309136")),
+            ("978-0-262-03384-8", ("isbn", "9780262033848")),
+            ("ISBN 0-262-03384-4", ("isbn", "9780262033848")),
+            ("isbn:080442957X", ("isbn", "9780804429573")),
+        ],
+    )
+    def test_classify(self, text, expected):
+        assert classify_identifier(text) == expected
+
+    @pytest.mark.parametrize(
+        "text", ["hello", "9780262033849", "0262033845", "12345", "2001.001"]
+    )
+    def test_unrecognised(self, text):
+        with pytest.raises(MetadataLookupError, match="Not a DOI, arXiv ID or ISBN"):
+            classify_identifier(text)
+
+    def test_isbn_set_reads_several(self):
+        field = "978-0-262-03384-8 0-8044-2957-X, not-an-isbn"
+        assert isbn_set(field) == {"9780262033848", "9780804429573"}
+
+
+OPEN_LIBRARY = {
+    "ISBN:9780262033848": {
+        "title": "Introduction to Algorithms",
+        "subtitle": "Third Edition",
+        "authors": [{"name": "Thomas H. Cormen"}, {"name": "Leiserson, Charles E."}],
+        "publishers": [{"name": "MIT Press"}],
+        "publish_places": [{"name": "Cambridge, Mass"}],
+        "publish_date": "2009",
+        "number_of_pages": 1292,
+    }
+}
+
+GOOGLE_BOOKS = {
+    "items": [
+        {
+            "volumeInfo": {
+                "title": "Introduction to Algorithms",
+                "authors": ["Thomas H. Cormen", "Plato"],
+                "publisher": "MIT Press",
+                "publishedDate": "2009-07-31",
+                "pageCount": 1312,
+                "language": "en",
+            }
+        }
+    ]
+}
+
+
+def _json_service(responses):
+    """Patch _get_json: each URL maps to a response, or an exception to raise."""
+
+    def get_json(url, params, what):
+        response = responses[url]
+        if isinstance(response, Exception):
+            raise response
+        return response
+
+    return patch("pyzotero._import._get_json", side_effect=get_json)
+
+
+class TestFetchISBN:
+    def test_open_library(self):
+        with _json_service({_import.OPEN_LIBRARY_URL: OPEN_LIBRARY}):
+            item = fetch_isbn("9780262033848")
+        assert item["title"] == "Introduction to Algorithms: Third Edition"
+        assert item["creators"] == [
+            {"creatorType": "author", "firstName": "Thomas H.", "lastName": "Cormen"},
+            {
+                "creatorType": "author",
+                "firstName": "Charles E.",
+                "lastName": "Leiserson",
+            },
+        ]
+        assert item["publisher"] == "MIT Press"
+        assert item["place"] == "Cambridge, Mass"
+        assert item["numPages"] == "1292"
+        assert item["libraryCatalog"] == "Open Library"
+
+    def test_falls_back_to_google_books(self):
+        services = {
+            _import.OPEN_LIBRARY_URL: {},
+            _import.GOOGLE_BOOKS_URL: GOOGLE_BOOKS,
+        }
+        with _json_service(services):
+            item = fetch_isbn("9780262033848")
+        assert item["libraryCatalog"] == "Google Books"
+        assert item["date"] == "2009-07-31"
+        assert item["creators"][1] == {"creatorType": "author", "name": "Plato"}
+
+    def test_falls_back_when_open_library_fails(self):
+        services = {
+            _import.OPEN_LIBRARY_URL: MetadataLookupError("HTTP 503"),
+            _import.GOOGLE_BOOKS_URL: GOOGLE_BOOKS,
+        }
+        with _json_service(services):
+            assert fetch_isbn("9780262033848")["libraryCatalog"] == "Google Books"
+
+    def test_not_found(self):
+        services = {
+            _import.OPEN_LIBRARY_URL: MetadataLookupError("Open Library lookup failed"),
+            _import.GOOGLE_BOOKS_URL: {"totalItems": 0},
+        }
+        with (
+            _json_service(services),
+            pytest.raises(
+                MetadataLookupError, match=r"No metadata found.*Open Library"
+            ),
+        ):
+            fetch_isbn("9780262033848")
+
+
+class TestLookupIdentifier:
+    def test_arxiv_goes_through_its_doi(self):
+        csl = {
+            "type": "article",
+            "title": "A Preprint",
+            "publisher": "arXiv",
+            "DOI": "10.48550/arXiv.2001.00001",
+        }
+        with patch("pyzotero._import.fetch_doi_csl", return_value=csl) as fetch:
+            kind, value, item = lookup_identifier("arXiv:2001.00001v2")
+        fetch.assert_called_once_with("10.48550/arXiv.2001.00001")
+        assert (kind, value) == ("arxiv", "2001.00001")
+        fitted, _ = fit(
+            item,
+            {"title", "repository", "archiveID", "url", "DOI", "extra"},
+        )
+        assert fitted["itemType"] == "preprint"
+        assert fitted["archiveID"] == "arXiv:2001.00001"
+        assert fitted["repository"] == "arXiv"
+        assert fitted["url"] == "https://arxiv.org/abs/2001.00001"
+
+    def test_isbn(self):
+        with patch("pyzotero._import.fetch_isbn", return_value={"itemType": "book"}):
+            assert lookup_identifier("0-262-03384-4") == (
+                "isbn",
+                "9780262033848",
+                {"itemType": "book"},
+            )
+
+
+class TestGetJSON:
+    def test_returns_json_with_params(self):
+        def handler(request):
+            assert request.url.params["q"] == "isbn:1"
+            assert request.headers["User-Agent"].startswith("pyzotero/")
+            return httpx2.Response(200, json={"ok": True})
+
+        with _serving(handler):
+            assert _import._get_json("https://x.example/", {"q": "isbn:1"}, "Test") == {
+                "ok": True
+            }
+
+    def test_http_error(self):
+        with (
+            _serving(lambda request: httpx2.Response(500)),
+            pytest.raises(MetadataLookupError, match="Test failed: HTTP 500"),
+        ):
+            _import._get_json("https://x.example/", {}, "Test")
+
+    def test_not_json(self):
+        with (
+            _serving(lambda request: httpx2.Response(200, content=b"<html>")),
+            pytest.raises(MetadataLookupError, match="returned no JSON"),
+        ):
+            _import._get_json("https://x.example/", {}, "Test")

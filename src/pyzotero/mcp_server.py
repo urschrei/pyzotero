@@ -32,13 +32,14 @@ from pyzotero._helpers import (
     normalise_doi,
 )
 from pyzotero._import import (
-    DOILookupError,
+    MetadataLookupError,
     PDFDownloadError,
     bibtex_to_zotero,
     csl_to_zotero,
     download_pdf,
-    fetch_doi_csl,
     fit_to_schema,
+    isbn_set,
+    lookup_identifier,
     open_access_pdf_url,
     parse_bibtex,
 )
@@ -713,6 +714,49 @@ def find_duplicates(limit: int = 20, offset: int = 0) -> str:
     return _json({"total": len(groups), "groups": page})
 
 
+def _citation_keys(data: dict[str, Any]) -> set[str]:
+    """Return an item's citation keys: its citationKey field and Extra lines.
+
+    Better BibTeX writes "Citation Key: <key>" to Extra; Zotero 7 also has a
+    citationKey field.
+    """
+    keys = {data["citationKey"]} if data.get("citationKey") else set()
+    for line in data.get("extra", "").splitlines():
+        label, _, value = line.partition(":")
+        if label.strip().casefold() == "citation key" and value.strip():
+            keys.add(value.strip())
+    return keys
+
+
+@mcp.tool()
+@mcp_error_handler
+def find_by_citation_key(keys: list[str]) -> str:
+    """Find items by citation key, e.g. the keys in a LaTeX document's \\cite commands.
+
+    Matches Zotero's Citation Key field and the "Citation Key:" line that
+    Better BibTeX writes to Extra. Matching is exact and case-sensitive.
+
+    Args:
+        keys: Citation keys.
+
+    Returns:
+        JSON with the items found for each key, and the keys not found.
+
+    """
+    zot = _read_client()
+    found: dict[str, list[dict[str, Any]]] = {}
+    for key in dict.fromkeys(keys):
+        matches = [
+            item
+            for item in zot.items(q=key, qmode="everything", limit=25)
+            if key in _citation_keys(item.get("data", {}))
+        ]
+        if matches:
+            found[key] = [_item_summary(item) for item in matches]
+    missing = [k for k in dict.fromkeys(keys) if k not in found]
+    return _json({"found": found, "notFound": missing})
+
+
 @mcp.tool()
 @mcp_error_handler
 def find_related(
@@ -1291,10 +1335,11 @@ def _item_doi(item: dict[str, Any]) -> str:
 
 
 def _find_existing(zot: Any, item: dict[str, Any]) -> dict[str, Any] | None:
-    """Return the library item that ``item`` duplicates, by DOI or by title.
+    """Return the library item that ``item`` duplicates, by DOI, ISBN or title.
 
     Items with a DOI match on DOI only. Items without one match on title,
-    and on year when both have a date.
+    and on year when both have a date. When both items have ISBNs, they must
+    also share one, so that two editions of a book are not duplicates.
     """
     doi = _item_doi(item)
     if doi:
@@ -1302,6 +1347,7 @@ def _find_existing(zot: Any, item: dict[str, Any]) -> dict[str, Any] | None:
             if _item_doi(found.get("data", {})) == doi:
                 return found
         return None
+    isbns = isbn_set(item.get("ISBN", ""))
     title = item.get("title") or next(
         (v for k, v in item.items() if k in {"caseName", "nameOfAct", "subject"}), ""
     )
@@ -1312,6 +1358,11 @@ def _find_existing(zot: Any, item: dict[str, Any]) -> dict[str, Any] | None:
     for found in zot.top(q=title, limit=25):
         data = found.get("data", {})
         if _title_key(data.get("title", "")) != want:
+            continue
+        found_isbns = isbn_set(data.get("ISBN", ""))
+        if isbns and found_isbns:
+            if isbns & found_isbns:
+                return found
             continue
         found_year = data.get("date", "")[:4]
         if not year or not found_year or year == found_year:
@@ -1396,12 +1447,15 @@ def _import_summary(results: list[dict[str, Any]]) -> str:
     return _json({"counts": counts, "items": results})
 
 
-def _lookup_doi(doi: str) -> dict[str, Any] | str:
-    """Return the converted item for a DOI, or the reason that the lookup failed."""
+def _lookup(identifier: str) -> tuple[str, str, dict[str, Any] | str]:
+    """Return an identifier's kind, normalised form and converted item.
+
+    When the lookup fails, the item is replaced by the reason.
+    """
     try:
-        return csl_to_zotero(fetch_doi_csl(doi))
-    except DOILookupError as e:
-        return str(e)
+        return lookup_identifier(identifier)
+    except MetadataLookupError as e:
+        return "unknown", identifier, str(e)
 
 
 def _attach_open_access_pdf(
@@ -1431,54 +1485,63 @@ def _attach_open_access_pdf(
 def _register_import_tools(add: AddTool) -> None:
     """Register the tools that add items from identifiers and citation data."""
 
-    def add_by_doi(
-        dois: list[str],
+    def add_by_identifier(
+        identifiers: list[str],
         collections: list[str] | None = None,
         tags: list[str] | None = None,
         if_exists: str = "skip",
         attach_pdf: bool = False,
     ) -> str:
-        """Add items by DOI, with metadata from the DOI's registration agency.
+        """Add items by DOI, arXiv ID or ISBN, looking up their metadata.
 
-        doi.org supplies the metadata: Crossref, DataCite or mEDRA,
-        depending on the DOI.
+        DOIs go to doi.org, which passes them to their registration agency
+        (Crossref, DataCite or mEDRA). arXiv IDs go through the DOI that
+        arXiv registers for each paper. ISBNs go to Open Library, then
+        Google Books.
 
         Args:
-            dois: DOIs, bare or as doi.org URLs.
+            identifiers: DOIs (bare or as doi.org URLs), arXiv IDs (e.g.
+                "2001.00001", "arXiv:hep-th/9901001" or an arxiv.org URL) and
+                ISBNs (ISBN-10 or ISBN-13), in any mix.
             collections: Collections to file the new items under: keys,
                 names, or "parent/child" paths.
             tags: Tag names to attach to the new items.
-            if_exists: What to do when the library already has an item with
-                the DOI: "skip" (the default) reports it and changes nothing,
-                "file" adds it to the collections and tags given, and
-                "create" adds a duplicate.
-            attach_pdf: If true, attach an open-access PDF to each new item
-                where one exists: from arXiv, or a location that Semantic
-                Scholar knows.
+            if_exists: What to do when the library already has the item (by
+                DOI, or by title, year and ISBN): "skip" (the default)
+                reports it and changes nothing, "file" adds it to the
+                collections and tags given, and "create" adds a duplicate.
+            attach_pdf: If true, attach an open-access PDF to each new
+                article or preprint where one exists: from arXiv, or a
+                location that Semantic Scholar knows.
 
         Returns:
-            JSON with a count for each status, and a result for each DOI:
-            created, exists, filed or failed, with the item key. With
-            attach_pdf, each new item's result has a "pdf" entry: the
-            attachment, or why there is none.
+            JSON with a count for each status, and a result for each
+            identifier: its type, and created, exists, filed or failed, with
+            the item key. With attach_pdf, each new item's result has a
+            "pdf" entry: the attachment, or why there is none.
 
         """
         zot = _write_client()
-        lookups = [(doi, _lookup_doi(doi)) for doi in dois]
-        converted = [found for _, found in lookups if isinstance(found, dict)]
+        lookups = [(text, *_lookup(text)) for text in identifiers]
+        converted = [item for *_, item in lookups if isinstance(item, dict)]
         created = iter(_create_imported(zot, converted, collections, tags, if_exists))
         results = [
-            {"doi": doi, **next(created)}
-            if isinstance(found, dict)
-            else {"doi": doi, "status": "failed", "error": found}
-            for doi, found in lookups
+            {"identifier": text, "type": kind, **next(created)}
+            if isinstance(item, dict)
+            else {"identifier": text, "status": "failed", "error": item}
+            for text, kind, _, item in lookups
         ]
         if attach_pdf:
-            for result in results:
-                if result["status"] == "created":
-                    result["pdf"] = _attach_open_access_pdf(
-                        zot, result["key"], result["doi"], result.get("title", "")
-                    )
+            for result, (_, kind, value, _) in zip(results, lookups, strict=True):
+                if result["status"] != "created":
+                    continue
+                if kind == "isbn":
+                    result["pdf"] = "open-access PDFs are looked up for DOIs only"
+                    continue
+                doi = f"10.48550/arXiv.{value}" if kind == "arxiv" else value
+                result["pdf"] = _attach_open_access_pdf(
+                    zot, result["key"], doi, result.get("title", "")
+                )
         return _import_summary(results)
 
     def import_items(
@@ -1538,7 +1601,7 @@ def _register_import_tools(add: AddTool) -> None:
             _create_imported(zot, converted, collections, tags, if_exists)
         )
 
-    add(add_by_doi)
+    add(add_by_identifier)
     add(import_items)
 
 
