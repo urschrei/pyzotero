@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pyzotero._helpers import save_local_key
+from pyzotero._import import DOILookupError
 
 
 # Skip only when the optional mcp extra is absent. Import the module itself
@@ -902,7 +903,7 @@ class TestNewWriteTools:
             "create_note",
             "update_note",
             "update_collection",
-            "add_by_doi",
+            "add_by_identifier",
             "import_items",
             "merge_items",
             "set_related",
@@ -1127,24 +1128,28 @@ class TestImportItems:
         import_zot.create_items.assert_not_called()
 
 
-class TestAddByDOI:
+class TestAddByIdentifier:
     def test_mixed_success_and_failure(self, write_tools, import_zot):
         csl = {"type": "article-journal", "title": "By DOI", "DOI": "10.1/a"}
 
         def fake_fetch(doi):
             if doi == "10.1/bad":
                 msg = "DOI not found: 10.1/bad"
-                raise mcp_server.DOILookupError(msg)
+                raise DOILookupError(msg)
             return csl
 
-        with patch("pyzotero.mcp_server.fetch_doi_csl", side_effect=fake_fetch):
-            result = json.loads(write_tools["add_by_doi"](["10.1/bad", "10.1/a"]))
-        assert result["counts"] == {"failed": 1, "created": 1}
+        with patch("pyzotero._import.fetch_doi_csl", side_effect=fake_fetch):
+            result = json.loads(
+                write_tools["add_by_identifier"](["10.1/bad", "10.1/a", "nonsense"])
+            )
+        assert result["counts"] == {"failed": 2, "created": 1}
         assert result["items"][0] == {
-            "doi": "10.1/bad",
+            "identifier": "10.1/bad",
             "status": "failed",
             "error": "DOI not found: 10.1/bad",
         }
+        assert result["items"][1]["type"] == "doi"
+        assert "Not a DOI, arXiv ID or ISBN" in result["items"][2]["error"]
         assert result["items"][1]["key"] == "KEY0"
         assert import_zot.create_items.call_args[0][0][0]["DOI"] == "10.1/a"
 
@@ -1474,14 +1479,14 @@ class TestSetRelated:
         assert "itself" in result["error"]
 
 
-# Open-access PDFs for add_by_doi
+# Open-access PDFs for add_by_identifier
 
 
 class TestAddByDOIWithPDF:
     @pytest.fixture
     def doi_csl(self):
         csl = {"type": "article-journal", "title": "By DOI", "DOI": "10.1/a"}
-        with patch("pyzotero.mcp_server.fetch_doi_csl", return_value=csl):
+        with patch("pyzotero._import.fetch_doi_csl", return_value=csl):
             yield
 
     def test_pdf_attached_to_new_item(self, write_tools, import_zot, doi_csl):
@@ -1502,7 +1507,9 @@ class TestAddByDOIWithPDF:
             ),
             patch("pyzotero.mcp_server.download_pdf", side_effect=fake_download),
         ):
-            result = json.loads(write_tools["add_by_doi"](["10.1/a"], attach_pdf=True))
+            result = json.loads(
+                write_tools["add_by_identifier"](["10.1/a"], attach_pdf=True)
+            )
         pdf = result["items"][0]["pdf"]
         assert pdf["attached"] == "ATT1"
         assert pdf["source"] == "https://x/a.pdf"
@@ -1512,7 +1519,9 @@ class TestAddByDOIWithPDF:
 
     def test_no_pdf_found(self, write_tools, import_zot, doi_csl):
         with patch("pyzotero.mcp_server.open_access_pdf_url", return_value=None):
-            result = json.loads(write_tools["add_by_doi"](["10.1/a"], attach_pdf=True))
+            result = json.loads(
+                write_tools["add_by_identifier"](["10.1/a"], attach_pdf=True)
+            )
         assert result["items"][0]["pdf"] == "no open-access PDF found"
 
     def test_download_failure_reported(self, write_tools, import_zot, doi_csl):
@@ -1525,7 +1534,9 @@ class TestAddByDOIWithPDF:
                 side_effect=mcp_server.PDFDownloadError("https://x/a is not a PDF"),
             ),
         ):
-            result = json.loads(write_tools["add_by_doi"](["10.1/a"], attach_pdf=True))
+            result = json.loads(
+                write_tools["add_by_identifier"](["10.1/a"], attach_pdf=True)
+            )
         assert result["items"][0]["status"] == "created"
         assert result["items"][0]["pdf"] == "https://x/a is not a PDF"
 
@@ -1534,11 +1545,124 @@ class TestAddByDOIWithPDF:
             {"key": "OLD1", "data": {"key": "OLD1", "DOI": "10.1/a"}}
         ]
         with patch("pyzotero.mcp_server.open_access_pdf_url") as lookup:
-            result = json.loads(write_tools["add_by_doi"](["10.1/a"], attach_pdf=True))
+            result = json.loads(
+                write_tools["add_by_identifier"](["10.1/a"], attach_pdf=True)
+            )
         assert result["items"][0]["status"] == "exists"
         lookup.assert_not_called()
 
     def test_without_attach_pdf_no_lookup(self, write_tools, import_zot, doi_csl):
         with patch("pyzotero.mcp_server.open_access_pdf_url") as lookup:
-            write_tools["add_by_doi"](["10.1/a"])
+            write_tools["add_by_identifier"](["10.1/a"])
         lookup.assert_not_called()
+
+
+# ISBNs, arXiv IDs and citation keys
+
+
+BOOK = {
+    "itemType": "book",
+    "title": "Introduction to Algorithms",
+    "ISBN": "9780262033848",
+    "date": "2009",
+    "creators": [{"creatorType": "author", "firstName": "T.", "lastName": "Cormen"}],
+}
+
+
+@pytest.fixture
+def book_zot(import_zot):
+    """Give the import client a book schema, and serve BOOK for any ISBN."""
+    import_zot.item_type_fields.side_effect = lambda t: [
+        {"field": f} for f in ("title", "ISBN", "date", "publisher", "extra")
+    ]
+    with patch("pyzotero._import.fetch_isbn", return_value=dict(BOOK)):
+        yield import_zot
+
+
+def _book(key, isbn, date="2009"):
+    return {
+        "key": key,
+        "data": {
+            "key": key,
+            "title": "Introduction to Algorithms",
+            "date": date,
+            "ISBN": isbn,
+        },
+    }
+
+
+class TestAddByISBN:
+    def test_creates_book(self, write_tools, book_zot):
+        result = json.loads(write_tools["add_by_identifier"](["0-262-03384-4"]))
+        assert result["items"][0]["type"] == "isbn"
+        assert result["items"][0]["status"] == "created"
+        assert book_zot.create_items.call_args[0][0][0]["ISBN"] == "9780262033848"
+
+    def test_same_isbn_is_a_duplicate(self, write_tools, book_zot):
+        book_zot.top.return_value = [_book("OLD1", "978-0-262-03384-8", date="2010")]
+        result = json.loads(write_tools["add_by_identifier"](["9780262033848"]))
+        assert result["items"][0]["status"] == "exists"
+        assert result["items"][0]["key"] == "OLD1"
+
+    def test_other_edition_is_not(self, write_tools, book_zot):
+        book_zot.top.return_value = [_book("OLD1", "0-262-53196-8")]
+        result = json.loads(write_tools["add_by_identifier"](["9780262033848"]))
+        assert result["items"][0]["status"] == "created"
+
+    def test_book_without_isbn_matches_by_title_and_year(self, write_tools, book_zot):
+        book_zot.top.return_value = [_book("OLD1", "")]
+        result = json.loads(write_tools["add_by_identifier"](["9780262033848"]))
+        assert result["items"][0]["status"] == "exists"
+
+    def test_no_pdf_lookup_for_books(self, write_tools, book_zot):
+        with patch("pyzotero.mcp_server.open_access_pdf_url") as lookup:
+            result = json.loads(
+                write_tools["add_by_identifier"](["9780262033848"], attach_pdf=True)
+            )
+        assert "DOIs only" in result["items"][0]["pdf"]
+        lookup.assert_not_called()
+
+
+class TestAddByArxivID:
+    def test_pdf_uses_arxiv_doi(self, write_tools, import_zot):
+        csl = {
+            "type": "article-journal",
+            "title": "Preprint",
+            "DOI": "10.48550/arXiv.2001.00001",
+        }
+        with (
+            patch("pyzotero._import.fetch_doi_csl", return_value=csl),
+            patch(
+                "pyzotero.mcp_server.open_access_pdf_url", return_value=None
+            ) as lookup,
+        ):
+            result = json.loads(
+                write_tools["add_by_identifier"](
+                    ["arXiv:2001.00001v2"], attach_pdf=True
+                )
+            )
+        assert result["items"][0]["type"] == "arxiv"
+        lookup.assert_called_once_with("10.48550/arXiv.2001.00001")
+
+
+class TestFindByCitationKey:
+    def test_field_and_extra(self, mock_zot):
+        by_field = _record("A1", "First", citationKey="lecun2015")
+        by_extra = _record("B1", "Second", extra="tex.x: y\nCitation Key: smith2020")
+        near_miss = _record("C1", "Third", extra="Citation Key: LeCun2015")
+
+        def items(q, **kwargs):
+            return [
+                i
+                for i in (by_field, by_extra, near_miss)
+                if q.lower() in json.dumps(i).lower()
+            ]
+
+        mock_zot.items.side_effect = items
+        result = json.loads(
+            mcp_server.find_by_citation_key(["lecun2015", "smith2020", "nobody2000"])
+        )
+        assert [i["key"] for i in result["found"]["lecun2015"]] == ["A1"]
+        assert [i["key"] for i in result["found"]["smith2020"]] == ["B1"]
+        assert result["notFound"] == ["nobody2000"]
+        assert mock_zot.items.call_args[1]["qmode"] == "everything"

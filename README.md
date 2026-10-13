@@ -91,7 +91,7 @@ Add it to your Claude Desktop configuration:
 }
 ```
 
-The server is read-only by default. Starting it with `--enable-writes` registers tools that create and modify items, notes and collections, add items by DOI (with open-access PDFs) or from BibTeX and CSL JSON, and merge duplicates; `--enable-deletes` additionally registers permanent deletion. `--group` selects a group library, and `--transport streamable-http` serves over HTTP. See the [MCP server documentation][14] for the configuration, the full list of tools, and how the write tools behave.
+The server is read-only by default. Starting it with `--enable-writes` registers tools that create and modify items, notes and collections, add items by DOI, arXiv ID or ISBN (with open-access PDFs) or from BibTeX and CSL JSON, and merge duplicates; `--enable-deletes` additionally registers permanent deletion. `--group` selects a group library, and `--transport streamable-http` serves over HTTP. See the [MCP server documentation][14] for the configuration, the full list of tools, and how the write tools behave.
 
 # Development
 

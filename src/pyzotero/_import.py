@@ -27,6 +27,15 @@ PDF_TIMEOUT = 60.0
 MAX_PDF_BYTES = 100 * 1024 * 1024
 # The DOI prefix that arXiv registers its papers under
 ARXIV_DOI_PREFIX = "10.48550/arxiv."
+# arXiv identifiers: 2001.00001 since 2007, hep-th/9901001 before
+ARXIV_ID_RE = re.compile(
+    r"^(?:\d{4}\.\d{4,5}|[a-z][a-z\-]*(?:\.[a-z]{2})?/\d{7})$", re.IGNORECASE
+)
+ARXIV_PREFIX_RE = re.compile(
+    r"^(?:arxiv:|https?://(?:www\.)?arxiv\.org/(?:abs|pdf)/)", re.IGNORECASE
+)
+OPEN_LIBRARY_URL = "https://openlibrary.org/api/books"
+GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes"
 
 # CSL type -> Zotero item type. Crossref and DataCite sometimes send their own
 # type names in place of CSL ones, so those are accepted too.
@@ -331,7 +340,11 @@ MONTHS = {
 }
 
 
-class DOILookupError(Exception):
+class MetadataLookupError(Exception):
+    """Raised when an identifier has no metadata, or the lookup fails."""
+
+
+class DOILookupError(MetadataLookupError):
     """Raised when doi.org has no metadata for a DOI, or the lookup fails."""
 
 
@@ -637,6 +650,218 @@ def fetch_doi_csl(doi: str) -> dict[str, Any]:
     except ValueError as e:
         msg = f"doi.org returned no CSL JSON for {doi}"
         raise DOILookupError(msg) from e
+
+
+def _isbn_check_digit_10(digits: str) -> str:
+    total = sum((10 - i) * int(d) for i, d in enumerate(digits[:9]))
+    check = (11 - total % 11) % 11
+    return "X" if check == 10 else str(check)  # noqa: PLR2004
+
+
+def _isbn_check_digit_13(digits: str) -> str:
+    total = sum((3 if i % 2 else 1) * int(d) for i, d in enumerate(digits[:12]))
+    return str((10 - total % 10) % 10)
+
+
+def normalise_isbn(text: str) -> str | None:
+    """Return an ISBN as 13 digits, or None if ``text`` is not a valid ISBN.
+
+    Accepts ISBN-10 and ISBN-13, with or without hyphens, spaces or an
+    "ISBN" prefix, and checks the check digit.
+    """
+    raw = re.sub(r"^isbn(?:-1[03])?:?", "", text.strip(), flags=re.IGNORECASE)
+    digits = re.sub(r"[\s\-]", "", raw).upper()
+    if re.fullmatch(r"\d{9}[\dX]", digits):
+        if _isbn_check_digit_10(digits) != digits[9]:
+            return None
+        body = "978" + digits[:9]
+        return body + _isbn_check_digit_13(body)
+    if re.fullmatch(r"97[89]\d{10}", digits):
+        if _isbn_check_digit_13(digits) != digits[12]:
+            return None
+        return digits
+    return None
+
+
+def isbn_set(text: str) -> set[str]:
+    """Return the valid ISBNs in a Zotero ISBN field, as 13 digits.
+
+    The field can hold several ISBNs, separated by spaces or commas.
+    """
+    found = (normalise_isbn(m) for m in re.findall(r"[\dXx][\dXx\-]{8,16}", text))
+    return {isbn for isbn in found if isbn}
+
+
+def normalise_arxiv_id(text: str) -> str | None:
+    """Return an arXiv identifier without its version, or None if it is not one."""
+    raw = ARXIV_PREFIX_RE.sub("", text.strip())
+    raw = re.sub(r"(?:\.pdf)?/?$", "", raw)
+    raw = re.sub(r"v\d+$", "", raw)
+    return raw if ARXIV_ID_RE.match(raw) else None
+
+
+def classify_identifier(text: str) -> tuple[str, str]:
+    """Return ("doi" | "arxiv" | "isbn", the normalised identifier).
+
+    Raises:
+        MetadataLookupError: ``text`` is none of these.
+
+    """
+    doi = normalise_doi(text)
+    if doi.startswith("10.") and "/" in doi:
+        return "doi", doi
+    arxiv = normalise_arxiv_id(text)
+    if arxiv:
+        return "arxiv", arxiv
+    isbn = normalise_isbn(text)
+    if isbn:
+        return "isbn", isbn
+    msg = f"Not a DOI, arXiv ID or ISBN: {text!r}"
+    raise MetadataLookupError(msg)
+
+
+def _get_json(url: str, params: dict[str, str], what: str) -> Any:
+    """GET a JSON document, or raise MetadataLookupError."""
+    headers = {
+        "User-Agent": f"pyzotero/{__version__} (https://github.com/urschrei/pyzotero)"
+    }
+    try:
+        with httpx2.Client(timeout=DOI_TIMEOUT, follow_redirects=True) as client:
+            response = client.get(url, params=params, headers=headers)
+    except httpx2.HTTPError as e:
+        msg = f"{what} failed: {e}"
+        raise MetadataLookupError(msg) from e
+    if response.status_code != httpx2.codes.OK:
+        msg = f"{what} failed: HTTP {response.status_code}"
+        raise MetadataLookupError(msg)
+    try:
+        return response.json()
+    except ValueError as e:
+        msg = f"{what} returned no JSON"
+        raise MetadataLookupError(msg) from e
+
+
+def _person(name: str, creator_type: str = "author") -> dict[str, str]:
+    """Split a display name into a Zotero creator: "Last, First" or "First Last"."""
+    if "," in name:
+        last, first = (part.strip() for part in name.split(",", 1))
+    else:
+        first, _, last = name.strip().rpartition(" ")
+    if not first:
+        return {"creatorType": creator_type, "name": last}
+    return {"creatorType": creator_type, "firstName": first, "lastName": last}
+
+
+def _open_library_book(isbn: str) -> dict[str, Any] | None:
+    """Return a book item from Open Library, or None if it has no record."""
+    data = _get_json(
+        OPEN_LIBRARY_URL,
+        {"bibkeys": f"ISBN:{isbn}", "format": "json", "jscmd": "data"},
+        "Open Library lookup",
+    ).get(f"ISBN:{isbn}")
+    if not data or not data.get("title"):
+        return None
+    title = data["title"]
+    if data.get("subtitle"):
+        title = f"{title}: {data['subtitle']}"
+    item: dict[str, Any] = {
+        "itemType": "book",
+        "title": title,
+        "ISBN": isbn,
+        "libraryCatalog": "Open Library",
+        "creators": [
+            _person(a["name"]) for a in data.get("authors", []) if a.get("name")
+        ],
+    }
+    for key, field in (("publishers", "publisher"), ("publish_places", "place")):
+        if data.get(key):
+            item[field] = data[key][0].get("name", "")
+    if data.get("publish_date"):
+        item["date"] = data["publish_date"]
+    if data.get("number_of_pages"):
+        item["numPages"] = str(data["number_of_pages"])
+    return item
+
+
+def _google_books_book(isbn: str) -> dict[str, Any] | None:
+    """Return a book item from Google Books, or None if it has no record."""
+    found = _get_json(GOOGLE_BOOKS_URL, {"q": f"isbn:{isbn}"}, "Google Books lookup")
+    if not found.get("items"):
+        return None
+    info = found["items"][0].get("volumeInfo", {})
+    if not info.get("title"):
+        return None
+    title = info["title"]
+    if info.get("subtitle"):
+        title = f"{title}: {info['subtitle']}"
+    item: dict[str, Any] = {
+        "itemType": "book",
+        "title": title,
+        "ISBN": isbn,
+        "libraryCatalog": "Google Books",
+        "creators": [_person(a) for a in info.get("authors", [])],
+    }
+    for key, field in (
+        ("publisher", "publisher"),
+        ("publishedDate", "date"),
+        ("language", "language"),
+        ("description", "abstractNote"),
+    ):
+        if info.get(key):
+            item[field] = info[key]
+    if info.get("pageCount"):
+        item["numPages"] = str(info["pageCount"])
+    return item
+
+
+def fetch_isbn(isbn: str) -> dict[str, Any]:
+    """Return a book item for an ISBN, from Open Library or else Google Books.
+
+    The item uses Zotero base field names; pass it to :func:`fit_to_schema`.
+
+    Raises:
+        MetadataLookupError: neither service has the ISBN, or both lookups
+            failed.
+
+    """
+    errors = []
+    for source in (_open_library_book, _google_books_book):
+        try:
+            item = source(isbn)
+        except MetadataLookupError as e:
+            errors.append(str(e))
+            continue
+        if item:
+            return item
+    detail = f" ({'; '.join(errors)})" if errors else ""
+    msg = f"No metadata found for ISBN {isbn}{detail}"
+    raise MetadataLookupError(msg)
+
+
+def lookup_identifier(text: str) -> tuple[str, str, dict[str, Any]]:
+    """Look up a DOI, arXiv ID or ISBN.
+
+    Returns:
+        Its kind ("doi", "arxiv" or "isbn"), the normalised identifier, and
+        the converted item.
+
+    An arXiv ID goes through the DOI that arXiv registers for every paper
+    (10.48550/arXiv.<id>), with DataCite supplying the metadata.
+
+    Raises:
+        MetadataLookupError: the identifier is not recognised, or has no
+            metadata.
+
+    """
+    kind, value = classify_identifier(text)
+    if kind == "isbn":
+        return kind, value, fetch_isbn(value)
+    if kind == "arxiv":
+        item = csl_to_zotero(fetch_doi_csl(f"10.48550/arXiv.{value}"))
+        item["number"] = f"arXiv:{value}"
+        item["url"] = f"https://arxiv.org/abs/{value}"
+        return kind, value, item
+    return kind, value, csl_to_zotero(fetch_doi_csl(value))
 
 
 def open_access_pdf_url(doi: str) -> str | None:
