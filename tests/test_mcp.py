@@ -826,9 +826,14 @@ class TestGetAnnotations:
         ]
         mock_zot.everything.side_effect = lambda x: x
         mock_zot.item.side_effect = lambda key: pdf if key == "PDF01" else ITEM_FIXTURE
-        mock_zot.children.side_effect = lambda key: (
-            annotations if key == "PDF01" else [pdf, NOTE_ITEM]
-        )
+
+        # Like the local API, give annotations only when they are asked for
+        def children(key, **kwargs):
+            if key != "PDF01":
+                return [pdf, NOTE_ITEM]
+            return annotations if kwargs.get("itemType") == "annotation" else []
+
+        mock_zot.children.side_effect = children
         return mock_zot
 
     def test_from_parent_item(self, annotated):

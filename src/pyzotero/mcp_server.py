@@ -573,10 +573,13 @@ def get_annotations(key: str) -> str:
     total = 0
     for att in attachments:
         att_data = att.get("data", {})
+        # The local API leaves annotations out of an attachment's children
+        # unless the request names their item type.
         annotations = [
             c["data"]
-            for c in zot.everything(zot.children(att_data["key"]))
-            if c.get("data", {}).get("itemType") == "annotation"
+            for c in zot.everything(
+                zot.children(att_data["key"], itemType="annotation")
+            )
         ]
         if not annotations:
             continue
