@@ -9,6 +9,7 @@ its item type uses, and moves what the type does not accept into Extra.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Any
 
 import bibtexparser
@@ -18,8 +19,14 @@ from bibtexparser.latexenc import latex_to_unicode
 
 from pyzotero import __version__
 from pyzotero._helpers import normalise_doi
+from pyzotero.semantic_scholar import PaperNotFoundError, get_paper
 
 DOI_TIMEOUT = 30.0
+PDF_TIMEOUT = 60.0
+# Larger downloads are refused
+MAX_PDF_BYTES = 100 * 1024 * 1024
+# The DOI prefix that arXiv registers its papers under
+ARXIV_DOI_PREFIX = "10.48550/arxiv."
 
 # CSL type -> Zotero item type. Crossref and DataCite sometimes send their own
 # type names in place of CSL ones, so those are accepted too.
@@ -328,6 +335,10 @@ class DOILookupError(Exception):
     """Raised when doi.org has no metadata for a DOI, or the lookup fails."""
 
 
+class PDFDownloadError(Exception):
+    """Raised when a PDF cannot be downloaded, or the download is not a PDF."""
+
+
 def _text(value: Any) -> str:
     """Return a CSL value as a string. Lists (e.g. ISSN) are joined."""
     if isinstance(value, list):
@@ -626,3 +637,83 @@ def fetch_doi_csl(doi: str) -> dict[str, Any]:
     except ValueError as e:
         msg = f"doi.org returned no CSL JSON for {doi}"
         raise DOILookupError(msg) from e
+
+
+def open_access_pdf_url(doi: str) -> str | None:
+    """Return the URL of an open-access PDF for a DOI, or None if none is known.
+
+    An arXiv DOI goes straight to arXiv. Otherwise Semantic Scholar supplies
+    the paper's arXiv ID, if it has one, or its open-access PDF location.
+
+    Raises:
+        SemanticScholarError: the Semantic Scholar lookup failed, other than
+            by not knowing the paper.
+
+    """
+    norm = normalise_doi(doi)
+    if norm.startswith(ARXIV_DOI_PREFIX):
+        return f"https://arxiv.org/pdf/{norm[len(ARXIV_DOI_PREFIX) :]}"
+    try:
+        paper = get_paper(norm, id_type="doi")
+    except PaperNotFoundError:
+        return None
+    if not paper:
+        return None
+    if paper.get("arxivId"):
+        return f"https://arxiv.org/pdf/{paper['arxivId']}"
+    return paper.get("openAccessPdfUrl") or None
+
+
+def _save_pdf(response: httpx2.Response, url: str, path: Path) -> None:
+    """Write a streamed response to ``path`` if it is a PDF within the size limit."""
+    if response.status_code != httpx2.codes.OK:
+        msg = f"Download from {url} failed: HTTP {response.status_code}"
+        raise PDFDownloadError(msg)
+    size = 0
+    head = b""
+    with path.open("wb") as fh:
+        for chunk in response.iter_bytes():
+            if len(head) < 1024:  # noqa: PLR2004
+                head += chunk[:1024]
+            size += len(chunk)
+            if size > MAX_PDF_BYTES:
+                msg = f"{url} is larger than {MAX_PDF_BYTES // 2**20} MB"
+                raise PDFDownloadError(msg)
+            fh.write(chunk)
+    # Some servers send a few bytes of whitespace before the signature
+    if not head.lstrip().startswith(b"%PDF-"):
+        msg = f"{url} is not a PDF"
+        raise PDFDownloadError(msg)
+
+
+def download_pdf(url: str, path: Path) -> Path:
+    """Download a PDF to ``path``.
+
+    Many open-access locations are landing pages rather than files, so the
+    download must start with the PDF signature.
+
+    Raises:
+        PDFDownloadError: the request failed, the response is not a PDF, or
+            it is larger than MAX_PDF_BYTES.
+
+    """
+    if not url.startswith(("https://", "http://")):
+        msg = f"Not a web URL: {url}"
+        raise PDFDownloadError(msg)
+    headers = {
+        "User-Agent": f"pyzotero/{__version__} (https://github.com/urschrei/pyzotero)"
+    }
+    try:
+        with (
+            httpx2.Client(timeout=PDF_TIMEOUT, follow_redirects=True) as client,
+            client.stream("GET", url, headers=headers) as response,
+        ):
+            _save_pdf(response, url, path)
+    except httpx2.HTTPError as e:
+        path.unlink(missing_ok=True)
+        msg = f"Download from {url} failed: {e}"
+        raise PDFDownloadError(msg) from e
+    except PDFDownloadError:
+        path.unlink(missing_ok=True)
+        raise
+    return path
