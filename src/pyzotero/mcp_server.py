@@ -544,16 +544,17 @@ def export_bibtex(keys: list[str]) -> str:
 
     """
     zot = _read_client()
-    database = bibtexparser.bibdatabase.BibDatabase()
+    parts = []
     for chunk in chunks(keys, BATCH_SIZE):
         result = zot.items(itemKey=",".join(chunk), format="bibtex")
-        database.entries.extend(result.entries)
-    return _json(
-        {
-            "count": len(database.entries),
-            "bibtex": bibtexparser.dumps(database),
-        }
-    )
+        # The local API sends export formats as text/plain, which arrives as
+        # bytes. The web API's application/x-bibtex arrives parsed.
+        if isinstance(result, bytes):
+            parts.append(result.decode("utf-8").strip())
+        else:
+            parts.append(bibtexparser.dumps(result).strip())
+    bibtex = "\n\n".join(p for p in parts if p)
+    return _json({"count": len(parse_bibtex(bibtex)), "bibtex": bibtex})
 
 
 @mcp.tool()
