@@ -859,6 +859,17 @@ class TestExportBibtex:
         assert mock_zot.items.call_args_list[0][1]["format"] == "bibtex"
         assert "@article{K50," in result["bibtex"]
 
+    def test_export_local_api_plain_text(self, mock_zot):
+        """The local API sends export formats as text/plain, so they arrive as bytes"""
+        mock_zot.items.side_effect = lambda **kwargs: "".join(
+            f"\n@article{{{k},\n\ttitle = {{T\u00e9 {k}}},\n}}\n"
+            for k in kwargs["itemKey"].split(",")
+        ).encode("utf-8")
+        result = json.loads(mcp_server.export_bibtex(["A1", "B2"]))
+        assert result["count"] == 2
+        assert result["bibtex"].startswith("@article{A1,")
+        assert "Té B2" in result["bibtex"]
+
 
 class TestNoteHTML:
     def test_line_breaks_are_single(self):
