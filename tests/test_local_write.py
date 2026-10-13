@@ -6,8 +6,11 @@ This file is part of Pyzotero.
 
 import json
 import os
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
+from urllib.parse import parse_qs
 
 import httpx2
 
@@ -325,6 +328,23 @@ class UploadTests(unittest.TestCase):
         self.assertNotIn("Zotero-API-Key", mock_post.call_args.kwargs["headers"])
         # the receiver is on the loopback interface, so no proxy is used
         self.assertFalse(mock_post.call_args.kwargs["trust_env"])
+
+    def test_auth_encodes_spaces_as_percent_20(self):
+        """Zotero before 9cbba8c4d keeps a "+" in the stored filename"""
+        mock = MockClient()
+        mock.register("POST", f"{LOCAL}/users/0/items/ITEMKEY/file", '{"exists": 1}')
+        zot = local_zotero(mock, server_id=SERVER_ID, local_api_key="abc123")
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "my paper.unknownext"
+            path.write_bytes(b"data")
+            z.Zupload(zot, [])._get_auth(str(path), "ITEMKEY")
+        body = mock.last_request().body.decode()
+        self.assertIn("filename=my%20paper.unknownext", body)
+        self.assertNotIn("+", body)
+        fields = parse_qs(body, keep_blank_values=True)
+        self.assertEqual(fields["filename"], ["my paper.unknownext"])
+        # mimetypes finds no charset; send it empty, as before
+        self.assertEqual(fields["charset"], [""])
 
     def test_upload_step_two_stays_bare_for_web(self):
         mock = MockClient()
