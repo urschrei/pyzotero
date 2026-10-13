@@ -5,12 +5,15 @@ from __future__ import annotations
 import argparse
 import functools
 import hashlib
+import html
 import json
 import sys
 from collections.abc import Callable
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, TypeVar
 
+import bibtexparser
 from mcp.server.mcpserver import MCPServer
 
 from pyzotero._helpers import (
@@ -22,6 +25,15 @@ from pyzotero._helpers import (
     format_s2_paper,
     get_write_client,
     get_zotero_client,
+    normalise_doi,
+)
+from pyzotero._import import (
+    DOILookupError,
+    bibtex_to_zotero,
+    csl_to_zotero,
+    fetch_doi_csl,
+    fit_to_schema,
+    parse_bibtex,
 )
 from pyzotero.semantic_scholar import (
     PaperNotFoundError,
@@ -38,6 +50,17 @@ from pyzotero.zotero import chunks
 mcp = MCPServer("zotero")
 
 F = TypeVar("F", bound=Callable[..., str])
+
+# The library that every tool uses. main() changes it for --group.
+_LIBRARY = {"library_id": "0", "library_type": "user"}
+
+# The local API accepts at most 50 item keys or new items in one request
+BATCH_SIZE = 50
+
+
+def _read_client() -> Any:
+    """Return a read-only client for the library that the server uses."""
+    return get_zotero_client(**_LIBRARY)
 
 
 def _json(obj: Any) -> str:
@@ -82,7 +105,7 @@ def _run_s2_tool_lookup(
         return _json({"count": 0, "papers": []})
 
     if check_library:
-        zot = get_zotero_client()
+        zot = _read_client()
         doi_map = build_doi_index(zot)
         output_papers = annotate_with_library(papers, doi_map)
     else:
@@ -124,6 +147,8 @@ def search(  # noqa: PLR0912
     tag: str = "",
     limit: int = 50,
     offset: int = 0,
+    sort: str = "",
+    direction: str = "",
 ) -> str:
     """Search the local Zotero library.
 
@@ -135,17 +160,25 @@ def search(  # noqa: PLR0912
         tag: Filter by tag. Use comma-separated values for AND search, e.g. "climate,adaptation".
         limit: Maximum results to return (default 50).
         offset: Number of results to skip for pagination.
+        sort: Sort field, e.g. "dateAdded", "dateModified", "title",
+            "creator" or "date". For recently added items, use
+            sort="dateAdded" with no query.
+        direction: "asc" or "desc". The default depends on the sort field.
 
     Returns:
         JSON with count and items list.
 
     """
-    zot = get_zotero_client()
+    zot = _read_client()
 
     params: dict[str, Any] = {"limit": limit}
 
     if offset > 0:
         params["start"] = offset
+    if sort:
+        params["sort"] = sort
+    if direction:
+        params["direction"] = direction
     if query:
         params["q"] = query
     if fulltext:
@@ -223,7 +256,7 @@ def get_item(key: str) -> str:
         JSON with the full item data.
 
     """
-    zot = get_zotero_client()
+    zot = _read_client()
     result = zot.item(key)
     if not result:
         return _error(f"Item not found: {key}")
@@ -242,7 +275,7 @@ def get_children(key: str) -> str:
         JSON array of child items.
 
     """
-    zot = get_zotero_client()
+    zot = _read_client()
     results = zot.children(key)
     return _json(results)
 
@@ -259,7 +292,7 @@ def list_collections(limit: int = 0) -> str:
         JSON array of collections with id, name, items count, and parent info.
 
     """
-    zot = get_zotero_client()
+    zot = _read_client()
 
     params: dict[str, Any] = {}
     if limit > 0:
@@ -313,7 +346,7 @@ def list_tags(collection: str = "") -> str:
         JSON array of tag strings.
 
     """
-    zot = get_zotero_client()
+    zot = _read_client()
     if collection:
         results = zot.collection_tags(collection)
     else:
@@ -333,11 +366,194 @@ def get_fulltext(key: str) -> str:
         JSON with content, indexedPages, and totalPages.
 
     """
-    zot = get_zotero_client()
+    zot = _read_client()
     result = zot.fulltext_item(key)
     if not result:
         return _error("No full-text content available")
     return _json(result)
+
+
+class _NoteText(HTMLParser):
+    """Collect the text of a Zotero note. Block elements become line breaks."""
+
+    BLOCKS = frozenset(
+        {"p", "div", "br", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "pre"}
+    )
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: Any) -> None:
+        if tag == "li":
+            self.parts.append("\n- ")
+        elif tag in self.BLOCKS:
+            self.parts.append("\n")
+
+    def handle_endtag(self, tag: str) -> None:
+        # A list item or a line break needs only the break before it
+        if tag in self.BLOCKS and tag not in {"li", "br"}:
+            self.parts.append("\n")
+
+    def handle_data(self, data: str) -> None:
+        self.parts.append(data)
+
+
+def _note_to_text(note_html: str) -> str:
+    """Convert the HTML of a Zotero note to plain text."""
+    parser = _NoteText()
+    parser.feed(note_html)
+    parser.close()
+    lines = (line.strip() for line in "".join(parser.parts).splitlines())
+    text = "\n".join(lines)
+    while "\n\n\n" in text:
+        text = text.replace("\n\n\n", "\n\n")
+    return text.strip()
+
+
+def _text_to_note_html(text: str) -> str:
+    """Convert plain text to note HTML: a paragraph per blank-line block."""
+    paragraphs = [p.strip() for p in text.strip().split("\n\n") if p.strip()]
+    return "".join(
+        "<p>" + "<br>".join(html.escape(line) for line in p.splitlines()) + "</p>"
+        for p in paragraphs
+    )
+
+
+def _format_note(note: dict[str, Any]) -> dict[str, Any]:
+    """Summarise a note item for tool output."""
+    data = note.get("data", {})
+    return {
+        "key": data.get("key", ""),
+        "parentItem": data.get("parentItem"),
+        "text": _note_to_text(data.get("note", "")),
+        "tags": [t["tag"] for t in data.get("tags", [])],
+        "dateModified": data.get("dateModified", ""),
+    }
+
+
+@mcp.tool()
+@mcp_error_handler
+def get_notes(key: str = "", query: str = "", limit: int = 25) -> str:
+    """Get notes as plain text: an item's notes, or notes that match a query.
+
+    Args:
+        key: An item key. Returns that item's child notes. Leave empty to
+            search all notes instead.
+        query: Text to search for in notes across the library. Without key
+            or query, returns the most recently modified notes.
+        limit: Maximum number of notes when there is no key (default 25).
+
+    Returns:
+        JSON with count and notes list (key, parentItem, text, tags).
+
+    """
+    zot = _read_client()
+    if key:
+        children = zot.everything(zot.children(key))
+        notes = [c for c in children if c.get("data", {}).get("itemType") == "note"]
+    else:
+        params: dict[str, Any] = {"itemType": "note", "limit": limit}
+        if query:
+            params.update(q=query, qmode="everything")
+        else:
+            params.update(sort="dateModified", direction="desc")
+        notes = zot.items(**params)
+    output = [_format_note(n) for n in notes]
+    return _json({"count": len(output), "notes": output})
+
+
+ANNOTATION_FIELDS = {
+    "annotationType": "type",
+    "annotationText": "text",
+    "annotationComment": "comment",
+    "annotationColor": "color",
+    "annotationPageLabel": "page",
+}
+
+
+@mcp.tool()
+@mcp_error_handler
+def get_annotations(key: str) -> str:
+    """Get the highlights, notes and other annotations made in Zotero's reader.
+
+    Args:
+        key: The key of an item, for the annotations on all of its
+            attachments, or of a single PDF, EPUB or snapshot attachment.
+
+    Returns:
+        JSON with the attachments that have annotations, each with its
+        annotations in document order (type, text, comment, color, page,
+        tags).
+
+    """
+    zot = _read_client()
+    item = zot.item(key)
+    if item.get("data", {}).get("itemType") == "attachment":
+        attachments = [item]
+    else:
+        attachments = [
+            c
+            for c in zot.everything(zot.children(key))
+            if c.get("data", {}).get("itemType") == "attachment"
+        ]
+    output = []
+    total = 0
+    for att in attachments:
+        att_data = att.get("data", {})
+        annotations = [
+            c["data"]
+            for c in zot.everything(zot.children(att_data["key"]))
+            if c.get("data", {}).get("itemType") == "annotation"
+        ]
+        if not annotations:
+            continue
+        annotations.sort(key=lambda a: a.get("annotationSortIndex", ""))
+        total += len(annotations)
+        output.append(
+            {
+                "key": att_data["key"],
+                "title": att_data.get("title", ""),
+                "annotations": [
+                    {
+                        "key": a["key"],
+                        **{
+                            out: a[field]
+                            for field, out in ANNOTATION_FIELDS.items()
+                            if a.get(field)
+                        },
+                        "tags": [t["tag"] for t in a.get("tags", [])],
+                    }
+                    for a in annotations
+                ],
+            }
+        )
+    return _json({"count": total, "attachments": output})
+
+
+@mcp.tool()
+@mcp_error_handler
+def export_bibtex(keys: list[str]) -> str:
+    """Export items as BibTeX, using Zotero's own BibTeX exporter.
+
+    Args:
+        keys: Item keys to export.
+
+    Returns:
+        JSON with count and the BibTeX source.
+
+    """
+    zot = _read_client()
+    database = bibtexparser.bibdatabase.BibDatabase()
+    for chunk in chunks(keys, BATCH_SIZE):
+        result = zot.items(itemKey=",".join(chunk), format="bibtex")
+        database.entries.extend(result.entries)
+    return _json(
+        {
+            "count": len(database.entries),
+            "bibtex": bibtexparser.dumps(database),
+        }
+    )
 
 
 @mcp.tool()
@@ -458,7 +674,7 @@ def search_semantic_scholar(
         return _json({"count": 0, "total": total, "papers": []})
 
     if check_library:
-        zot = get_zotero_client()
+        zot = _read_client()
         doi_map = build_doi_index(zot)
         output_papers = annotate_with_library(papers, doi_map)
     else:
@@ -477,7 +693,7 @@ def _write_client() -> Any:
     The key comes from the environment, or else from the file that
     ``pyzotero authorize`` writes. See :func:`get_write_client`.
     """
-    return get_write_client()
+    return get_write_client(**_LIBRARY)
 
 
 AddTool = Callable[[Callable[..., str]], None]
@@ -498,7 +714,7 @@ def _register_item_tools(add: AddTool) -> None:
             JSON with the field names and creator types for that item type.
 
         """
-        zot = get_zotero_client()
+        zot = _read_client()
         return _json(
             {
                 "itemType": item_type,
@@ -553,7 +769,10 @@ def _register_item_tools(add: AddTool) -> None:
 
         Args:
             key: The item key.
-            fields: Field values to set, e.g. {"title": "New title"}.
+            fields: Field values to set, e.g. {"title": "New title"}. To
+                move a note or attachment under another item, set
+                {"parentItem": "<key>"}; {"parentItem": false} makes it
+                top-level.
 
         Returns:
             JSON confirming the key and the fields written.
@@ -673,8 +892,45 @@ def _register_collection_tools(add: AddTool) -> None:
             }
         )
 
+    def update_collection(key: str, name: str = "", parent: str | None = None) -> str:
+        """Rename a collection, or move it under another collection.
+
+        The collection keeps its key, its subcollections and its items.
+
+        Args:
+            key: The collection key.
+            name: The new name. Leave empty to keep the current name.
+            parent: The key of the new parent collection, or "" to make the
+                collection top-level. Omit to keep the current parent.
+
+        Returns:
+            JSON with the collection's key, name and parent.
+
+        """
+        if not name and parent is None:
+            msg = "Give a new name, a new parent, or both"
+            raise ValueError(msg)
+        if parent == key:
+            msg = "A collection cannot be its own parent"
+            raise ValueError(msg)
+        zot = _write_client()
+        data = zot.collection(key)["data"]
+        if name:
+            data["name"] = name
+        if parent is not None:
+            data["parentCollection"] = parent or False
+        zot.update_collection(data)
+        return _json(
+            {
+                "updated": key,
+                "name": data["name"],
+                "parent": data.get("parentCollection") or None,
+            }
+        )
+
     for tool in (
         create_collection,
+        update_collection,
         add_to_collection,
         remove_from_collection,
         move_to_collection,
@@ -766,6 +1022,310 @@ def _register_attachment_tools(add: AddTool) -> None:
     add(add_attachment)
 
 
+def _register_note_tools(add: AddTool) -> None:
+    """Register the tools that create and edit notes."""
+
+    def create_note(
+        content: str,
+        parent_key: str = "",
+        is_html: bool = False,
+        tags: list[str] | None = None,
+        collections: list[str] | None = None,
+    ) -> str:
+        """Create a note, attached to an item or standalone.
+
+        Args:
+            content: The note text. Plain text by default: blank lines
+                separate paragraphs.
+            parent_key: The key of the item that the note belongs to. Leave
+                empty for a standalone note.
+            is_html: If true, content is HTML and is stored as given.
+            tags: Tag names to attach.
+            collections: Collection keys, for a standalone note only. A child
+                note belongs to its parent's collections.
+
+        Returns:
+            JSON with the created note's key, or the server's rejection reason.
+
+        """
+        if parent_key and collections:
+            msg = "A child note cannot be filed in collections; its parent is"
+            raise ValueError(msg)
+        zot = _write_client()
+        note: dict[str, Any] = {
+            "itemType": "note",
+            "note": content if is_html else _text_to_note_html(content),
+            "tags": [{"tag": t} for t in tags or []],
+        }
+        if parent_key:
+            note["parentItem"] = parent_key
+        if collections:
+            note["collections"] = collections
+        resp = zot.create_items([note])
+        if resp.get("success"):
+            return _json(
+                {"created": resp["success"]["0"], "parent": parent_key or None}
+            )
+        return _json({"error": "Note was rejected", "detail": resp.get("failed")})
+
+    def update_note(key: str, content: str, is_html: bool = False) -> str:
+        """Replace the text of a note.
+
+        Args:
+            key: The note key.
+            content: The new note text. Plain text by default: blank lines
+                separate paragraphs.
+            is_html: If true, content is HTML and is stored as given.
+
+        Returns:
+            JSON confirming the key.
+
+        """
+        zot = _write_client()
+        item = zot.item(key)
+        if item["data"].get("itemType") != "note":
+            msg = f"Item {key} is not a note"
+            raise ValueError(msg)
+        item["data"]["note"] = content if is_html else _text_to_note_html(content)
+        zot.update_item(item)
+        return _json({"updated": key})
+
+    add(create_note)
+    add(update_note)
+
+
+IF_EXISTS_MODES = ("skip", "file", "create")
+
+
+def _title_key(title: str) -> str:
+    """Normalise a title for comparison: lower case, letters and digits only."""
+    return "".join(ch for ch in title.casefold() if ch.isalnum())
+
+
+def _item_doi(item: dict[str, Any]) -> str:
+    """Return an item's normalised DOI, from its DOI field or from Extra."""
+    if item.get("DOI"):
+        return normalise_doi(item["DOI"])
+    for line in item.get("extra", "").splitlines():
+        label, _, value = line.partition(":")
+        if label.strip().upper() == "DOI" and value.strip():
+            return normalise_doi(value)
+    return ""
+
+
+def _find_existing(zot: Any, item: dict[str, Any]) -> dict[str, Any] | None:
+    """Return the library item that ``item`` duplicates, by DOI or by title.
+
+    Items with a DOI match on DOI only. Items without one match on title,
+    and on year when both have a date.
+    """
+    doi = _item_doi(item)
+    if doi:
+        for found in zot.items(q=doi, qmode="everything", limit=25):
+            if _item_doi(found.get("data", {})) == doi:
+                return found
+        return None
+    title = item.get("title") or next(
+        (v for k, v in item.items() if k in {"caseName", "nameOfAct", "subject"}), ""
+    )
+    if not title:
+        return None
+    want = _title_key(title)
+    year = item.get("date", "")[:4]
+    for found in zot.top(q=title, limit=25):
+        data = found.get("data", {})
+        if _title_key(data.get("title", "")) != want:
+            continue
+        found_year = data.get("date", "")[:4]
+        if not year or not found_year or year == found_year:
+            return found
+    return None
+
+
+def _create_imported(  # noqa: PLR0912
+    zot: Any,
+    items: list[dict[str, Any]],
+    collections: list[str] | None,
+    tags: list[str] | None,
+    if_exists: str,
+) -> list[dict[str, Any]]:
+    """Fit converted items to the schema, skip or file duplicates, create the rest.
+
+    Returns one result per item, in input order.
+    """
+    if if_exists not in IF_EXISTS_MODES:
+        msg = f"if_exists must be one of {', '.join(IF_EXISTS_MODES)}"
+        raise ValueError(msg)
+    schema: dict[str, tuple[set[str], list[str]]] = {}
+    results: list[dict[str, Any]] = []
+    pending: list[tuple[int, dict[str, Any]]] = []
+    for item in items:
+        item_type = item["itemType"]
+        if item_type not in schema:
+            schema[item_type] = (
+                {f["field"] for f in zot.item_type_fields(item_type)},
+                [c["creatorType"] for c in zot.item_creator_types(item_type)],
+            )
+        fitted, dropped = fit_to_schema(item, *schema[item_type])
+        result: dict[str, Any] = {
+            "title": fitted.get("title", ""),
+            "itemType": item_type,
+        }
+        if dropped:
+            result["droppedFields"] = dropped
+        existing = None if if_exists == "create" else _find_existing(zot, fitted)
+        if existing is not None:
+            result["key"] = existing["key"]
+            result["status"] = "exists"
+            if if_exists == "file":
+                missing = [
+                    c
+                    for c in collections or []
+                    if c not in existing["data"].get("collections", [])
+                ]
+                for collection in missing:
+                    zot.addto_collection(collection, existing)
+                    existing = zot.item(existing["key"])
+                if tags:
+                    zot.add_tags(existing, *tags)
+                if missing or tags:
+                    result["status"] = "filed"
+        else:
+            if collections:
+                fitted["collections"] = collections
+            fitted["tags"] = fitted.get("tags", []) + [{"tag": t} for t in tags or []]
+            pending.append((len(results), fitted))
+        results.append(result)
+    for batch in chunks(pending, BATCH_SIZE):
+        resp = zot.create_items([item for _, item in batch])
+        for position, (index, _) in enumerate(batch):
+            key = resp.get("success", {}).get(str(position))
+            if key:
+                results[index].update(key=key, status="created")
+            else:
+                failure = resp.get("failed", {}).get(str(position), {})
+                results[index].update(
+                    status="failed", error=failure.get("message", "rejected")
+                )
+    return results
+
+
+def _import_summary(results: list[dict[str, Any]]) -> str:
+    """Return import results as JSON, with a count for each status."""
+    counts: dict[str, int] = {}
+    for result in results:
+        counts[result["status"]] = counts.get(result["status"], 0) + 1
+    return _json({"counts": counts, "items": results})
+
+
+def _lookup_doi(doi: str) -> dict[str, Any] | str:
+    """Return the converted item for a DOI, or the reason that the lookup failed."""
+    try:
+        return csl_to_zotero(fetch_doi_csl(doi))
+    except DOILookupError as e:
+        return str(e)
+
+
+def _register_import_tools(add: AddTool) -> None:
+    """Register the tools that add items from identifiers and citation data."""
+
+    def add_by_doi(
+        dois: list[str],
+        collections: list[str] | None = None,
+        tags: list[str] | None = None,
+        if_exists: str = "skip",
+    ) -> str:
+        """Add items by DOI, with metadata from the DOI's registration agency.
+
+        doi.org supplies the metadata: Crossref, DataCite or mEDRA,
+        depending on the DOI.
+
+        Args:
+            dois: DOIs, bare or as doi.org URLs.
+            collections: Collection keys to file the new items under.
+            tags: Tag names to attach to the new items.
+            if_exists: What to do when the library already has an item with
+                the DOI: "skip" (the default) reports it and changes nothing,
+                "file" adds it to the collections and tags given, and
+                "create" adds a duplicate.
+
+        Returns:
+            JSON with a count for each status, and a result for each DOI:
+            created, exists, filed or failed, with the item key.
+
+        """
+        zot = _write_client()
+        lookups = [(doi, _lookup_doi(doi)) for doi in dois]
+        converted = [found for _, found in lookups if isinstance(found, dict)]
+        created = iter(_create_imported(zot, converted, collections, tags, if_exists))
+        results = [
+            {"doi": doi, **next(created)}
+            if isinstance(found, dict)
+            else {"doi": doi, "status": "failed", "error": found}
+            for doi, found in lookups
+        ]
+        return _import_summary(results)
+
+    def import_items(
+        data: str = "",
+        file_path: str = "",
+        format: str = "bibtex",
+        collections: list[str] | None = None,
+        tags: list[str] | None = None,
+        if_exists: str = "skip",
+    ) -> str:
+        """Add items from BibTeX or CSL JSON.
+
+        Args:
+            data: The BibTeX or CSL JSON source. Give this or file_path.
+            file_path: An absolute path to a .bib or .json file, in place of
+                data. The server's working directory is not yours, so
+                relative paths are rejected.
+            format: "bibtex" or "csljson".
+            collections: Collection keys to file the new items under.
+            tags: Tag names to attach to the new items, besides any that
+                the source gives (BibTeX keywords).
+            if_exists: What to do when the library already has the item (by
+                DOI, or else by title and year): "skip" (the default)
+                reports it and changes nothing, "file" adds it to the
+                collections and tags given, and "create" adds a duplicate.
+
+        Returns:
+            JSON with a count for each status, and a result for each entry:
+            created, exists, filed or failed, with the item key.
+
+        """
+        if bool(data) == bool(file_path):
+            msg = "Give either data or file_path"
+            raise ValueError(msg)
+        if file_path:
+            path = Path(file_path)
+            if not path.is_absolute():
+                msg = f"file_path must be an absolute path, got {file_path!r}"
+                raise ValueError(msg)
+            data = path.read_text(encoding="utf-8")
+        if format == "bibtex":
+            converted = [bibtex_to_zotero(e) for e in parse_bibtex(data)]
+        elif format == "csljson":
+            records = json.loads(data)
+            if isinstance(records, dict):
+                records = [records]
+            converted = [csl_to_zotero(r) for r in records]
+        else:
+            msg = 'format must be "bibtex" or "csljson"'
+            raise ValueError(msg)
+        if not converted:
+            msg = f"No entries found in the {format} source"
+            raise ValueError(msg)
+        zot = _write_client()
+        return _import_summary(
+            _create_imported(zot, converted, collections, tags, if_exists)
+        )
+
+    add(add_by_doi)
+    add(import_items)
+
+
 def _register_delete_tools(add: AddTool) -> None:
     """Register the delete tools. This runs only for --enable-deletes."""
 
@@ -810,13 +1370,18 @@ def register_write_tools(
     _register_item_tools(add)
     _register_collection_tools(add)
     _register_attachment_tools(add)
+    _register_note_tools(add)
+    _register_import_tools(add)
     if enable_deletes:
         _register_delete_tools(add)
     return registered
 
 
+LOOPBACK_HOSTS = ("127.0.0.1", "localhost", "::1")
+
+
 def main() -> None:
-    """Run the MCP server over stdio transport."""
+    """Run the MCP server, over stdio unless --transport says otherwise."""
     parser = argparse.ArgumentParser(
         prog="pyzotero-mcp",
         description="MCP server exposing a local Zotero library. Read-only by default.",
@@ -834,11 +1399,46 @@ def main() -> None:
             "permanent, not moves to the trash. Implies --enable-writes"
         ),
     )
+    parser.add_argument(
+        "--group",
+        metavar="ID",
+        help="use the group library with this numeric ID, not your personal library",
+    )
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "streamable-http", "sse"],
+        default="stdio",
+        help="the MCP transport (default: stdio)",
+    )
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="the address to listen on for an HTTP transport (default: 127.0.0.1)",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="the port to listen on for an HTTP transport (default: 8000)",
+    )
     args = parser.parse_args()
-    if args.enable_writes or args.enable_deletes:
+    if args.group is not None:
+        if not args.group.isdigit():
+            parser.error(f"--group takes a numeric group ID, got {args.group!r}")
+        _LIBRARY.update(library_id=args.group, library_type="group")
+    writes = args.enable_writes or args.enable_deletes
+    http = args.transport != "stdio"
+    # An HTTP server has no authentication. Off the loopback interface, other
+    # machines could reach it, so it must not be able to change the library.
+    if http and writes and args.host not in LOOPBACK_HOSTS:
+        parser.error("write tools are only available on a loopback --host")
+    if writes:
         names = register_write_tools(mcp, enable_deletes=args.enable_deletes)
         print(f"pyzotero-mcp: write tools enabled: {', '.join(names)}", file=sys.stderr)
-    mcp.run(transport="stdio")
+    if http:
+        mcp.run(transport=args.transport, host=args.host, port=args.port)
+    else:
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":

@@ -81,5 +81,16 @@ class TestWriteClient:
         with patch("pyzotero._helpers.get_zotero_client") as client:
             _helpers.get_write_client(locale="de-DE")
         client.assert_called_once_with(
-            "de-DE", server_id="srv1", local_api_key="abc123"
+            "de-DE",
+            server_id="srv1",
+            local_api_key="abc123",
+            library_id="0",
+            library_type="user",
         )
+
+    def test_group_library_passed_through(self):
+        _helpers.save_local_key("abc123", "srv1")
+        with patch("pyzotero._helpers.get_zotero_client") as client:
+            _helpers.get_write_client(library_id="99", library_type="group")
+        assert client.call_args[1]["library_id"] == "99"
+        assert client.call_args[1]["library_type"] == "group"
