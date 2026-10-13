@@ -10,6 +10,7 @@ import hashlib
 import mimetypes
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+from urllib.parse import quote, urlencode
 
 import httpx2
 
@@ -185,6 +186,12 @@ class Zupload:
             "charset": mtypes[1],
             "params": 1,
         }
+        # Encode spaces as %20, not as "+". The local API in Zotero builds
+        # before October 2026 does not decode "+", and keeps it in the stored
+        # filename. All Zotero servers decode %20.
+        body = urlencode(
+            {k: "" if v is None else v for k, v in data.items()}, quote_via=quote
+        )
         auth_req = self._post_with_retry(
             lambda: self.zinstance._write(
                 "POST",
@@ -192,7 +199,7 @@ class Zupload:
                     self.zinstance.endpoint,
                     f"/{self.zinstance.library_type}/{self.zinstance.library_id}/items/{reg_key}/file",
                 ),
-                data=data,
+                content=body,
                 headers=auth_headers,
             )
         )
