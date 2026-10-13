@@ -134,7 +134,7 @@ def _mock_zotero():
     mock.fulltext_item.return_value = FULLTEXT_FIXTURE
     mock.collection_items.return_value = ITEMS_FIXTURE
     mock.collection_items_top.return_value = ITEMS_FIXTURE
-    mock.everything.return_value = ITEMS_FIXTURE
+    mock.everything.side_effect = lambda results: results
     return mock
 
 
@@ -426,10 +426,23 @@ class _FakeServer:
         return decorator
 
 
+def _collection(key, name, parent=False):
+    return {"key": key, "data": {"key": key, "name": name, "parentCollection": parent}}
+
+
+# The collections that the write tool tests refer to by key
+WRITE_COLLECTIONS = [
+    _collection(key, f"Collection {key}")
+    for key in ("COLL1", "PARENT1", "PARENT", "C1", "OLD", "NEW")
+]
+
+
 @pytest.fixture
 def write_zot():
     """Patch _write_client to return a mock, and return the mock."""
     mock = MagicMock()
+    mock.collections.return_value = WRITE_COLLECTIONS
+    mock.everything.side_effect = lambda results: results
     mock.create_items.return_value = {"success": {"0": "NEWKEY"}, "failed": {}}
     mock.create_collections.return_value = {"success": {"0": "NEWCOLL"}, "failed": {}}
     mock.item.return_value = {
@@ -891,6 +904,8 @@ class TestNewWriteTools:
             "update_collection",
             "add_by_doi",
             "import_items",
+            "merge_items",
+            "set_related",
         ):
             assert name in write_tools
 
@@ -1192,3 +1207,338 @@ class TestMain:
         with patch("pyzotero.mcp_server.get_zotero_client") as client:
             mcp_server._read_client()
         client.assert_called_once_with(library_id="42", library_type="group")
+
+
+# Collections by name or path
+
+
+NAMED_COLLECTIONS = [
+    _collection("PHYS0001", "Physics"),
+    _collection("QUAN0001", "Quantum", "PHYS0001"),
+    _collection("CHEM0001", "Chemistry"),
+    _collection("QUAN0002", "Quantum", "CHEM0001"),
+    _collection("READ0001", "To Read"),
+]
+
+
+class TestCollectionResolution:
+    @pytest.fixture
+    def zot(self):
+        mock = MagicMock()
+        mock.collections.return_value = NAMED_COLLECTIONS
+        mock.everything.side_effect = lambda results: results
+        return mock
+
+    @pytest.mark.parametrize(
+        ("spec", "key"),
+        [
+            ("READ0001", "READ0001"),
+            ("To Read", "READ0001"),
+            ("to read", "READ0001"),
+            ("Physics/Quantum", "QUAN0001"),
+            ("/chemistry/quantum/", "QUAN0002"),
+        ],
+    )
+    def test_resolves(self, zot, spec, key):
+        assert mcp_server._resolve_collection(zot, spec) == key
+
+    def test_ambiguous_name_lists_paths(self, zot):
+        with pytest.raises(ValueError, match="ambiguous") as err:
+            mcp_server._resolve_collection(zot, "Quantum")
+        assert "Physics/Quantum (QUAN0001)" in str(err.value)
+        assert "Chemistry/Quantum (QUAN0002)" in str(err.value)
+
+    def test_unknown_suggests(self, zot):
+        with pytest.raises(ValueError, match="Did you mean: Physics"):
+            mcp_server._resolve_collection(zot, "Physic")
+
+    def test_empty_needs_no_lookup(self, zot):
+        assert mcp_server._resolve_collections(zot, None) == []
+        zot.collections.assert_not_called()
+
+    def test_search_by_name(self, mock_zot):
+        mock_zot.collections.return_value = NAMED_COLLECTIONS
+        mcp_server.search(collection="To Read")
+        assert mock_zot.collection_items_top.call_args[0][0] == "READ0001"
+
+    def test_write_tool_by_path(self, write_tools, write_zot):
+        write_zot.collections.return_value = NAMED_COLLECTIONS
+        result = json.loads(
+            write_tools["add_to_collection"]("ABC123", "Physics/Quantum")
+        )
+        assert result["addedTo"] == "QUAN0001"
+
+    def test_unknown_collection_creates_nothing(self, write_tools, write_zot):
+        result = json.loads(write_tools["create_item"]("book", collections=["Nowhere"]))
+        assert "No collection matches" in result["error"]
+        write_zot.create_items.assert_not_called()
+
+
+# Duplicates, merging and related items
+
+
+def _record(key, title, item_type="journalArticle", date="2020", **fields):
+    return {
+        "key": key,
+        "version": 5,
+        "library": {"type": "user", "id": 123, "name": "me"},
+        "meta": {"numChildren": 0},
+        "data": {
+            "key": key,
+            "version": 5,
+            "itemType": item_type,
+            "title": title,
+            "date": date,
+            "creators": [],
+            "tags": [],
+            "collections": [],
+            "relations": {},
+            **fields,
+        },
+    }
+
+
+class TestFindDuplicates:
+    def test_groups(self, mock_zot):
+        mock_zot.top.return_value = [
+            _record("A1", "Paper", DOI="10.1/x"),
+            _record("A2", "Paper (preprint)", extra="DOI: https://doi.org/10.1/X"),
+            _record("B1", "A Book", "book", "2001"),
+            _record("B2", "a book!", "book", "2001"),
+            _record("B3", "A Book", "book", "1999"),
+            _record("C1", "Erratum", DOI="10.1/c1"),
+            _record("C2", "Erratum", DOI="10.1/c2"),
+            _record("S1", "A Book", "bookSection", "2001"),
+            {"key": "N1", "data": {"key": "N1", "itemType": "note", "note": "x"}},
+        ]
+        result = json.loads(mcp_server.find_duplicates())
+        groups = [
+            (g["match"], [i["key"] for i in g["items"]]) for g in result["groups"]
+        ]
+        assert groups == [("doi", ["A1", "A2"]), ("title", ["B1", "B2"])]
+        assert result["total"] == 2
+
+    def test_title_group_covered_by_doi_group_not_repeated(self, mock_zot):
+        mock_zot.top.return_value = [
+            _record("A1", "Paper", DOI="10.1/x"),
+            _record("A2", "Paper", DOI="10.1/X"),
+        ]
+        result = json.loads(mcp_server.find_duplicates())
+        assert [g["match"] for g in result["groups"]] == ["doi"]
+
+    def test_pagination(self, mock_zot):
+        mock_zot.top.return_value = [
+            _record(f"{n}{i}", f"Title {n}") for n in "ABC" for i in (1, 2)
+        ]
+        result = json.loads(mcp_server.find_duplicates(limit=1, offset=1))
+        assert result["total"] == 3
+        assert [i["key"] for i in result["groups"][0]["items"]] == ["B1", "B2"]
+
+
+@pytest.fixture
+def library(write_zot):
+    """Back the write client with an in-memory set of items, keyed by item key."""
+    items = {}
+
+    def item(key):
+        return json.loads(json.dumps(items[key]))
+
+    def update_item(payload):
+        data = payload.get("data", payload)
+        current = items[data["key"]]
+        current["data"].update({k: v for k, v in data.items() if k != "version"})
+        current["version"] += 1
+
+    write_zot.item.side_effect = item
+    write_zot.update_item.side_effect = update_item
+    write_zot.children.side_effect = lambda key: [
+        i for i in items.values() if i["data"].get("parentItem") == key
+    ]
+    return items
+
+
+class TestMergeItems:
+    @pytest.fixture
+    def dups(self, library):
+        library["KEEP"] = _record(
+            "KEEP", "Paper", tags=[{"tag": "a"}], collections=["C1"], volume=""
+        )
+        library["DUP1"] = _record(
+            "DUP1",
+            "Paper",
+            volume="12",
+            abstractNote="Abstract",
+            tags=[{"tag": "a"}, {"tag": "b"}],
+            collections=["C1", "C2"],
+            creators=[{"creatorType": "author", "name": "Org"}],
+            relations={"dc:relation": "http://zotero.org/users/123/items/OTHER"},
+        )
+        library["NOTE"] = {
+            "key": "NOTE",
+            "version": 2,
+            "data": {"key": "NOTE", "itemType": "note", "parentItem": "DUP1"},
+        }
+        return library
+
+    def test_preview_changes_nothing(self, write_tools, write_zot, dups):
+        result = json.loads(write_tools["merge_items"]("KEEP", ["DUP1"]))
+        assert result["merged"] is False
+        assert result["fillFields"] == {"volume": "12", "abstractNote": "Abstract"}
+        assert result["addTags"] == ["b"]
+        assert result["addCollections"] == ["C2"]
+        assert result["addCreators"] is True
+        assert result["moveChildren"] == ["NOTE"]
+        write_zot.update_item.assert_not_called()
+
+    def test_confirm_merges(self, write_tools, write_zot, dups):
+        result = json.loads(write_tools["merge_items"]("KEEP", ["DUP1"], confirm=True))
+        assert result["merged"] is True
+        keep = dups["KEEP"]["data"]
+        assert keep["volume"] == "12"
+        assert [t["tag"] for t in keep["tags"]] == ["a", "b"]
+        assert keep["collections"] == ["C1", "C2"]
+        assert keep["creators"] == [{"creatorType": "author", "name": "Org"}]
+        assert keep["relations"] == {
+            "dc:relation": ["http://zotero.org/users/123/items/OTHER"],
+            "dc:replaces": ["http://zotero.org/users/123/items/DUP1"],
+        }
+        assert dups["NOTE"]["data"]["parentItem"] == "KEEP"
+        assert dups["DUP1"]["data"]["deleted"] is True
+        # every write carried the item's version as it was just before
+        for call in write_zot.update_item.call_args_list:
+            assert "version" in call[0][0] or "version" in call[0][0].get("data", {})
+
+    def test_unsigned_library_omits_replaces(self, write_tools, dups):
+        for item in dups.values():
+            item["library"] = {"type": "user", "id": 0}
+        write_tools["merge_items"]("KEEP", ["DUP1"], confirm=True)
+        assert "dc:replaces" not in dups["KEEP"]["data"]["relations"]
+
+    def test_type_mismatch(self, write_tools, write_zot, dups):
+        dups["DUP1"]["data"]["itemType"] = "book"
+        result = json.loads(write_tools["merge_items"]("KEEP", ["DUP1"], confirm=True))
+        assert "one type" in result["error"]
+        write_zot.update_item.assert_not_called()
+
+    def test_child_items_refused(self, write_tools, dups):
+        result = json.loads(write_tools["merge_items"]("KEEP", ["NOTE"]))
+        assert "only top-level items" in result["error"]
+
+    def test_keep_key_not_a_duplicate(self, write_tools, dups):
+        result = json.loads(write_tools["merge_items"]("KEEP", ["KEEP"]))
+        assert "not including keep_key" in result["error"]
+
+
+class TestSetRelated:
+    @pytest.fixture
+    def pair(self, library):
+        library["AAA"] = _record("AAA", "First")
+        library["BBB"] = _record("BBB", "Second")
+        return library
+
+    def test_link_both_ways(self, write_tools, pair):
+        result = json.loads(write_tools["set_related"]("AAA", link=["BBB"]))
+        assert result == {"key": "AAA", "related": ["BBB"]}
+        assert pair["BBB"]["data"]["relations"]["dc:relation"] == [
+            "http://zotero.org/users/123/items/AAA"
+        ]
+
+    def test_link_is_idempotent(self, write_tools, write_zot, pair):
+        write_tools["set_related"]("AAA", link=["BBB"])
+        calls = write_zot.update_item.call_count
+        write_tools["set_related"]("AAA", link=["BBB"])
+        assert write_zot.update_item.call_count == calls
+
+    def test_unlink(self, write_tools, pair):
+        write_tools["set_related"]("AAA", link=["BBB"])
+        result = json.loads(write_tools["set_related"]("AAA", unlink=["BBB"]))
+        assert result["related"] == []
+        assert "dc:relation" not in pair["BBB"]["data"]["relations"]
+
+    def test_group_library_uri(self, write_tools, pair):
+        for item in pair.values():
+            item["library"] = {"type": "group", "id": 42}
+        write_tools["set_related"]("AAA", link=["BBB"])
+        assert pair["AAA"]["data"]["relations"]["dc:relation"] == [
+            "http://zotero.org/groups/42/items/BBB"
+        ]
+
+    def test_unsigned_library_refused(self, write_tools, write_zot, pair):
+        pair["AAA"]["library"] = {"type": "user", "id": 0}
+        result = json.loads(write_tools["set_related"]("AAA", link=["BBB"]))
+        assert "signed in" in result["error"]
+        write_zot.update_item.assert_not_called()
+
+    def test_self_link_refused(self, write_tools, pair):
+        result = json.loads(write_tools["set_related"]("AAA", link=["AAA"]))
+        assert "itself" in result["error"]
+
+
+# Open-access PDFs for add_by_doi
+
+
+class TestAddByDOIWithPDF:
+    @pytest.fixture
+    def doi_csl(self):
+        csl = {"type": "article-journal", "title": "By DOI", "DOI": "10.1/a"}
+        with patch("pyzotero.mcp_server.fetch_doi_csl", return_value=csl):
+            yield
+
+    def test_pdf_attached_to_new_item(self, write_tools, import_zot, doi_csl):
+        def fake_download(url, path):
+            path.write_bytes(b"%PDF-1.7 test")
+            return path
+
+        import_zot.children.return_value = []
+        import_zot.upload_attachments.return_value = {
+            "success": [{"key": "ATT1"}],
+            "failure": [],
+            "unchanged": [],
+        }
+        with (
+            patch(
+                "pyzotero.mcp_server.open_access_pdf_url",
+                return_value="https://x/a.pdf",
+            ),
+            patch("pyzotero.mcp_server.download_pdf", side_effect=fake_download),
+        ):
+            result = json.loads(write_tools["add_by_doi"](["10.1/a"], attach_pdf=True))
+        pdf = result["items"][0]["pdf"]
+        assert pdf["attached"] == "ATT1"
+        assert pdf["source"] == "https://x/a.pdf"
+        assert pdf["filename"] == "By DOI.pdf"
+        template = import_zot.upload_attachments.call_args[0][0][0]
+        assert template["title"] == "Full Text PDF"
+
+    def test_no_pdf_found(self, write_tools, import_zot, doi_csl):
+        with patch("pyzotero.mcp_server.open_access_pdf_url", return_value=None):
+            result = json.loads(write_tools["add_by_doi"](["10.1/a"], attach_pdf=True))
+        assert result["items"][0]["pdf"] == "no open-access PDF found"
+
+    def test_download_failure_reported(self, write_tools, import_zot, doi_csl):
+        with (
+            patch(
+                "pyzotero.mcp_server.open_access_pdf_url", return_value="https://x/a"
+            ),
+            patch(
+                "pyzotero.mcp_server.download_pdf",
+                side_effect=mcp_server.PDFDownloadError("https://x/a is not a PDF"),
+            ),
+        ):
+            result = json.loads(write_tools["add_by_doi"](["10.1/a"], attach_pdf=True))
+        assert result["items"][0]["status"] == "created"
+        assert result["items"][0]["pdf"] == "https://x/a is not a PDF"
+
+    def test_existing_items_not_fetched(self, write_tools, import_zot, doi_csl):
+        import_zot.items.return_value = [
+            {"key": "OLD1", "data": {"key": "OLD1", "DOI": "10.1/a"}}
+        ]
+        with patch("pyzotero.mcp_server.open_access_pdf_url") as lookup:
+            result = json.loads(write_tools["add_by_doi"](["10.1/a"], attach_pdf=True))
+        assert result["items"][0]["status"] == "exists"
+        lookup.assert_not_called()
+
+    def test_without_attach_pdf_no_lookup(self, write_tools, import_zot, doi_csl):
+        with patch("pyzotero.mcp_server.open_access_pdf_url") as lookup:
+            write_tools["add_by_doi"](["10.1/a"])
+        lookup.assert_not_called()

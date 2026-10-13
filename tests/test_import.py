@@ -9,12 +9,16 @@ import pytest
 
 from pyzotero._import import (
     DOILookupError,
+    PDFDownloadError,
     bibtex_to_zotero,
     csl_to_zotero,
+    download_pdf,
     fetch_doi_csl,
     fit_to_schema,
+    open_access_pdf_url,
     parse_bibtex,
 )
+from pyzotero.semantic_scholar import PaperNotFoundError
 
 # The shape of doi.org's CSL JSON for a Crossref journal article
 CROSSREF_CSL = {
@@ -250,3 +254,87 @@ class TestFetchDOI:
             pytest.raises(DOILookupError, match="down"),
         ):
             fetch_doi_csl("10.1234/x")
+
+
+class TestOpenAccessPDF:
+    def test_arxiv_doi_needs_no_lookup(self):
+        with patch("pyzotero._import.get_paper") as get_paper:
+            url = open_access_pdf_url("https://doi.org/10.48550/arXiv.2001.00001")
+        assert url == "https://arxiv.org/pdf/2001.00001"
+        get_paper.assert_not_called()
+
+    def test_arxiv_id_preferred(self):
+        paper = {"arxivId": "1234.5678", "openAccessPdfUrl": "https://pub.example/x"}
+        with patch("pyzotero._import.get_paper", return_value=paper) as get_paper:
+            assert open_access_pdf_url("10.1/x") == "https://arxiv.org/pdf/1234.5678"
+        get_paper.assert_called_once_with("10.1/x", id_type="doi")
+
+    def test_open_access_location(self):
+        paper = {"arxivId": None, "openAccessPdfUrl": "https://pub.example/x.pdf"}
+        with patch("pyzotero._import.get_paper", return_value=paper):
+            assert open_access_pdf_url("10.1/x") == "https://pub.example/x.pdf"
+
+    def test_none_known(self):
+        with patch("pyzotero._import.get_paper", side_effect=PaperNotFoundError):
+            assert open_access_pdf_url("10.1/x") is None
+        with patch("pyzotero._import.get_paper", return_value={"arxivId": None}):
+            assert open_access_pdf_url("10.1/x") is None
+
+
+def _serving(handler):
+    """Patch the download client to answer requests with ``handler``."""
+    real_client = httpx2.Client
+
+    def client(**kwargs):
+        return real_client(transport=httpx2.MockTransport(handler), **kwargs)
+
+    return patch("pyzotero._import.httpx2.Client", side_effect=client)
+
+
+class TestDownloadPDF:
+    def test_saves_pdf(self, tmp_path):
+        body = b"%PDF-1.7\n" + b"x" * 100_000
+        with _serving(lambda request: httpx2.Response(200, content=body)):
+            path = download_pdf("https://example.com/a.pdf", tmp_path / "a.pdf")
+        assert path.read_bytes() == body
+
+    def test_follows_redirects(self, tmp_path):
+        def handler(request):
+            if request.url.path == "/start":
+                return httpx2.Response(302, headers={"Location": "/file.pdf"})
+            return httpx2.Response(200, content=b"%PDF-1.4 ok")
+
+        with _serving(handler):
+            path = download_pdf("https://example.com/start", tmp_path / "a.pdf")
+        assert path.read_bytes() == b"%PDF-1.4 ok"
+
+    def test_landing_page_rejected_and_removed(self, tmp_path):
+        target = tmp_path / "a.pdf"
+        html = b"<!doctype html><html>landing page</html>"
+        with (
+            _serving(lambda request: httpx2.Response(200, content=html)),
+            pytest.raises(PDFDownloadError, match="not a PDF"),
+        ):
+            download_pdf("https://example.com/a", target)
+        assert not target.exists()
+
+    def test_http_error(self, tmp_path):
+        with (
+            _serving(lambda request: httpx2.Response(403)),
+            pytest.raises(PDFDownloadError, match="HTTP 403"),
+        ):
+            download_pdf("https://example.com/a.pdf", tmp_path / "a.pdf")
+
+    def test_too_large(self, tmp_path):
+        body = b"%PDF-1.7\n" + b"x" * 5000
+        with (
+            patch("pyzotero._import.MAX_PDF_BYTES", 1000),
+            _serving(lambda request: httpx2.Response(200, content=body)),
+            pytest.raises(PDFDownloadError, match="larger than"),
+        ):
+            download_pdf("https://example.com/a.pdf", tmp_path / "a.pdf")
+        assert not (tmp_path / "a.pdf").exists()
+
+    def test_only_web_urls(self, tmp_path):
+        with pytest.raises(PDFDownloadError, match="Not a web URL"):
+            download_pdf("file:///etc/passwd", tmp_path / "a.pdf")

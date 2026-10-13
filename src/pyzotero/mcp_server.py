@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import argparse
+import difflib
 import functools
 import hashlib
 import html
 import json
+import re
 import sys
+import tempfile
+from collections import defaultdict
 from collections.abc import Callable
 from html.parser import HTMLParser
 from pathlib import Path
@@ -29,10 +33,13 @@ from pyzotero._helpers import (
 )
 from pyzotero._import import (
     DOILookupError,
+    PDFDownloadError,
     bibtex_to_zotero,
     csl_to_zotero,
+    download_pdf,
     fetch_doi_csl,
     fit_to_schema,
+    open_access_pdf_url,
     parse_bibtex,
 )
 from pyzotero.semantic_scholar import (
@@ -61,6 +68,67 @@ BATCH_SIZE = 50
 def _read_client() -> Any:
     """Return a read-only client for the library that the server uses."""
     return get_zotero_client(**_LIBRARY)
+
+
+def _collection_paths(zot: Any) -> dict[str, tuple[str, str]]:
+    """Map each collection key to its name and its "parent/child" path."""
+    data = {c["data"]["key"]: c["data"] for c in zot.everything(zot.collections())}
+    paths: dict[str, tuple[str, str]] = {}
+    for key, coll in data.items():
+        names, seen, current = [], set(), coll
+        # The seen set guards against a parent cycle in corrupt data
+        while current and current["key"] not in seen:
+            seen.add(current["key"])
+            names.append(current["name"])
+            current = data.get(current.get("parentCollection") or "")
+        paths[key] = (coll["name"], "/".join(reversed(names)))
+    return paths
+
+
+def _resolve_collections(zot: Any, specs: list[str] | None) -> list[str]:
+    """Resolve collection keys, names or "parent/child" paths to keys.
+
+    A key is matched first, then a full path, then a name, each exactly and
+    then ignoring case.
+
+    Raises:
+        ValueError: a spec matches no collection, or more than one.
+
+    """
+    if not specs:
+        return []
+    paths = _collection_paths(zot)
+    keys = []
+    for raw in specs:
+        spec = raw.strip().strip("/")
+        if spec in paths:
+            keys.append(spec)
+            continue
+        matches: list[str] = []
+        for fold in (lambda x: x, str.casefold):
+            for index in (1, 0):
+                target = fold(spec)
+                matches = [k for k, v in paths.items() if fold(v[index]) == target]
+                if matches:
+                    break
+            if matches:
+                break
+        if len(matches) > 1:
+            options = ", ".join(f"{paths[k][1]} ({k})" for k in matches)
+            msg = f"Collection {raw!r} is ambiguous; give a path or key: {options}"
+            raise ValueError(msg)
+        if not matches:
+            close = difflib.get_close_matches(spec, [v[1] for v in paths.values()])
+            hint = f" Did you mean: {', '.join(close)}?" if close else ""
+            msg = f"No collection matches {raw!r}.{hint}"
+            raise ValueError(msg)
+        keys.append(matches[0])
+    return keys
+
+
+def _resolve_collection(zot: Any, spec: str) -> str:
+    """Resolve one collection key, name or path to a key."""
+    return _resolve_collections(zot, [spec])[0]
 
 
 def _json(obj: Any) -> str:
@@ -156,7 +224,7 @@ def search(  # noqa: PLR0912
         query: Search query string.
         fulltext: If true, search full-text content including PDFs.
         itemtype: Filter by item type. Use || to combine types, e.g. "book || journalArticle".
-        collection: Filter by collection key.
+        collection: Filter by collection: a key, a name, or a "parent/child" path.
         tag: Filter by tag. Use comma-separated values for AND search, e.g. "climate,adaptation".
         limit: Maximum results to return (default 50).
         offset: Number of results to skip for pagination.
@@ -185,6 +253,8 @@ def search(  # noqa: PLR0912
         params["qmode"] = "everything"
     if itemtype:
         params["itemType"] = itemtype
+    if collection:
+        collection = _resolve_collection(zot, collection)
     if tag:
         # Split comma-separated tags for AND search
         tags = [t.strip() for t in tag.split(",")]
@@ -340,7 +410,8 @@ def list_tags(collection: str = "") -> str:
     """List all tags in the Zotero library, optionally filtered by collection.
 
     Args:
-        collection: Optional collection key to filter tags.
+        collection: Optional collection to filter tags: a key, a name, or a
+            "parent/child" path.
 
     Returns:
         JSON array of tag strings.
@@ -348,7 +419,7 @@ def list_tags(collection: str = "") -> str:
     """
     zot = _read_client()
     if collection:
-        results = zot.collection_tags(collection)
+        results = zot.collection_tags(_resolve_collection(zot, collection))
     else:
         results = zot.tags()
     return _json(results)
@@ -557,6 +628,91 @@ def export_bibtex(keys: list[str]) -> str:
     return _json({"count": len(parse_bibtex(bibtex)), "bibtex": bibtex})
 
 
+# Item types that are never duplicates of a bibliographic record
+NON_RECORD_TYPES = frozenset({"note", "attachment", "annotation"})
+
+
+def _item_summary(item: dict[str, Any]) -> dict[str, Any]:
+    """Summarise an item for duplicate and merge output."""
+    data = item.get("data", {})
+    return {
+        "key": data.get("key", ""),
+        "itemType": data.get("itemType", ""),
+        "title": data.get("title", ""),
+        "creators": format_creators(data.get("creators", [])),
+        "date": data.get("date", ""),
+        "DOI": data.get("DOI", ""),
+        "dateAdded": data.get("dateAdded", ""),
+        "children": item.get("meta", {}).get("numChildren", 0),
+    }
+
+
+def _duplicate_groups(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Group items that share a DOI, or a type, title and year.
+
+    A title group whose items carry two different DOIs is not a duplicate
+    (e.g. a paper and its erratum), and a title group that a DOI group
+    already covers is not reported twice.
+    """
+    by_doi: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    by_title: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    for item in items:
+        data = item.get("data", {})
+        doi = _item_doi(data)
+        if doi:
+            by_doi[doi].append(item)
+        title = _title_key(data.get("title", ""))
+        if title:
+            by_title[(data["itemType"], title, data.get("date", "")[:4])].append(item)
+    groups = [
+        {"match": "doi", "value": doi, "items": group}
+        for doi, group in sorted(by_doi.items())
+        if len(group) > 1
+    ]
+    covered = [{i["key"] for i in g["items"]} for g in groups]
+    for (_, _, year), group in sorted(by_title.items()):
+        if len(group) < 2:  # noqa: PLR2004
+            continue
+        dois = {_item_doi(i["data"]) for i in group} - {""}
+        keys = {i["key"] for i in group}
+        if len(dois) > 1 or any(keys <= c for c in covered):
+            continue
+        title = group[0]["data"]["title"]
+        value = f"{title} ({year})" if year else title
+        groups.append({"match": "title", "value": value, "items": group})
+    return groups
+
+
+@mcp.tool()
+@mcp_error_handler
+def find_duplicates(limit: int = 20, offset: int = 0) -> str:
+    """Find items that are probably duplicates: the same DOI, or the same type, title and year.
+
+    Args:
+        limit: Maximum number of duplicate groups to return (default 20).
+        offset: Number of groups to skip, for pagination.
+
+    Returns:
+        JSON with the total number of groups, and each group's match
+        reason, matched value and items (key, type, title, creators, date,
+        DOI, date added, number of children). With write tools enabled,
+        merge_items merges a group.
+
+    """
+    zot = _read_client()
+    items = [
+        i
+        for i in zot.everything(zot.top())
+        if i.get("data", {}).get("itemType") not in NON_RECORD_TYPES
+    ]
+    groups = _duplicate_groups(items)
+    page = [
+        {**g, "items": [_item_summary(i) for i in g["items"]]}
+        for g in groups[offset : offset + limit]
+    ]
+    return _json({"total": len(groups), "groups": page})
+
+
 @mcp.tool()
 @mcp_error_handler
 def find_related(
@@ -746,7 +902,8 @@ def _register_item_tools(add: AddTool) -> None:
             creators: Creator dicts, each with creatorType and either
                 (firstName, lastName) or name.
             tags: Tag names to attach.
-            collections: Collection keys to file the item under.
+            collections: Collections to file the item under: keys, names, or
+                "parent/child" paths.
 
         Returns:
             JSON with the created item's key, or the server's rejection reason.
@@ -759,7 +916,7 @@ def _register_item_tools(add: AddTool) -> None:
         if tags:
             item["tags"] = [{"tag": tag} for tag in tags]
         if collections:
-            item["collections"] = collections
+            item["collections"] = _resolve_collections(zot, collections)
         resp = zot.create_items([item])
         if resp.get("success"):
             return _json({"created": resp["success"]["0"], "itemType": item_type})
@@ -814,7 +971,8 @@ def _register_collection_tools(add: AddTool) -> None:
 
         Args:
             name: The collection name.
-            parent: Optional parent collection key, to nest the new collection.
+            parent: Optional parent collection, to nest the new collection: a
+                key, a name, or a "parent/child" path.
 
         Returns:
             JSON with the created collection's key.
@@ -823,7 +981,7 @@ def _register_collection_tools(add: AddTool) -> None:
         zot = _write_client()
         payload: dict[str, Any] = {"name": name}
         if parent:
-            payload["parentCollection"] = parent
+            payload["parentCollection"] = _resolve_collection(zot, parent)
         resp = zot.create_collections([payload])
         if resp.get("success"):
             return _json({"created": resp["success"]["0"], "name": name})
@@ -834,13 +992,15 @@ def _register_collection_tools(add: AddTool) -> None:
 
         Args:
             item_key: The item key.
-            collection_key: The collection key.
+            collection_key: The collection: a key, a name, or a "parent/child"
+                path.
 
         Returns:
             JSON confirming the item and collection.
 
         """
         zot = _write_client()
+        collection_key = _resolve_collection(zot, collection_key)
         zot.addto_collection(collection_key, zot.item(item_key))
         return _json({"item": item_key, "addedTo": collection_key})
 
@@ -852,13 +1012,15 @@ def _register_collection_tools(add: AddTool) -> None:
 
         Args:
             item_key: The item key.
-            collection_key: The collection key.
+            collection_key: The collection: a key, a name, or a "parent/child"
+                path.
 
         Returns:
             JSON confirming the item and collection.
 
         """
         zot = _write_client()
+        collection_key = _resolve_collection(zot, collection_key)
         zot.deletefrom_collection(collection_key, zot.item(item_key))
         return _json({"item": item_key, "removedFrom": collection_key})
 
@@ -874,14 +1036,19 @@ def _register_collection_tools(add: AddTool) -> None:
 
         Args:
             item_key: The item key.
-            from_collection_key: The key of the collection to remove the item from.
-            to_collection_key: The key of the collection to add the item to.
+            from_collection_key: The collection to remove the item from: a
+                key, a name, or a "parent/child" path.
+            to_collection_key: The collection to add the item to, in the same
+                forms.
 
         Returns:
             JSON confirming the item, the source and the destination.
 
         """
         zot = _write_client()
+        from_collection_key, to_collection_key = _resolve_collections(
+            zot, [from_collection_key, to_collection_key]
+        )
         zot.moveto_collection(
             from_collection_key, to_collection_key, zot.item(item_key)
         )
@@ -899,10 +1066,10 @@ def _register_collection_tools(add: AddTool) -> None:
         The collection keeps its key, its subcollections and its items.
 
         Args:
-            key: The collection key.
+            key: The collection: a key, a name, or a "parent/child" path.
             name: The new name. Leave empty to keep the current name.
-            parent: The key of the new parent collection, or "" to make the
-                collection top-level. Omit to keep the current parent.
+            parent: The new parent collection, in the same forms, or "" to
+                make the collection top-level. Omit to keep the current parent.
 
         Returns:
             JSON with the collection's key, name and parent.
@@ -911,10 +1078,13 @@ def _register_collection_tools(add: AddTool) -> None:
         if not name and parent is None:
             msg = "Give a new name, a new parent, or both"
             raise ValueError(msg)
+        zot = _write_client()
+        key = _resolve_collection(zot, key)
+        if parent:
+            parent = _resolve_collection(zot, parent)
         if parent == key:
             msg = "A collection cannot be its own parent"
             raise ValueError(msg)
-        zot = _write_client()
         data = zot.collection(key)["data"]
         if name:
             data["name"] = name
@@ -937,6 +1107,55 @@ def _register_collection_tools(add: AddTool) -> None:
         move_to_collection,
     ):
         add(tool)
+
+
+def _attach_file(
+    zot: Any, item_key: str, path: Path, title: str = ""
+) -> dict[str, Any]:
+    """Upload a file as a child attachment of ``item_key``, unless it is attached already.
+
+    Returns:
+        The new attachment's key, "unchanged", or the rejection.
+
+    """
+    # An upload always creates a new attachment item. Without a check, a
+    # call that stops or is retried would attach the file a second time.
+    # Thus, compare the file with the item's attachments first.
+    checksum = _md5(path)
+    for child in zot.children(item_key):
+        data = child.get("data", {})
+        if data.get("filename") == path.name and data.get("md5") == checksum:
+            return {
+                "unchanged": child["key"],
+                "parent": item_key,
+                "detail": "this file is already attached to the item",
+            }
+    # item_template() is not available here: the local API has no
+    # /items/new. Thus, build the attachment template directly. The
+    # upload code finds the contentType from the path.
+    template = {
+        "itemType": "attachment",
+        "linkMode": "imported_file",
+        "title": title or path.name,
+        "filename": str(path),
+        "note": "",
+        "tags": [],
+        "relations": {},
+    }
+    result = zot.upload_attachments([template], item_key)
+    if result["success"]:
+        return {
+            "attached": result["success"][0]["key"],
+            "parent": item_key,
+            "filename": path.name,
+        }
+    if result["unchanged"]:
+        return {
+            "unchanged": item_key,
+            "detail": "an identical file is already attached",
+        }
+    detail = result["failure"][0] if result["failure"] else None
+    return {"error": "Attachment was rejected", "detail": detail}
 
 
 def _register_attachment_tools(add: AddTool) -> None:
@@ -974,51 +1193,7 @@ def _register_attachment_tools(add: AddTool) -> None:
         if not path.is_file():
             msg = f"No file at {file_path}"
             raise FileNotFoundError(msg)
-        zot = _write_client()
-        # An upload always creates a new attachment item. Without a check, a
-        # call that stops or is retried would attach the file a second time.
-        # Thus, compare the file with the item's attachments first.
-        checksum = _md5(path)
-        for child in zot.children(item_key):
-            data = child.get("data", {})
-            if data.get("filename") == path.name and data.get("md5") == checksum:
-                return _json(
-                    {
-                        "unchanged": child["key"],
-                        "parent": item_key,
-                        "detail": "this file is already attached to the item",
-                    }
-                )
-        # item_template() is not available here: the local API has no
-        # /items/new. Thus, build the attachment template directly. The
-        # upload code finds the contentType from the path.
-        template = {
-            "itemType": "attachment",
-            "linkMode": "imported_file",
-            "title": title or path.name,
-            "filename": str(path),
-            "note": "",
-            "tags": [],
-            "relations": {},
-        }
-        result = zot.upload_attachments([template], item_key)
-        if result["success"]:
-            return _json(
-                {
-                    "attached": result["success"][0]["key"],
-                    "parent": item_key,
-                    "filename": path.name,
-                }
-            )
-        if result["unchanged"]:
-            return _json(
-                {
-                    "unchanged": item_key,
-                    "detail": "an identical file is already attached",
-                }
-            )
-        detail = result["failure"][0] if result["failure"] else None
-        return _json({"error": "Attachment was rejected", "detail": detail})
+        return _json(_attach_file(_write_client(), item_key, path, title))
 
     add(add_attachment)
 
@@ -1042,8 +1217,9 @@ def _register_note_tools(add: AddTool) -> None:
                 empty for a standalone note.
             is_html: If true, content is HTML and is stored as given.
             tags: Tag names to attach.
-            collections: Collection keys, for a standalone note only. A child
-                note belongs to its parent's collections.
+            collections: Collections (keys, names or "parent/child" paths),
+                for a standalone note only. A child note belongs to its
+                parent's collections.
 
         Returns:
             JSON with the created note's key, or the server's rejection reason.
@@ -1061,7 +1237,7 @@ def _register_note_tools(add: AddTool) -> None:
         if parent_key:
             note["parentItem"] = parent_key
         if collections:
-            note["collections"] = collections
+            note["collections"] = _resolve_collections(zot, collections)
         resp = zot.create_items([note])
         if resp.get("success"):
             return _json(
@@ -1157,6 +1333,7 @@ def _create_imported(  # noqa: PLR0912
     if if_exists not in IF_EXISTS_MODES:
         msg = f"if_exists must be one of {', '.join(IF_EXISTS_MODES)}"
         raise ValueError(msg)
+    collections = _resolve_collections(zot, collections)
     schema: dict[str, tuple[set[str], list[str]]] = {}
     results: list[dict[str, Any]] = []
     pending: list[tuple[int, dict[str, Any]]] = []
@@ -1227,6 +1404,30 @@ def _lookup_doi(doi: str) -> dict[str, Any] | str:
         return str(e)
 
 
+def _attach_open_access_pdf(
+    zot: Any, item_key: str, doi: str, title: str
+) -> dict[str, Any] | str:
+    """Find, download and attach an open-access PDF. Return the outcome."""
+    try:
+        url = open_access_pdf_url(doi)
+    except SemanticScholarError as e:
+        return f"open-access lookup failed: {e}"
+    if not url:
+        return "no open-access PDF found"
+    name = re.sub(r"[^\w\- ]+", "", title)[:80].strip() or "fulltext"
+    with tempfile.TemporaryDirectory() as tmp:
+        try:
+            path = download_pdf(url, Path(tmp) / f"{name}.pdf")
+            result = _attach_file(zot, item_key, path, "Full Text PDF")
+        except PDFDownloadError as e:
+            return str(e)
+        # The items exist by now, so report a failed upload against its item
+        # rather than failing the whole call.
+        except Exception as e:
+            return f"attaching the PDF failed: {e}"
+    return {"source": url, **result}
+
+
 def _register_import_tools(add: AddTool) -> None:
     """Register the tools that add items from identifiers and citation data."""
 
@@ -1235,6 +1436,7 @@ def _register_import_tools(add: AddTool) -> None:
         collections: list[str] | None = None,
         tags: list[str] | None = None,
         if_exists: str = "skip",
+        attach_pdf: bool = False,
     ) -> str:
         """Add items by DOI, with metadata from the DOI's registration agency.
 
@@ -1243,16 +1445,22 @@ def _register_import_tools(add: AddTool) -> None:
 
         Args:
             dois: DOIs, bare or as doi.org URLs.
-            collections: Collection keys to file the new items under.
+            collections: Collections to file the new items under: keys,
+                names, or "parent/child" paths.
             tags: Tag names to attach to the new items.
             if_exists: What to do when the library already has an item with
                 the DOI: "skip" (the default) reports it and changes nothing,
                 "file" adds it to the collections and tags given, and
                 "create" adds a duplicate.
+            attach_pdf: If true, attach an open-access PDF to each new item
+                where one exists: from arXiv, or a location that Semantic
+                Scholar knows.
 
         Returns:
             JSON with a count for each status, and a result for each DOI:
-            created, exists, filed or failed, with the item key.
+            created, exists, filed or failed, with the item key. With
+            attach_pdf, each new item's result has a "pdf" entry: the
+            attachment, or why there is none.
 
         """
         zot = _write_client()
@@ -1265,6 +1473,12 @@ def _register_import_tools(add: AddTool) -> None:
             else {"doi": doi, "status": "failed", "error": found}
             for doi, found in lookups
         ]
+        if attach_pdf:
+            for result in results:
+                if result["status"] == "created":
+                    result["pdf"] = _attach_open_access_pdf(
+                        zot, result["key"], result["doi"], result.get("title", "")
+                    )
         return _import_summary(results)
 
     def import_items(
@@ -1283,7 +1497,8 @@ def _register_import_tools(add: AddTool) -> None:
                 data. The server's working directory is not yours, so
                 relative paths are rejected.
             format: "bibtex" or "csljson".
-            collections: Collection keys to file the new items under.
+            collections: Collections to file the new items under: keys,
+                names, or "parent/child" paths.
             tags: Tag names to attach to the new items, besides any that
                 the source gives (BibTeX keywords).
             if_exists: What to do when the library already has the item (by
@@ -1325,6 +1540,274 @@ def _register_import_tools(add: AddTool) -> None:
 
     add(add_by_doi)
     add(import_items)
+
+
+# Fields that a merge does not copy from a duplicate into an empty field
+MERGE_SKIP_FIELDS = frozenset(
+    {
+        "key",
+        "version",
+        "itemType",
+        "dateAdded",
+        "dateModified",
+        "relations",
+        "tags",
+        "collections",
+        "creators",
+        "parentItem",
+        "deleted",
+        "inPublications",
+    }
+)
+
+
+def _item_uri(item: dict[str, Any], key: str) -> str | None:
+    """Return the zotero.org URI that relations use for ``key``, if known.
+
+    The API reports a user library's ID only when Zotero is signed in to a
+    zotero.org account. Otherwise the URI uses a local user key that the
+    API does not reveal, so None is returned.
+    """
+    library = item.get("library", {})
+    if not library.get("id"):
+        return None
+    return f"http://zotero.org/{library['type']}s/{library['id']}/items/{key}"
+
+
+def _relation_list(relations: dict[str, Any], predicate: str) -> list[str]:
+    """Return a relation's values as a list. The API gives one value as a string."""
+    value = relations.get(predicate, [])
+    return [value] if isinstance(value, str) else list(value)
+
+
+def _merge_plan(
+    master: dict[str, Any],
+    duplicates: list[dict[str, Any]],
+    children: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Work out what merging ``duplicates`` into ``master`` changes."""
+    data = master["data"]
+    fields: dict[str, Any] = {}
+    for dup in duplicates:
+        for field, value in dup["data"].items():
+            if field in MERGE_SKIP_FIELDS or not value or data.get(field):
+                continue
+            fields.setdefault(field, value)
+    creators = None
+    if not data.get("creators"):
+        creators = next(
+            (d["data"]["creators"] for d in duplicates if d["data"].get("creators")),
+            None,
+        )
+    have_tags = {t["tag"] for t in data.get("tags", [])}
+    tags = list(
+        dict.fromkeys(
+            t["tag"]
+            for d in duplicates
+            for t in d["data"].get("tags", [])
+            if t["tag"] not in have_tags
+        )
+    )
+    have_colls = set(data.get("collections", []))
+    collections = list(
+        dict.fromkeys(
+            c
+            for d in duplicates
+            for c in d["data"].get("collections", [])
+            if c not in have_colls
+        )
+    )
+    # Keep the duplicates' relations, and record that the master replaces
+    # them, as Zotero's own merge does, so that citations of a duplicate in
+    # a word processor document still resolve.
+    relations = {
+        k: _relation_list(data.get("relations", {}), k)
+        for k in data.get("relations", {})
+    }
+    master_uri = _item_uri(master, data["key"])
+    for dup in duplicates:
+        for predicate in dup["data"].get("relations", {}):
+            for uri in _relation_list(dup["data"]["relations"], predicate):
+                if uri != master_uri and uri not in relations.setdefault(predicate, []):
+                    relations[predicate].append(uri)
+        dup_uri = _item_uri(dup, dup["data"]["key"])
+        if dup_uri and dup_uri not in relations.setdefault("dc:replaces", []):
+            relations["dc:replaces"].append(dup_uri)
+    relations = {k: v for k, v in relations.items() if v}
+    return {
+        "fields": fields,
+        "creators": creators,
+        "tags": tags,
+        "collections": collections,
+        "relations": relations,
+        "children": [c["key"] for c in children],
+    }
+
+
+def _check_mergeable(master: dict[str, Any], duplicates: list[dict[str, Any]]) -> None:
+    """Raise ValueError unless all the items are top-level items of one type."""
+    for item in [master, *duplicates]:
+        data = item["data"]
+        if data["itemType"] in NON_RECORD_TYPES or data.get("parentItem"):
+            msg = (
+                f"Item {data['key']} is a {data['itemType']}; "
+                "only top-level items can be merged"
+            )
+            raise ValueError(msg)
+        if data["itemType"] != master["data"]["itemType"]:
+            msg = (
+                f"Item {data['key']} is a {data['itemType']} and "
+                f"{master['data']['key']} is a {master['data']['itemType']}; "
+                "Zotero merges only items of one type"
+            )
+            raise ValueError(msg)
+
+
+def _apply_merge(
+    zot: Any, keep_key: str, duplicates: list[dict[str, Any]], plan: dict[str, Any]
+) -> None:
+    """Carry out a plan from :func:`_merge_plan`.
+
+    Each write re-reads its item first: the local API rejects a write whose
+    version is not the item's current version.
+    """
+    for child in plan["children"]:
+        version = zot.item(child)["version"]
+        zot.update_item({"key": child, "version": version, "parentItem": keep_key})
+    item = zot.item(keep_key)
+    data = item["data"]
+    data.update(plan["fields"])
+    if plan["creators"]:
+        data["creators"] = plan["creators"]
+    data["tags"] = data.get("tags", []) + [{"tag": t} for t in plan["tags"]]
+    data["collections"] = data.get("collections", []) + plan["collections"]
+    data["relations"] = plan["relations"]
+    zot.update_item(item)
+    for dup in duplicates:
+        version = zot.item(dup["key"])["version"]
+        zot.update_item({"key": dup["key"], "version": version, "deleted": True})
+
+
+def _set_relation(zot: Any, item_key: str, other: str, *, linked: bool) -> None:
+    """Add or remove one item's dc:relation link to another item."""
+    target = zot.item(item_key)
+    relations = target["data"].setdefault("relations", {})
+    uris = _relation_list(relations, "dc:relation")
+    uri = _item_uri(target, other)
+    if linked and uri not in uris:
+        uris.append(uri)
+    elif not linked and uri in uris:
+        uris.remove(uri)
+    else:
+        return
+    if uris:
+        relations["dc:relation"] = uris
+    else:
+        relations.pop("dc:relation", None)
+    zot.update_item(target)
+
+
+def _register_maintenance_tools(add: AddTool) -> None:
+    """Register the tools that merge duplicates and link related items."""
+
+    def merge_items(
+        keep_key: str, duplicate_keys: list[str], confirm: bool = False
+    ) -> str:
+        """Merge duplicate items into one, as Zotero's "Merge items" does.
+
+        The kept item gains the duplicates' notes and attachments, tags,
+        collections and related items, and any field that it has empty and a
+        duplicate has filled. The duplicates then move to Zotero's trash,
+        from which they can be restored. Use find_duplicates to find
+        candidates.
+
+        Call first without confirm to see what would change, show that to
+        the user, and call again with confirm=true to merge.
+
+        Args:
+            keep_key: The key of the item to keep.
+            duplicate_keys: The keys of the items to merge into it.
+            confirm: If false (the default), change nothing and return the
+                plan.
+
+        Returns:
+            JSON with the plan, and whether it was carried out.
+
+        """
+        if not duplicate_keys or keep_key in duplicate_keys:
+            msg = "Give one or more duplicate keys, not including keep_key"
+            raise ValueError(msg)
+        zot = _write_client()
+        master = zot.item(keep_key)
+        duplicates = [zot.item(k) for k in dict.fromkeys(duplicate_keys)]
+        _check_mergeable(master, duplicates)
+        children = [
+            c
+            for d in duplicates
+            for c in zot.everything(zot.children(d["key"]))
+            if c["data"].get("parentItem") == d["key"]
+        ]
+        plan = _merge_plan(master, duplicates, children)
+        result = {
+            "keep": _item_summary(master),
+            "trash": [_item_summary(d) for d in duplicates],
+            "fillFields": plan["fields"],
+            "addCreators": bool(plan["creators"]),
+            "addTags": plan["tags"],
+            "addCollections": plan["collections"],
+            "moveChildren": plan["children"],
+            "merged": False,
+        }
+        if confirm:
+            _apply_merge(zot, keep_key, duplicates, plan)
+            result["merged"] = True
+        return _json(result)
+
+    def set_related(
+        key: str, link: list[str] | None = None, unlink: list[str] | None = None
+    ) -> str:
+        """Add or remove "related item" links, in both directions, as Zotero's Related pane does.
+
+        Args:
+            key: The item key.
+            link: Keys of items to link to it.
+            unlink: Keys of items to unlink from it.
+
+        Returns:
+            JSON with the item's related item keys after the change.
+
+        """
+        link, unlink = link or [], unlink or []
+        if not link and not unlink:
+            msg = "Give items to link or to unlink"
+            raise ValueError(msg)
+        if key in link or key in unlink:
+            msg = "An item cannot be related to itself"
+            raise ValueError(msg)
+        zot = _write_client()
+        item = zot.item(key)
+        if not _item_uri(item, key):
+            msg = (
+                "Related-item links need the library's zotero.org ID, which Zotero "
+                "reports only when it is signed in to a zotero.org account"
+            )
+            raise ValueError(msg)
+
+        for other in link:
+            _set_relation(zot, key, other, linked=True)
+            _set_relation(zot, other, key, linked=True)
+        for other in unlink:
+            _set_relation(zot, key, other, linked=False)
+            _set_relation(zot, other, key, linked=False)
+        related = _relation_list(
+            zot.item(key)["data"].get("relations", {}), "dc:relation"
+        )
+        return _json(
+            {"key": key, "related": [uri.rsplit("/", 1)[-1] for uri in related]}
+        )
+
+    add(merge_items)
+    add(set_related)
 
 
 def _register_delete_tools(add: AddTool) -> None:
@@ -1373,6 +1856,7 @@ def register_write_tools(
     _register_attachment_tools(add)
     _register_note_tools(add)
     _register_import_tools(add)
+    _register_maintenance_tools(add)
     if enable_deletes:
         _register_delete_tools(add)
     return registered

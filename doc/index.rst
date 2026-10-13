@@ -379,6 +379,8 @@ Zotero Library Tools
      - Get the highlights, comments and other annotations made in Zotero's reader, for an item or one attachment
    * - ``export_bibtex``
      - Export items as BibTeX, using Zotero's own exporter
+   * - ``find_duplicates``
+     - Find probable duplicates: items with the same DOI, or the same type, title and year
 
 Semantic Scholar Tools
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -461,9 +463,13 @@ With ``--enable-writes``, the server registers these tools:
    * - ``update_note``
      - Replace the text of a note
    * - ``add_by_doi``
-     - Add items by DOI, with metadata from doi.org
+     - Add items by DOI, with metadata from doi.org, and optionally an open-access PDF
    * - ``import_items``
      - Add items from BibTeX or CSL JSON, given inline or as a file
+   * - ``merge_items``
+     - Merge duplicates into one item, as Zotero's "Merge Items" does; the duplicates move to the trash
+   * - ``set_related``
+     - Add or remove "related item" links, in both directions
    * - ``delete_item``
      - Permanently delete an item. Requires ``--enable-deletes``
 
@@ -476,9 +482,15 @@ Without ``--enable-writes``, the write tools are not merely disabled: they are n
 
 ``delete_item`` is behind a second flag because deletion via the local API is irreversible: items are erased outright rather than moved to the trash, and the deletion propagates on sync. ``--enable-deletes`` implies ``--enable-writes``. It also deletes notes.
 
-``add_by_doi`` is the only write tool that contacts a service other than Zotero: it fetches CSL JSON from ``doi.org``, which passes the request to the DOI's registration agency (Crossref, DataCite or mEDRA).
+Wherever a tool takes a collection, you can give its key, its name, or its path from the top level, such as ``"Physics/Quantum"``. Names are matched exactly first, then without regard to case. A name that more than one collection has is refused, and the error lists their paths and keys.
+
+``add_by_doi`` is the only write tool that contacts a service other than Zotero: it fetches CSL JSON from ``doi.org``, which passes the request to the DOI's registration agency (Crossref, DataCite or mEDRA). With ``attach_pdf=True`` it also looks for an open-access PDF of each new item: on arXiv for an arXiv DOI, and otherwise through Semantic Scholar, which gives the paper's arXiv ID or another open-access location. The PDF is downloaded from that location and attached as "Full Text PDF". A location that serves a web page rather than a PDF is skipped, and each item's result says what happened.
 
 ``add_by_doi`` and ``import_items`` map each record to the closest Zotero item type, following the CSL mappings in the `Zotero schema <https://github.com/zotero/zotero-schema>`_. A DOI, ISBN, ISSN, PMID, PMCID or citation key that the item type has no field for is kept in Extra as a ``Label: value`` line, which Zotero reads back as that field. Other values that the type does not accept are dropped, and the result lists them. Before each item is created, the library is searched for it: by DOI, or for a record without one, by title and year. ``if_exists`` decides what happens to a match: ``"skip"`` (the default) reports the existing key and changes nothing, ``"file"`` adds the existing item to the collections and tags that the call gives, and ``"create"`` adds a duplicate anyway.
+
+``merge_items`` follows Zotero's own merge. The kept item gets the duplicates' notes and attachments, tags, collections and related items, and any field that it has empty and a duplicate has filled. The duplicates then move to Zotero's trash, so a merge can be undone by restoring them. Without ``confirm=True`` the tool changes nothing and returns what it would do. When the library's zotero.org ID is known (see below), the kept item also records that it replaces the duplicates, so that citations of a duplicate in a word processor document still resolve.
+
+``set_related`` writes links in both directions, as Zotero's Related pane does. Related-item links identify items by their zotero.org URI, which contains the library's ID. Zotero reports a personal library's ID only when it is signed in to a zotero.org account, so for an unsigned personal library ``set_related`` is refused. Group libraries always have an ID.
 
 ``create_note`` and ``update_note`` take plain text by default, which is escaped, with a paragraph for each blank-line-separated block. Pass ``is_html=True`` to store HTML as given. To move a note or attachment to another parent, use ``update_item`` with ``{"parentItem": "<key>"}``; ``{"parentItem": false}`` makes it standalone.
 
