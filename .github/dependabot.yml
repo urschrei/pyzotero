@@ -6,12 +6,12 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 20
     groups:
-      # Specify a name for the group, which will be used in pull request titles
-      # and branch names
       python-dependencies:
-        # Define patterns to include dependencies in the group (based on
-        # dependency name)
-        applies-to: version-updates # Applies the group rule to version updates
+        applies-to: version-updates
+        patterns:
+          - "*"
+      python-dependencies-security:
+        applies-to: security-updates
         patterns:
           - "*"
 
@@ -21,6 +21,10 @@ updates:
       interval: "weekly"
     groups:
       gha-updates:
-        applies-to: version-updates # Applies the group rule to version updates
+        applies-to: version-updates
+        patterns:
+          - "*"
+      gha-updates-security:
+        applies-to: security-updates
         patterns:
           - "*"
