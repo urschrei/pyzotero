@@ -270,6 +270,26 @@ class TestBibTeX:
         fitted, _ = fit(entries["kovacs2001"], {"title", "extra"})
         assert fitted["extra"] == "Citation Key: kovacs2001"
 
+    def test_latex_decoding(self):
+        (entry,) = parse_bibtex(
+            r"@misc{K, title = {\emph{Deep}~{L}earning of $\alpha$}, pages = {1---2}}"
+        )
+        item = bibtex_to_zotero(entry)
+        assert item["title"] == "Deep Learning of \u03b1"
+        assert item["pages"] == "1-2"
+
+    def test_url_and_doi_are_not_decoded(self):
+        (entry,) = parse_bibtex(
+            r"@misc{K, url = {http://example.org/a_b%20c}, doi = {10.1000/a\_b}}"
+        )
+        item = bibtex_to_zotero(entry)
+        assert item["url"] == "http://example.org/a_b%20c"
+        assert item["DOI"] == r"10.1000/a\_b"
+
+    def test_invalid_name_is_kept_whole(self):
+        (entry,) = parse_bibtex("@book{K, author = {Smith, John, Jr, Extra}}")
+        assert bibtex_to_zotero(entry)["creators"][0]["lastName"] == "Smith, John"
+
     def test_arxiv_eprint(self, entries):
         assert entries["arxiv2020"]["itemType"] == "document"
         assert entries["arxiv2020"]["extra"] == "arXiv: 2001.00001"

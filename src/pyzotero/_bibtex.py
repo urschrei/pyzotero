@@ -6,18 +6,44 @@ from dataclasses import dataclass
 from functools import cached_property
 
 import bibtexparser
+from bibtexparser.middlewares import (
+    MonthLongStringMiddleware,
+    NormalizeFieldKeys,
+    default_parse_stack,
+)
+from bibtexparser.model import DuplicateBlockKeyBlock, Entry
 
 
 def parse_bibtex(text: str) -> list[dict[str, str]]:
-    """Parse BibTeX source into a list of entries, with month macros expanded.
+    """Parse BibTeX source into a list of entries, with month names expanded.
 
     Each entry is a dict of its fields, with the citation key in ``ID`` and the
-    entry type in ``ENTRYTYPE``.
+    entry type in ``ENTRYTYPE``. Field names are in lower case. A month macro
+    or number becomes the full month name. An entry with the same key as an
+    earlier entry is kept.
     """
-    parser = bibtexparser.bparser.BibTexParser(
-        common_strings=True, ignore_nonstandard_types=False
+    library = bibtexparser.parse_string(
+        text,
+        parse_stack=[
+            *default_parse_stack(),
+            NormalizeFieldKeys(),
+            MonthLongStringMiddleware(),
+        ],
     )
-    return parser.parse(text).entries
+    strings = "".join(f"{string.raw}\n" for string in library.strings)
+    entries: list[dict[str, str]] = []
+    for block in library.blocks:
+        if isinstance(block, Entry):
+            entries.append(dict(block))
+        elif (
+            isinstance(block, DuplicateBlockKeyBlock)
+            and isinstance(block.ignore_error_block, Entry)
+            and block.ignore_error_block.raw
+        ):
+            # bibtexparser does not apply the parse stack to a duplicate.
+            # Parse the duplicate again, with the string definitions.
+            entries.extend(parse_bibtex(strings + block.ignore_error_block.raw))
+    return entries
 
 
 @dataclass(frozen=True)
