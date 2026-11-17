@@ -155,7 +155,8 @@ def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
             content = content_match.group(0) if content_match else "bib"
             processor = self.processors.get(content, self.processors["bib"])
             return processor(feedparser.parse(retrieved.text))
-        if fmt == "bibtex":
+        # The local API sends BibTeX as text/plain.
+        if fmt == "bibtex" or self.request.url.params.get("format") == "bibtex":
             return BibTeX(retrieved.text)
         if fmt == "json":
             return retrieved.json()

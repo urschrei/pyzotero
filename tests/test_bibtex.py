@@ -68,3 +68,30 @@ def test_join_skips_empty_parts():
 
 def test_empty_response_has_no_entries():
     assert BibTeX("").entries == []
+
+
+def test_local_api_plain_text_returns_bibtex():
+    mock = MockClient()
+    zot = z.Zotero("0", "user", local=True, client=mock.client)
+    mock.register(
+        "GET",
+        f"{zot.endpoint}/users/0/items",
+        body=PAGE_1.encode("utf-8"),
+        content_type="text/plain",
+    )
+    bib = zot.items(format="bibtex")
+    assert isinstance(bib, BibTeX)
+    assert bib.text == PAGE_1
+    assert bib.entries[0]["author"] == "Müller, Hans"
+
+
+def test_local_api_other_plain_text_stays_bytes():
+    mock = MockClient()
+    zot = z.Zotero("0", "user", local=True, client=mock.client)
+    mock.register(
+        "GET",
+        f"{zot.endpoint}/users/0/items",
+        body="TY  - JOUR\nER  -\n",
+        content_type="text/plain",
+    )
+    assert zot.items(format="ris") == b"TY  - JOUR\nER  -\n"
