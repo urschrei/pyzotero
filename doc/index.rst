@@ -718,7 +718,7 @@ If you set ``format='bibtex'``, a :py:class:`BibTeX` object is returned:
         The parsed entries, in source order. Each entry is a dict with the citation key in ``ID``, the entry type in ``ENTRYTYPE``, and one key for each field. Field values are not decoded from LaTeX.
 
 .. versionchanged:: 1.17.0
-    ``format='bibtex'`` returns a :py:class:`BibTeX` object. Earlier versions returned a bibtexparser 1.x ``BibDatabase``. To write a ``.bib`` file, write :py:attr:`BibTeX.text` instead of calling ``bibtexparser.dumps()``.
+    ``format='bibtex'`` returns a :py:class:`BibTeX` object from the web API and from the local API. Earlier versions returned a bibtexparser 1.x ``BibDatabase`` from the web API and ``bytes`` from the local API. To write a ``.bib`` file, write :py:attr:`BibTeX.text` instead of calling ``bibtexparser.dumps()``.
 
 .. py:method:: Zotero.key_info()
 
