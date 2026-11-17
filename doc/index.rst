@@ -694,7 +694,31 @@ If you select one of the available `export formats <https://www.zotero.org/suppo
 
 If you set ``format='keys'``, a newline-delimited string containing item keys will be returned
 
-If you set ``format='bibtex'``, a `bibtexparser <https://bibtexparser.readthedocs.io/en/main/bibtexparser.html>`_ object containing citations will be returned. You can access the citations as a list of dicts using the ``.entries`` property. The bibtexparser object also implements a `dump method <https://bibtexparser.readthedocs.io/en/main/customize.html#formatting-options-for-writing>`_, if you'd like to write your citations to a ``.bib`` file.
+If you set ``format='bibtex'``, a :py:class:`BibTeX` object is returned:
+
+.. code-block:: python
+
+    bib = zot.items(format="bibtex", limit=10)
+    bib.entries[0]["ID"]  # the citation key of the first entry
+    with open("library.bib", "w", encoding="utf-8") as f:
+        f.write(bib.text)
+
+.. py:class:: BibTeX
+
+    The BibTeX that Zotero exports. :py:meth:`Zotero.everything()` joins the pages into one object.
+
+    .. py:attribute:: text
+        :type: str
+
+        The BibTeX source, as Zotero sends it.
+
+    .. py:attribute:: entries
+        :type: list[dict[str, str]]
+
+        The parsed entries, in source order. Each entry is a dict with the citation key in ``ID``, the entry type in ``ENTRYTYPE``, and one key for each field. Field values are not decoded from LaTeX.
+
+.. versionchanged:: 1.17.0
+    ``format='bibtex'`` returns a :py:class:`BibTeX` object. Earlier versions returned a bibtexparser 1.x ``BibDatabase``. To write a ``.bib`` file, write :py:attr:`BibTeX.text` instead of calling ``bibtexparser.dumps()``.
 
 .. py:method:: Zotero.key_info()
 

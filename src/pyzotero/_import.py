@@ -584,14 +584,6 @@ def bibtex_to_zotero(entry: dict[str, str]) -> dict[str, Any]:  # noqa: PLR0912
     return item
 
 
-def parse_bibtex(text: str) -> list[dict[str, str]]:
-    """Parse BibTeX source into a list of entries, with month macros expanded."""
-    parser = bibtexparser.bparser.BibTexParser(
-        common_strings=True, ignore_nonstandard_types=False
-    )
-    return parser.parse(text).entries
-
-
 def fit_to_schema(
     item: dict[str, Any],
     fields: set[str],

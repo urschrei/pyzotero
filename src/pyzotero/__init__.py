@@ -14,6 +14,7 @@ except importlib.metadata.PackageNotFoundError:
     __version__ = "0.0.0"
 
 # Public API exports
+from pyzotero._bibtex import BibTeX
 from pyzotero._client import Zotero
 from pyzotero._search import SavedSearch
 from pyzotero._upload import Zupload
@@ -45,6 +46,8 @@ from pyzotero.errors import (
 )
 
 __all__ = [
+    # Result types
+    "BibTeX",
     # Exceptions
     "CallDoesNotExistError",
     "ConflictError",

@@ -33,6 +33,7 @@ import whenever
 import pyzotero as pz
 
 from . import errors as ze
+from ._bibtex import BibTeX
 from ._decorators import backoff_check, cleanwrap, retrieve, ss_wrap, tcache
 from ._upload import Zupload
 from ._utils import (
@@ -966,16 +967,15 @@ class Zotero:
 
         This method will override the 'limit' parameter if it's been set.
         """
-        try:
-            items = []
-            items.extend(query)
+        if isinstance(query, BibTeX):
+            pages = [query]
             while self.links.get("next"):
-                items.extend(self.follow())
-        except TypeError:
-            # we have a bibliography object ughh
-            items = copy.deepcopy(query)
-            while self.links.get("next"):
-                items.entries.extend(self.follow().entries)
+                pages.append(self.follow())
+            return BibTeX.join(pages)
+        items = []
+        items.extend(query)
+        while self.links.get("next"):
+            items.extend(self.follow())
         return items
 
     def get_subset(self, subset: list[str]) -> list[Any]:

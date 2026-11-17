@@ -860,15 +860,15 @@ class TestGetAnnotations:
 
 class TestExportBibtex:
     def test_export_chunks_keys_and_dumps(self, mock_zot):
-        import bibtexparser
+        from pyzotero import BibTeX
 
         def fake_items(**kwargs):
-            db = bibtexparser.bibdatabase.BibDatabase()
-            db.entries = [
-                {"ENTRYTYPE": "article", "ID": k, "title": f"T {k}"}
-                for k in kwargs["itemKey"].split(",")
-            ]
-            return db
+            return BibTeX(
+                "".join(
+                    f"@article{{{k},\n  title = {{T {k}}},\n}}\n"
+                    for k in kwargs["itemKey"].split(",")
+                )
+            )
 
         mock_zot.items.side_effect = fake_items
         keys = [f"K{i}" for i in range(51)]
