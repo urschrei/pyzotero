@@ -95,3 +95,49 @@ def test_local_api_other_plain_text_stays_bytes():
         content_type="text/plain",
     )
     assert zot.items(format="ris") == b"TY  - JOUR\nER  -\n"
+
+
+def test_parse_normalises_keys_and_expands_months():
+    entries = BibTeX("@Article{K1, TITLE = {T}, Month = may, Year = 2020}").entries
+    assert entries == [
+        {
+            "ID": "K1",
+            "ENTRYTYPE": "article",
+            "title": "T",
+            "month": "May",
+            "year": "2020",
+        }
+    ]
+
+
+def test_parse_keeps_duplicate_keys():
+    entries = BibTeX(
+        '@string{nat = "Nature"}\n'
+        "@misc{K, title = {A}}\n"
+        "@misc{K, Title = {B}, journal = nat, month = jun}"
+    ).entries
+    assert entries == [
+        {"ID": "K", "ENTRYTYPE": "misc", "title": "A"},
+        {
+            "ID": "K",
+            "ENTRYTYPE": "misc",
+            "title": "B",
+            "journal": "Nature",
+            "month": "June",
+        },
+    ]
+
+
+def test_month_numbers_and_names_become_full_names():
+    entries = BibTeX("@misc{A, month = 3}\n@misc{B, month = {october}}").entries
+    assert [e["month"] for e in entries] == ["March", "October"]
+
+
+def test_source_month_macro_replaces_default():
+    entries = BibTeX('@string{may = "Mai"}\n@misc{K, month = may}').entries
+    assert entries[0]["month"] == "Mai"
+
+
+def test_parse_resolves_string_macros():
+    entries = BibTeX('@string{nat = "Nature"}\n@article{K, journal = nat}').entries
+    assert entries[0]["journal"] == "Nature"

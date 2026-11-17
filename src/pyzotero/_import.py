@@ -11,12 +11,14 @@ from __future__ import annotations
 import html
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
-import bibtexparser
 import httpx2
-from bibtexparser.customization import splitname
-from bibtexparser.latexenc import latex_to_unicode
+from bibtexparser.middlewares.names import (
+    InvalidNameError,
+    parse_single_name_into_parts,
+)
+from pylatexenc.latex2text import LatexNodes2Text
 
 from pyzotero import __version__
 from pyzotero._helpers import normalise_doi
@@ -458,10 +460,24 @@ def csl_to_zotero(csl: dict[str, Any]) -> dict[str, Any]:
     return item
 
 
+_LATEX = LatexNodes2Text()
+
+# Fields that BibTeX styles print verbatim. LaTeX decoding would remove text
+# after a "%".
+VERBATIM_FIELDS = frozenset({"doi", "url"})
+
+
 def _clean(value: str) -> str:
     """Decode LaTeX to Unicode, drop grouping braces and collapse whitespace."""
-    text = latex_to_unicode(value).replace("{", "").replace("}", "")
+    # pylatexenc has no type annotations
+    text = cast("str", _LATEX.latex_to_text(value))
+    text = text.replace("{", "").replace("}", "")
     return " ".join(text.split())
+
+
+def _clean_verbatim(value: str) -> str:
+    """Drop grouping braces and collapse whitespace."""
+    return " ".join(value.replace("{", "").replace("}", "").split())
 
 
 def _split_names(value: str) -> list[str]:
@@ -501,14 +517,14 @@ def _bibtex_names(value: str, creator_type: str) -> list[dict[str, str]]:
             creators.append({"creatorType": creator_type, "name": _clean(raw)})
             continue
         try:
-            parts = splitname(raw, strict_mode=False)
-        except bibtexparser.customization.InvalidName:
+            parts = parse_single_name_into_parts(raw, strict=False)
+        except InvalidNameError:
             creators.append({"creatorType": creator_type, "name": _clean(raw)})
             continue
-        last = " ".join(parts["von"] + parts["last"])
-        if parts["jr"]:
-            last = f"{last}, {' '.join(parts['jr'])}"
-        first = " ".join(parts["first"])
+        last = " ".join(parts.von + parts.last)
+        if parts.jr:
+            last = f"{last}, {' '.join(parts.jr)}"
+        first = " ".join(parts.first)
         if first:
             creators.append(
                 {
@@ -545,13 +561,15 @@ def bibtex_to_zotero(entry: dict[str, str]) -> dict[str, Any]:  # noqa: PLR0912
     for bib_field, base in BIBTEX_FIELDS.items():
         value = entry.get(bib_field)
         if value and base not in item:
-            item[base] = _clean(value)
+            clean = _clean_verbatim if bib_field in VERBATIM_FIELDS else _clean
+            item[base] = clean(value)
     # "number" is an issue for an article, and a report or patent number otherwise
     if entry.get("number"):
         key = "issue" if item_type == "journalArticle" else "number"
         item[key] = _clean(entry["number"])
     if item.get("pages"):
-        item["pages"] = re.sub(r"\s*-+\s*", "-", item["pages"])
+        # LaTeX decoding makes "--" an en dash and "---" an em dash
+        item["pages"] = re.sub(r"\s*[-\u2013\u2014]+\s*", "-", item["pages"])
     if entry_type == "phdthesis":
         item["type"] = "PhD thesis"
     elif entry_type == "mastersthesis":
