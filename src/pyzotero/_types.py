@@ -221,17 +221,6 @@ class FeedParserResult(Protocol):
     def bozo(self) -> bool: ...
 
 
-class BibDatabase(Protocol):
-    """Protocol for bibtexparser.bparser.BibTexParser result.
-
-    The BibDatabase object has an entries attribute containing
-    parsed BibTeX entries.
-    """
-
-    @property
-    def entries(self) -> list[dict[str, Any]]: ...
-
-
 # Zotero client protocol (for use in other modules)
 
 
@@ -267,7 +256,6 @@ ProcessorFunc = Callable[[FeedParserResult], list[Any]]
 
 
 __all__ = [
-    "BibDatabase",
     "CreateItemsResponse",
     "FeedParserEntry",
     "FeedParserFeed",

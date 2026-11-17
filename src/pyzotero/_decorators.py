@@ -14,10 +14,10 @@ from functools import wraps
 from typing import TYPE_CHECKING, Any, TypeVar
 from urllib.parse import urlencode
 
-import bibtexparser
 import feedparser
 import httpx2
 
+from ._bibtex import BibTeX
 from ._utils import DEFAULT_TIMEOUT, MAX_RETRY_ATTEMPTS, get_backoff_duration
 from .errors import TooManyRetriesError, error_handler
 
@@ -124,15 +124,6 @@ def _extract_zip_attachment(retrieved: httpx2.Response) -> bytes:
     return retrieved.content
 
 
-def _parse_bibtex(text: str) -> Any:
-    """Parse a BibTeX response body into a BibDatabase."""
-    parser = bibtexparser.bparser.BibTexParser(
-        common_strings=True,
-        ignore_nonstandard_types=False,
-    )
-    return parser.parse(text)
-
-
 def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
     """Call _retrieve_data() and pass the result to the correct processor."""
 
@@ -165,7 +156,7 @@ def retrieve(func: Callable[..., str]) -> Callable[..., Any]:
             processor = self.processors.get(content, self.processors["bib"])
             return processor(feedparser.parse(retrieved.text))
         if fmt == "bibtex":
-            return _parse_bibtex(retrieved.text)
+            return BibTeX(retrieved.text)
         if fmt == "json":
             return retrieved.json()
         if fmt == "snapshot":

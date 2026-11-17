@@ -8,6 +8,7 @@ import httpx2
 import pytest
 
 from pyzotero import _import
+from pyzotero._bibtex import parse_bibtex
 from pyzotero._import import (
     DOILookupError,
     MetadataLookupError,
@@ -22,7 +23,6 @@ from pyzotero._import import (
     isbn_set,
     lookup_identifier,
     open_access_pdf_url,
-    parse_bibtex,
 )
 from pyzotero.semantic_scholar import PaperNotFoundError
 
