@@ -80,6 +80,9 @@ class Zotero:
         local_api_key: str | None = None,
     ) -> None:
         self.client: httpx2.Client | None = None
+        # Close only a client that Pyzotero creates. Set this before anything
+        # can raise, because __del__ also runs if __init__ fails.
+        self._owns_client = client is None
         """Store Zotero credentials"""
         if not local:
             self.endpoint = "https://api.zotero.org"
@@ -182,9 +185,12 @@ class Zotero:
         self.backoff_until: float = 0.0
 
     def __del__(self) -> None:
-        """Remove client before cleanup."""
+        """Close the client that Pyzotero created, if any.
+
+        A client that the caller supplies is not closed: the caller owns it.
+        """
         # this isn't guaranteed to run, but that's OK
-        if c := self.client:
+        if getattr(self, "_owns_client", False) and (c := self.client):
             c.close()
 
     @property
