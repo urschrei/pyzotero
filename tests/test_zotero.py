@@ -6,6 +6,7 @@ This file is part of Pyzotero.
 # ruff: noqa: N802
 
 import datetime
+import gc
 import json
 import os
 import time
@@ -75,6 +76,28 @@ class ZoteroTests(unittest.TestCase):
         mock = MockClient()
         with self.assertRaises(z.ze.MissingCredentialsError):
             z.Zotero("myuserID", client=mock.client)
+
+    def testSuppliedClientNotClosed(self):
+        """A client the caller supplies stays open after the instance is gone"""
+        client = httpx2.Client()
+        zot = z.Zotero("myuserID", "user", client=client)
+        del zot
+        gc.collect()
+        self.assertFalse(client.is_closed)
+        # nor when __init__ fails
+        with self.assertRaises(z.ze.MissingCredentialsError):
+            z.Zotero("myuserID", client=client)
+        gc.collect()
+        self.assertFalse(client.is_closed)
+        client.close()
+
+    def testOwnClientClosed(self):
+        """A client that Pyzotero creates is closed when the instance is gone"""
+        zot = z.Zotero("myuserID", "user")
+        client = zot.client
+        del zot
+        gc.collect()
+        self.assertTrue(client.is_closed)
 
     def testRequestBuilder(self):
         """Should url-encode all added parameters"""
